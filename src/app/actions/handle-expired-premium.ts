@@ -4,6 +4,9 @@ import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
 import { logger } from '@/lib/logger';
 import { SubscriptionTier } from '@/lib/types';
 
+const PREMIUM_ACTIVE_TIERS = ['growth', 'gold', 'pro'] as const;
+const PREMIUM_TIER_FILTER = `tier.in.(${PREMIUM_ACTIVE_TIERS.join(',')})`;
+
 export interface ExpiredPremiumResult {
   status: 'success' | 'error';
   message: string;
@@ -46,7 +49,7 @@ export async function handleExpiredPremiumAccounts(authToken?: string): Promise<
     const { data: expiredProfiles, error: profileError } = await serviceClient
       .from('profiles')
       .select('id, business_id')
-      .or('tier.in.(growth,pro),is_premium.eq.true')
+      .or(`${PREMIUM_TIER_FILTER},is_premium.eq.true`)
       .is('premium_expires_at', 'not null')
       .lt('premium_expires_at', new Date().toISOString());
 
@@ -167,7 +170,7 @@ export async function getUpcomingPremiumExpirations(daysAhead: number = 7, authT
         tier,
         premium_expires_at
       `)
-      .or('tier.in.(growth,pro),is_premium.eq.true')
+      .or(`${PREMIUM_TIER_FILTER},is_premium.eq.true`)
       .is('premium_expires_at', 'not null')
       .gte('premium_expires_at', new Date().toISOString())
       .lte('premium_expires_at', cutoffDateString);
