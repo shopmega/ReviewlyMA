@@ -23,5 +23,9 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/global.d.ts"],
-  "exclude": ["node_modules", "updated-suggest-business-function.ts"]
+  "exclude": [
+    "node_modules",
+    "archive/**",
+    "updated-suggest-business-function.ts"
+  ]
 }
