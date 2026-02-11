@@ -7,6 +7,7 @@
 import { logger } from './logger';
 import { ActionState } from './types';
 import { getSiteSettings } from './data';
+import { getFromEmail } from './site-config';
 
 export interface EmailOptions {
   to: string;
@@ -36,7 +37,7 @@ export async function sendEmail(options: EmailOptions): Promise<ActionState> {
   }
 
   const emailProvider = dbSettings?.email_provider || process.env.EMAIL_PROVIDER || 'console';
-  const fromEmail = options.from || dbSettings?.email_from || process.env.EMAIL_FROM || 'noreply@avis.ma';
+  const fromEmail = options.from || getFromEmail(dbSettings);
   const resendApiKey = dbSettings?.resend_api_key || process.env.RESEND_API_KEY;
   const sendgridApiKey = dbSettings?.sendgrid_api_key || process.env.SENDGRID_API_KEY;
   const mailjetApiKey = dbSettings?.mailjet_api_key || process.env.MAILJET_API_KEY;
@@ -45,10 +46,10 @@ export async function sendEmail(options: EmailOptions): Promise<ActionState> {
   try {
     switch (emailProvider) {
       case 'resend':
-        return await sendWithResend({ ...options, from: fromEmail });
+        return await sendWithResend({ ...options, from: fromEmail }, resendApiKey || '');
 
       case 'sendgrid':
-        return await sendWithSendGrid({ ...options, from: fromEmail });
+        return await sendWithSendGrid({ ...options, from: fromEmail }, sendgridApiKey || '');
 
       case 'mailjet':
         return await sendWithMailjet({ ...options, from: fromEmail }, mailjetApiKey || '', mailjetApiSecret || '');
@@ -72,8 +73,8 @@ export async function sendEmail(options: EmailOptions): Promise<ActionState> {
 /**
  * Send email using Resend
  */
-async function sendWithResend(options: EmailOptions): Promise<ActionState> {
-  if (!process.env.RESEND_API_KEY) {
+async function sendWithResend(options: EmailOptions, apiKey: string): Promise<ActionState> {
+  if (!apiKey) {
     logger.warn('Resend API key not configured, falling back to console');
     return await sendWithConsole(options);
   }
@@ -83,7 +84,7 @@ async function sendWithResend(options: EmailOptions): Promise<ActionState> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         from: options.from,
@@ -116,8 +117,8 @@ async function sendWithResend(options: EmailOptions): Promise<ActionState> {
 /**
  * Send email using SendGrid
  */
-async function sendWithSendGrid(options: EmailOptions): Promise<ActionState> {
-  if (!process.env.SENDGRID_API_KEY) {
+async function sendWithSendGrid(options: EmailOptions, apiKey: string): Promise<ActionState> {
+  if (!apiKey) {
     logger.warn('SendGrid API key not configured, falling back to console');
     return await sendWithConsole(options);
   }
@@ -127,7 +128,7 @@ async function sendWithSendGrid(options: EmailOptions): Promise<ActionState> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: options.to }] }],
@@ -187,17 +188,25 @@ async function sendWithMailjet(options: EmailOptions, apiKey: string, apiSecret:
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Mailjet API error');
+      const errorText = await response.text();
+      throw new Error(errorText || 'Mailjet API error');
     }
 
     const data = await response.json();
-    logger.info('Email sent via Mailjet', { emailId: data.Messages[0].MessageID, to: options.to });
+    const firstMessage = data?.Messages?.[0];
+    const firstRecipient = firstMessage?.To?.[0];
+    const mailjetId =
+      firstRecipient?.MessageID ||
+      firstRecipient?.MessageUUID ||
+      firstMessage?.MessageID ||
+      null;
+
+    logger.info('Email sent via Mailjet', { emailId: mailjetId, to: options.to });
 
     return {
       status: 'success',
       message: 'Email sent successfully',
-      data: { emailId: data.Messages[0].MessageID },
+      data: { emailId: mailjetId },
     };
   } catch (error) {
     logger.error('Mailjet email error', error);
@@ -288,7 +297,7 @@ export const emailTemplates = {
     `,
   },
   verificationCode: {
-    subject: (code: string) => `Votre code de vérification AVIS.ma : ${code}`,
+    subject: (code: string, siteName: string = 'Platform') => `Votre code de vérification ${siteName} : ${code}`,
     html: (data: { code: string; siteName: string }) => `
 <!DOCTYPE html>
 <html>

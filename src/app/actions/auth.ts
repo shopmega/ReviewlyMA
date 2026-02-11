@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { 
+import {
     loginSchema, 
     signupSchema, 
     proSignupSchema, 
@@ -20,6 +20,7 @@ import {
     logError,
     ErrorCode
 } from '@/lib/errors';
+import { getServerSiteUrl } from '@/lib/site-config';
 
 export type AuthFormState = ActionState;
 
@@ -272,7 +273,7 @@ export async function requestPasswordReset(
 
     try {
         const supabase = await createClient();
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://avis.ma');
+        const siteUrl = getServerSiteUrl();
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${siteUrl}/reset-password`,

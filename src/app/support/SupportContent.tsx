@@ -24,6 +24,7 @@ import { ActionState, SupportTicket } from '@/lib/types';
 import { createSupportTicket, getUserSupportTickets } from '@/app/actions/support';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
+import { getSiteSettings } from '@/lib/data';
 
 import { ClientOnly } from '@/components/ClientOnly';
 
@@ -54,6 +55,7 @@ function SupportContentInner() {
     message: '',
     category: 'other' as SupportTicket['category'],
   });
+  const [supportEmail, setSupportEmail] = useState('support@example.com');
 
   const { toast } = useToast();
 
@@ -71,6 +73,19 @@ function SupportContentInner() {
       loadTickets();
     }
   }, [user]);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await getSiteSettings();
+        setSupportEmail(settings.contact_email || settings.email_from || 'support@example.com');
+      } catch {
+        setSupportEmail('support@example.com');
+      }
+    }
+
+    loadSettings();
+  }, []);
 
   const loadTickets = async () => {
     setLoading(true);
@@ -202,7 +217,7 @@ function SupportContentInner() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground text-center">
-              support@avis.ma
+              {supportEmail}
             </p>
           </CardContent>
         </Card>

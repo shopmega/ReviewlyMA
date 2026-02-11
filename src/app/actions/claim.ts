@@ -22,6 +22,7 @@ import {
 import { sendEmail, emailTemplates } from '@/lib/email-service';
 import { getSiteSettings } from '@/lib/data';
 import { getMaxBusinessesForTier } from '@/lib/tier-utils';
+import { getSiteName } from '@/lib/site-config';
 
 export type ClaimFormState = ActionState & { claimId?: string };
 
@@ -398,7 +399,7 @@ async function generateVerificationCode(method: string, claimId: string, email: 
     try {
         const supabase = await createClient();
         const settings = await getSiteSettings();
-        const siteName = settings.site_name || 'AVIS.ma';
+        const siteName = getSiteName(settings);
 
         if (method === 'email') {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -822,7 +823,7 @@ export async function resendVerificationCode(
         if (method === 'email') {
             try {
                 const settings = await getSiteSettings();
-                const siteName = settings.site_name || 'AVIS.ma';
+                const siteName = getSiteName(settings);
 
                 await sendEmail({
                     to: claim.email,

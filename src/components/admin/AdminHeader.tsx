@@ -27,6 +27,7 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     const [isMaintenance, setIsMaintenance] = useState(false);
+    const [adminEmail, setAdminEmail] = useState('admin@example.com');
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
@@ -34,6 +35,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
         async function fetchSettings() {
             const settings = await getSiteSettings();
             setIsMaintenance(settings.maintenance_mode);
+            setAdminEmail(settings.email_from || settings.contact_email || 'admin@example.com');
         }
         fetchSettings();
     }, []);
@@ -130,7 +132,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                                 <div className="flex flex-col space-y-1">
                                     <p className="text-sm font-bold leading-none">Administrateur</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        admin@avis.ma
+                                        {adminEmail}
                                     </p>
                                 </div>
                             </DropdownMenuLabel>

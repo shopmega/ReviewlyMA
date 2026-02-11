@@ -346,7 +346,7 @@ export default function DashboardPremiumPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Bénéficiaire:</span>
-                    <span className="font-medium">{siteSettings?.payment_beneficiary || `${siteSettings?.site_name || 'Avis.ma'} SARL`}</span>
+                    <span className="font-medium">{siteSettings?.payment_beneficiary || `${siteSettings?.site_name || 'Platform'} SARL`}</span>
                   </div>
                 </div>
               )}

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { getBusinesses } from '@/lib/data/businesses';
 
 export const metadata: Metadata = {
-    title: 'Parcourir par Ville | Avis.ma',
+    title: 'Parcourir par Ville | Platform',
     description: 'Découvrez les meilleures entreprises et services dans toutes les villes du Maroc. Consultez les avis par quartier à Casablanca, Rabat, Marrakech et plus.'
 };
 

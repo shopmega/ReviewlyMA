@@ -143,12 +143,12 @@ const defaultSettings: SiteSettings = {
     sendgrid_api_key: '',
     mailjet_api_key: '',
     mailjet_api_secret: '',
-    email_from: 'noreply@avis.ma',
+    email_from: 'noreply@example.com',
     
     // Default payment settings
     payment_bank_name: 'BMCE Bank',
     payment_rib_number: '011 780 0000 1234567890 12 34',
-    payment_beneficiary: 'Avis.ma SARL',
+    payment_beneficiary: 'Platform SARL',
     payment_chari_url: 'https://chari.ma/avis',
     payment_methods_enabled: ['bank_transfer'],
 };
@@ -719,7 +719,7 @@ export default function SettingsPage() {
                                         id="payment_beneficiary"
                                         value={settings.payment_beneficiary || ''}
                                         onChange={(e) => updateSetting('payment_beneficiary', e.target.value)}
-                                        placeholder="Ex: Avis.ma SARL"
+                                        placeholder="Ex: Platform SARL"
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
@@ -869,7 +869,7 @@ export default function SettingsPage() {
                                         type="email"
                                         value={settings.email_from || ''}
                                         onChange={(e) => updateSetting('email_from', e.target.value)}
-                                        placeholder="noreply@avis.ma"
+                                        placeholder="noreply@example.com"
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>

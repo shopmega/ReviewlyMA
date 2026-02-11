@@ -8,8 +8,8 @@ import { Trophy, Star, TrendingUp } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Les Établissements les Mieux Notés du Maroc | Avis.ma',
-    description: 'Découvrez la crème de la crème. Notre sélection des entreprises les mieux notées par la communauté Avis.ma à travers tout le Maroc.'
+    title: 'Les Établissements les Mieux Notés du Maroc | Platform',
+    description: 'Découvrez la crème de la crème. Notre sélection des entreprises les mieux notées par la communauté à travers tout le Maroc.'
 };
 
 export default async function TopRatedPage() {

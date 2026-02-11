@@ -12,6 +12,7 @@ import {
 } from '@/lib/errors';
 import { sendEmail, emailTemplates } from '@/lib/email-service';
 import { getSiteSettings } from '@/lib/data';
+import { getServerSiteUrl, getSiteName } from '@/lib/site-config';
 
 
 
@@ -274,8 +275,8 @@ export async function updateSupportTicket(
 
                 if (ticket && ticket.profiles && (ticket.profiles as any).email) {
                     const settings = await getSiteSettings();
-                    const siteName = settings.site_name || 'AVIS.ma';
-                    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://avis.ma';
+                    const siteName = getSiteName(settings);
+                    const siteUrl = getServerSiteUrl();
 
                     await sendEmail({
                         to: (ticket.profiles as any).email,
@@ -460,8 +461,8 @@ export async function sendSupportMessage(
 
                 if (ticket && ticket.profiles && (ticket.profiles as any).email) {
                     const settings = await getSiteSettings();
-                    const siteName = settings.site_name || 'AVIS.ma';
-                    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://avis.ma';
+                    const siteName = getSiteName(settings);
+                    const siteUrl = getServerSiteUrl();
 
                     await sendEmail({
                         to: (ticket.profiles as any).email,

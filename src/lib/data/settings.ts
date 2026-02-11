@@ -1,5 +1,6 @@
 
 import { getPublicClient } from './client';
+import { getFromEmail, getSiteName } from '@/lib/site-config';
 
 export type SiteSettings = {
     site_name: string;
@@ -95,12 +96,12 @@ export const getDefaultSettings = (): SiteSettings => ({
     sendgrid_api_key: '',
     mailjet_api_key: '',
     mailjet_api_secret: '',
-    email_from: 'noreply@avis.ma',
+    email_from: getFromEmail(),
 
     // Default payment settings
     payment_bank_name: 'BMCE Bank',
     payment_rib_number: '011 780 0000 1234567890 12 34',
-    payment_beneficiary: 'Avis.ma SARL',
+    payment_beneficiary: `${getSiteName()} SARL`,
     payment_chari_url: 'https://chari.ma/avis',
     payment_methods_enabled: ['bank_transfer'],
 });
@@ -179,12 +180,12 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                     sendgrid_api_key: data.sendgrid_api_key || '',
                     mailjet_api_key: data.mailjet_api_key || '',
                     mailjet_api_secret: data.mailjet_api_secret || '',
-                    email_from: data.email_from || 'noreply@avis.ma',
+                    email_from: data.email_from || getFromEmail(),
 
                     // Payment settings defaults if missing
                     payment_bank_name: data.payment_bank_name || 'BMCE Bank',
                     payment_rib_number: data.payment_rib_number || '011 780 0000 1234567890 12 34',
-                    payment_beneficiary: data.payment_beneficiary || 'Avis.ma SARL',
+                    payment_beneficiary: data.payment_beneficiary || `${getSiteName(data)} SARL`,
                     payment_chari_url: data.payment_chari_url || 'https://chari.ma/avis',
                     payment_methods_enabled: data.payment_methods_enabled || ['bank_transfer'],
                 };

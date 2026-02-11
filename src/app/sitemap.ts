@@ -3,12 +3,13 @@ import { MetadataRoute } from 'next';
 import { getActiveCategories } from '@/app/actions/categories';
 import { ALL_CITIES } from '@/lib/location-discovery';
 import { slugify } from '@/lib/utils';
+import { getServerSiteUrl } from '@/lib/site-config';
 
 // Keep sitemap reasonably fresh without requiring build-time DB access.
 export const revalidate = 3600; // 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = 'https://avis.ma';
+    const baseUrl = getServerSiteUrl();
 
     // 1. Static Pages
     const staticPages = [

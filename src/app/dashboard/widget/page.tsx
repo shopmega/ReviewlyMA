@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { getClientSiteUrl } from "@/lib/site-config";
 
 export default function WidgetPage() {
   const [business, setBusiness] = useState<Business | null>(null);
@@ -100,7 +101,7 @@ export default function WidgetPage() {
     if (!showCtaButton) params.append('hideCta', 'true');
 
     const embedCode = `<iframe
-  src="${process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://example.com')}/widget/${business.id}?${params.toString()}"
+  src="${getClientSiteUrl()}/widget/${business.id}?${params.toString()}"
   width="${width}"
   height="${height}"
   style="border:none; overflow:hidden;"
@@ -179,7 +180,7 @@ export default function WidgetPage() {
   };
 
   const { width, height, params } = getEmbedData();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://avis.ma');
+  const siteUrl = getClientSiteUrl();
   const reactiveEmbedCode = `<iframe
   src="${siteUrl}/widget/${business.id}?${params}"
   width="${width}"

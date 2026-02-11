@@ -12,6 +12,7 @@ import { getCachedSiteSettings } from '@/lib/cache';
 import { Inter, Outfit } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
 import { AdSense } from '@/components/shared/AdSense';
+import { getServerSiteUrl } from '@/lib/site-config';
 // Import RSC error handler to suppress Next.js 15 errors
 import '@/lib/rsc-error-handler';
 
@@ -29,9 +30,10 @@ const outfit = Outfit({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSiteSettings();
+  const siteUrl = getServerSiteUrl();
 
   return {
-    metadataBase: new URL('https://avis.ma'),
+    metadataBase: new URL(siteUrl),
     title: settings.site_name || 'CityGuide App',
     description: settings.site_description || 'Découvrez les meilleurs commerces de votre ville',
   };

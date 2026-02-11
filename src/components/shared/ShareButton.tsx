@@ -11,6 +11,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { getClientSiteUrl } from "@/lib/site-config";
 
 interface ShareButtonProps {
     businessId: string;
@@ -23,16 +24,14 @@ export function ShareButton({ businessId, businessName, className }: ShareButton
     const [copied, setCopied] = useState(false);
     const { toast } = useToast();
 
-    const shareUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/businesses/${businessId}`
-        : `https://avis.ma/businesses/${businessId}`;
+    const shareUrl = `${getClientSiteUrl()}/businesses/${businessId}`;
 
     const handleShareClick = async () => {
         if (typeof navigator !== 'undefined' && navigator.share) {
             try {
                 await navigator.share({
                     title: businessName,
-                    text: `Découvrez ${businessName} sur Avis.ma !`,
+                    text: `Découvrez ${businessName} !`,
                     url: shareUrl,
                 });
             } catch (error) {
@@ -55,7 +54,7 @@ export function ShareButton({ businessId, businessName, className }: ShareButton
 
     const handleSocialShare = (platform: 'facebook' | 'twitter' | 'whatsapp') => {
         let url = '';
-        const text = `Découvrez ${businessName} sur Avis.ma !`;
+        const text = `Découvrez ${businessName} !`;
 
         switch (platform) {
             case 'facebook':

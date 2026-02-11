@@ -8,8 +8,8 @@ import { Sparkles, Calendar, Zap } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Nouveaux Établissements au Maroc | Avis.ma',
-    description: 'Soyez les premiers à découvrir les dernières adresses ajoutées sur Avis.ma. Restaurants, boutiques et services récemment inscrits dans toutes les villes du Maroc.',
+    title: 'Nouveaux Établissements au Maroc | Platform',
+    description: 'Soyez les premiers à découvrir les dernières adresses ajoutées sur la plateforme. Restaurants, boutiques et services récemment inscrits dans toutes les villes du Maroc.',
 };
 
 export default async function RecentlyAddedPage() {
@@ -34,7 +34,7 @@ export default async function RecentlyAddedPage() {
                             Derniers <span className="text-blue-600">Arrivés</span>
                         </h1>
                         <p className="text-xl text-muted-foreground leading-relaxed">
-                            Explorez les nouvelles adresses qui viennent de rejoindre la communauté Avis.ma.
+                            Explorez les nouvelles adresses qui viennent de rejoindre la communauté.
                             Donnez votre avis parmi les premiers et aidez ces entreprises à se faire connaître !
                         </p>
                     </div>

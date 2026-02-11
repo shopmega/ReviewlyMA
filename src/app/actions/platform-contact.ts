@@ -2,6 +2,7 @@
 
 import { ActionState } from "@/lib/types";
 import { getSiteSettings } from "@/lib/data";
+import { getAdminEmail, getSiteName } from "@/lib/site-config";
 
 export async function submitContactForm(
     formData: FormData
@@ -20,7 +21,7 @@ export async function submitContactForm(
         }
 
         const settings = await getSiteSettings();
-        const siteName = settings.site_name || 'Platform';
+        const siteName = getSiteName(settings);
 
         const htmlContent = `
 <!DOCTYPE html>
@@ -72,7 +73,7 @@ export async function submitContactForm(
         const { sendEmail } = await import('@/lib/email-service');
 
         const emailResult = await sendEmail({
-            to: settings.email_from || process.env.EMAIL_FROM || 'admin@avis.ma',
+            to: getAdminEmail(settings),
             subject: `[Contact] ${subject || 'Nouveau message'} - ${name || 'Utilisateur'}`,
             html: htmlContent,
         });

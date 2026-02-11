@@ -9,6 +9,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { Business } from '@/lib/types';
+import { getServerSiteUrl } from '@/lib/site-config';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${business.name} | Avis, Horaires et Contact à ${business.city}`;
   const description = business.description?.substring(0, 160) || `Découvrez les avis, horaires, photos et informations de contact de ${business.name} à ${business.city}.`;
   const image = business.cover_url || business.logo?.imageUrl || '/images/og-default.jpg';
+  const siteUrl = getServerSiteUrl();
 
   return {
     title,
@@ -35,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: 'website',
-      url: `https://avis.ma/businesses/${business.id}`,
+      url: `${siteUrl}/businesses/${business.id}`,
       images: [
         {
           url: image,
@@ -52,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [image],
     },
     alternates: {
-      canonical: `https://avis.ma/businesses/${business.id}`,
+      canonical: `${siteUrl}/businesses/${business.id}`,
     },
   };
 }
@@ -68,6 +70,7 @@ export default async function BusinessPage({ params }: PageProps) {
   }
 
   // JSON-LD Structured Data
+  const siteUrl = getServerSiteUrl();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -75,7 +78,7 @@ export default async function BusinessPage({ params }: PageProps) {
     "description": business.description,
     "image": business.logo?.imageUrl,
     "telephone": business.phone,
-    "url": `https://avis.ma/businesses/${business.id}`,
+    "url": `${siteUrl}/businesses/${business.id}`,
     "address": {
       "@type": "PostalAddress",
       "addressLocality": business.city,
