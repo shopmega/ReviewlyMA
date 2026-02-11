@@ -1,0 +1,202 @@
+import { expect, test, describe, beforeEach, afterEach } from 'vitest';
+import { createAd, updateAd, deleteAd, getAdById, getUserAds } from '@/lib/ads/server-actions';
+import { Ad } from '@/lib/types';
+
+// Mock the Supabase client for testing
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn(() => ({
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: 'test-user-id' } },
+        error: null
+      })
+    },
+    from: vi.fn(() => ({
+      insert: vi.fn(() => ({
+        select: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'test-ad-id',
+              advertiser_id: 'test-user-id',
+              title: 'Test Ad',
+              content: 'Test content',
+              budget_cents: 10000,
+              spent_cents: 0,
+              status: 'active',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            error: null
+          })
+        }))
+      })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          select: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: 'test-ad-id',
+                advertiser_id: 'test-user-id',
+                title: 'Updated Test Ad',
+                content: 'Updated content',
+                budget_cents: 10000,
+                spent_cents: 0,
+                status: 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              error: null
+            })
+          }))
+        }))
+      })),
+      delete: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          error: null
+        }))
+      })),
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: 'test-ad-id',
+              advertiser_id: 'test-user-id',
+              title: 'Test Ad',
+              content: 'Test content',
+              budget_cents: 10000,
+              spent_cents: 0,
+              status: 'active',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            error: null
+          }),
+          order: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              data: [{
+                id: 'test-ad-id',
+                advertiser_id: 'test-user-id',
+                title: 'Test Ad',
+                content: 'Test content',
+                budget_cents: 10000,
+                spent_cents: 0,
+                status: 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }],
+              error: null
+            }))
+          }),
+        }))
+      }))
+    }
+  }))
+}));
+
+describe('Advertising System Tests', () => {
+  test('should create a new ad', async () => {
+    const adData = {
+      advertiser_id: 'test-user-id',
+      title: 'Test Ad',
+      content: 'Test content',
+      budget_cents: 10000,
+      status: 'active' as const,
+    };
+
+    const result = await createAd(adData);
+    
+    expect(result.success).toBe(true);
+    expect(result.ad).toBeDefined();
+    expect(result.ad?.title).toBe('Test Ad');
+    expect(result.ad?.content).toBe('Test content');
+  });
+
+  test('should update an existing ad', async () => {
+    const updatedData = {
+      title: 'Updated Test Ad',
+      content: 'Updated content',
+    };
+
+    const result = await updateAd('test-ad-id', updatedData);
+    
+    expect(result.success).toBe(true);
+    expect(result.ad).toBeDefined();
+    expect(result.ad?.title).toBe('Updated Test Ad');
+    expect(result.ad?.content).toBe('Updated content');
+  });
+
+  test('should delete an ad', async () => {
+    const result = await deleteAd('test-ad-id');
+    
+    expect(result.success).toBe(true);
+  });
+
+  test('should get an ad by ID', async () => {
+    const result = await getAdById('test-ad-id');
+    
+    expect(result.success).toBe(true);
+    expect(result.ad).toBeDefined();
+    expect(result.ad?.id).toBe('test-ad-id');
+  });
+
+  test('should get user ads', async () => {
+    const result = await getUserAds();
+    
+    expect(result.success).toBe(true);
+    expect(result.ads).toBeDefined();
+    expect(Array.isArray(result.ads)).toBe(true);
+  });
+});
+
+describe('Support Ticket System Tests', () => {
+  test('should create a support ticket', async () => {
+    // This would be similar to the ad tests but for support tickets
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should update a support ticket', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should close a support ticket', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+});
+
+describe('Pinned Content System Tests', () => {
+  test('should create pinned content', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should update pinned content', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should delete pinned content', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+});
+
+describe('Competitor Ads System Tests', () => {
+  test('should create competitor ad', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should update competitor ad', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should get active competitor ads for business', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+});
+
+describe('Review System Enhancement Tests', () => {
+  test('should sort reviews by new rating dimensions', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+
+  test('should handle pagination on review page', async () => {
+    expect(true).toBe(true); // Placeholder test
+  });
+});

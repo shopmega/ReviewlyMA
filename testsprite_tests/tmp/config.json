@@ -1,0 +1,53 @@
+{
+  "targetUrl": "http://localhost:9002",
+  "productSpec": "./PRODUCT_SPECIFICATION.md",
+  "testType": "e2e",
+  "browser": "chromium",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "tests": [
+    {
+      "name": "Homepage Critical Path Test",
+      "description": "Test the main user journey from homepage to business discovery",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "/"
+        },
+        {
+          "type": "waitForSelector",
+          "selector": "h1"
+        },
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='Restaurants']",
+          "value": "restaurant"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Rechercher')"
+        }
+      ]
+    },
+    {
+      "name": "Category Browsing Test",
+      "description": "Test category navigation and business listing",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "/"
+        },
+        {
+          "type": "click",
+          "selector": "a[href*='/businesses?category=Restaurants']"
+        },
+        {
+          "type": "waitForSelector",
+          "selector": ".business-card"
+        }
+      ]
+    }
+  ]
+}

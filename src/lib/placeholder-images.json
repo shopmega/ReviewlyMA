@@ -1,0 +1,58 @@
+{
+  "placeholderImages": [
+    {
+      "id": "maroc-telecom-logo",
+      "description": "Maroc Telecom Logo",
+      "imageUrl": "/placeholders/logo-placeholder.svg",
+      "imageHint": "telecom logo"
+    },
+    {
+      "id": "ocp-group-logo",
+      "description": "OCP Group Logo",
+      "imageUrl": "/placeholders/logo-placeholder.svg",
+      "imageHint": "industrial logo"
+    },
+    {
+      "id": "bimo-cafe-logo",
+      "description": "Bimo Café Logo",
+      "imageUrl": "/placeholders/logo-placeholder.svg",
+      "imageHint": "cafe logo"
+    },
+    {
+      "id": "bimo-cafe-1",
+      "description": "Interior of Bimo Cafe",
+      "imageUrl": "/placeholders/business-placeholder.svg",
+      "imageHint": "cafe interior"
+    },
+    {
+      "id": "bimo-cafe-2",
+      "description": "Coffee and pastry at Bimo Cafe",
+      "imageUrl": "/placeholders/business-placeholder.svg",
+      "imageHint": "coffee pastry"
+    },
+    {
+      "id": "jardin-exotique-logo",
+      "description": "Jardin Exotique Logo",
+      "imageUrl": "/placeholders/business-placeholder.svg",
+      "imageHint": "garden logo"
+    },
+    {
+      "id": "jardin-exotique-1",
+      "description": "Lush greenery at Jardin Exotique",
+      "imageUrl": "/placeholders/business-placeholder.svg",
+      "imageHint": "lush garden"
+    },
+    {
+      "id": "societe-generale-logo",
+      "description": "Societe Generale Morocco Logo",
+      "imageUrl": "/placeholders/logo-placeholder.svg",
+      "imageHint": "bank logo"
+    },
+    {
+      "id": "alten-logo",
+      "description": "Alten Morocco Logo",
+      "imageUrl": "/placeholders/logo-placeholder.svg",
+      "imageHint": "tech logo"
+    }
+  ]
+}

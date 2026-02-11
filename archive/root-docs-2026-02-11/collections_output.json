@@ -1,0 +1,19 @@
+[
+  {
+    "id": "3fc43815-5db6-404b-bb57-4f09bd0e2da3",
+    "title": "Meuilleurs Entreprises offrant du TELETRAVAIL",
+    "subtitle": "Meuilleur Entreprise offrant du TELETRAVAIL",
+    "image_url": "https://image.cnbcfm.com/api/v1/image/105055994-using_laptop.jpg?v=1532563671",
+    "image_hint": "REMOTE JOBS",
+    "link_config": {
+      "tag": "",
+      "city": "",
+      "type": "filter",
+      "amenities": [
+        "Télétravail"
+      ]
+    },
+    "active": true,
+    "created_at": "2026-01-23T13:44:01.73319+00:00"
+  }
+]

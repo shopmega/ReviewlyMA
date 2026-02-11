@@ -1,0 +1,1509 @@
+'use server';
+
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { createAdminClient, createAuthClient, verifyAdminSession } from '@/lib/supabase/admin';
+import { format } from 'date-fns';
+import { ActionState, businessUpdateSchema, SubscriptionTier } from '@/lib/types';
+import {
+  sendPremiumActivationEmail,
+  sendPremiumRejectionEmail
+} from './email';
+import { logAuditAction } from '@/lib/audit-logger';
+import { logger } from '@/lib/logger';
+
+export type AdminActionResult = {
+  status: 'success' | 'error';
+  message: string;
+  data?: any;
+};
+
+export interface BulkOperationResult {
+  success: boolean;
+  processed: number;
+  failed: number;
+  errors: string[];
+  message: string;
+}
+
+/**
+ * Toggle a user's premium status
+ * Logs the change in premium_audit_log for compliance and tracking
+ * FIXED: Double-check admin status immediately before mutation to prevent TOCTOU
+ */
+export async function toggleUserPremium(
+  targetUserId: string,
+  tier: SubscriptionTier
+): Promise<AdminActionResult> {
+  const isPremium = tier !== 'none';
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Perform atomic update via RPC
+    const { data: rpcResult, error: rpcError } = await serviceClient.rpc(
+      'toggle_user_premium',
+      {
+        p_user_id: targetUserId,
+        p_tier: tier,
+        p_is_premium: isPremium,
+        p_granted_at: isPremium ? new Date().toISOString() : null,
+        p_expires_at: null
+      }
+    );
+
+    if (rpcError) {
+      logger.error('RPC Error updating premium status', rpcError, { targetUserId });
+      return { status: 'error', message: `Erreur atomique: ${rpcError.message}` };
+    }
+
+    if (!rpcResult || !rpcResult.success) {
+      return { status: 'error', message: 'Erreur lors de la mise à jour atomique.' };
+    }
+
+    // Log the change in audit log
+    try {
+      await logAuditAction({
+        adminId,
+        action: isPremium ? 'granted_premium' : 'revoked_premium',
+        targetType: 'profile',
+        targetId: targetUserId,
+        details: {
+          tier,
+          is_premium: isPremium,
+          businesses_updated: rpcResult.businesses_updated,
+          business_ids: rpcResult.business_ids
+        }
+      });
+    } catch (auditError) {
+      logger.error('Audit log error', auditError, { targetUserId });
+    }
+
+    return {
+      status: 'success',
+      message: isPremium
+        ? `Statut ${tier.toUpperCase()} activé (${rpcResult.businesses_updated} établissement(s) mis à jour).`
+        : 'Statut Premium désactivé avec succès.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Change a user's role (admin, pro, user)
+ */
+export async function changeUserRole(
+  targetUserId: string,
+  newRole: 'admin' | 'pro' | 'user'
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Prevent admin from demoting themselves
+    if (targetUserId === adminId && newRole !== 'admin') {
+      return { status: 'error', message: 'Vous ne pouvez pas modifier votre propre rôle.' };
+    }
+
+    const { error } = await serviceClient
+      .from('profiles')
+      .update({ role: newRole })
+      .eq('id', targetUserId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    // Log the action
+    await logAuditAction({
+      adminId,
+      action: 'UPDATE_ROLE',
+      targetType: 'profile',
+      targetId: targetUserId,
+      details: { new_role: newRole }
+    });
+
+    const roleLabels: Record<string, string> = {
+      admin: 'Administrateur',
+      pro: 'Professionnel',
+      user: 'Utilisateur'
+    };
+
+    return {
+      status: 'success',
+      message: `Rôle changé en "${roleLabels[newRole]}" avec succès.`
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Suspend or unsuspend a user account
+ */
+export async function toggleUserSuspension(
+  targetUserId: string,
+  suspend: boolean
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Prevent admin from suspending themselves
+    if (targetUserId === adminId) {
+      return { status: 'error', message: 'Vous ne pouvez pas suspendre votre propre compte.' };
+    }
+
+    // Check if target is also an admin
+    const { data: targetProfile } = await serviceClient
+      .from('profiles')
+      .select('role')
+      .eq('id', targetUserId)
+      .single();
+
+    if (targetProfile?.role === 'admin') {
+      return { status: 'error', message: 'Impossible de suspendre un administrateur.' };
+    }
+
+    const { error } = await serviceClient
+      .from('profiles')
+      .update({
+        suspended: suspend,
+        suspended_at: suspend ? new Date().toISOString() : null
+      })
+      .eq('id', targetUserId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    // Log the action
+    await logAuditAction({
+      adminId,
+      action: suspend ? 'SUSPEND_USER' : 'UNSUSPEND_USER',
+      targetType: 'profile',
+      targetId: targetUserId
+    });
+
+    return {
+      status: 'success',
+      message: suspend
+        ? 'Compte suspendu avec succès.'
+        : 'Compte réactivé avec succès.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Fetch all users (for admin panel)
+ * NOTE: This function has N+1 performance issues and should only be used in client components
+ * For server components, use getAdminUsersWithClaims() from admin-queries.ts
+ */
+export async function fetchAllUsers(): Promise<ActionState> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const { data, error } = await serviceClient
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    return {
+      status: 'success',
+      data,
+      message: 'Utilisateurs récupérés. NOTE: This function has N+1 performance issues and should only be used in client components.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Create a new business (admin only)
+ */
+export async function createBusiness(data: {
+  name: string;
+  category: string;
+  city: string;
+  address: string;
+  description?: string;
+  tier?: SubscriptionTier;
+}): Promise<AdminActionResult> {
+  const isPremium = (data.tier && data.tier !== 'none');
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Generate a basic slug
+    const slug = data.name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    // Append random string to ensure uniqueness
+    const uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const { data: business, error } = await serviceClient
+      .from('businesses')
+      .insert({
+        id: uniqueSlug,
+        name: data.name,
+        category: data.category,
+        city: data.city,
+        address: data.address,
+        description: data.description || '',
+        is_premium: isPremium,
+        tier: data.tier || 'none',
+        status: 'active',
+        overall_rating: 0,
+        review_count: 0
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return { status: 'error', message: `Erreur DB: ${error.message}` };
+    }
+
+    // Log action
+    await logAuditAction({
+      adminId,
+      action: 'CREATE_BUSINESS',
+      targetType: 'business',
+      targetId: business.id,
+      details: { name: data.name }
+    });
+
+    revalidatePath('/admin/etablissements');
+    revalidatePath('/');
+
+    return { status: 'success', message: 'Établissement créé avec succès.', data: business };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Approve a business suggestion and create the business
+ */
+export async function approveBusinessSuggestion(suggestionId: string, reviewNotes?: string): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Get the suggestion
+    const { data: suggestion, error: fetchError } = await serviceClient
+      .from('business_suggestions')
+      .select('*')
+      .eq('id', suggestionId)
+      .single();
+
+    if (fetchError || !suggestion) {
+      return { status: 'error', message: 'Suggestion non trouvée.' };
+    }
+
+    if (suggestion.status !== 'pending') {
+      return { status: 'error', message: 'Cette suggestion a déjà été traitée.' };
+    }
+
+    // Generate a basic slug
+    const slug = suggestion.name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    // Append random string to ensure uniqueness
+    const uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+
+    // Create the business
+    const { data: business, error: createError } = await serviceClient
+      .from('businesses')
+      .insert({
+        id: uniqueSlug,
+        name: suggestion.name,
+        category: suggestion.category,
+        city: suggestion.city,
+        location: suggestion.location || '',
+        description: suggestion.description || '',
+        type: 'company',
+        is_featured: false,
+        is_premium: false,
+        tier: 'none',
+        overall_rating: 0,
+        review_count: 0
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      return { status: 'error', message: `Erreur DB: ${createError.message}` };
+    }
+
+    // Update the suggestion status
+    const { error: updateError } = await serviceClient
+      .from('business_suggestions')
+      .update({
+        status: 'approved',
+        reviewed_by: adminId,
+        reviewed_at: new Date().toISOString(),
+        review_notes: reviewNotes || null
+      })
+      .eq('id', suggestionId);
+
+    if (updateError) {
+      console.error('Error updating suggestion status:', updateError);
+      // Don't fail the whole operation if we can't update the suggestion
+    }
+
+    // Log action
+    await logAuditAction({
+      adminId,
+      action: 'APPROVE_BUSINESS_SUGGESTION',
+      targetType: 'business_suggestion',
+      targetId: suggestionId,
+      details: {
+        businessName: suggestion.name,
+        businessId: business.id,
+        suggestionId
+      }
+    });
+
+    revalidatePath('/admin/business-suggestions');
+    revalidatePath('/admin/etablissements');
+    revalidatePath('/');
+
+    return {
+      status: 'success',
+      message: 'Établissement créé avec succès depuis la suggestion.',
+      data: business
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Reject a business suggestion
+ */
+export async function rejectBusinessSuggestion(suggestionId: string, reviewNotes?: string): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const { error } = await serviceClient
+      .from('business_suggestions')
+      .update({
+        status: 'rejected',
+        reviewed_by: adminId,
+        reviewed_at: new Date().toISOString(),
+        review_notes: reviewNotes || null
+      })
+      .eq('id', suggestionId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur DB: ${error.message}` };
+    }
+
+    // Log action
+    await logAuditAction({
+      adminId,
+      action: 'REJECT_BUSINESS_SUGGESTION',
+      targetType: 'business_suggestion',
+      targetId: suggestionId,
+      details: { suggestionId }
+    });
+
+    revalidatePath('/admin/business-suggestions');
+
+    return { status: 'success', message: 'Suggestion rejetée avec succès.' };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+export async function toggleBusinessFeatured(
+  businessId: string,
+  isFeatured: boolean
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const { error } = await serviceClient
+      .from('businesses')
+      .update({ is_featured: isFeatured })
+      .eq('id', businessId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    revalidatePath('/');
+    revalidatePath('/admin/etablissements');
+    revalidatePath('/admin/homepage');
+    revalidatePath(`/businesses/${businessId}`);
+
+    return {
+      status: 'success',
+      message: isFeatured ? 'Établissement mis à la une.' : 'Établissement retiré de la une.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Delete a business and its associated data
+ */
+export async function deleteBusiness(
+  businessId: string
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // First, get business info for logging
+    const { data: business } = await serviceClient
+      .from('businesses')
+      .select('name')
+      .eq('id', businessId)
+      .single();
+
+    if (!business) {
+      return { status: 'error', message: 'Établissement introuvable.' };
+    }
+
+    // Remove business_id from any profiles linked to this business
+    // Also reset premium status to maintain consistent state
+    await serviceClient
+      .from('profiles')
+      .update({ business_id: null, role: 'user', is_premium: false })
+      .eq('business_id', businessId);
+
+    // Delete associated claims
+    await serviceClient
+      .from('business_claims')
+      .delete()
+      .eq('business_id', businessId);
+
+    // Delete associated updates
+    await serviceClient
+      .from('updates')
+      .delete()
+      .eq('business_id', businessId);
+
+    // Delete associated reviews
+    await serviceClient
+      .from('reviews')
+      .delete()
+      .eq('business_id', businessId);
+
+    // Finally, delete the business itself
+    const { error } = await serviceClient
+      .from('businesses')
+      .delete()
+      .eq('id', businessId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    revalidatePath('/admin/etablissements');
+
+    // Log the action
+    await logAuditAction({
+      adminId,
+      action: 'DELETE_BUSINESS',
+      targetType: 'business',
+      targetId: businessId,
+      details: { business_name: business.name }
+    });
+
+    return {
+      status: 'success',
+      message: `"${business.name}" a été supprimé avec succès.`
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Delete an update (for pro users managing their updates)
+ */
+export async function deleteUpdate(
+  updateId: string
+): Promise<AdminActionResult> {
+  try {
+    const supabase = await createAuthClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { status: 'error', message: 'Vous devez être connecté.' };
+    }
+
+    // Get user's business_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.business_id) {
+      return { status: 'error', message: 'Aucun établissement associé.' };
+    }
+
+    // Verify the update belongs to this business
+    const { data: update } = await supabase
+      .from('updates')
+      .select('business_id')
+      .eq('id', updateId)
+      .single();
+
+    if (!update || update.business_id !== profile.business_id) {
+      return { status: 'error', message: 'Mise à jour introuvable ou non autorisée.' };
+    }
+
+    // Delete the update
+    const { error } = await supabase
+      .from('updates')
+      .delete()
+      .eq('id', updateId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    return { status: 'success', message: 'Mise à jour supprimée.' };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Edit an update (for pro users managing their updates)
+ */
+export async function editUpdate(
+  updateId: string,
+  title: string,
+  content: string
+): Promise<AdminActionResult> {
+  try {
+    const validatedFields = businessUpdateSchema.safeParse({ title, text: content });
+
+    if (!validatedFields.success) {
+      return {
+        status: 'error',
+        message: 'Veuillez corriger les erreurs dans le formulaire.'
+      };
+    }
+
+    const supabase = await createAuthClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { status: 'error', message: 'Vous devez être connecté.' };
+    }
+
+    // Get user's business_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.business_id) {
+      return { status: 'error', message: 'Aucun établissement associé.' };
+    }
+
+    // Verify the update belongs to this business
+    const { data: update } = await supabase
+      .from('updates')
+      .select('business_id')
+      .eq('id', updateId)
+      .single();
+
+    if (!update || update.business_id !== profile.business_id) {
+      return { status: 'error', message: 'Mise à jour introuvable ou non autorisée.' };
+    }
+
+    // Update the record
+    const { error } = await supabase
+      .from('updates')
+      .update({ title, content })
+      .eq('id', updateId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    return { status: 'success', message: 'Mise à jour modifiée avec succès.' };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Verify offline premium payment and grant premium status
+ */
+export async function verifyOfflinePayment(
+  paymentId: string,
+  reason?: string
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Fetch payment details
+    const { data: payment, error: paymentError } = await serviceClient
+      .from('premium_payments')
+      .select('*')
+      .eq('id', paymentId)
+      .single();
+
+    if (paymentError || !payment) {
+      return { status: 'error', message: 'Paiement introuvable.' };
+    }
+
+    if (payment.status !== 'pending') {
+      return { status: 'error', message: `Ce paiement a déjà été ${payment.status}.` };
+    }
+
+    // Update payment status
+    const { error: updatePaymentError } = await serviceClient
+      .from('premium_payments')
+      .update({
+        status: 'verified',
+        verified_by: adminId,
+        verified_at: new Date().toISOString(),
+        expires_at: payment.expires_at // Use existing if set, otherwise handled in verify
+      })
+      .eq('id', paymentId);
+
+    if (updatePaymentError) {
+      return { status: 'error', message: `Erreur mise à jour paiement: ${updatePaymentError.message}` };
+    }
+
+    // Default expiration: 1 year if not specified
+    const expirationDate = payment.expires_at || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
+
+    // Grant premium status to user
+    const targetTier = payment.target_tier || 'gold';
+    const { error: premiumError } = await serviceClient
+      .from('profiles')
+      .update({
+        is_premium: true,
+        tier: targetTier,
+        premium_granted_at: new Date().toISOString(),
+        premium_expires_at: expirationDate
+      })
+      .eq('id', payment.user_id);
+
+    if (premiumError) {
+      return { status: 'error', message: `Erreur activation premium: ${premiumError.message}` };
+    }
+
+    // Send confirmation email
+    try {
+      const { data: userProfile } = await serviceClient
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', payment.user_id)
+        .single();
+
+      if (userProfile?.email) {
+        await sendPremiumActivationEmail(userProfile.email, userProfile.full_name || 'Utilisateur');
+      }
+    } catch (emailError) {
+      logger.warn('Failed to send premium activation email', { error: emailError, paymentId });
+    }
+
+    // Log the audit
+    try {
+      await logAuditAction({
+        adminId,
+        action: 'VERIFY_OFFLINE_PAYMENT',
+        targetType: 'payment',
+        targetId: paymentId,
+        details: {
+          user_id: payment.user_id,
+          business_id: payment.business_id,
+          reference: payment.payment_reference,
+          expiration: expirationDate
+        }
+      });
+    } catch (auditError) {
+      logger.warn('Failed to log payment verification', { error: auditError, paymentId });
+    }
+
+    // Update business premium status if applicable
+    if (payment.business_id) {
+      await serviceClient
+        .from('businesses')
+        .update({ is_premium: true, tier: targetTier })
+        .eq('id', payment.business_id);
+    }
+
+    return {
+      status: 'success',
+      message: 'Paiement verifié et statut Premium accordé avec succès.'
+    };
+  } catch (error: any) {
+    logger.error('Payment verification error', error, { paymentId });
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Fetch premium payments for admin panel
+ */
+export async function fetchPremiumPayments(): Promise<ActionState> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const { data, error } = await serviceClient
+      .from('premium_payments')
+      .select(`
+                *,
+                profiles:user_id(email, full_name),
+                businesses:business_id(name)
+            `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      logger.error('Error fetching premium payments', error);
+      // Fallback: fetch without join
+      const { data: simpleData, error: simpleError } = await serviceClient
+        .from('premium_payments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (simpleError) {
+        return { status: 'error', message: `Erreur: ${simpleError.message}` };
+      }
+
+      return { status: 'success', data: simpleData, message: 'Paiements récupérés (sans détails).' };
+    }
+
+    return { status: 'success', data, message: 'Paiements récupérés.' };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Reject offline premium payment
+ */
+export async function rejectOfflinePayment(
+  paymentId: string,
+  reason: string
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Fetch payment details
+    const { data: payment, error: paymentError } = await serviceClient
+      .from('premium_payments')
+      .select('*')
+      .eq('id', paymentId)
+      .single();
+
+    if (paymentError || !payment) {
+      return { status: 'error', message: 'Paiement introuvable.' };
+    }
+
+    if (payment.status !== 'pending') {
+      return { status: 'error', message: `Ce paiement a déjà été ${payment.status}.` };
+    }
+
+    // Update payment status
+    const { error: updatePaymentError } = await serviceClient
+      .from('premium_payments')
+      .update({
+        status: 'rejected',
+        notes: reason,
+        verified_by: adminId,
+        verified_at: new Date().toISOString()
+      })
+      .eq('id', paymentId);
+
+    if (updatePaymentError) {
+      return { status: 'error', message: `Erreur mise à jour paiement: ${updatePaymentError.message}` };
+    }
+
+    // Log the action
+    await logAuditAction({
+      adminId,
+      action: 'REJECT_OFFLINE_PAYMENT',
+      targetType: 'payment',
+      targetId: paymentId,
+      details: { reason }
+    });
+
+    // Send rejection email
+    try {
+      const { data: userProfile } = await serviceClient
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', payment.user_id)
+        .single();
+
+      if (userProfile?.email) {
+        await sendPremiumRejectionEmail(userProfile.email, userProfile.full_name || 'Utilisateur', reason);
+      }
+    } catch (emailError) {
+      logger.warn('Failed to send premium rejection email', { error: emailError, paymentId });
+    }
+
+    return {
+      status: 'success',
+      message: 'Paiement rejeté avec succès.'
+    };
+  } catch (error: any) {
+    logger.error('Payment rejection error', error, { paymentId });
+    return { status: 'error', message: error.message || 'Une erreur est survenue lors du rejet.' };
+  }
+}
+
+/**
+ * Add a manual payment record for a user
+ */
+export async function addManualPayment(data: {
+  userEmail: string;
+  amount: number;
+  reference: string;
+  method: string;
+  expirationDate: string;
+  tier: SubscriptionTier;
+  notes?: string;
+}): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // 1. Find the user by email
+    const { data: profile, error: profileError } = await serviceClient
+      .from('profiles')
+      .select('id, business_id, full_name')
+      .eq('email', data.userEmail)
+      .single();
+
+    if (profileError || !profile) {
+      return { status: 'error', message: 'Utilisateur introuvable avec cet email.' };
+    }
+
+    // 2. Create the payment record
+    const { data: payment, error: paymentError } = await serviceClient
+      .from('premium_payments')
+      .insert([{
+        user_id: profile.id,
+        business_id: profile.business_id,
+        payment_reference: data.reference,
+        payment_method: data.method,
+        amount_usd: data.amount,
+        currency: 'MAD',
+        status: 'verified',
+        target_tier: data.tier,
+        notes: data.notes,
+        verified_by: adminId,
+        verified_at: new Date().toISOString(),
+        expires_at: data.expirationDate
+      }])
+      .select()
+      .single();
+
+    if (paymentError) {
+      return { status: 'error', message: `Erreur création paiement: ${paymentError.message}` };
+    }
+
+    // 3. Update profile
+    const { error: profileUpdateError } = await serviceClient
+      .from('profiles')
+      .update({
+        is_premium: true,
+        tier: data.tier,
+        premium_granted_at: new Date().toISOString(),
+        premium_expires_at: data.expirationDate
+      })
+      .eq('id', profile.id);
+
+    if (profileUpdateError) {
+      return { status: 'error', message: `Erreur mise à jour profil: ${profileUpdateError.message}` };
+    }
+
+    // 4. Update business
+    if (profile.business_id) {
+      await serviceClient
+        .from('businesses')
+        .update({
+          is_premium: true,
+          tier: data.tier
+        })
+        .eq('id', profile.business_id);
+    }
+
+    // 5. Audit log
+    await logAuditAction({
+      adminId,
+      action: 'ADD_MANUAL_PAYMENT',
+      targetType: 'payment',
+      targetId: payment.id,
+      details: {
+        user_email: data.userEmail,
+        amount: data.amount,
+        reference: data.reference,
+        expiration: data.expirationDate
+      }
+    });
+
+    // 6. Send email
+    try {
+      await sendPremiumActivationEmail(data.userEmail, profile.full_name || 'Professionnel');
+    } catch (e) {
+      logger.warn('Failed to send activation email for manual payment', { userId: profile.id });
+    }
+
+    revalidatePath('/admin/paiements');
+
+    return {
+      status: 'success',
+      message: `Paiement ajouté et Premium activé pour ${profile.full_name || data.userEmail} jusqu'au ${format(new Date(data.expirationDate), 'dd/MM/yyyy')}`
+    };
+  } catch (error: any) {
+    logger.error('Manual payment error', error, { userEmail: data.userEmail });
+    return { status: 'error', message: error.message || 'Une erreur est survenue lors de l\'ajout manuel.' };
+  }
+}
+
+/**
+ * Bulk Operations for Admin Panel
+ */
+
+export interface BulkOperationResult {
+  success: boolean;
+  processed: number;
+  failed: number;
+  errors: string[];
+  message: string;
+}
+
+/**
+ * Bulk update multiple reviews
+ */
+export async function bulkUpdateReviews(
+  reviewIds: number[],
+  updateData: {
+    status?: 'published' | 'rejected';
+    reason?: string;
+  }
+): Promise<BulkOperationResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const results = {
+      processed: 0,
+      failed: 0,
+      errors: [] as string[],
+      success: true
+    };
+
+    // Process each review
+    for (const reviewId of reviewIds) {
+      try {
+        const { error } = await serviceClient
+          .from('reviews')
+          .update({
+            status: updateData.status,
+            ...(updateData.reason && {
+              moderation_reason: updateData.reason,
+              moderated_at: new Date().toISOString(),
+              moderated_by: adminId
+            })
+          })
+          .eq('id', reviewId);
+
+        if (error) {
+          results.failed++;
+          results.errors.push(`Review ${reviewId}: ${error.message}`);
+        } else {
+          results.processed++;
+        }
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`Review ${reviewId}: ${error.message || error}`);
+      }
+    }
+
+    // Log bulk operation
+    await logAuditAction({
+      adminId,
+      action: 'BULK_UPDATE_REVIEWS',
+      targetType: 'review',
+      details: {
+        review_ids: reviewIds,
+        update_data: updateData,
+        processed: results.processed,
+        failed: results.failed
+      }
+    });
+
+    revalidatePath('/admin/avis');
+
+    return {
+      ...results,
+      message: `${results.processed} avis traités, ${results.failed} échecs`
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      processed: 0,
+      failed: reviewIds.length,
+      errors: [error.message || 'Unknown error'],
+      message: 'Erreur lors de la mise à jour groupée.'
+    };
+  }
+}
+
+/**
+ * Bulk delete multiple reviews
+ */
+export async function bulkDeleteReviews(
+  reviewIds: number[]
+): Promise<BulkOperationResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const results = {
+      processed: 0,
+      failed: 0,
+      errors: [] as string[],
+      success: true
+    };
+
+    // Process each review
+    for (const reviewId of reviewIds) {
+      try {
+        const { error } = await serviceClient
+          .from('reviews')
+          .update({
+            status: 'deleted',
+            deleted_at: new Date().toISOString(),
+            deleted_by: adminId
+          })
+          .eq('id', reviewId);
+
+        if (error) {
+          results.failed++;
+          results.errors.push(`Review ${reviewId}: ${error.message}`);
+        } else {
+          results.processed++;
+        }
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`Review ${reviewId}: ${error.message || error}`);
+      }
+    }
+
+    // Log bulk operation
+    await serviceClient
+      .from('admin_audit_log')
+      .insert({
+        admin_id: adminId,
+        action: 'bulk_delete_reviews',
+        details: {
+          review_ids: reviewIds,
+          processed: results.processed,
+          failed: results.failed,
+          errors: results.errors
+        },
+        created_at: new Date().toISOString()
+      });
+
+    revalidatePath('/admin/avis');
+
+    return {
+      ...results,
+      message: `${results.processed} avis supprimés, ${results.failed} échecs`
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      processed: 0,
+      failed: reviewIds.length,
+      errors: [error.message || 'Unknown error'],
+      message: 'Erreur lors de la suppression groupée.'
+    };
+  }
+}
+
+/**
+ * Bulk update multiple businesses
+ */
+export async function bulkUpdateBusinesses(
+  businessIds: string[],
+  updateData: {
+    status?: 'active' | 'suspended';
+    is_premium?: boolean;
+    featured?: boolean;
+  }
+): Promise<BulkOperationResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const results = {
+      processed: 0,
+      failed: 0,
+      errors: [] as string[],
+      success: true
+    };
+
+    // Process each business
+    for (const businessId of businessIds) {
+      try {
+        const { error } = await serviceClient
+          .from('businesses')
+          .update(updateData)
+          .eq('id', businessId);
+
+        if (error) {
+          results.failed++;
+          results.errors.push(`Business ${businessId}: ${error.message}`);
+        } else {
+          results.processed++;
+        }
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`Business ${businessId}: ${error.message || error}`);
+      }
+    }
+
+    // Log bulk operation
+    await serviceClient
+      .from('admin_audit_log')
+      .insert({
+        admin_id: adminId,
+        action: 'bulk_update_businesses',
+        details: {
+          business_ids: businessIds,
+          update_data: updateData,
+          processed: results.processed,
+          failed: results.failed,
+          errors: results.errors
+        },
+        created_at: new Date().toISOString()
+      });
+
+    revalidatePath('/admin/etablissements');
+
+    return {
+      ...results,
+      message: `${results.processed} établissements mis à jour, ${results.failed} échecs`
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      processed: 0,
+      failed: businessIds.length,
+      errors: [error.message || 'Unknown error'],
+      message: 'Erreur lors de la mise à jour groupée.'
+    };
+  }
+}
+
+/**
+ * Bulk delete multiple businesses
+ */
+export async function bulkDeleteBusinesses(
+  businessIds: string[]
+): Promise<BulkOperationResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const results = {
+      processed: 0,
+      failed: 0,
+      errors: [] as string[],
+      success: true
+    };
+
+    // Process each business
+    for (const businessId of businessIds) {
+      try {
+        const { error } = await serviceClient
+          .from('businesses')
+          .update({
+            status: 'deleted',
+            deleted_at: new Date().toISOString(),
+            deleted_by: adminId
+          })
+          .eq('id', businessId);
+
+        if (error) {
+          results.failed++;
+          results.errors.push(`Business ${businessId}: ${error.message}`);
+        } else {
+          results.processed++;
+        }
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`Business ${businessId}: ${error.message || error}`);
+      }
+    }
+
+    // Log bulk operation
+    await serviceClient
+      .from('admin_audit_log')
+      .insert({
+        admin_id: adminId,
+        action: 'bulk_delete_businesses',
+        details: {
+          business_ids: businessIds,
+          processed: results.processed,
+          failed: results.failed,
+          errors: results.errors
+        },
+        created_at: new Date().toISOString()
+      });
+
+    revalidatePath('/admin/etablissements');
+
+    return {
+      ...results,
+      message: `${results.processed} établissements supprimés, ${results.failed} échecs`
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      processed: 0,
+      failed: businessIds.length,
+      errors: [error.message || 'Unknown error'],
+      message: 'Erreur lors de la suppression groupée.'
+    };
+  }
+}
+
+/**
+ * Request a logo from a business owner
+ */
+export async function requestLogo(businessId: string): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Get business details to find the owner
+    const { data: business, error: businessError } = await serviceClient
+      .from('businesses')
+      .select('user_id, name')
+      .eq('id', businessId)
+      .single();
+
+    if (businessError) {
+      return { status: 'error', message: `Erreur: ${businessError.message}` };
+    }
+
+    // Update the business record to mark logo as requested
+    const { error: updateError } = await serviceClient
+      .from('businesses')
+      .update({ logo_requested: true })
+      .eq('id', businessId);
+
+    if (updateError) {
+      return { status: 'error', message: `Erreur: ${updateError.message}` };
+    }
+
+    // Send notification to business owner if they exist
+    if (business.user_id) {
+      const { error: notificationError } = await serviceClient
+        .from('notifications')
+        .insert({
+          user_id: business.user_id,
+          title: 'Demande de logo reçue',
+          message: `Un administrateur a demandé un logo pour votre établissement "${business.name}". Veuillez ajouter un logo dans votre tableau de bord pour améliorer la visibilité de votre entreprise.`,
+          type: 'logo_request',
+          link: '/dashboard/edit-profile',
+          is_read: false
+        });
+
+      if (notificationError) {
+        console.error('Error sending logo request notification:', notificationError);
+        // Don't return error here as the main action succeeded
+      }
+    }
+
+    revalidatePath('/admin/etablissements');
+
+    // Log the action (if possible, or just revalidate)
+    try {
+      await logAuditAction({
+        adminId,
+        action: 'REQUEST_LOGO',
+        targetType: 'business',
+        targetId: businessId
+      });
+    } catch (e) {
+      logger.warn('Failed to log logo request audit', { businessId });
+    }
+
+    return {
+      status: 'success',
+      message: 'Demande de logo marquée pour cet établissement.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Update global site settings and invalidate cache
+ */
+export async function updateSiteSettings(settings: any): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const { error } = await serviceClient
+      .from('site_settings')
+      .upsert({ ...settings, updated_at: new Date().toISOString() });
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    // Invalidate site settings cache
+    revalidateTag('site-settings');
+    revalidatePath('/');
+
+    // Log the action
+    try {
+      await logAuditAction({
+        adminId,
+        action: 'UPDATE_SITE_SETTINGS',
+        targetType: 'site_settings',
+        targetId: 'main',
+        details: { keys: Object.keys(settings) }
+      });
+    } catch (e) {
+      logger.warn('Failed to log site settings update audit');
+    }
+
+    return {
+      status: 'success',
+      message: 'Paramètres mis à jour et cache vidé avec succès.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Toggle maintenance mode directly
+ */
+export async function toggleMaintenanceMode(enabled: boolean): Promise<AdminActionResult> {
+  const adminId = await verifyAdminSession();
+  const serviceClient = await createAdminClient();
+
+  const { error } = await serviceClient
+    .from('site_settings')
+    .update({
+      maintenance_mode: enabled,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', 'main');
+
+  if (error) {
+    return { status: 'error', message: `Erreur: ${error.message}` };
+  }
+
+  // Invalidate site settings cache
+  revalidateTag('site-settings');
+  revalidatePath('/');
+
+  // Log the action
+  await logAuditAction({
+    adminId,
+    action: 'TOGGLE_MAINTENANCE',
+    targetType: 'site_settings',
+    targetId: 'main',
+    details: { maintenance_mode: enabled }
+  });
+
+  return {
+    status: 'success',
+    message: enabled ? 'Mode maintenance ACTIVÉ' : 'Mode maintenance DÉSACTIVÉ'
+  };
+}
+
+/**
+ * Delete a user completely (admin only)
+ * This handles all related data and foreign key constraints properly
+ */
+export async function deleteUserCompletely(userId: string): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    // Prevent admin from deleting themselves
+    if (userId === adminId) {
+      return { status: 'error', message: 'Vous ne pouvez pas supprimer votre propre compte.' };
+    }
+
+    // Check if target is also an admin
+    const { data: targetProfile } = await serviceClient
+      .from('profiles')
+      .select('role, email')
+      .eq('id', userId)
+      .single();
+
+    if (targetProfile?.role === 'admin') {
+      return { status: 'error', message: 'Impossible de supprimer un administrateur.' };
+    }
+
+    // Call the database function to safely delete the user
+    const { data, error } = await serviceClient
+      .rpc('safe_delete_user', {
+        user_id_param: userId
+      });
+
+    if (error) {
+      console.error('Error calling safe_delete_user function:', error);
+      return { status: 'error', message: `Erreur DB: ${error.message}` };
+    }
+
+    // Log the action
+    await logAuditAction({
+      adminId,
+      action: 'DELETE_USER',
+      targetType: 'user',
+      targetId: userId,
+      details: {
+        email: targetProfile?.email,
+        deletion_results: data
+      }
+    });
+
+    revalidatePath('/admin/utilisateurs');
+
+    return {
+      status: 'success',
+      message: `Utilisateur supprimé avec succès. ${data?.profile_deleted ? 'Profil supprimé.' : ''}`,
+      data
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}

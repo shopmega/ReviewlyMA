@@ -1,0 +1,185 @@
+'use server';
+
+import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
+import { logger } from '@/lib/logger';
+import { SubscriptionTier } from '@/lib/types';
+
+export interface ExpiredPremiumResult {
+  status: 'success' | 'error';
+  message: string;
+  data?: {
+    usersAffected: number;
+    businessesAffected: number;
+  };
+}
+
+async function assertAuthorized(authToken?: string): Promise<void> {
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && authToken && authToken === cronSecret) {
+    return;
+  }
+
+  await verifyAdminSession();
+}
+
+/**
+ * Function to handle expired premium accounts by updating their status in the database
+ * This should be called periodically (e.g., via cron job) to update expired premium subscriptions
+ */
+export async function handleExpiredPremiumAccounts(authToken?: string): Promise<ExpiredPremiumResult> {
+  try {
+    await assertAuthorized(authToken);
+  } catch (error: any) {
+    return {
+      status: 'error',
+      message: error?.message || 'Non autorisé.',
+    };
+  }
+
+  try {
+    const serviceClient = await createAdminClient();
+
+    // Get current timestamp
+    const now = new Date().toISOString();
+
+    // Update profiles with expired premium status
+    const { data: expiredProfiles, error: profileError } = await serviceClient
+      .from('profiles')
+      .select('id, business_id')
+      .or('tier.in.(growth,pro),is_premium.eq.true')
+      .is('premium_expires_at', 'not null')
+      .lt('premium_expires_at', new Date().toISOString());
+
+    if (profileError) {
+      logger.error('Error fetching expired profiles', profileError);
+      return {
+        status: 'error',
+        message: `Error fetching expired profiles: ${profileError.message}`,
+      };
+    }
+
+    if (expiredProfiles && expiredProfiles.length > 0) {
+      // Update expired profiles
+      const profileIds = expiredProfiles.map(p => p.id);
+      
+      const { error: updateProfileError } = await serviceClient
+        .from('profiles')
+        .update({
+          is_premium: false,
+          tier: 'none' as SubscriptionTier,
+          updated_at: now
+        })
+        .in('id', profileIds);
+
+      if (updateProfileError) {
+        logger.error('Error updating expired profiles', updateProfileError);
+        return {
+          status: 'error',
+          message: `Error updating expired profiles: ${updateProfileError.message}`,
+        };
+      }
+
+      // Update associated businesses if they exist
+      const businessIds = expiredProfiles
+        .filter(p => p.business_id)
+        .map(p => p.business_id);
+      
+      let businessesAffected = 0;
+      if (businessIds.length > 0) {
+        const { error: updateBusinessError } = await serviceClient
+          .from('businesses')
+          .update({
+            is_premium: false,
+            tier: 'none' as SubscriptionTier,
+            updated_at: now
+          })
+          .in('id', businessIds);
+
+        if (updateBusinessError) {
+          logger.warn('Error updating expired businesses', updateBusinessError);
+          // Don't return error here as profiles were updated successfully
+        } else {
+          businessesAffected = businessIds.length;
+        }
+      }
+
+      // Log the expiration events
+      for (const profile of expiredProfiles) {
+        try {
+          // We'll use a direct SQL insert since we don't have a specific function for this
+          // Since the RPC function may not exist, we'll skip logging for now to avoid errors
+          // Future enhancement: create proper logging function for system-initiated premium changes
+        } catch (logError: any) {
+          logger.warn('Error logging premium expiration', { error: typeof logError === 'object' && logError?.message ? logError.message : String(logError), userId: profile.id });
+          // Continue processing other profiles even if logging fails
+        }
+      }
+
+      return {
+        status: 'success',
+        message: `${expiredProfiles.length} profiles and ${businessesAffected} businesses updated to non-premium status`,
+        data: {
+          usersAffected: expiredProfiles.length,
+          businessesAffected
+        }
+      };
+    } else {
+      return {
+        status: 'success',
+        message: 'No expired premium accounts found',
+        data: {
+          usersAffected: 0,
+          businessesAffected: 0
+        }
+      };
+    }
+  } catch (error: any) {
+    logger.error('Unexpected error in handleExpiredPremiumAccounts', error);
+    return {
+      status: 'error',
+      message: `Unexpected error: ${error.message || 'Unknown error'}`,
+    };
+  }
+}
+
+/**
+ * Function to get upcoming premium expirations for sending notifications
+ */
+export async function getUpcomingPremiumExpirations(daysAhead: number = 7, authToken?: string) {
+  try {
+    await assertAuthorized(authToken);
+  } catch (error: any) {
+    return { status: 'error', message: error?.message || 'Non autorisé.', data: [] };
+  }
+
+  try {
+    const serviceClient = await createAdminClient();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() + daysAhead);
+    const cutoffDateString = cutoffDate.toISOString();
+
+    const { data, error } = await serviceClient
+      .from('profiles')
+      .select(`
+        id,
+        email,
+        full_name,
+        tier,
+        premium_expires_at
+      `)
+      .or('tier.in.(growth,pro),is_premium.eq.true')
+      .is('premium_expires_at', 'not null')
+      .gte('premium_expires_at', new Date().toISOString())
+      .lte('premium_expires_at', cutoffDateString);
+
+    if (error) {
+      logger.error('Error fetching upcoming premium expirations', error);
+      return { status: 'error', message: error.message, data: [] };
+    }
+
+    return { status: 'success', message: 'Success', data };
+  } catch (error: any) {
+    logger.error('Unexpected error in getUpcomingPremiumExpirations', error);
+    return { status: 'error', message: error.message, data: [] };
+  }
+}

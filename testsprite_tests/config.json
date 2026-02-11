@@ -1,0 +1,25 @@
+{
+  "targetUrl": "http://localhost:9002",
+  "testType": "e2e",
+  "browser": "chromium",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "tests": [
+    {
+      "name": "Homepage Load Test",
+      "description": "Test if the homepage loads correctly",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "/"
+        },
+        {
+          "type": "waitForSelector",
+          "selector": "body"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+[
+  {
+    "id": "f1eabcae-77f9-4189-a9f7-8ed956dac070",
+    "name": "Banque & Finance",
+    "slug": "banque-finance",
+    "icon": "Landmark",
+    "position": 3,
+    "is_active": true,
+    "created_at": "2026-01-23T00:22:48.216428+00:00",
+    "updated_at": "2026-01-23T00:52:48.973517+00:00"
+  },
+  {
+    "id": "a79b7db5-df90-491d-8f3e-5cd841f314ca",
+    "name": "Centres d’Appel & BPO",
+    "slug": "centres-appel-bpo",
+    "icon": "Headphones",
+    "position": 8,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:53.436508+00:00",
+    "updated_at": "2026-01-23T00:52:50.683+00:00"
+  },
+  {
+    "id": "569536b3-7122-4238-a4a8-44dc60ded4fa",
+    "name": "Distribution & Commerce",
+    "slug": "distribution",
+    "icon": "ShoppingBag",
+    "position": 7,
+    "is_active": true,
+    "created_at": "2026-01-23T00:22:48.990826+00:00",
+    "updated_at": "2026-01-23T00:52:52.001837+00:00"
+  },
+  {
+    "id": "0de26bba-d405-4229-ab7c-ba0bb86f8d37",
+    "name": "Éducation & Formation",
+    "slug": "education-formation",
+    "icon": "GraduationCap",
+    "position": 11,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:55.62164+00:00",
+    "updated_at": "2026-01-23T00:52:52.868+00:00"
+  },
+  {
+    "id": "71e9895f-6fb8-4e16-9190-264148f2ea79",
+    "name": "Énergie & Environnement",
+    "slug": "energie-environnement",
+    "icon": "Zap",
+    "position": 13,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:57.022414+00:00",
+    "updated_at": "2026-01-23T00:52:54.264+00:00"
+  },
+  {
+    "id": "fa34b002-a389-433d-bcd2-fd8e69b6bc32",
+    "name": "Hôtels & Hébergement",
+    "slug": "hotels-hebergement",
+    "icon": "Hotel",
+    "position": 0,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:45.821099+00:00",
+    "updated_at": "2026-01-23T00:52:42.723+00:00"
+  },
+  {
+    "id": "eb571292-83e9-4f56-803b-031616636dd4",
+    "name": "Immobilier & Construction",
+    "slug": "immobilier-construction",
+    "icon": "Home",
+    "position": 12,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:56.302856+00:00",
+    "updated_at": "2026-01-23T00:52:53.549+00:00"
+  },
+  {
+    "id": "39894919-82e3-479d-93b4-ae8ae645abb8",
+    "name": "Industrie & Chimie",
+    "slug": "industrie-chimie",
+    "icon": "Factory",
+    "position": 1,
+    "is_active": true,
+    "created_at": "2026-01-23T00:22:47.801498+00:00",
+    "updated_at": "2026-01-23T00:52:47.088257+00:00"
+  },
+  {
+    "id": "6610e46a-9d39-406a-a7ba-e44c8455cfa8",
+    "name": "Restauration & Alimentation",
+    "slug": "restauration-alimentation",
+    "icon": "Utensils",
+    "position": 10,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:54.867748+00:00",
+    "updated_at": "2026-01-23T00:52:52.114+00:00"
+  },
+  {
+    "id": "88d1dfb4-4066-40ad-906a-9c1d1f629f55",
+    "name": "Santé & Bien-être",
+    "slug": "sante-bien-etre",
+    "icon": "Heart",
+    "position": 9,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:54.153292+00:00",
+    "updated_at": "2026-01-23T00:52:51.397+00:00"
+  },
+  {
+    "id": "f8ef6946-ad56-472f-8eb4-6c8d70c18712",
+    "name": "Services Professionnels",
+    "slug": "services-professionnels",
+    "icon": "Briefcase",
+    "position": 6,
+    "is_active": true,
+    "created_at": "2026-01-23T00:10:47.320656+00:00",
+    "updated_at": "2026-01-23T00:52:51.287405+00:00"
+  },
+  {
+    "id": "e483e12e-609a-4f69-9c71-8ed3b4035fd7",
+    "name": "Technologie & IT",
+    "slug": "technologie-it",
+    "icon": "Laptop",
+    "position": 4,
+    "is_active": true,
+    "created_at": "2026-01-23T00:22:47.341668+00:00",
+    "updated_at": "2026-01-23T00:52:49.769006+00:00"
+  },
+  {
+    "id": "c2a8d164-6b68-4a24-8af2-cb7b93eeb807",
+    "name": "Télécommunications",
+    "slug": "telecommunications",
+    "icon": "Wifi",
+    "position": 2,
+    "is_active": true,
+    "created_at": "2026-01-23T00:52:48.063475+00:00",
+    "updated_at": "2026-01-23T00:52:45.292+00:00"
+  },
+  {
+    "id": "34b9947f-8717-4b45-aec6-55b9676115e9",
+    "name": "Transport & Logistique",
+    "slug": "transport-logistique",
+    "icon": "Truck",
+    "position": 5,
+    "is_active": true,
+    "created_at": "2026-01-23T00:22:48.518651+00:00",
+    "updated_at": "2026-01-23T00:52:50.580635+00:00"
+  }
+]

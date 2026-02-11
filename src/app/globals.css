@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Premium Light Mode */
+    --background: 210 40% 98%;
+    /* Soft White */
+    --foreground: 224 71% 4%;
+    /* Deep Navy */
+
+    --card: 0 0% 100%;
+    /* Pure White */
+    --card-foreground: 224 71% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+
+    --primary: 221 83% 53%;
+    /* Professional Blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 221 83% 96%;
+    /* Light Blue Tint */
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 343 85% 55%;
+    /* Softer Red */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 1rem;
+    /* More rounded corners (16px) */
+
+    /* Status Colors */
+    --success: 150 60% 40%;
+    --warning: 35 90% 50%;
+    --error: 343 85% 55%;
+    --info: 210 80% 55%;
+
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 224 71% 4%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 221 83% 53%;
+  }
+
+  .dark {
+    /* Premium Dark Mode - Deep Space Theme */
+    --background: 224 71% 4%;
+    /* Very Deep Navy (almost black) */
+    --foreground: 210 40% 98%;
+
+    --card: 224 71% 8%;
+    /* Slightly lighter Navy */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 71% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    /* Lighter Blue for Dark Mode */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 224 71% 12%;
+    /* Lighter Navy for secondary elements */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 224 71% 12%;
+    --muted-foreground: 215 20% 70%;
+
+    --accent: 224 71% 12%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 343 85% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 224 71% 15%;
+    /* Subtle border */
+    --input: 224 71% 12%;
+    --ring: 217 91% 60%;
+
+    /* Status Colors - Brighter for Dark Mode */
+    --success: 150 60% 50%;
+    --warning: 35 90% 60%;
+    --error: 343 85% 60%;
+    --info: 210 80% 65%;
+
+    --sidebar-background: 224 71% 5%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 224 71% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 224 71% 15%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Premium Utilities */
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm dark:bg-black/30 dark:border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 dark:to-blue-400;
+  }
+
+  body {
+    @apply bg-background text-foreground selection:bg-primary/20 overflow-x-hidden;
+    /* Subtle noise texture or gradient could be added here */
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-secondary/30 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary/40 rounded-full hover:bg-primary/60 transition-colors;
+  }
+
+  /* Mobile-specific utilities */
+  @media (max-width: 768px) {
+    .touch-manipulation {
+      touch-action: manipulation;
+    }
+  }
+}
