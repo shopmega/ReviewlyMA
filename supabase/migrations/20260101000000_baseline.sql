@@ -36,6 +36,23 @@ begin
 end;
 $$;
 
+create or replace function public.is_admin_user(p_uid uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = p_uid
+      and role = 'admin'
+  );
+$$;
+
+revoke all on function public.is_admin_user(uuid) from public;
+grant execute on function public.is_admin_user(uuid) to authenticated, anon, service_role;
+
 -- businesses
 create table if not exists public.businesses (
   id text primary key,
@@ -193,9 +210,7 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 do $$ begin
-  create policy "Admins can view all profiles" on public.profiles for select using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  create policy "Admins can view all profiles" on public.profiles for select using (public.is_admin_user(auth.uid()));
 exception when duplicate_object then null; end $$;
 
 do $$ begin
@@ -2010,8 +2025,8 @@ grant execute on function public.safe_delete_user(uuid) to service_role;
 -- ---- Fragment: supabase/_baseline_fragments/storage_config.sql ----
 
 -- Storage buckets + RLS policies for buckets referenced by src/
-
-alter table storage.objects enable row level security;
+-- Note: On some Supabase projects, migration role is not owner of storage.objects.
+-- We intentionally avoid ALTER/GRANT operations that require table ownership.
 
 insert into storage.buckets (id, name, public, avif_autodetection, file_size_limit, allowed_mime_types)
 values
@@ -2020,66 +2035,9 @@ values
   ('carousel-images', 'carousel-images', true, true, 104857600, '{image/jpeg,image/png,image/webp,image/gif,image/svg+xml}')
 on conflict (id) do nothing;
 
-do $$ begin
-  create policy "Allow authenticated users to upload claim proofs"
-    on storage.objects for insert to authenticated
-    with check (bucket_id = 'claim-proofs');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to update claim proofs"
-    on storage.objects for update to authenticated
-    using (bucket_id = 'claim-proofs');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to delete claim proofs"
-    on storage.objects for delete to authenticated
-    using (bucket_id = 'claim-proofs');
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  create policy "Allow public read access to business images"
-    on storage.objects for select to public
-    using (bucket_id = 'business-images');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to upload business images"
-    on storage.objects for insert to authenticated
-    with check (bucket_id = 'business-images');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to update business images"
-    on storage.objects for update to authenticated
-    using (bucket_id = 'business-images');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to delete business images"
-    on storage.objects for delete to authenticated
-    using (bucket_id = 'business-images');
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  create policy "Allow public read access to carousel images"
-    on storage.objects for select to public
-    using (bucket_id = 'carousel-images');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to upload carousel images"
-    on storage.objects for insert to authenticated
-    with check (bucket_id = 'carousel-images');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to update carousel images"
-    on storage.objects for update to authenticated
-    using (bucket_id = 'carousel-images');
-exception when duplicate_object then null; end $$;
-do $$ begin
-  create policy "Allow authenticated users to delete carousel images"
-    on storage.objects for delete to authenticated
-    using (bucket_id = 'carousel-images');
-exception when duplicate_object then null; end $$;
-
-grant usage on schema storage to authenticated;
-grant all on storage.objects to authenticated;
+-- storage.objects RLS/policies must be configured by an owner-capable role.
+-- This baseline intentionally skips policy creation to avoid 42501 failures
+-- on reset projects where migration role does not own storage.objects.
 
 
 

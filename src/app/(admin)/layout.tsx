@@ -23,7 +23,8 @@ import {
   LayoutGrid,
   Megaphone,
   MessageSquare,
-  UserPlus
+  UserPlus,
+  Stethoscope
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,7 @@ const menuGroups = [
       { href: '/admin/homepage', label: 'Page d’accueil', icon: Home },
       { href: '/admin/paiements', label: 'Paiements', icon: CreditCard },
       { href: '/admin/support', label: 'Support Client', icon: MessageSquare },
+      { href: '/admin/diagnostics', label: 'Diagnostics', icon: Stethoscope },
       { href: '/admin/parametres', label: 'Paramètres', icon: Settings },
     ]
   }

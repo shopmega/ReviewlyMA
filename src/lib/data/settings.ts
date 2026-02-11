@@ -31,6 +31,9 @@ export type SiteSettings = {
     site_logo_url?: string;
     google_analytics_id?: string;
     facebook_pixel_id?: string;
+    adsense_enabled?: boolean;
+    adsense_client_id?: string;
+    adsense_auto_ads_enabled?: boolean;
     office_address?: string;
     office_phone?: string;
     copyright_text?: string;
@@ -75,6 +78,9 @@ export const getDefaultSettings = (): SiteSettings => ({
     site_logo_url: undefined,
     google_analytics_id: undefined,
     facebook_pixel_id: undefined,
+    adsense_enabled: false,
+    adsense_client_id: undefined,
+    adsense_auto_ads_enabled: false,
     office_address: 'Casablanca, Morocco',
     office_phone: undefined,
     copyright_text: `&copy; ${new Date().getFullYear()} Platform. Designé avec excellence à Casablanca.`,
@@ -159,6 +165,9 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                     site_logo_url: data.site_logo_url || null,
                     google_analytics_id: data.google_analytics_id || null,
                     facebook_pixel_id: data.facebook_pixel_id || null,
+                    adsense_enabled: data.adsense_enabled ?? false,
+                    adsense_client_id: data.adsense_client_id || null,
+                    adsense_auto_ads_enabled: data.adsense_auto_ads_enabled ?? false,
                     office_address: data.office_address || 'Casablanca, Morocco',
                     office_phone: data.office_phone || data.support_phone || null,
                     copyright_text: data.copyright_text || `&copy; ${new Date().getFullYear()} {site_name}. Designé avec excellence à Casablanca.`,

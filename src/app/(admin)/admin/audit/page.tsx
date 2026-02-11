@@ -49,6 +49,7 @@ interface AuditLog {
 
 export default function AuditLogsPage() {
     const [logs, setLogs] = useState<AuditLog[]>([]);
+    const [monthActions, setMonthActions] = useState(0);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
     const [searchQuery, setSearchQuery] = useState('');
@@ -74,6 +75,26 @@ export default function AuditLogsPage() {
             toast({ title: "Erreur Supabase", description: error.message, variant: "destructive" });
             setLoading(false);
             return;
+        }
+
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const startOfNextMonth = new Date(startOfMonth);
+        startOfNextMonth.setMonth(startOfNextMonth.getMonth() + 1);
+
+        const { count: monthCount, error: monthCountError } = await supabase
+            .from('audit_logs')
+            .select('id', { count: 'exact', head: true })
+            .gte('created_at', startOfMonth.toISOString())
+            .lt('created_at', startOfNextMonth.toISOString());
+
+        if (monthCountError) {
+            console.error('Error fetching monthly audit count:', monthCountError);
+            setMonthActions(0);
+        } else {
+            setMonthActions(monthCount || 0);
         }
 
         // Then, fetch profile information for each unique admin_id
@@ -157,7 +178,7 @@ export default function AuditLogsPage() {
                             </div>
                             <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/20 text-emerald-600">Sync</Badge>
                         </div>
-                        <p className="text-3xl font-black tabular-nums">1.2k</p>
+                        <p className="text-3xl font-black tabular-nums">{monthActions}</p>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Actions ce mois</p>
                     </CardContent>
                 </Card>

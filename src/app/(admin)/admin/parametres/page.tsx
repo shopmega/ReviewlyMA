@@ -74,6 +74,9 @@ type SiteSettings = {
     site_logo_url: string | null;
     google_analytics_id: string | null;
     facebook_pixel_id: string | null;
+    adsense_enabled: boolean;
+    adsense_client_id: string | null;
+    adsense_auto_ads_enabled: boolean;
     office_address: string | null;
     office_phone: string | null;
     copyright_text: string | null;
@@ -122,6 +125,9 @@ const defaultSettings: SiteSettings = {
     site_logo_url: '',
     google_analytics_id: '',
     facebook_pixel_id: '',
+    adsense_enabled: false,
+    adsense_client_id: '',
+    adsense_auto_ads_enabled: false,
     office_address: '',
     office_phone: '',
     copyright_text: '',
@@ -536,6 +542,40 @@ export default function SettingsPage() {
                                                 placeholder="ID de votre pixel..."
                                                 className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                             />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <Label htmlFor="adsense_client_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Google AdSense Client ID</Label>
+                                            <Input
+                                                id="adsense_client_id"
+                                                value={settings.adsense_client_id || ''}
+                                                onChange={(e) => updateSetting('adsense_client_id', e.target.value)}
+                                                placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+                                                className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-950/50 border border-border/20">
+                                                <div>
+                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Activer AdSense</Label>
+                                                </div>
+                                                <Switch
+                                                    checked={settings.adsense_enabled}
+                                                    onCheckedChange={(checked) => updateSetting('adsense_enabled', checked)}
+                                                    className="data-[state=checked]:bg-emerald-500"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-950/50 border border-border/20">
+                                                <div>
+                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Auto Ads</Label>
+                                                </div>
+                                                <Switch
+                                                    checked={settings.adsense_auto_ads_enabled}
+                                                    onCheckedChange={(checked) => updateSetting('adsense_auto_ads_enabled', checked)}
+                                                    className="data-[state=checked]:bg-emerald-500"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

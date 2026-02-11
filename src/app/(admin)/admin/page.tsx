@@ -14,7 +14,8 @@ import {
   PlusCircle,
   LayoutGrid,
   FileImage,
-  Settings
+  Settings,
+  Stethoscope
 } from "lucide-react";
 import Link from "next/link";
 import { getAdminStats } from "@/lib/admin-utils";
@@ -182,6 +183,7 @@ export default async function AdminDashboard() {
               {[
                 { name: 'Modérer les médias', href: '/admin/contenu', icon: FileImage },
                 { name: 'Gestion des paiements', href: '/admin/paiements', icon: CreditCard },
+                { name: 'Diagnostics systeme', href: '/admin/diagnostics', icon: Stethoscope },
                 { name: 'Configuration du site', href: '/admin/parametres', icon: Settings },
               ].map((tool) => (
                 <Link
