@@ -66,13 +66,30 @@ export function ReviewForm({ businessId, businessName }: ReviewFormProps) {
     }
 
     if (state.status === 'success') {
+      const isPublished = Boolean(state.data?.published);
       toast({
-        title: 'Avis soumis !',
-        description: state.message || 'Merci ! Votre avis est en cours de validation.',
+        title: isPublished ? 'Avis publié !' : 'Avis soumis !',
+        description: state.message || (isPublished
+          ? 'Merci ! Votre avis est maintenant visible.'
+          : 'Merci ! Votre avis est en cours de validation.'),
       });
-      router.push(`/businesses/${businessId}`);
+      if (isPublished) {
+        router.push(`/businesses/${businessId}`);
+      } else {
+        form.reset({
+          businessId,
+          title: '',
+          text: '',
+          rating: 0,
+          isAnonymous: true,
+          subRatingWorkLifeBalance: 0,
+          subRatingManagement: 0,
+          subRatingCareerGrowth: 0,
+          subRatingCulture: 0,
+        });
+      }
     }
-  }, [state.status, state.message, state.errors, toast, router, businessId]);
+  }, [state.status, state.message, state.errors, state.data, toast, router, businessId, form]);
 
   return (
     <Card className="w-full border border-border/50 shadow-none bg-card">

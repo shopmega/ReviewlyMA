@@ -1,7 +1,7 @@
 'use client';
 
 import { Business } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
 import { BusinessMap } from '@/components/shared/BusinessMap';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -57,13 +57,18 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
         trackBusinessEvent(business.id, 'affiliate_click');
     };
 
+    const displayLocation = business.location || business.address || '';
+    const normalizedWebsite = business.website
+        ? (business.website.startsWith('http://') || business.website.startsWith('https://')
+            ? business.website
+            : `https://${business.website}`)
+        : null;
+
     return (
         <div className="sticky top-28 space-y-6">
             {/* Quick Info Card */}
             <div className="glass-card rounded-2xl overflow-hidden p-0 border border-border/50">
-                <div className="h-48 relative">
-                    <BusinessMap location={business.location} businessName={business.name} />
-                </div>
+                <BusinessMap location={displayLocation} businessName={business.name} />
                 <CardContent className="p-6 space-y-6">
                     {/* Contact Info */}
                     <div className="space-y-3">
@@ -79,9 +84,9 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
                                 <span className="font-bold font-headline">{business.phone}</span>
                             </a>
                         )}
-                        {business.website && (
+                        {normalizedWebsite && (
                             <a
-                                href={business.website}
+                                href={normalizedWebsite}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={handleWebsiteClick}
@@ -94,14 +99,14 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
                             </a>
                         )}
 
-                        {business.location && (
+                        {displayLocation && (
                             <div className="flex items-start gap-4 text-sm font-medium text-foreground p-4 rounded-xl bg-secondary/30 border border-transparent">
                                 <div className="p-2 rounded-full bg-background border border-border shadow-sm shrink-0">
                                     <MapPin className="w-4 h-4 text-primary" />
                                 </div>
                                 <div className="flex flex-col gap-0.5">
                                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Adresse</span>
-                                    <span className="font-bold font-headline leading-tight">{business.location}</span>
+                                    <span className="font-bold font-headline leading-tight">{displayLocation}</span>
                                     {business.quartier && business.city && (
                                         <span className="text-xs text-muted-foreground">{business.quartier}, {business.city}</span>
                                     )}

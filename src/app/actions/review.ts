@@ -110,7 +110,24 @@ export async function submitReview(
 
     const author_name = isAnonymous ? 'Anonyme' : (user?.user_metadata?.full_name || `Utilisateur ${Math.floor(Math.random() * 10000)}`);
 
-    let reviewData = {
+    let reviewStatus: 'pending' | 'published' = 'pending';
+
+    let reviewData: {
+      business_id: string;
+      user_id: string | null;
+      author_name: string;
+      is_anonymous: boolean;
+      rating: number;
+      title: string;
+      content: string;
+      sub_ratings: {
+        work_life_balance: number | null;
+        management: number | null;
+        career_growth: number | null;
+        culture: number | null;
+      };
+      status: 'pending' | 'published';
+    } = {
       business_id: businessId,
       user_id: user ? user.id : null, // Always link to user if logged in, even if anonymous
       author_name: author_name,
@@ -124,7 +141,7 @@ export async function submitReview(
         career_growth: validatedFields.data.subRatingCareerGrowth || null,
         culture: validatedFields.data.subRatingCulture || null,
       },
-      status: 'pending',
+      status: reviewStatus,
     };
 
     // Check if user is admin or has auto_approve_media flag
@@ -136,7 +153,8 @@ export async function submitReview(
         .single();
 
       if (profile?.role === 'admin' || profile?.auto_approve_media === true) {
-        reviewData = { ...reviewData, status: 'published' };
+        reviewStatus = 'published';
+        reviewData = { ...reviewData, status: reviewStatus };
       }
     }
 
@@ -170,7 +188,10 @@ export async function submitReview(
 
     revalidatePath(`/businesses/${businessId}`);
     return createSuccessResponse(
-      'Votre avis a été soumis avec succès et est en attente de modération.'
+      reviewStatus === 'published'
+        ? 'Votre avis a été publié avec succès.'
+        : 'Votre avis a été soumis avec succès et est en attente de modération.',
+      { published: reviewStatus === 'published' }
     ) as ReviewFormState;
 
   } catch (error) {

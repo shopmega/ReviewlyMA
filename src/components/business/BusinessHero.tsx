@@ -41,7 +41,7 @@ export function BusinessHero({ business, isFollowing = false }: BusinessHeroProp
     }, [business.hours]);
 
     return (
-        <div className="relative w-full h-[55vh] md:h-[65vh] min-h-[500px] flex items-end group shadow-2xl">
+        <div className="relative w-full h-[38vh] md:h-[48vh] min-h-[340px] md:min-h-[420px] flex items-end group shadow-2xl">
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <BusinessCover
                     business={business}

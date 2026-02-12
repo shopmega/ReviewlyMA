@@ -17,6 +17,7 @@ export const DAY_NAMES: Record<number, DayHours['day']> = {
 export const mapBusinessFromDB = (dbItem: any): Business => {
     const logoUrl = getStoragePublicUrl(dbItem.logo_url, 'business-images');
     const coverUrl = getStoragePublicUrl(dbItem.cover_url, 'business-images');
+    const publishedReviews = (dbItem.reviews || []).filter((r: any) => !r.status || r.status === 'published');
 
     const galleryUrls = parsePostgresArray(dbItem.gallery_urls);
 
@@ -44,13 +45,11 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
         subcategory: dbItem.subcategory,
         city: dbItem.city,
         quartier: dbItem.quartier,
-        location: dbItem.location,
+        location: dbItem.location || dbItem.address,
+        address: dbItem.address,
         description: dbItem.description,
-        overallRating: Number(dbItem.overall_rating) || (dbItem.reviews?.length > 0
-            ? dbItem.reviews
-                .filter((r: any) => r.status === 'published')
-                .reduce((sum: number, r: any) => sum + r.rating, 0) /
-            dbItem.reviews.filter((r: any) => r.status === 'published').length
+        overallRating: Number(dbItem.overall_rating) || (publishedReviews.length > 0
+            ? publishedReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / publishedReviews.length
             : 0),
         type: 'company' as const,
 
@@ -74,7 +73,7 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
             const dayOrder = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
             return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
         }) || [],
-        reviews: dbItem.reviews?.map((r: any) => ({
+        reviews: publishedReviews.map((r: any) => ({
             id: r.id,
             rating: r.rating,
             title: r.title,

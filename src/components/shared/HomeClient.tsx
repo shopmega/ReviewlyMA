@@ -143,15 +143,19 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         return {
             topRatedCompanies: topCompanies,
             featuredBusinesses: featured,
-            reviewCount: businesses.reduce((acc, c) => acc + c.reviews.length, 0) + 150,
-            businessCount: businesses.length + 25,
+            reviewCount: businesses.reduce((acc, c) => {
+                const typedReviewCount = Array.isArray(c.reviews) ? c.reviews.length : 0;
+                const fallbackReviewCount = typeof (c as any).review_count === 'number' ? (c as any).review_count : 0;
+                return acc + (typedReviewCount || fallbackReviewCount);
+            }, 0),
+            businessCount: businesses.length,
         };
     }, [businesses, selectedCity, featuredBusinesses]);
 
 
     const stats = [
-        { name: 'Établissements', value: `+${businessCount.toLocaleString('fr-MA')}`, icon: <Building className="w-6 h-6 text-accent" /> },
-        { name: 'Avis employés', value: `+${reviewCount.toLocaleString('fr-MA')}`, icon: <Star className="w-6 h-6 text-accent" /> },
+        { name: 'Établissements', value: businessCount.toLocaleString('fr-MA'), icon: Building },
+        { name: 'Avis employés', value: reviewCount.toLocaleString('fr-MA'), icon: Star },
     ];
 
     const renderSection = (id: string) => {
@@ -259,10 +263,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return (
                     <section key="stats" className="container mx-auto px-4 mt-8 md:-mt-16 relative z-20">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-                            {stats.map((stat, i) => (
+                            {stats.map((stat) => (
                                 <div key={stat.name} className="glass-card p-6 rounded-2xl shadow-xl flex items-center gap-6 transform hover:-translate-y-1 transition-transform duration-300">
                                     <div className="p-4 bg-primary/10 rounded-full text-primary">
-                                        {stat.icon}
+                                        <stat.icon className="w-6 h-6 text-primary" />
                                     </div>
                                     <div>
                                         <p className="text-3xl font-bold font-headline">{stat.value}</p>
