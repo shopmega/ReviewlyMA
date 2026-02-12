@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/expire-premium",
+      "schedule": "10 3 * * *"
+    }
+  ]
+}
+
