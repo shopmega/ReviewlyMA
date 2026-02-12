@@ -10,12 +10,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData, type AuthFormState } from '@/lib/types';
 import { login } from '@/app/actions/auth';
 import { useActionState } from 'react';
-import { useEffect, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { createClient } from '@/lib/supabase/client';
 
 const initialState: AuthFormState = {
   status: 'idle',
@@ -28,6 +29,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [oauthPending, setOauthPending] = useState(false);
+  const supabase = createClient();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -75,6 +78,25 @@ export default function LoginPage() {
     });
   };
 
+  const handleLinkedInLogin = async () => {
+    setOauthPending(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      setOauthPending(false);
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: error.message || 'Impossible de démarrer la connexion LinkedIn.',
+      });
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/10 to-accent/10">
       <div className="w-full max-w-md space-y-8">
@@ -97,9 +119,23 @@ export default function LoginPage() {
                 <span className="bg-card/60 px-2 text-muted-foreground">Continuer avec</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="bg-card/80" type="button" disabled>Google</Button>
-              <Button variant="outline" className="bg-card/80" type="button" disabled>LinkedIn</Button>
+            <div className="grid grid-cols-1 gap-4">
+              <Button
+                variant="outline"
+                className="bg-card/80"
+                type="button"
+                onClick={handleLinkedInLogin}
+                disabled={oauthPending || isPending}
+              >
+                {oauthPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connexion LinkedIn...
+                  </>
+                ) : (
+                  'Continuer avec LinkedIn'
+                )}
+              </Button>
             </div>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

@@ -17,6 +17,7 @@ import { getSiteSettings } from '@/lib/data';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { createClient } from '@/lib/supabase/client';
 
 
 export default function SignupPage() {
@@ -25,6 +26,8 @@ export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [oauthPending, setOauthPending] = useState(false);
+  const supabase = createClient();
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -84,6 +87,25 @@ export default function SignupPage() {
     });
   };
 
+  const handleLinkedInSignup = async () => {
+    setOauthPending(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      setOauthPending(false);
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: error.message || 'Impossible de démarrer l’inscription LinkedIn.',
+      });
+    }
+  };
+
   if (settings && settings.allow_new_registrations === false) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/10 to-accent/10">
@@ -127,6 +149,40 @@ export default function SignupPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card/60 px-2 text-muted-foreground">Continuer avec</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <Button
+                variant="outline"
+                className="bg-card/80"
+                type="button"
+                onClick={handleLinkedInSignup}
+                disabled={oauthPending || isPending}
+              >
+                {oauthPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Inscription LinkedIn...
+                  </>
+                ) : (
+                  'Continuer avec LinkedIn'
+                )}
+              </Button>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card/60 px-2 text-muted-foreground">Ou avec votre e-mail</span>
+              </div>
+            </div>
             {state.status === 'error' && !state.errors && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
