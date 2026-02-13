@@ -129,7 +129,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         reviewCount,
         businessCount,
     } = useMemo(() => {
-        const cityBusinesses = businesses.filter(b => b.location.includes(selectedCity));
+        const cityBusinesses = businesses.filter((b) => {
+            const location = b.location || b.city || '';
+            return location.includes(selectedCity);
+        });
 
         const topCompanies = cityBusinesses
             .filter(b => b.type === 'company' || b.type === 'commerce')
