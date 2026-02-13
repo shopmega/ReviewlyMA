@@ -32,6 +32,16 @@ const serverActionAllowedOrigins = Array.from(
   )
 );
 
+const supabaseImageHosts = Array.from(
+  new Set(
+    [
+      hostFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL),
+      // Legacy project host kept for backward compatibility with already-stored URLs.
+      'vsqzhlpntcbamdbqvyoq.supabase.co',
+    ].filter(Boolean) as string[]
+  )
+);
+
 const nextConfig: NextConfig = {
   /* config options here */
   outputFileTracingRoot: process.cwd(),
@@ -52,6 +62,7 @@ const nextConfig: NextConfig = {
     // Fix Server Actions header issues
     serverActions: {
       allowedOrigins: serverActionAllowedOrigins,
+      bodySizeLimit: '8mb',
     },
     // Disable problematic features that cause RSC issues
     ppr: false,
@@ -106,12 +117,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'vsqzhlpntcbamdbqvyoq.supabase.co',
+      ...supabaseImageHosts.map((hostname) => ({
+        protocol: 'https' as const,
+        hostname,
         port: '',
         pathname: '/storage/v1/object/public/**',
-      },
+      })),
       {
         protocol: 'https',
         hostname: 'image.cnbcfm.com',

@@ -66,7 +66,13 @@ export default function ReviewReportsPage() {
       // Mark all pending/unread as read when admin views the list
       const unreadIds = data.filter(r => !r.is_read).map(r => r.id);
       if (unreadIds.length > 0) {
-        supabase.from('review_reports').update({ is_read: true }).in('id', unreadIds);
+        const { error: readError } = await supabase
+          .from('review_reports')
+          .update({ is_read: true })
+          .in('id', unreadIds);
+        if (readError) {
+          console.error('Error marking review reports as read:', readError);
+        }
       }
     }
     setLoading(false);

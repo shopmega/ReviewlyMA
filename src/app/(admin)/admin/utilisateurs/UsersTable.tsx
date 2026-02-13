@@ -37,8 +37,8 @@ export function UsersTable({ users, searchQuery = '' }: UsersTableProps) {
 
   // Filter users based on search query
   const filteredUsers = users.filter(user =>
-    user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    (user.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.email || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getRoleBadge = (role: string) => {

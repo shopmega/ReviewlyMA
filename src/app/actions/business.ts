@@ -205,7 +205,7 @@ export async function submitUpdate(
             .insert({
                 business_id: businessId,
                 title,
-                text: content,
+                content,
                 date: new Date().toISOString().split('T')[0]
             });
 

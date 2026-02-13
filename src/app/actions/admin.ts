@@ -25,6 +25,22 @@ export interface BulkOperationResult {
   message: string;
 }
 
+function slugifyForBusinessId(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
+function buildDeterministicBusinessId(name: string, city: string): string {
+  return slugifyForBusinessId(`${name}-${city}`);
+}
+
 /**
  * Toggle a user's premium status
  * Logs the change in premium_audit_log for compliance and tracking
@@ -241,20 +257,12 @@ export async function createBusiness(data: {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
 
-    // Generate a basic slug
-    const slug = data.name
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-
-    // Append random string to ensure uniqueness
-    const uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+    const businessId = buildDeterministicBusinessId(data.name, data.city);
 
     const { data: business, error } = await serviceClient
       .from('businesses')
-      .insert({
-        id: uniqueSlug,
+      .upsert({
+        id: businessId,
         name: data.name,
         category: data.category,
         city: data.city,
@@ -265,7 +273,7 @@ export async function createBusiness(data: {
         status: 'active',
         overall_rating: 0,
         review_count: 0
-      })
+      }, { onConflict: 'id' })
       .select()
       .single();
 
@@ -314,21 +322,13 @@ export async function approveBusinessSuggestion(suggestionId: string, reviewNote
       return { status: 'error', message: 'Cette suggestion a déjà été traitée.' };
     }
 
-    // Generate a basic slug
-    const slug = suggestion.name
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+    const businessId = buildDeterministicBusinessId(suggestion.name, suggestion.city);
 
-    // Append random string to ensure uniqueness
-    const uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
-
-    // Create the business
+    // Create or update the business idempotently.
     const { data: business, error: createError } = await serviceClient
       .from('businesses')
-      .insert({
-        id: uniqueSlug,
+      .upsert({
+        id: businessId,
         name: suggestion.name,
         category: suggestion.category,
         city: suggestion.city,
@@ -340,7 +340,7 @@ export async function approveBusinessSuggestion(suggestionId: string, reviewNote
         tier: 'none',
         overall_rating: 0,
         review_count: 0
-      })
+      }, { onConflict: 'id' })
       .select()
       .single();
 

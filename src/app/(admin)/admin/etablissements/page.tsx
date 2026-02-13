@@ -71,7 +71,10 @@ type Business = {
 
 export default function BusinessesAdminPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [cities, setCities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -79,6 +82,8 @@ export default function BusinessesAdminPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all'); // all, claimed, unclaimed
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [isProcessingBulk, setIsProcessingBulk] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(24);
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -99,17 +104,80 @@ export default function BusinessesAdminPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchBusinesses();
+    fetchCities();
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, filterCity, filterStatus, pageSize, viewMode]);
+
+  useEffect(() => {
+    fetchBusinesses();
+  }, [currentPage, pageSize, debouncedSearchQuery, filterCity, filterStatus]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageEnd = pageStart + pageSize;
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  async function fetchCities() {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('city')
+        .not('city', 'is', null)
+        .order('city');
+
+      if (!error && data) {
+        const unique = Array.from(new Set(data.map((r: any) => r.city).filter(Boolean)));
+        setCities(unique as string[]);
+      }
+    } catch (err) {
+      console.error('Error fetching cities:', err);
+    }
+  }
 
   async function fetchBusinesses() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
         .from('businesses')
-        .select('*')
-        .order('name');
+        .select('*', { count: 'exact' });
+
+      const q = debouncedSearchQuery.trim();
+      if (q) {
+        const safeQ = q.replace(/,/g, ' ');
+        query = query.or(`name.ilike.%${safeQ}%,category.ilike.%${safeQ}%,address.ilike.%${safeQ}%`);
+      }
+
+      if (filterCity !== 'all') {
+        query = query.eq('city', filterCity);
+      }
+
+      if (filterStatus === 'claimed') {
+        query = query.not('user_id', 'is', null);
+      } else if (filterStatus === 'unclaimed') {
+        query = query.is('user_id', null);
+      }
+
+      const { data, error, count } = await query
+        .order('name')
+        .range(from, to);
 
       if (error) {
         console.error('Error fetching businesses:', error);
@@ -118,29 +186,17 @@ export default function BusinessesAdminPage() {
           description: error.message || 'Impossible de récupérer les entreprises.',
           variant: 'destructive',
         });
-      } else if (data) {
-        setBusinesses(data);
+      } else {
+        setBusinesses((data || []) as Business[]);
+        setTotalCount(count || 0);
       }
     } catch (err) {
       console.error(err);
+      setBusinesses([]);
+      setTotalCount(0);
     }
     setLoading(false);
   }
-
-  const cities = Array.from(new Set(businesses.map(b => b.city).filter(Boolean))) as string[];
-
-  const filteredBusinesses = businesses.filter(business => {
-    const matchesSearch = business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ((business as any).address || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      business.category.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesCity = filterCity === 'all' || business.city === filterCity;
-    const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'claimed' && !!business.user_id) ||
-      (filterStatus === 'unclaimed' && !business.user_id);
-
-    return matchesSearch && matchesCity && matchesStatus;
-  });
 
   const toggleFeatured = async (id: string, currentStatus: boolean) => {
     setActionLoading(id);
@@ -224,10 +280,13 @@ export default function BusinessesAdminPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filteredBusinesses.length && filteredBusinesses.length > 0) {
-      setSelectedIds([]);
+    const visibleIds = businesses.map((b) => b.id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+
+    if (allVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
     } else {
-      setSelectedIds(filteredBusinesses.map(b => b.id));
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
     }
   };
 
@@ -244,7 +303,7 @@ export default function BusinessesAdminPage() {
             Gestion <span className="text-primary italic">Établissements</span>
           </h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2 text-sm">
-            <Building className="h-4 w-4" /> {businesses.length} entreprises dans la base de données
+            <Building className="h-4 w-4" /> {totalCount} entreprises dans la base de données
           </p>
         </div>
 
@@ -399,7 +458,7 @@ export default function BusinessesAdminPage() {
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
               <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Syncing CRM...</p>
             </div>
-          ) : filteredBusinesses.length === 0 ? (
+          ) : totalCount === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
                 <Building className="h-12 w-12 text-muted-foreground/30" />
@@ -416,7 +475,7 @@ export default function BusinessesAdminPage() {
                   <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/10">
                     <TableHead className="w-[80px] pl-8">
                       <Checkbox
-                        checked={selectedIds.length === filteredBusinesses.length && filteredBusinesses.length > 0}
+                        checked={businesses.length > 0 && businesses.every((b) => selectedIds.includes(b.id))}
                         onCheckedChange={toggleSelectAll}
                         className="rounded-lg border-2 border-primary/20 data-[state=checked]:bg-primary"
                       />
@@ -430,7 +489,7 @@ export default function BusinessesAdminPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredBusinesses.map((business) => (
+                  {businesses.map((business) => (
                     <TableRow key={business.id} className={cn(
                       "group border-b border-border/10 transition-all duration-300",
                       selectedIds.includes(business.id) ? "bg-primary/5 shadow-inner" : "hover:bg-muted/40"
@@ -578,7 +637,7 @@ export default function BusinessesAdminPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-8">
-              {filteredBusinesses.map((business) => (
+              {businesses.map((business) => (
                 <Card key={business.id} className={cn(
                   "group border-border/30 shadow-xl rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2",
                   selectedIds.includes(business.id) ? "ring-2 ring-primary ring-offset-4" : ""
@@ -638,6 +697,51 @@ export default function BusinessesAdminPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {!loading && totalCount > 0 && (
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                  <SelectTrigger className="w-[110px] h-9 rounded-xl bg-white/50 border-border/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border/10">
+                    <SelectItem value="12">12 / page</SelectItem>
+                    <SelectItem value="24">24 / page</SelectItem>
+                    <SelectItem value="48">48 / page</SelectItem>
+                    <SelectItem value="96">96 / page</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="text-xs font-black tabular-nums px-2">
+                  Page {currentPage} / {totalPages}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  Précédent
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Suivant
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

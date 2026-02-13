@@ -32,6 +32,7 @@ export const CACHE_KEYS = {
   SEASONAL_COLLECTIONS: 'seasonal-collections',
   FEATURED_BUSINESSES: 'featured-businesses',
   BUSINESS_CATEGORIES: 'business-categories',
+  HOME_METRICS: 'home-metrics',
 } as const;
 
 /**
@@ -136,6 +137,18 @@ export const getCachedActiveCategories = async () => {
 };
 
 /**
+ * Cache homepage metrics sourced from listing-grade totals.
+ */
+export const getCachedHomeMetrics = async () => {
+  const { getHomeMetrics } = await import('./data');
+  return unstable_cache(
+    async () => getHomeMetrics(),
+    [CACHE_KEYS.HOME_METRICS],
+    { revalidate: CACHE_CONFIG.MEDIUM, tags: [CACHE_TAGS.COMPANY, CACHE_TAGS.REVIEWS] }
+  )();
+};
+
+/**
  * Other existing utilities (minimal changes)
  */
 export const cachedDataFetch = <T>(
@@ -191,6 +204,7 @@ export default {
   getCachedSeasonalCollections,
   getCachedFeaturedBusinesses,
   getCachedActiveCategories,
+  getCachedHomeMetrics,
   cachedDataFetch,
   invalidateCache,
 };

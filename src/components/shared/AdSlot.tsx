@@ -28,11 +28,7 @@ export function AdSlot({ slot, format = 'auto', layout, className, style }: AdSl
     }, [pubId]);
 
     if (!pubId || pubId === 'ca-pub-XXXXXXXXXXXXXXXX') {
-        return (
-            <div className={`bg-muted/30 border border-dashed border-border flex items-center justify-center text-muted-foreground text-xs p-4 rounded-xl ${className}`} style={style}>
-                Ad Slot: {slot}
-            </div>
-        );
+        return null;
     }
 
     return (

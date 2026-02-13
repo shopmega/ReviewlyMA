@@ -134,6 +134,20 @@ export async function updateClaimStatus(
                     };
                 }
             }
+            // Check if business already has an owner before mutating profile state.
+            const { data: businessData } = await supabaseService
+                .from('businesses')
+                .select('user_id')
+                .eq('id', claim.business_id)
+                .single();
+
+            if (businessData?.user_id && businessData.user_id !== claim.user_id) {
+                return {
+                    status: 'error',
+                    message: "Cet etablissement est deja gere par un autre utilisateur."
+                };
+            }
+
             // Update profile with role and business_id
             const { error: profileError } = await supabaseService
                 .from('profiles')
@@ -144,21 +158,7 @@ export async function updateClaimStatus(
                 .eq('id', claim.user_id);
 
             if (profileError) {
-                return { status: 'error', message: `Erreur lors de la mise à jour du profil: ${profileError.message}` };
-            }
-
-            // Check if business already has an owner
-            const { data: businessData } = await supabaseService
-                .from('businesses')
-                .select('user_id')
-                .eq('id', claim.business_id)
-                .single();
-
-            if (businessData?.user_id && businessData.user_id !== claim.user_id) {
-                return {
-                    status: 'error',
-                    message: "Cet établissement est déjà géré par un autre utilisateur."
-                };
+                return { status: 'error', message: `Erreur lors de la mise a jour du profil: ${profileError.message}` };
             }
 
             // Update the business user_id (owner) as well (Critical for Claim Button persistence)
@@ -249,3 +249,4 @@ export async function updateClaimStatus(
         return { status: 'error', message: error.message || 'Une erreur imprévue est survenue.' };
     }
 }
+

@@ -1,0 +1,23 @@
+{
+  "inputPath": "C:/Users/Zouhair/Downloads/synthetic_morocco_companies_5000.csv",
+  "outputPath": "C:\\Users\\Zouhair\\Downloads\\AVis-prod\\data\\import\\companies_import_ready_5000.csv",
+  "totalInputRows": 5000,
+  "totalOutputRows": 5000,
+  "droppedRows": 0,
+  "unmappedIndustriesFallbackToServices": [],
+  "categoryCounts": {
+    "Industrie & Chimie": 1060,
+    "Services Professionnels": 1174,
+    "Centres d'Appel & BPO": 170,
+    "Distribution & Commerce": 657,
+    "Éducation & Formation": 157,
+    "Technologie & IT": 335,
+    "Énergie & Environnement": 165,
+    "Santé & Bien-être": 174,
+    "Banque & Finance": 472,
+    "Immobilier & Construction": 344,
+    "Transport & Logistique": 151,
+    "Hôtels & Hébergement": 141
+  },
+  "generatedAt": "2026-02-13T15:13:07.675Z"
+}

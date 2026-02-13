@@ -18,6 +18,7 @@ export default function CSVImportForm() {
     const [isUploading, setIsUploading] = useState(false);
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
     const { toast } = useToast();
+    const chunkSize = 200;
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
@@ -57,7 +58,24 @@ export default function CSVImportForm() {
             skipEmptyLines: true,
             complete: async (results) => {
                 try {
-                    const result = await bulkImportBusinesses(results.data);
+                    const rows = results.data || [];
+                    let totalImported = 0;
+                    const allErrors: string[] = [];
+
+                    for (let i = 0; i < rows.length; i += chunkSize) {
+                        const chunk = rows.slice(i, i + chunkSize);
+                        const chunkResult = await bulkImportBusinesses(chunk);
+                        totalImported += chunkResult.count;
+                        if (chunkResult.errors.length > 0) {
+                            allErrors.push(...chunkResult.errors);
+                        }
+                    }
+
+                    const result: ImportResult = {
+                        success: totalImported > 0,
+                        count: totalImported,
+                        errors: allErrors,
+                    };
                     setImportResult(result);
 
                     if (result.success) {

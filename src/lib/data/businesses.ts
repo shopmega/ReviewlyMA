@@ -27,6 +27,11 @@ export type CategoryWithCount = {
     count: number;
 };
 
+export type HomeMetrics = {
+    businessCount: number;
+    reviewCount: number;
+};
+
 export const getFilteredBusinesses = async (filters: BusinessFilters = {}): Promise<PaginatedBusinesses> => {
     const supabase = getPublicClient();
     const {
@@ -161,6 +166,26 @@ export const getBusinesses = async (filters?: BusinessFilters): Promise<Business
     });
 
     return result.businesses;
+};
+
+export const getHomeMetrics = async (): Promise<HomeMetrics> => {
+    const supabase = getPublicClient();
+
+    const [{ count: businessCount }, { count: reviewCount }] = await Promise.all([
+        supabase
+            .from('businesses')
+            .select('id', { count: 'exact', head: true })
+            .neq('status', 'deleted'),
+        supabase
+            .from('reviews')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'published'),
+    ]);
+
+    return {
+        businessCount: businessCount || 0,
+        reviewCount: reviewCount || 0,
+    };
 };
 
 export const getAllCategories = async (): Promise<string[]> => {

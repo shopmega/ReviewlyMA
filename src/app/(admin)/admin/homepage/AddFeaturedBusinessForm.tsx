@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/client';
 type Business = {
   id: string;
   name: string;
-  location: string;
+  location: string | null;
 };
 
 function SubmitButton({ loading }: { loading: boolean }) {
@@ -82,7 +82,7 @@ export function AddFeaturedBusinessForm() {
 
   const filteredBusinesses = businesses.filter(b =>
     b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.location.toLowerCase().includes(searchQuery.toLowerCase())
+    (b.location || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

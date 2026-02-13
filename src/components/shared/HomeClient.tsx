@@ -98,9 +98,10 @@ interface HomeClientProps {
     siteSettings?: SiteSettings;
     categories?: any[]; // Dynamic categories from DB
     featuredBusinesses?: Business[];
+    metrics?: { businessCount: number; reviewCount: number };
 }
 
-export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [] }: HomeClientProps) {
+export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [], metrics }: HomeClientProps) {
     // Use initialBusinesses from server as default, no need for complex loading state if desired
     const businesses = initialBusinesses;
 
@@ -175,8 +176,8 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
 
     const stats = [
-        { name: 'Établissements', value: businessCount.toLocaleString('fr-MA'), icon: Building },
-        { name: 'Avis employés', value: reviewCount.toLocaleString('fr-MA'), icon: Star },
+        { name: 'Établissements', value: (metrics?.businessCount ?? businessCount).toLocaleString('fr-MA'), icon: Building },
+        { name: 'Avis employés', value: (metrics?.reviewCount ?? reviewCount).toLocaleString('fr-MA'), icon: Star },
     ];
 
     const renderSection = (id: string) => {

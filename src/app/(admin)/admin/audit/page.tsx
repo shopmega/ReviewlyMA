@@ -131,8 +131,8 @@ export default function AuditLogsPage() {
     const filteredLogs = logs.filter(log =>
         log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.target_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.profiles?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        (log.profiles?.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (log.profiles?.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const getActionColor = (action: string) => {

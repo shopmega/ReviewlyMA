@@ -1,6 +1,7 @@
 
 import type { Business, SeasonalCollection, DayHours } from '@/lib/types';
 import { getStoragePublicUrl, parsePostgresArray } from './utils';
+import { normalizeDisplayText } from '@/lib/text-normalize';
 
 // Day name mapping for database to display
 export const DAY_NAMES: Record<number, DayHours['day']> = {
@@ -23,7 +24,7 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
 
     return {
         id: dbItem.id,
-        name: dbItem.name,
+        name: normalizeDisplayText(dbItem.name),
         logo: {
             id: 'db-logo',
             imageUrl: logoUrl || '/placeholders/logo-placeholder.svg',
@@ -41,13 +42,13 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
         }),
         phone: dbItem.phone,
         website: dbItem.website,
-        category: dbItem.category,
-        subcategory: dbItem.subcategory,
-        city: dbItem.city,
-        quartier: dbItem.quartier,
-        location: dbItem.location || dbItem.address,
-        address: dbItem.address,
-        description: dbItem.description,
+        category: normalizeDisplayText(dbItem.category),
+        subcategory: normalizeDisplayText(dbItem.subcategory),
+        city: normalizeDisplayText(dbItem.city),
+        quartier: normalizeDisplayText(dbItem.quartier),
+        location: normalizeDisplayText(dbItem.location || dbItem.address),
+        address: normalizeDisplayText(dbItem.address),
+        description: normalizeDisplayText(dbItem.description),
         overallRating: Number(dbItem.overall_rating) || (publishedReviews.length > 0
             ? publishedReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / publishedReviews.length
             : 0),
