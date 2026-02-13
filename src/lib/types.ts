@@ -2,7 +2,7 @@ import type { ImagePlaceholder } from './placeholder-images';
 import { z } from 'zod';
 import { isValidImageUrl } from './utils';
 
-export type SubscriptionTier = 'none' | 'pro' | 'growth' | 'gold';
+export type SubscriptionTier = 'none' | 'growth' | 'gold';
 
 export type DayHours = {
   day: 'Lundi' | 'Mardi' | 'Mercredi' | 'Jeudi' | 'Vendredi' | 'Samedi' | 'Dimanche';

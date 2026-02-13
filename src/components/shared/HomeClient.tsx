@@ -123,6 +123,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
     const [selectedCity, setSelectedCity] = useState(ALL_CITIES[0]);
     const [searchCity, setSearchCity] = useState('Toutes les villes');
+    const normalizedSearchCity = searchCity === 'Toutes les villes' ? '' : searchCity;
 
     const autoplayPlugin = useRef(
         Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
@@ -226,8 +227,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base md:text-lg h-12 md:h-14 px-4 shadow-none focus-visible:ring-0"
                                             showIcon={false}
                                             onSearch={(q) => {
-                                                const cityParam = searchCity === 'Toutes les villes' ? '' : searchCity;
-                                                window.location.href = `/businesses?search=${encodeURIComponent(q)}&city=${encodeURIComponent(cityParam)}`;
+                                                const params = new URLSearchParams();
+                                                params.set('search', q);
+                                                if (normalizedSearchCity) params.set('city', normalizedSearchCity);
+                                                window.location.href = `/businesses?${params.toString()}`;
                                             }}
                                         />
                                     </div>
@@ -254,8 +257,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         onClick={() => {
                                             const searchInput = document.querySelector('input[name="search"]') as HTMLInputElement;
                                             const q = searchInput?.value || '';
-                                            const cityParam = searchCity === 'Toutes les villes' ? '' : searchCity;
-                                            window.location.href = `/businesses?search=${encodeURIComponent(q)}&city=${encodeURIComponent(cityParam)}`;
+                                            const params = new URLSearchParams();
+                                            params.set('search', q);
+                                            if (normalizedSearchCity) params.set('city', normalizedSearchCity);
+                                            window.location.href = `/businesses?${params.toString()}`;
                                         }}
                                         size="lg"
                                         className="w-full md:w-auto h-12 md:h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"

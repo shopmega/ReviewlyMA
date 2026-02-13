@@ -105,7 +105,7 @@ export async function assignBusinessToUser(
       .select('business_id, is_primary')
       .eq('user_id', resolvedUserId)
 
-    const resolvedTier: SubscriptionTier = user.tier || (user.is_premium ? 'pro' : 'none')
+    const resolvedTier: SubscriptionTier = user.tier || (user.is_premium ? 'gold' : 'none')
     const maxBusinesses = user.role === 'admin' ? Number.POSITIVE_INFINITY : getMaxBusinessesForTier(resolvedTier)
 
     if (user.role !== 'admin') {

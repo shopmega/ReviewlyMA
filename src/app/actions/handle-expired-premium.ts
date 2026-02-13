@@ -4,7 +4,7 @@ import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
 import { logger } from '@/lib/logger';
 import { SubscriptionTier } from '@/lib/types';
 
-const PREMIUM_ACTIVE_TIERS = ['growth', 'gold', 'pro'] as const;
+const PREMIUM_ACTIVE_TIERS = ['growth', 'gold'] as const;
 const PREMIUM_TIER_FILTER = `tier.in.(${PREMIUM_ACTIVE_TIERS.join(',')})`;
 
 export interface ExpiredPremiumResult {

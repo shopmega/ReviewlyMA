@@ -11,9 +11,8 @@ export function hasTierAccess(
   userTier: SubscriptionTier
 ): boolean {
   if (requiredTier === 'none') return true; // Everyone gets basic access
-  // Legacy compatibility: treat "pro" as equivalent to "gold"
-  if (requiredTier === 'growth') return userTier === 'growth' || userTier === 'gold' || userTier === 'pro';
-  if (requiredTier === 'gold') return userTier === 'gold' || userTier === 'pro';
+  if (requiredTier === 'growth') return userTier === 'growth' || userTier === 'gold';
+  if (requiredTier === 'gold') return userTier === 'gold';
   return false;
 }
 
@@ -27,7 +26,6 @@ export function getMaxBusinessesForTier(tier: SubscriptionTier): number {
     case 'growth':
       return 1;
     case 'gold':
-    case 'pro':
       return 1;
     case 'none':
     default:
@@ -49,7 +47,7 @@ export function getTierPrice(tier: SubscriptionTier, cycle: 'monthly' | 'yearly'
       : (siteSettings?.tier_growth_monthly_price || 99);
   }
 
-  if (tier === 'gold' || tier === 'pro') {
+  if (tier === 'gold') {
     return cycle === 'yearly'
       ? (siteSettings?.tier_gold_annual_price || 2900)
       : (siteSettings?.tier_gold_monthly_price || 299);

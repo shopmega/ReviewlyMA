@@ -31,6 +31,9 @@ export function SearchAutocomplete({
     const [isLoading, setIsLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const normalizedCity = city && city.trim().toLowerCase() !== 'toutes les villes'
+        ? city
+        : undefined;
 
     const fetchSuggestions = useCallback(async (searchQuery: string) => {
         if (searchQuery.length < 2) {
@@ -40,14 +43,14 @@ export function SearchAutocomplete({
 
         setIsLoading(true);
         try {
-            const results = await getSearchSuggestions(searchQuery, city);
+            const results = await getSearchSuggestions(searchQuery, normalizedCity);
             setSuggestions(results);
         } catch (error) {
             console.error('Error fetching suggestions:', error);
         } finally {
             setIsLoading(false);
         }
-    }, [city]);
+    }, [normalizedCity]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -77,16 +80,19 @@ export function SearchAutocomplete({
         if (suggestion.type === 'business') {
             router.push(`/businesses/${suggestion.id}`);
         } else {
-            router.push(`/businesses?category=${encodeURIComponent(suggestion.name)}${city ? `&city=${encodeURIComponent(city)}` : ''}`);
+            router.push(`/businesses?category=${encodeURIComponent(suggestion.name)}${normalizedCity ? `&city=${encodeURIComponent(normalizedCity)}` : ''}`);
         }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const normalizedQuery = query.trim();
+        if (!normalizedQuery) return;
+
         if (onSearch) {
-            onSearch(query);
+            onSearch(normalizedQuery);
         } else {
-            router.push(`/businesses?search=${encodeURIComponent(query)}${city ? `&city=${encodeURIComponent(city)}` : ''}`);
+            router.push(`/businesses?search=${encodeURIComponent(normalizedQuery)}${normalizedCity ? `&city=${encodeURIComponent(normalizedCity)}` : ''}`);
         }
         setIsOpen(false);
     };

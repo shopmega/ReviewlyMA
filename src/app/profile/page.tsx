@@ -53,7 +53,7 @@ type UserProfile = {
   created_at: string;
   role?: string;
   business_id?: string;
-  tier?: 'none' | 'growth' | 'pro';
+  tier?: 'none' | 'growth' | 'gold';
   email_preferences?: {
     marketing: boolean;
     system: boolean;

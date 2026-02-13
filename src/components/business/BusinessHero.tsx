@@ -6,19 +6,15 @@ import { BusinessLogo } from '@/components/shared/BusinessLogo';
 import { StarRating } from '@/components/shared/StarRating';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Zap, MapPin, Clock, Flag, ShieldCheck, Sparkles } from 'lucide-react';
-import { MediaReportDialog } from '@/components/shared/MediaReportDialog';
+import { MapPin, Flag, ShieldCheck, Sparkles } from 'lucide-react';
 import { BusinessReportDialog } from '@/components/shared/BusinessReportDialog';
-import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
-import { useMemo, useEffect } from 'react';
-import { trackBusinessEvent } from '@/app/actions/analytics';
+import { useMemo } from 'react';
 
 interface BusinessHeroProps {
     business: Business;
-    isFollowing?: boolean;
 }
 
-export function BusinessHero({ business, isFollowing = false }: BusinessHeroProps) {
+export function BusinessHero({ business }: BusinessHeroProps) {
     const { isOpen, todayHours, hasHours } = useMemo(() => {
         const daysFr = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
         const todayIndex = new Date().getDay();
@@ -122,20 +118,20 @@ export function BusinessHero({ business, isFollowing = false }: BusinessHeroProp
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-2 w-full lg:w-auto relative z-10">
-                        {/* Mobile Signal Button Integrated */}
-                        <div className="lg:hidden">
-                            <BusinessReportDialog
-                                businessId={business.id}
-                                businessName={business.name}
-                                trigger={
-                                    <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-md text-foreground/60 transition-all hover:bg-secondary">
-                                        <Flag className="h-4 w-4" />
-                                    </Button>
-                                }
-                            />
-                        </div>
-                        <BusinessPageActions business={business} isFollowing={isFollowing} />
+                    <div className="flex items-center justify-center lg:justify-end w-full lg:w-auto relative z-10">
+                        <BusinessReportDialog
+                            businessId={business.id}
+                            businessName={business.name}
+                            trigger={
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-11 w-11 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-md text-foreground/60 transition-all hover:bg-secondary"
+                                >
+                                    <Flag className="h-4 w-4" />
+                                </Button>
+                            }
+                        />
                     </div>
                 </div>
             </div>

@@ -7,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
-import { SubscriptionTier } from '@/lib/types';
 
 interface PremiumFeatureGateProps {
     children: React.ReactNode;
-    level?: 'pro' | 'growth' | 'gold';
+    level?: 'growth' | 'gold';
     fallback?: React.ReactNode;
     className?: string;
     title?: string;

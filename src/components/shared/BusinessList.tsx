@@ -59,6 +59,7 @@ export function BusinessList({
   const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
   const [typeFilter, setTypeFilter] = useState(searchParams.get('type') || 'all');
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'all');
   const [subcategoryFilter, setSubcategoryFilter] = useState(searchParams.get('subcategory') || 'all');
@@ -202,7 +203,14 @@ export function BusinessList({
 
       return () => clearTimeout(timer);
     }
-  }, [searchQuery, typeFilter, categoryFilter, subcategoryFilter, ratingFilter, cityFilter, quartierFilter, benefitsFilter, tagFilter, sortOrder, pathname, router]);
+  }, [searchQuery, typeFilter, categoryFilter, subcategoryFilter, ratingFilter, cityFilter, quartierFilter, benefitsFilter, tagFilter, sortOrder, pathname, router, searchParams]);
+
+  const applySearchQuery = useCallback(() => {
+    const next = searchInput.trim();
+    if (next !== searchQuery) {
+      setSearchQuery(next);
+    }
+  }, [searchInput, searchQuery]);
 
   const handleCategoryChange = (newCategory: string) => {
     setCategoryFilter(newCategory);
@@ -246,6 +254,7 @@ export function BusinessList({
 
   const resetFilters = () => {
     setSearchQuery('');
+    setSearchInput('');
     setTypeFilter('all');
     handleCategoryChange('all');
     setRatingFilter('all');
@@ -269,7 +278,7 @@ export function BusinessList({
   ];
 
   const removeFilter = (key: string) => {
-    if (key === 'search') setSearchQuery('');
+    if (key === 'search') { setSearchQuery(''); setSearchInput(''); }
     else if (key === 'type') setTypeFilter('all');
     else if (key === 'category') { handleCategoryChange('all'); }
     else if (key === 'subcategory') setSubcategoryFilter('all');
@@ -294,9 +303,24 @@ export function BusinessList({
             id="search"
             placeholder="Etablissement..."
             className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                applySearchQuery();
+              }
+            }}
           />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={applySearchQuery}
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
+          >
+            OK
+          </Button>
         </div>
       </div>
 

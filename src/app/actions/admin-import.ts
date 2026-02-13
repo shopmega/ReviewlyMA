@@ -24,7 +24,7 @@ export type CSVBusinessData = {
     email?: string; // We might not have a column for this, so we'll be careful
     is_premium?: string; // "true", "false", "1", "0"
     tags?: string; // comma separated
-    tier?: string; // "none", "growth", "pro"
+    tier?: string; // "none", "growth", "gold" (legacy "pro" is mapped to "gold")
 };
 
 function slugify(text: string): string {
@@ -84,10 +84,10 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
 
             let tier: SubscriptionTier = 'none';
             const rawTier = row.tier?.toString().toLowerCase().trim();
-            if (rawTier && ['growth', 'pro'].includes(rawTier)) {
-                tier = rawTier as SubscriptionTier;
+            if (rawTier && ['growth', 'gold', 'pro'].includes(rawTier)) {
+                tier = rawTier === 'pro' ? 'gold' : (rawTier as SubscriptionTier);
             } else if (isPremium) {
-                tier = 'pro';
+                tier = 'gold';
             }
 
             const tags = row.tags ? row.tags.split(',').map(t => t.trim()).filter(Boolean) : [];

@@ -14,6 +14,9 @@ export type SearchSuggestion = {
 
 export async function getSearchSuggestions(query: string, city?: string): Promise<SearchSuggestion[]> {
     if (!query || query.length < 2) return [];
+    const normalizedCity = city && city.trim().toLowerCase() !== 'toutes les villes'
+        ? city.trim()
+        : undefined;
 
     const supabase = await createServiceClient();
     const suggestions: SearchSuggestion[] = [];
@@ -28,8 +31,8 @@ export async function getSearchSuggestions(query: string, city?: string): Promis
         })
         .limit(5);
 
-    if (city) {
-        businessQuery = businessQuery.eq('city', city);
+    if (normalizedCity) {
+        businessQuery = businessQuery.eq('city', normalizedCity);
     }
 
     const { data: businesses } = await businessQuery;
@@ -53,8 +56,8 @@ export async function getSearchSuggestions(query: string, city?: string): Promis
         .ilike('category', `%${query}%`)
         .limit(5);
 
-    if (city) {
-        categoryQuery = categoryQuery.eq('city', city);
+    if (normalizedCity) {
+        categoryQuery = categoryQuery.eq('city', normalizedCity);
     }
 
     const { data: categories } = await categoryQuery;

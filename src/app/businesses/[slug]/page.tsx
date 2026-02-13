@@ -2,6 +2,7 @@ import { getBusinessById, getFilteredBusinesses } from '@/lib/data';
 import { LazyBusinessHero, LazyReviewsSection, LazyPhotoGallery } from '@/components/shared/performance';
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
 import { BusinessSidebar } from '@/components/business/BusinessSidebar';
+import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
@@ -172,7 +173,14 @@ export default async function BusinessPage({ params }: PageProps) {
       <AnalyticsTracker businessId={business.id} />
 
       {/* Hero Section */}
-      <LazyBusinessHero business={business} isFollowing={isFollowing} />
+      <LazyBusinessHero business={business} />
+
+      {/* Dedicated actions section to avoid hero overflow on mobile */}
+      <section className="w-full border-b border-border/30 bg-background/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <BusinessPageActions business={business} isFollowing={isFollowing} />
+        </div>
+      </section>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
         <div className="flex flex-col lg:flex-row gap-8">

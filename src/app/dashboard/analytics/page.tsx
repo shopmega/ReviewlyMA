@@ -198,9 +198,9 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      {/* PRO Lead Details */}
+      {/* GOLD Lead Details */}
       <div className="grid gap-6 md:grid-cols-2">
-        <PremiumFeatureGate level="pro" title="WhatsApp Tracking" description="Activez le plan Business PRO pour voir vos leads WhatsApp.">
+        <PremiumFeatureGate level="gold" title="WhatsApp Tracking" description="Activez le plan Business GOLD pour voir vos leads WhatsApp.">
           <Card className="border-white/20 bg-emerald-50 dark:bg-emerald-950/20 shadow-lg relative overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
           </Card>
         </PremiumFeatureGate>
 
-        <PremiumFeatureGate level="pro" title="Booking Tracking" description="Suivez vos réservations externes avec le plan PRO.">
+        <PremiumFeatureGate level="gold" title="Booking Tracking" description="Suivez vos réservations externes avec le plan GOLD.">
           <Card className="border-white/20 bg-indigo-50 dark:bg-indigo-950/20 shadow-lg relative overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">

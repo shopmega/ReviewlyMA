@@ -108,7 +108,7 @@ export default function CSVImportForm() {
 
     const downloadTemplate = () => {
         const headers = ['name', 'category', 'subcategory', 'city', 'location', 'description', 'phone', 'website', 'price_range', 'is_premium', 'tier', 'tags'];
-        const sample = ['Café Exemple', 'Restauration', 'Café', 'Casablanca', '123 Rue Exemple, Maarif', 'Un super café', '0600000000', 'https://example.com', '2', 'true', 'pro', 'wifi,terrasse'];
+        const sample = ['Café Exemple', 'Restauration', 'Café', 'Casablanca', '123 Rue Exemple, Maarif', 'Un super café', '0600000000', 'https://example.com', '2', 'true', 'gold', 'wifi,terrasse'];
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), sample.join(',')].join('\n');
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");

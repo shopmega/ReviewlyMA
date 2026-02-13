@@ -24,7 +24,7 @@ export const businesses: Business[] = [
         type: 'company',
         isFeatured: true,
         is_premium: true,
-        tier: 'pro',
+        tier: 'gold',
         website: 'https://www.ocpgroup.ma',
         tags: ['phosphate', 'international', 'chimie', 'innovation'],
         benefits: ['Transport', 'CIMR', 'Assurance Maladie', 'Primes'],
