@@ -25,9 +25,9 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
     }
 
     return (
-        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 lg:mt-0">
+        <div className="flex w-full flex-wrap items-center justify-center lg:justify-start gap-2 lg:mt-0">
             {isOwner ? (
-                <Button variant="default" className="h-11 px-6 rounded-full font-bold shadow-sm" asChild>
+                <Button variant="default" className="h-11 px-6 rounded-full font-bold shadow-sm max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                     <Link href="/dashboard" className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />
                         Gérer
@@ -36,7 +36,7 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
             ) : (
                 <>
                     {/* Primary Action: Review */}
-                    <Button className="h-11 px-6 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95" asChild>
+                    <Button className="h-11 px-6 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                         <Link href={`/businesses/${business.id}/review`} className="flex items-center gap-2">
                             <Pencil className="w-4 h-4" />
                             <span>Avis</span>
@@ -47,7 +47,7 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                     {business.tier === 'gold' && (
                         <>
                             {business.whatsapp_number && (
-                                <Button className="h-11 px-6 rounded-full font-bold bg-[#25D366] text-white hover:bg-[#20bd5a] shadow-lg shadow-green-900/20 transition-transform hover:scale-105 active:scale-95 border border-white/10" asChild>
+                                <Button className="h-11 px-6 rounded-full font-bold bg-[#25D366] text-white hover:bg-[#20bd5a] shadow-lg shadow-green-900/20 transition-transform hover:scale-105 active:scale-95 border border-white/10 max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                                     <Link
                                         href={`https://wa.me/${business.whatsapp_number.replace(/\s+/g, '').replace(/^0/, '212')}`}
                                         target="_blank"
@@ -61,7 +61,7 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                             )}
 
                             {business.affiliate_link && !business.whatsapp_number && (
-                                <Button className="h-11 px-6 rounded-full font-bold bg-gradient-to-r from-blue-600 to-sky-600 text-white hover:from-blue-700 hover:to-sky-700 shadow-lg shadow-blue-900/20 transition-transform hover:scale-105 active:scale-95 border border-white/10" asChild>
+                                <Button className="h-11 px-6 rounded-full font-bold bg-gradient-to-r from-blue-600 to-sky-600 text-white hover:from-blue-700 hover:to-sky-700 shadow-lg shadow-blue-900/20 transition-transform hover:scale-105 active:scale-95 border border-white/10 max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                                     <Link
                                         href={business.affiliate_link}
                                         target="_blank"
@@ -82,7 +82,7 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                             businessId={business.id}
                             businessName={business.name}
                             trigger={
-                                <Button variant="outline" className="h-11 px-6 rounded-full backdrop-blur-md transition-all">
+                                <Button variant="outline" className="h-11 px-6 rounded-full backdrop-blur-md transition-all max-sm:flex-1 max-sm:min-w-[140px]">
                                     <MessageSquare className="w-4 h-4 mr-2" />
                                     <span>Message</span>
                                 </Button>
@@ -93,7 +93,7 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
             )}
 
             {/* Icon Actions Group */}
-            <div className="flex items-center gap-2 ml-1">
+            <div className="flex items-center justify-center gap-2 w-full sm:w-auto sm:ml-1">
                 <FollowButton
                     businessId={business.id}
                     initialIsFollowing={isFollowing}

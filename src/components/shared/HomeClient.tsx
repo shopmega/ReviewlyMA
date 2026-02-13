@@ -33,9 +33,26 @@ const IconMap: Record<string, LucideIcon> = {
     Building, Search, Sparkles, Activity, Wrench, Palmtree, Bed
 };
 
+const IconAliasMap: Record<string, keyof typeof IconMap> = {
+    'building-library': 'Landmark',
+    headset: 'Headphones',
+    'shopping-cart': 'ShoppingBag',
+    'graduation-cap': 'GraduationCap',
+    zap: 'Zap',
+    bed: 'Bed',
+    hammer: 'Wrench',
+    cpu: 'Laptop',
+    truck: 'Truck',
+    briefcase: 'Briefcase',
+    stethoscope: 'Heart',
+    factory: 'Factory',
+    'map-pin': 'MapPin',
+};
+
 const getCategoryIcon = (iconName?: string) => {
     if (!iconName) return Search;
-    const Icon = IconMap[iconName];
+    const normalized = IconAliasMap[iconName] || iconName;
+    const Icon = IconMap[normalized];
     return Icon || Search;
 };
 
@@ -91,10 +108,11 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     const commerceCategories = categories && categories.length > 0
         ? categories.map(c => ({
             name: c.name,
-            icon: getCategoryIcon(c.icon),
+            icon: c.icon,
+            IconComponent: getCategoryIcon(c.icon),
             slug: c.slug
         }))
-        : defaultCategories;
+        : defaultCategories.map((c) => ({ ...c, icon: null, IconComponent: c.icon }));
 
     const popularSearches = siteSettings?.popular_searches_config || [
         { label: `Entreprises Tech à ${ALL_CITIES[0] || 'Casablanca'}`, href: `/businesses?search=Tech&city=${ALL_CITIES[0] || 'Casablanca'}` },
@@ -366,7 +384,11 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             >
                                                 <div className="glass-card h-full flex flex-col items-center justify-center text-center p-6 gap-4 transition-all duration-300 hover:bg-primary/5 hover:border-primary/20 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 group/card">
                                                     <div className="p-4 bg-secondary/50 rounded-full text-foreground group-hover/card:scale-110 group-hover/card:bg-primary group-hover/card:text-white transition-all duration-300 shadow-sm">
-                                                        {React.createElement(category.icon, { className: "w-8 h-8" })}
+                                                        {typeof category.icon === 'string' && category.icon.length <= 3 ? (
+                                                            <span className="text-2xl leading-none">{category.icon}</span>
+                                                        ) : (
+                                                            React.createElement(category.IconComponent, { className: "w-8 h-8" })
+                                                        )}
                                                     </div>
                                                     <span className="font-bold text-sm md:text-base font-headline text-foreground group-hover/card:text-primary transition-colors">
                                                         {category.name}

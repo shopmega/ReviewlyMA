@@ -122,7 +122,7 @@ export function BusinessHero({ business, isFollowing = false }: BusinessHeroProp
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-2 w-full lg:w-auto relative z-10">
+                    <div className="flex flex-wrap items-center justify-center gap-2 w-full lg:w-auto relative z-10">
                         {/* Mobile Signal Button Integrated */}
                         <div className="lg:hidden">
                             <BusinessReportDialog
