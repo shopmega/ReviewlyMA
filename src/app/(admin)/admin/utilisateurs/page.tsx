@@ -26,7 +26,9 @@ import {
   ArrowUpDown,
   MoreVertical,
   Activity,
-  History
+  History,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +37,7 @@ import { createClient } from "@/lib/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { changeUserRole, toggleUserSuspension, fetchAllUsers, toggleUserPremium } from "@/app/actions/admin";
+import { changeUserRole, toggleUserSuspension, toggleUserPremium } from "@/app/actions/admin";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -54,10 +56,20 @@ interface Profile {
 export default function UsersPage() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all'); // all, active, suspended
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    premiumUsers: 0,
+    proUsers: 0,
+    suspendedUsers: 0,
+  });
 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -72,19 +84,75 @@ export default function UsersPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, filterRole, filterStatus, pageSize]);
+
+  useEffect(() => {
     fetchUsers();
+  }, [currentPage, pageSize, debouncedSearchQuery, filterRole, filterStatus]);
+
+  useEffect(() => {
+    fetchStats();
   }, []);
 
   async function fetchUsers() {
     setLoading(true);
-    const result = await fetchAllUsers();
+    const supabase = createClient();
+    const from = (currentPage - 1) * pageSize;
+    const to = from + pageSize - 1;
 
-    if (result.status === 'success' && result.data) {
-      setUsers(result.data);
-    } else if (result.message) {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+    let query = supabase
+      .from('profiles')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+
+    const q = debouncedSearchQuery.trim();
+    if (q) {
+      const safeQ = q.replace(/,/g, ' ');
+      query = query.or(`full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%`);
+    }
+
+    if (filterRole !== 'all') {
+      query = query.eq('role', filterRole);
+    }
+
+    if (filterStatus === 'suspended') {
+      query = query.eq('suspended', true);
+    } else if (filterStatus === 'active') {
+      query = query.or('suspended.is.null,suspended.eq.false');
+    }
+
+    const { data, error, count } = await query.range(from, to);
+
+    if (!error) {
+      setUsers((data || []) as Profile[]);
+      setTotalCount(count || 0);
+    } else {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     }
     setLoading(false);
+  }
+
+  async function fetchStats() {
+    const supabase = createClient();
+    const [allUsers, premiumUsers, proUsers, suspendedUsers] = await Promise.all([
+      supabase.from('profiles').select('id', { head: true, count: 'exact' }),
+      supabase.from('profiles').select('id', { head: true, count: 'exact' }).eq('is_premium', true),
+      supabase.from('profiles').select('id', { head: true, count: 'exact' }).eq('role', 'pro'),
+      supabase.from('profiles').select('id', { head: true, count: 'exact' }).eq('suspended', true),
+    ]);
+
+    setStats({
+      totalUsers: allUsers.count || 0,
+      premiumUsers: premiumUsers.count || 0,
+      proUsers: proUsers.count || 0,
+      suspendedUsers: suspendedUsers.count || 0,
+    });
   }
 
   const handleRoleChange = async (userId: string, newRole: 'admin' | 'pro' | 'user') => {
@@ -93,7 +161,8 @@ export default function UsersPage() {
 
     if (result.status === 'success') {
       toast({ title: 'Succès', description: result.message });
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      fetchUsers();
+      fetchStats();
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
@@ -108,7 +177,8 @@ export default function UsersPage() {
 
     if (result.status === 'success') {
       toast({ title: 'Succès', description: result.message });
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, suspended: suspend } : u));
+      fetchUsers();
+      fetchStats();
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
@@ -123,7 +193,8 @@ export default function UsersPage() {
 
     if (result.status === 'success') {
       toast({ title: 'Succès', description: result.message });
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_premium: shouldHavePremium } : u));
+      fetchUsers();
+      fetchStats();
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
@@ -132,17 +203,15 @@ export default function UsersPage() {
     setConfirmDialog({ open: false, type: null, userId: '', userName: '' });
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageEnd = pageStart + pageSize;
 
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'suspended' && user.suspended) ||
-      (filterStatus === 'active' && !user.suspended);
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const getRoleBadge = (role: string, suspended?: boolean, premium?: boolean) => {
     if (suspended) {
@@ -200,7 +269,7 @@ export default function UsersPage() {
             Base <span className="text-primary italic">Membres</span>
           </h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2 text-sm">
-            <UsersIcon className="h-4 w-4" /> {users.length} comptes enregistrés
+            <UsersIcon className="h-4 w-4" /> {stats.totalUsers} comptes enregistrés
           </p>
         </div>
 
@@ -224,7 +293,7 @@ export default function UsersPage() {
                 <UsersIcon className="h-6 w-6" />
               </div>
             </div>
-            <p className="text-3xl font-black tabular-nums">{users.length}</p>
+            <p className="text-3xl font-black tabular-nums">{stats.totalUsers}</p>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Total Utilisateurs</p>
           </CardContent>
         </Card>
@@ -235,7 +304,7 @@ export default function UsersPage() {
                 <Crown className="h-6 w-6" />
               </div>
             </div>
-            <p className="text-3xl font-black tabular-nums">{users.filter(u => u.is_premium).length}</p>
+            <p className="text-3xl font-black tabular-nums">{stats.premiumUsers}</p>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Utilisateurs Premium</p>
           </CardContent>
         </Card>
@@ -246,7 +315,7 @@ export default function UsersPage() {
                 <Briefcase className="h-6 w-6" />
               </div>
             </div>
-            <p className="text-3xl font-black tabular-nums">{users.filter(u => u.role === 'pro').length}</p>
+            <p className="text-3xl font-black tabular-nums">{stats.proUsers}</p>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Comptes Professionnels</p>
           </CardContent>
         </Card>
@@ -257,7 +326,7 @@ export default function UsersPage() {
                 <XCircle className="h-6 w-6" />
               </div>
             </div>
-            <p className="text-3xl font-black tabular-nums">{users.filter(u => u.suspended).length}</p>
+            <p className="text-3xl font-black tabular-nums">{stats.suspendedUsers}</p>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Profils Suspendus</p>
           </CardContent>
         </Card>
@@ -326,7 +395,7 @@ export default function UsersPage() {
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
               <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Syncing Members...</p>
             </div>
-          ) : filteredUsers.length === 0 ? (
+          ) : users.length === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
                 <UserIcon className="h-12 w-12 text-muted-foreground/30" />
@@ -349,7 +418,7 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
+                  {users.map((user) => (
                     <TableRow key={user.id} className={cn(
                       "group border-b border-border/10 transition-all duration-300",
                       user.suspended ? "bg-rose-500/5 hover:bg-rose-500/10" : "hover:bg-muted/40"
@@ -470,6 +539,51 @@ export default function UsersPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+          {!loading && totalCount > 0 && (
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                  <SelectTrigger className="w-[120px] h-9 rounded-xl bg-white/50 border-border/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border/10">
+                    <SelectItem value="20">20 / page</SelectItem>
+                    <SelectItem value="50">50 / page</SelectItem>
+                    <SelectItem value="100">100 / page</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="text-xs font-black tabular-nums px-2">
+                  Page {currentPage} / {totalPages}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  PrÃ©cÃ©dent
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Suivant
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

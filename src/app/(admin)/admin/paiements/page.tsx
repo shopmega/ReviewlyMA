@@ -20,6 +20,7 @@ import {
   History,
   MoreVertical,
   ChevronRight,
+  ChevronLeft,
   ShieldCheck,
   RefreshCw,
   Calendar,
@@ -29,13 +30,14 @@ import { useState, useEffect } from "react";
 import { format, addMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { fetchPremiumPayments, verifyOfflinePayment, rejectOfflinePayment, addManualPayment } from "@/app/actions/admin";
+import { verifyOfflinePayment, rejectOfflinePayment, addManualPayment } from "@/app/actions/admin";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 type Payment = {
   id: string;
@@ -59,9 +61,15 @@ export default function PaiementsPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   // Manual Payment State
   const [showManualModal, setShowManualModal] = useState(false);
@@ -78,18 +86,74 @@ export default function PaiementsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, debouncedSearchTerm, pageSize]);
+
+  useEffect(() => {
     loadPayments();
+  }, [currentPage, pageSize, statusFilter, debouncedSearchTerm]);
+
+  useEffect(() => {
+    loadStats();
   }, []);
 
   async function loadPayments() {
     setLoading(true);
-    const result = await fetchPremiumPayments();
-    if (result.status === 'success') {
-      setPayments(result.data as Payment[]);
+    const supabase = createClient();
+    const from = (currentPage - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('premium_payments')
+      .select(`
+        *,
+        profiles:user_id(email, full_name),
+        businesses:business_id(name)
+      `, { count: 'exact' })
+      .order('created_at', { ascending: false });
+
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    const q = debouncedSearchTerm.trim();
+    if (q) {
+      const safeQ = q.replace(/,/g, ' ');
+      query = query.or(`payment_reference.ilike.%${safeQ}%`);
+    }
+
+    const { data, error, count } = await query.range(from, to);
+    if (!error) {
+      setPayments((data || []) as unknown as Payment[]);
+      setTotalCount(count || 0);
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     }
     setLoading(false);
+  }
+
+  async function loadStats() {
+    const supabase = createClient();
+
+    const [pending, verified] = await Promise.all([
+      supabase
+        .from('premium_payments')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+      supabase
+        .from('premium_payments')
+        .select('amount_usd')
+        .eq('status', 'verified'),
+    ]);
+
+    const revenue = (verified.data || []).reduce((acc, curr: any) => acc + (curr.amount_usd || 0), 0);
+    setPendingCount(pending.count || 0);
+    setTotalRevenue(revenue);
   }
 
   const handleVerify = async (id: string) => {
@@ -98,6 +162,7 @@ export default function PaiementsPage() {
     if (result.status === 'success') {
       toast({ title: 'Bonne nouvelle !', description: 'Paiement vérifié et statut Premium activé.' });
       loadPayments();
+      loadStats();
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
@@ -116,6 +181,7 @@ export default function PaiementsPage() {
       setRejectingId(null);
       setRejectionReason('');
       loadPayments();
+      loadStats();
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
@@ -154,6 +220,7 @@ export default function PaiementsPage() {
         notes: ''
       });
       loadPayments();
+      loadStats();
     } else {
       toast({ title: 'Erreur technique', description: result.message, variant: 'destructive' });
     }
@@ -185,21 +252,15 @@ export default function PaiementsPage() {
     }
   };
 
-  const filteredPayments = payments.filter(p => {
-    const matchesSearch =
-      p.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.payment_reference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.businesses?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageEnd = pageStart + pageSize;
 
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const pendingCount = payments.filter(p => p.status === 'pending').length;
-  const totalRevenue = payments
-    .filter(p => p.status === 'verified')
-    .reduce((acc, curr) => acc + (curr.amount_usd || 0), 0);
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -215,7 +276,15 @@ export default function PaiementsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary/10 hover:text-primary transition-all shadow-sm" onClick={loadPayments}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl h-12 w-12 hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+            onClick={() => {
+              loadPayments();
+              loadStats();
+            }}
+          >
             <RefreshCw className={cn("h-5 w-5", loading ? "animate-spin" : "")} />
           </Button>
           <Dialog open={showManualModal} onOpenChange={setShowManualModal}>
@@ -410,7 +479,7 @@ export default function PaiementsPage() {
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
               <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Processing Gateway...</p>
             </div>
-          ) : filteredPayments.length === 0 ? (
+          ) : payments.length === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
                 <CreditCard className="h-12 w-12 text-muted-foreground/30" />
@@ -430,7 +499,7 @@ export default function PaiementsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPayments.map((payment) => (
+                  {payments.map((payment) => (
                     <TableRow key={payment.id} className="group border-b border-border/10 hover:bg-muted/40 transition-all duration-300">
                       <TableCell className="py-6 pl-8">
                         <div className="flex flex-col">
@@ -543,14 +612,53 @@ export default function PaiementsPage() {
               </Table>
             </div>
           )}
+          {!loading && totalCount > 0 && (
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                  <SelectTrigger className="w-[120px] h-9 rounded-xl bg-white/50 border-border/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border/10">
+                    <SelectItem value="20">20 / page</SelectItem>
+                    <SelectItem value="50">50 / page</SelectItem>
+                    <SelectItem value="100">100 / page</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="text-xs font-black tabular-nums px-2">
+                  Page {currentPage} / {totalPages}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  PrÃ©cÃ©dent
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Suivant
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      <div className="flex justify-center pb-10">
-        <Button variant="outline" className="rounded-2xl font-bold px-10 h-10 border-border/40 hover:bg-primary/5 hover:text-primary transition-all group">
-          Charger l'historique complet <ChevronRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-        </Button>
-      </div>
     </div>
   );
 }
