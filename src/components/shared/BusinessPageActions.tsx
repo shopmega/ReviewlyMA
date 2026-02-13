@@ -3,10 +3,11 @@
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Pencil, MessageSquare, Briefcase, MessageCircle, ExternalLink } from 'lucide-react';
+import { Pencil, MessageSquare, Briefcase, MessageCircle, ExternalLink, Flag } from 'lucide-react';
 import { ContactBusinessDialog } from '@/components/shared/ContactBusinessDialog';
 import { ShareButton } from '@/components/shared/ShareButton';
 import { FollowButton } from '@/components/shared/FollowButton';
+import { BusinessReportDialog } from '@/components/shared/BusinessReportDialog';
 import { Business } from '@/lib/types';
 
 interface BusinessPageActionsProps {
@@ -104,6 +105,20 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                     businessId={business.id}
                     businessName={business.name}
                     className="h-11 w-11 p-0 rounded-full border-border bg-secondary/50 text-foreground hover:bg-secondary backdrop-blur-md"
+                />
+
+                <BusinessReportDialog
+                    businessId={business.id}
+                    businessName={business.name}
+                    trigger={
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-11 w-11 p-0 rounded-full border-border bg-secondary/50 text-foreground hover:bg-secondary backdrop-blur-md"
+                        >
+                            <Flag className="h-4 w-4" />
+                        </Button>
+                    }
                 />
             </div>
         </div>
