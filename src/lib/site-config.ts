@@ -31,6 +31,19 @@ export function getClientSiteUrl(): string {
   return getServerSiteUrl();
 }
 
+export function getClientOAuthRedirectUrl(path = '/'): string {
+  const baseUrl = normalizeUrl(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : getServerSiteUrl())
+  );
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${baseUrl}${normalizedPath}`;
+}
+
 export function getSiteName(settings?: SiteSettingsLike | null): string {
   return settings?.site_name?.trim() || process.env.NEXT_PUBLIC_SITE_NAME || DEFAULT_SITE_NAME;
 }

@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createClient } from '@/lib/supabase/client';
+import { getClientOAuthRedirectUrl } from '@/lib/site-config';
 
 
 export default function SignupPage() {
@@ -92,7 +93,7 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: getClientOAuthRedirectUrl('/'),
       },
     });
 
