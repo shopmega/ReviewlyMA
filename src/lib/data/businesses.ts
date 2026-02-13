@@ -73,12 +73,11 @@ export const getFilteredBusinesses = async (filters: BusinessFilters = {}): Prom
         .select(selectQuery, { count: 'exact' });
 
     // Apply filters
-    if (search) {
-        // Use FTS for the search query
-        query = query.textSearch('search_vector', search, {
-            config: 'french',
-            type: 'websearch'
-        });
+    if (search && search.trim().length > 0) {
+        const safeSearch = search.trim().replace(/,/g, ' ');
+        query = query.or(
+            `name.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%,category.ilike.%${safeSearch}%,subcategory.ilike.%${safeSearch}%,city.ilike.%${safeSearch}%,quartier.ilike.%${safeSearch}%`
+        );
     }
     if (category && category !== 'all') {
         query = query.eq('category', category);

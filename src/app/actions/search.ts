@@ -21,14 +21,13 @@ export async function getSearchSuggestions(query: string, city?: string): Promis
     const supabase = await createServiceClient();
     const suggestions: SearchSuggestion[] = [];
 
-    // 1. Search Businesses using FTS for better relevance
+    // 1. Search Businesses (ILIKE fallback-friendly; works even when search_vector is not populated)
     let businessQuery = supabase
         .from('businesses')
         .select('id, name, city, category')
-        .textSearch('search_vector', query, {
-            config: 'french',
-            type: 'websearch'
-        })
+        .or(
+            `name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%,city.ilike.%${query}%`
+        )
         .limit(5);
 
     if (normalizedCity) {
