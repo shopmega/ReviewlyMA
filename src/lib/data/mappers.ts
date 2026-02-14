@@ -106,6 +106,7 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
 
 export const mapCollectionFromDB = (dbItem: any): SeasonalCollection => {
     return {
+        id: dbItem.id,
         title: dbItem.title,
         subtitle: dbItem.subtitle,
         imageUrl: getStoragePublicUrl(dbItem.image_url, 'carousel-images') || dbItem.image_url,

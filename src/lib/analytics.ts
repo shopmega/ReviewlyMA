@@ -16,7 +16,8 @@ export type AnalyticsEvent =
   | 'contact_form_submitted'
   | 'filter_applied'
   | 'business_saved'
-  | 'carousel_click';
+  | 'carousel_click'
+  | 'carousel_impression';
 
 export interface AnalyticsData {
   event: AnalyticsEvent;
@@ -239,7 +240,7 @@ class AnalyticsService {
 
   async trackCarouselImpression(collectionId: string, collectionTitle: string, position: number) {
     // Track in main analytics
-    this.track('carousel_click', {
+    this.track('carousel_impression', {
       collection_id: collectionId,
       collection_title: collectionTitle,
       position

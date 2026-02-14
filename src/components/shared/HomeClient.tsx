@@ -101,6 +101,10 @@ interface HomeClientProps {
     metrics?: { businessCount: number; reviewCount: number };
 }
 
+const isValidCollectionLink = (link: any): link is CollectionLink => {
+    return !!link && typeof link === 'object' && typeof link.type === 'string';
+};
+
 export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [], metrics }: HomeClientProps) {
     // Use initialBusinesses from server as default, no need for complex loading state if desired
     const businesses = initialBusinesses;
@@ -121,9 +125,9 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         { label: `Banques à ${ALL_CITIES[1] || 'Marrakech'}`, href: `/businesses?category=Finance&city=${ALL_CITIES[1] || 'Marrakech'}` },
     ];
 
-    const [selectedCity, setSelectedCity] = useState(ALL_CITIES[0]);
     const [searchCity, setSearchCity] = useState('Toutes les villes');
     const normalizedSearchCity = searchCity === 'Toutes les villes' ? '' : searchCity;
+    const trackedImpressionsRef = useRef<Set<string>>(new Set());
 
     const autoplayPlugin = useRef(
         Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
@@ -143,28 +147,12 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     }, [catApi]);
 
 
-    const {
-        topRatedCompanies,
-        featuredBusinesses: displayFeaturedBusinesses,
-        reviewCount,
-        businessCount,
-    } = useMemo(() => {
-        const cityBusinesses = businesses.filter((b) => {
-            const location = b.location || b.city || '';
-            return location.includes(selectedCity);
-        });
-
-        const topCompanies = cityBusinesses
-            .filter(b => b.type === 'company' || b.type === 'commerce')
-            .sort((a, b) => b.overallRating - a.overallRating)
-            .slice(0, 3);
-
+    const { featuredBusinesses: displayFeaturedBusinesses, reviewCount, businessCount } = useMemo(() => {
         const featured = featuredBusinesses.length > 0
             ? featuredBusinesses
             : businesses.filter(b => b.isFeatured).slice(0, 6);
 
         return {
-            topRatedCompanies: topCompanies,
             featuredBusinesses: featured,
             reviewCount: businesses.reduce((acc, c) => {
                 const typedReviewCount = Array.isArray(c.reviews) ? c.reviews.length : 0;
@@ -173,7 +161,16 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
             }, 0),
             businessCount: businesses.length,
         };
-    }, [businesses, selectedCity, featuredBusinesses]);
+    }, [businesses, featuredBusinesses]);
+
+    useEffect(() => {
+        const visibleCollections = seasonalCollections.slice(0, 6);
+        visibleCollections.forEach((collection, index) => {
+            if (trackedImpressionsRef.current.has(collection.id)) return;
+            trackedImpressionsRef.current.add(collection.id);
+            analytics.trackCarouselImpression(collection.id, collection.title, index);
+        });
+    }, [seasonalCollections]);
 
 
     const stats = [
@@ -320,29 +317,25 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {seasonalCollections.slice(0, 6).map((collection, index) => {
-                                // Create a temporary ID from the database collection record
-                                // The collection object from DB has an id field, but the mapped object doesn't
-                                // We need to access the original DB record to get the ID
-                                const collectionId = `collection-${index}`; // Creating a temporary ID based on position
+                                const link: CollectionLink = isValidCollectionLink(collection.link)
+                                    ? collection.link
+                                    : ({ type: 'custom', href: '/businesses' } as const);
+                                const href = getCollectionHref(link);
                                 return (
                                     <Link
-                                        href={getCollectionHref(collection.link)}
-                                        key={index}
+                                        href={href}
+                                        key={collection.id}
                                         className={`group relative overflow-hidden rounded-3xl h-[300px] flex flex-col justify-end p-8 border hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 ${index === 0 ? 'lg:col-span-2' : ''}`}
                                         onClick={async () => {
                                             // Track carousel click analytics
                                             await analytics.trackCarouselClick(
-                                                collectionId,
+                                                collection.id,
                                                 collection.title,
                                                 collection.subtitle,
-                                                collection.link.type,
-                                                getCollectionHref(collection.link),
+                                                link.type,
+                                                href,
                                                 index
                                             );
-                                        }}
-                                        onMouseEnter={async () => {
-                                            // Track carousel impression when it comes into view
-                                            await analytics.trackCarouselImpression(collectionId, collection.title, index);
                                         }}
                                     >
                                         <Image
@@ -385,7 +378,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     {commerceCategories.map((category, index) => (
                                         <CarouselItem key={index} className="basis-1/2 md:basis-1/3 lg:basis-1/5 pl-4">
                                             <Link
-                                                href={`/ville/${slugify(selectedCity)}/${category.slug}`}
+                                                href={`/categorie/${category.slug}`}
                                                 className="group/cat block h-full"
                                             >
                                                 <div className="glass-card h-full flex flex-col items-center justify-center text-center p-6 gap-4 transition-all duration-300 hover:bg-primary/5 hover:border-primary/20 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 group/card">
@@ -449,17 +442,13 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         {city}
                                     </h3>
                                     <div className="space-y-3 mb-8">
-                                        {[
-                                            { label: 'High-Tech', name: 'Technologie & IT' },
-                                            { label: 'Banques & Finance', name: 'Banque & Finance' },
-                                            { label: 'Conseil & Audit', name: 'Services Professionnels' }
-                                        ].map(cat => (
+                                        {commerceCategories.slice(0, 3).map(cat => (
                                             <Link
-                                                key={cat.name}
-                                                href={`/businesses?category=${cat.name}&city=${city}`}
+                                                key={`${city}-${cat.slug}`}
+                                                href={`/ville/${slugify(city)}/${cat.slug}`}
                                                 className="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-primary transition-all text-sm font-medium group/link"
                                             >
-                                                {cat.label}
+                                                {cat.name}
                                                 <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
                                             </Link>
                                         ))}

@@ -104,6 +104,7 @@ export type CollectionLink =
   | { type: 'custom'; href: string };
 
 export type SeasonalCollection = {
+  id: string;
   title: string;
   subtitle: string;
   imageUrl: string;
