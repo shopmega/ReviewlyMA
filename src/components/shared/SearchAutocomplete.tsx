@@ -103,12 +103,14 @@ export function SearchAutocomplete({
                 <Input
                     value={query}
                     onChange={(e) => {
-                        setQuery(e.target.value);
-                        setIsOpen(true);
+                        const next = e.target.value;
+                        setQuery(next);
+                        setIsOpen(next.trim().length >= 2);
                     }}
-                    onFocus={() => setIsOpen(true)}
+                    onFocus={() => setIsOpen(query.trim().length >= 2)}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        const isComposing = (e.nativeEvent as any)?.isComposing;
+                        if (e.key === 'Enter' && !isComposing) {
                             e.preventDefault();
                             runSearch();
                         }

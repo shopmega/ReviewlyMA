@@ -37,6 +37,33 @@ function canonicalKey(value?: string | null): string {
         .replace(/\s+/g, ' ');
 }
 
+function sanitizeWebsite(raw?: string | null): string | null {
+    const website = (raw || '').trim();
+    if (!website) return null;
+
+    const normalized = website.toLowerCase();
+    const placeholderPatterns = [
+        'example.com',
+        'test.com',
+        'placeholder',
+        'localhost',
+        '.local',
+        'yourdomain',
+        'your-domain',
+        'your-site',
+    ];
+
+    if (placeholderPatterns.some((p) => normalized.includes(p))) {
+        return null;
+    }
+
+    if (website.startsWith('http://') || website.startsWith('https://')) {
+        return website;
+    }
+
+    return `https://${website}`;
+}
+
 function slugify(text: string): string {
     return text
         .toString()
@@ -147,7 +174,7 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
                 // Existing seed uses 'location'.
                 description: normalizedDescription || '',
                 phone: row.phone || null,
-                website: row.website || null,
+                website: sanitizeWebsite(row.website),
                 is_premium: isPremium,
                 tier: tier,
                 tags: tags,
