@@ -27,6 +27,16 @@ export type CSVBusinessData = {
     tier?: string; // "none", "growth", "gold" (legacy "pro" is mapped to "gold")
 };
 
+function canonicalKey(value?: string | null): string {
+    return (value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, ' ');
+}
+
 function slugify(text: string): string {
     return text
         .toString()
@@ -57,6 +67,28 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
     const errors: string[] = [];
     let successCount = 0;
 
+    // Build canonical category/subcategory maps from DB to keep imports aligned
+    const [{ data: dbCategories }, { data: dbSubcategories }] = await Promise.all([
+        supabase.from('categories').select('id, name'),
+        supabase.from('subcategories').select('name, category_id'),
+    ]);
+
+    const categoryNameByKey = new Map<string, string>();
+    const categoryNameById = new Map<string, string>();
+    (dbCategories || []).forEach((c: any) => {
+        const key = canonicalKey(c.name);
+        if (key) categoryNameByKey.set(key, c.name);
+        categoryNameById.set(c.id, c.name);
+    });
+
+    const subcategoryNameByKey = new Map<string, string>();
+    (dbSubcategories || []).forEach((s: any) => {
+        const categoryName = categoryNameById.get(s.category_id);
+        if (!categoryName) return;
+        const key = `${canonicalKey(categoryName)}::${canonicalKey(s.name)}`;
+        subcategoryNameByKey.set(key, s.name);
+    });
+
     for (const row of data) {
         const normalizedName = normalizeDisplayText(row.name);
         const normalizedCategory = normalizeDisplayText(row.category);
@@ -71,6 +103,12 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
         }
 
         try {
+            const mappedCategory = categoryNameByKey.get(canonicalKey(normalizedCategory)) || normalizedCategory;
+            const subKey = `${canonicalKey(mappedCategory)}::${canonicalKey(normalizedSubcategory)}`;
+            const mappedSubcategory = normalizedSubcategory
+                ? (subcategoryNameByKey.get(subKey) || normalizedSubcategory)
+                : null;
+
             // Deterministic business ID for idempotent imports.
             // Re-importing the same row updates existing data instead of duplicating.
             const baseSlug = row.slug?.trim()
@@ -98,8 +136,8 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
             const insertPayload: any = {
                 id: businessId,
                 name: normalizedName,
-                category: normalizedCategory,
-                subcategory: normalizedSubcategory || null,
+                category: mappedCategory,
+                subcategory: mappedSubcategory,
                 city: normalizedCity,
                 quartier: null, // Could try to extract from location
                 location: normalizedLocation || normalizedCity, // Address field is often called 'location' in legacy, or 'address' in new.

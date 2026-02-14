@@ -6,7 +6,6 @@ import { Search, MapPin, Building, Utensils, ChevronRight, Loader2 } from 'lucid
 import { getSearchSuggestions, SearchSuggestion } from '@/app/actions/search';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 interface SearchAutocompleteProps {
     placeholder?: string;
@@ -18,7 +17,7 @@ interface SearchAutocompleteProps {
 }
 
 export function SearchAutocomplete({
-    placeholder = "Rechercher...",
+    placeholder = 'Rechercher...',
     className,
     inputClassName,
     city,
@@ -31,6 +30,7 @@ export function SearchAutocomplete({
     const [isLoading, setIsLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+
     const normalizedCity = city && city.trim().toLowerCase() !== 'toutes les villes'
         ? city
         : undefined;
@@ -51,6 +51,18 @@ export function SearchAutocomplete({
             setIsLoading(false);
         }
     }, [normalizedCity]);
+
+    const runSearch = useCallback(() => {
+        const normalizedQuery = query.trim();
+        if (!normalizedQuery) return;
+
+        if (onSearch) {
+            onSearch(normalizedQuery);
+        } else {
+            router.push(`/businesses?search=${encodeURIComponent(normalizedQuery)}${normalizedCity ? `&city=${encodeURIComponent(normalizedCity)}` : ''}`);
+        }
+        setIsOpen(false);
+    }, [query, onSearch, router, normalizedCity]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -84,52 +96,41 @@ export function SearchAutocomplete({
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const normalizedQuery = query.trim();
-        if (!normalizedQuery) return;
-
-        if (onSearch) {
-            onSearch(normalizedQuery);
-        } else {
-            router.push(`/businesses?search=${encodeURIComponent(normalizedQuery)}${normalizedCity ? `&city=${encodeURIComponent(normalizedCity)}` : ''}`);
-        }
-        setIsOpen(false);
-    };
-
     return (
-        <div className={cn("relative w-full", className)} ref={dropdownRef}>
-            <form onSubmit={handleSubmit}>
-                <div className="relative flex items-center">
-                    {showIcon && <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
-                    <Input
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            setIsOpen(true);
-                        }}
-                        onFocus={() => setIsOpen(true)}
-                        placeholder={placeholder}
-                        className={cn(
-                            showIcon && "pl-10",
-                            inputClassName
-                        )}
-                        name="search"
-                        autoComplete="off"
-                    />
-                    {isLoading && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        </div>
-                    )}
-                </div>
-            </form>
+        <div className={cn('relative w-full', className)} ref={dropdownRef}>
+            <div className="relative flex items-center">
+                {showIcon && <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
+                <Input
+                    value={query}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        setIsOpen(true);
+                    }}
+                    onFocus={() => setIsOpen(true)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            runSearch();
+                        }
+                    }}
+                    placeholder={placeholder}
+                    className={cn(showIcon && 'pl-10', inputClassName)}
+                    name="search"
+                    autoComplete="off"
+                />
+                {isLoading && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                )}
+            </div>
 
             {isOpen && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-background rounded-xl border border-border shadow-xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-2">
                         {suggestions.map((suggestion) => (
                             <button
+                                type="button"
                                 key={suggestion.id}
                                 onClick={() => handleSelect(suggestion)}
                                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-accent rounded-lg transition-colors group"
@@ -149,10 +150,10 @@ export function SearchAutocomplete({
                                         {suggestion.type === 'business' ? (
                                             <>
                                                 <MapPin className="h-3 w-3" />
-                                                {suggestion.city} • {suggestion.category}
+                                                {suggestion.city} - {suggestion.category}
                                             </>
                                         ) : (
-                                            'Catégorie'
+                                            'Categorie'
                                         )}
                                     </p>
                                 </div>
@@ -163,10 +164,11 @@ export function SearchAutocomplete({
                     {query.length >= 2 && (
                         <div className="border-t border-border p-2 bg-muted/50">
                             <button
-                                onClick={handleSubmit}
+                                type="button"
+                                onClick={runSearch}
                                 className="w-full text-center py-2 text-xs font-bold text-indigo-600 hover:text-indigo-700"
                             >
-                                Voir tous les résultats pour "{query}"
+                                Voir tous les resultats pour "{query}"
                             </button>
                         </div>
                     )}

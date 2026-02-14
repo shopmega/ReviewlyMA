@@ -74,7 +74,7 @@ export const getFilteredBusinesses = async (filters: BusinessFilters = {}): Prom
 
     // Apply filters
     if (search && search.trim().length > 0) {
-        const safeSearch = search.trim().replace(/,/g, ' ');
+        const safeSearch = search.trim().replace(/[%(),]/g, ' ');
         query = query.or(
             `name.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%,category.ilike.%${safeSearch}%,subcategory.ilike.%${safeSearch}%,city.ilike.%${safeSearch}%,quartier.ilike.%${safeSearch}%`
         );
