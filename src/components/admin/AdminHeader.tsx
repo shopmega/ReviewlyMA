@@ -20,6 +20,8 @@ import { useState, useEffect } from 'react';
 import { getSiteSettings } from '@/lib/data';
 import { toggleMaintenanceMode } from '@/app/actions/admin';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 interface AdminHeaderProps {
     onMenuClick?: () => void;
@@ -27,17 +29,35 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     const [isMaintenance, setIsMaintenance] = useState(false);
-    const [adminEmail, setAdminEmail] = useState('admin@example.com');
+    const [adminUser, setAdminUser] = useState<any>(null);
+    const [adminProfile, setAdminProfile] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
+    const router = useRouter();
+    const supabase = createClient();
 
     useEffect(() => {
-        async function fetchSettings() {
-            const settings = await getSiteSettings();
-            setIsMaintenance(settings.maintenance_mode);
-            setAdminEmail(settings.email_from || settings.contact_email || 'admin@example.com');
+        async function fetchSettingsAndUser() {
+            try {
+                const settings = await getSiteSettings();
+                setIsMaintenance(settings.maintenance_mode);
+
+                const { data: { user } } = await supabase.auth.getUser();
+                setAdminUser(user);
+
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', user.id)
+                        .single();
+                    setAdminProfile(profile);
+                }
+            } catch (error) {
+                console.error('Error fetching admin header data:', error);
+            }
         }
-        fetchSettings();
+        fetchSettingsAndUser();
     }, []);
 
     const handleToggleMaintenance = async (checked: boolean) => {
@@ -65,6 +85,20 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
             });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (!error) {
+            router.push('/login');
+            router.refresh();
+        } else {
+            toast({
+                title: "Erreur de déconnexion",
+                description: error.message,
+                variant: "destructive",
+            });
         }
     };
 
@@ -120,19 +154,19 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-9 w-9 lg:h-10 lg:w-10 rounded-full border border-border/50 p-0 overflow-hidden ring-offset-background transition-all hover:ring-2 hover:ring-primary/20">
                                 <Avatar className="h-full w-full">
-                                    <AvatarImage src="" alt="Admin" />
+                                    <AvatarImage src={adminProfile?.avatar_url || ""} alt="Admin" />
                                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
-                                        AD
+                                        {adminProfile?.full_name?.substring(0, 2).toUpperCase() || 'AD'}
                                     </AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56 mt-2 rounded-xl" align="end" forceMount>
                             <DropdownMenuLabel className="font-normal p-4">
-                                <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-bold leading-none">Administrateur</p>
+                                <div className="flex flex-col space-y-1 text-left">
+                                    <p className="text-sm font-bold leading-none">{adminProfile?.full_name || 'Administrateur'}</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        {adminEmail}
+                                        {adminUser?.email || 'Chargement...'}
                                     </p>
                                 </div>
                             </DropdownMenuLabel>
@@ -146,7 +180,10 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                                 <span>Paramètres</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="p-3 cursor-pointer rounded-lg mx-1 text-destructive focus:bg-destructive/5 focus:text-destructive">
+                            <DropdownMenuItem
+                                className="p-3 cursor-pointer rounded-lg mx-1 text-destructive focus:bg-destructive/5 focus:text-destructive"
+                                onClick={handleLogout}
+                            >
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Déconnexion</span>
                             </DropdownMenuItem>
