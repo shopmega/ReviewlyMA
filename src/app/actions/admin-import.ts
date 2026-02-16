@@ -147,7 +147,7 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
                 row.is_premium?.toString().trim() === '1' ||
                 row.is_premium?.toString().toLowerCase().trim() === 'yes';
 
-            let tier: SubscriptionTier = 'none';
+            let tier: SubscriptionTier = 'standard';
             const rawTier = row.tier?.toString().toLowerCase().trim();
             if (rawTier && ['growth', 'gold', 'pro'].includes(rawTier)) {
                 tier = rawTier === 'pro' ? 'gold' : (rawTier as SubscriptionTier);
