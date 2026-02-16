@@ -8,6 +8,7 @@ import { getMessages, sendMessage, type Message } from "@/app/actions/messages";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { isPaidTier } from '@/lib/tier-utils';
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,8 +26,8 @@ export default function MessagesPage() {
   useEffect(() => {
     async function checkStatus() {
       // Use the tier field instead of legacy is_premium
-      const currentTier = profile?.tier || 'none';
-      if (currentTier !== 'none') {
+      const currentTier = profile?.tier;
+      if (isPaidTier(currentTier)) {
         setIsPremium(true);
         return;
       }
@@ -39,7 +40,7 @@ export default function MessagesPage() {
           .eq('id', businessId)
           .single();
 
-        if (business?.tier && business.tier !== 'none') {
+        if (isPaidTier(business?.tier)) {
           setIsPremium(true);
         }
       }

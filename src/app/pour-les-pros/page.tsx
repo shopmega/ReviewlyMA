@@ -11,7 +11,7 @@ export default async function ForProsPage() {
   const siteSettings = await getSiteSettings();
   const siteName = siteSettings.site_name || 'Platform';
   const user = await getUserProfile();
-  const userTier = (user?.tier as 'none' | 'growth' | 'gold') || 'none';
+  const userTier = user?.tier || 'standard';
 
   // Use configurable tiered pricing
   const growthMonthly = siteSettings.tier_growth_monthly_price || 99;

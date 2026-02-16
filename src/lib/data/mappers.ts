@@ -57,7 +57,7 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
         isFeatured: dbItem.is_featured,
         is_sponsored: dbItem.is_sponsored,
         is_premium: dbItem.is_premium,
-        tier: dbItem.tier === 'none' ? 'standard' : (dbItem.tier || 'standard'),
+        tier: dbItem.tier || 'standard',
         cover_url: coverUrl || undefined,
         owner_id: dbItem.owner_id || dbItem.user_id || undefined,
         is_claimed: !!(dbItem.owner_id || dbItem.user_id),

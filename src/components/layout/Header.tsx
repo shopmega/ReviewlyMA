@@ -381,7 +381,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                         {profile?.full_name?.substring(0, 1).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    {profile?.tier && profile.tier !== 'none' && (
+                    {isPaidTier(profile?.tier) && (
                       <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] text-white ring-2 ring-background shadow-sm">
                         ★
                       </span>
