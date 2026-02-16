@@ -76,12 +76,12 @@ export function BusinessCard({ business }: BusinessCardProps) {
             </div>
           </div>
 
-          <div className="absolute bottom-3 md:bottom-4 right-3 md:right-4 z-10 flex gap-2">
-            <Badge variant="secondary" className="bg-white/90 text-slate-900 border-none text-[10px] uppercase font-bold tracking-wider backdrop-blur-md">
+          <div className="absolute bottom-3 md:bottom-4 right-3 md:right-4 z-10 flex flex-wrap justify-end gap-1.5 max-w-[80%]">
+            <Badge variant="secondary" className="bg-white/90 text-slate-900 border-none text-[10px] uppercase font-bold tracking-wider backdrop-blur-md px-2 py-0.5 truncate max-w-full">
               {business.category}
             </Badge>
             {business.subcategory && (
-              <Badge variant="secondary" className="bg-primary/95 text-primary-foreground border-none text-[10px] uppercase font-bold tracking-wider backdrop-blur-md">
+              <Badge variant="secondary" className="bg-indigo-600/90 text-white border-none text-[10px] uppercase font-bold tracking-wider backdrop-blur-md px-2 py-0.5 truncate max-w-full">
                 {business.subcategory}
               </Badge>
             )}

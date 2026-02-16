@@ -75,6 +75,11 @@ export function BusinessHero({ business }: BusinessHeroProps) {
                                 <Badge variant="secondary" className="backdrop-blur-md bg-primary/20 text-primary-foreground border border-primary/20 text-xs py-0.5">
                                     {business.category}
                                 </Badge>
+                                {business.subcategory && (
+                                    <Badge variant="secondary" className="backdrop-blur-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs py-0.5 shadow-sm font-bold">
+                                        {business.subcategory}
+                                    </Badge>
+                                )}
                                 {hasHours && (
                                     isOpen ? (
                                         <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 bg-emerald-500/10 backdrop-blur-sm text-xs py-0.5">Ouvert</Badge>
