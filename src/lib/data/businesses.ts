@@ -204,6 +204,9 @@ export const getCategoriesWithCount = async (): Promise<CategoryWithCount[]> => 
     return Object.entries(counts).map(([name, count]) => ({ name, count }));
 };
 
+// Alias for backward compatibility
+export const getCategoriesWithCounts = getCategoriesWithCount;
+
 export const getHomeMetrics = async (): Promise<HomeMetrics> => {
     const supabase = getPublicClient();
 

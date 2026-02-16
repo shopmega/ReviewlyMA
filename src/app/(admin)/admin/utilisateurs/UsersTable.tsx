@@ -167,7 +167,7 @@ export function UsersTable({ users, searchQuery = '' }: UsersTableProps) {
                               <DropdownMenuItem
                                 onClick={async () => {
                                   setActionLoading(user.userId);
-                                  await toggleUserPremium(user.userId, !user.isPremium ? 'gold' : 'none');
+                                  await toggleUserPremium(user.userId, !user.isPremium ? 'gold' : 'standard');
                                   setActionLoading(null);
                                   toast({ title: 'Succès', description: `Premium ${!user.isPremium ? 'activé' : 'désactivé'}` });
                                 }}
