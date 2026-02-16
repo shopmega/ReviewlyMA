@@ -59,9 +59,6 @@ export default async function DashboardPage(props: {
     .select('id, name')
     .in('id', Array.from(allBusinessIds));
 
-  // Debug log to trace what business we are looking for
-  console.log(`[Dashboard] User: ${user.id}, ActiveBusinessID: ${activeBusinessId}, Total: ${allBusinessIds.size}`);
-
   if (!activeBusinessId) {
     return <DashboardClient stats={null} profile={profileData} error="Aucune entreprise associée trouvée." />;
   }

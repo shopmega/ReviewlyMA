@@ -46,7 +46,7 @@ export default function PendingPage() {
         const fetchClaimStatus = async () => {
             try {
                 const supabase = createClient();
-                
+
                 const { data: { user }, error: authError } = await supabase.auth.getUser();
                 if (authError) {
                     console.error('Auth error:', authError);
@@ -55,12 +55,9 @@ export default function PendingPage() {
                     return;
                 }
                 if (!user) {
-                    console.log('No user found');
                     router.push('/login');
                     return;
                 }
-
-                console.log('Fetching claim for user:', user.id);
 
                 const { data: claims, error: claimError } = await supabase
                     .from('business_claims')
@@ -81,16 +78,13 @@ export default function PendingPage() {
                 }
 
                 if (!claims || claims.length === 0) {
-                    console.log('No claims found');
                     router.push('/');
                     return;
                 }
 
                 const userClaim = claims[0];
-                console.log('Claim loaded:', userClaim);
-                
+
                 if (userClaim.status === 'approved') {
-                    console.log('Claim approved, updating profile');
                     const { data: profile, error: profileError } = await supabase
                         .from('profiles')
                         .select('role, business_id')
@@ -104,15 +98,13 @@ export default function PendingPage() {
                                 .from('profiles')
                                 .update({ role: 'pro', business_id: userClaim.business_id })
                                 .eq('id', user.id);
-                        } else {
-                            console.log('User already has a business, skipping profile update');
                         }
                     }
 
                     window.location.href = '/dashboard';
                     return;
                 }
-                
+
                 setClaim(userClaim);
 
                 if (userClaim.business_id) {
@@ -126,7 +118,7 @@ export default function PendingPage() {
                         setBusiness(businessData);
                     }
                 }
-                
+
                 setLoading(false);
             } catch (err: any) {
                 console.error('Error fetching claim:', err);
@@ -147,7 +139,7 @@ export default function PendingPage() {
         setIsVerifying(true);
         try {
             const supabase = createClient();
-            
+
             const { data: codes, error: codeError } = await supabase
                 .from('verification_codes')
                 .select()
@@ -169,7 +161,7 @@ export default function PendingPage() {
 
             const newProofStatus = { ...claim?.proof_status, [method]: 'verified' };
             const newProofData = { ...claim?.proof_data, [method + '_verified']: true };
-            
+
             await supabase
                 .from('business_claims')
                 .update({ proof_status: newProofStatus, proof_data: newProofData })
@@ -178,7 +170,7 @@ export default function PendingPage() {
             toast({ title: 'Success', description: `${method} verified successfully!` });
             setVerificationCode('');
             setVerifyingMethod(null);
-            
+
             if (claim) {
                 setClaim({ ...claim, proof_status: newProofStatus, proof_data: newProofData });
             }
@@ -200,18 +192,14 @@ export default function PendingPage() {
         setIsUploading(true);
         try {
             const supabase = createClient();
-            
+
             const ext = file.name.split('.').pop() || 'pdf';
             const docPath = `claims/${claim.id}/document-${Date.now()}.${ext}`;
-            
-            console.log('Document upload starting:', { path: docPath, size: file.size, type: file.type });
-            
+
             const { error: uploadError, data: uploadData } = await supabase.storage
                 .from('claim-proofs')
                 .upload(docPath, file);
 
-            console.log('Upload response:', { uploadError, uploadData });
-            
             if (uploadError) {
                 console.error('Storage error details:', {
                     message: uploadError.message,
@@ -228,12 +216,10 @@ export default function PendingPage() {
                 document_uploaded: true,
                 document_url: docPath,
             };
-            
-            console.log('Updating claim with:', { newProofStatus, newProofData });
-            
+
             const { error: updateError } = await supabase
                 .from('business_claims')
-                .update({ 
+                .update({
                     proof_status: newProofStatus,
                     proof_data: newProofData
                 })
@@ -270,18 +256,14 @@ export default function PendingPage() {
         setIsUploading(true);
         try {
             const supabase = createClient();
-            
+
             const ext = file.name.split('.').pop() || 'mp4';
             const vidPath = `claims/${claim.id}/video-${Date.now()}.${ext}`;
-            
-            console.log('Video upload starting:', { path: vidPath, size: file.size, type: file.type });
-            
+
             const { error: uploadError, data: uploadData } = await supabase.storage
                 .from('claim-proofs')
                 .upload(vidPath, file);
 
-            console.log('Upload response:', { uploadError, uploadData });
-            
             if (uploadError) {
                 console.error('Storage error details:', {
                     message: uploadError.message,
@@ -297,12 +279,10 @@ export default function PendingPage() {
                 video_uploaded: true,
                 video_url: vidPath,
             };
-            
-            console.log('Updating claim with:', { newProofStatus, newProofData });
-            
+
             const { error: updateError } = await supabase
                 .from('business_claims')
-                .update({ 
+                .update({
                     proof_status: newProofStatus,
                     proof_data: newProofData
                 })
@@ -423,8 +403,8 @@ export default function PendingPage() {
                                         {claim.status === 'pending'
                                             ? 'Claim pending approval'
                                             : claim.status === 'rejected'
-                                            ? 'Claim rejected'
-                                            : 'Processing'}
+                                                ? 'Claim rejected'
+                                                : 'Processing'}
                                     </CardTitle>
                                     <CardDescription className="text-amber-800 mt-1">
                                         {claim.status === 'pending' &&

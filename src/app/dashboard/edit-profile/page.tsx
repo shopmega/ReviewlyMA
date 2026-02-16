@@ -163,9 +163,6 @@ export default function EditProfilePage() {
         return;
       }
 
-      console.log('📥 [CLIENT] Business data fetched from DB:', business);
-      console.log('📥 [CLIENT] Amenities from DB:', business.amenities);
-
       // Populate form
       form.reset({
         name: business.name || '',
@@ -247,18 +244,11 @@ export default function EditProfilePage() {
       // Handle amenities specifically
       if (key === 'amenities') {
         const amenitiesValue = Array.isArray(value) ? value.join(',') : '';
-        console.log('📤 [CLIENT] Amenities as comma-separated string:', amenitiesValue);
         formData.append(key, amenitiesValue);
       } else if (value !== null && value !== undefined) {
         formData.append(key, String(value));
       }
     });
-
-    // Log all FormData entries
-    console.log('📤 [CLIENT] FormData entries:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`  ${key}:`, value);
-    }
 
     startTransition(() => {
       formAction(formData);

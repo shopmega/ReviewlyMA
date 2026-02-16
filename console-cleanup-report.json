@@ -1,0 +1,2457 @@
+{
+  "timestamp": "2026-02-16T14:00:24.665Z",
+  "summary": {
+    "total": 349,
+    "byType": {
+      "log": 56,
+      "error": 273,
+      "warn": 20,
+      "info": 0
+    }
+  },
+  "statements": [
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\analytics\\page.tsx",
+      "line": 70,
+      "type": "error",
+      "content": "console.error('Failed to fetch analytics data:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Failed to fetch analytics data:', error);\r\n    } finally {\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\audit\\page.tsx",
+      "line": 74,
+      "type": "error",
+      "content": "console.error('Error fetching audit logs:', error.message || error);",
+      "context": "        if (error) {\r\n            console.error('Error fetching audit logs:', error.message || error);\r\n            toast({ title: \"Erreur Supabase\", description: error.message, variant: \"destructive\" });\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\audit\\page.tsx",
+      "line": 94,
+      "type": "error",
+      "content": "console.error('Error fetching monthly audit count:', monthCountError);",
+      "context": "        if (monthCountError) {\n            console.error('Error fetching monthly audit count:', monthCountError);\n            setMonthActions(0);"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\audit\\page.tsx",
+      "line": 111,
+      "type": "error",
+      "content": "console.error('Error fetching admin profiles:', profilesError);",
+      "context": "            if (profilesError) {\r\n                console.error('Error fetching admin profiles:', profilesError);\r\n                // Continue without profile data\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\avis-signalements\\page.tsx",
+      "line": 74,
+      "type": "error",
+      "content": "console.error('Error marking review reports as read:', readError);",
+      "context": "        if (readError) {\n          console.error('Error marking review reports as read:', readError);\n        }"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\business-suggestions\\page.tsx",
+      "line": 96,
+      "type": "warn",
+      "content": "console.warn('Warning: Could not join with profiles table, fetching suggestions without user names:', error);",
+      "context": "        // If the join fails, try without the join\r\n        console.warn('Warning: Could not join with profiles table, fetching suggestions without user names:', error);\r\n        const { data: dataWithoutJoin, error: errorWithoutJoin } = await supabase\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\business-suggestions\\page.tsx",
+      "line": 103,
+      "type": "error",
+      "content": "console.error('Error fetching suggestions without join:', errorWithoutJoin);",
+      "context": "        if (errorWithoutJoin) {\r\n          console.error('Error fetching suggestions without join:', errorWithoutJoin);\r\n          throw errorWithoutJoin;\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\business-suggestions\\page.tsx",
+      "line": 128,
+      "type": "error",
+      "content": "console.error('Error fetching suggestions:', error);",
+      "context": "    } catch (error: any) {\r\n      console.error('Error fetching suggestions:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\business-suggestions\\page.tsx",
+      "line": 194,
+      "type": "error",
+      "content": "console.error('Error reviewing suggestion:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error reviewing suggestion:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\contenu\\page.tsx",
+      "line": 82,
+      "type": "error",
+      "content": "console.error('Error fetching media reports:', error);",
+      "context": "      } else {\n        console.error('Error fetching media reports:', error);\n      }"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\contenu\\page.tsx",
+      "line": 85,
+      "type": "error",
+      "content": "console.error('Unexpected error:', err);",
+      "context": "    } catch (err) {\n      console.error('Unexpected error:', err);\n    }"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\etablissements\\page.tsx",
+      "line": 147,
+      "type": "error",
+      "content": "console.error('Error fetching cities:', err);",
+      "context": "    } catch (err) {\n      console.error('Error fetching cities:', err);\n    }"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\etablissements\\page.tsx",
+      "line": 183,
+      "type": "error",
+      "content": "console.error('Error fetching businesses:', error);",
+      "context": "      if (error) {\r\n        console.error('Error fetching businesses:', error);\r\n        toast({\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\etablissements\\page.tsx",
+      "line": 194,
+      "type": "error",
+      "content": "console.error(err);",
+      "context": "    } catch (err) {\n      console.error(err);\n      setBusinesses([]);"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\homepage\\page.tsx",
+      "line": 38,
+      "type": "error",
+      "content": "console.error('Error fetching collections:', error);",
+      "context": "  if (error) {\n    console.error('Error fetching collections:', error);\n    return [];"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\homepage\\page.tsx",
+      "line": 71,
+      "type": "error",
+      "content": "console.error('Error fetching featured:', error);",
+      "context": "  if (error) {\n    console.error('Error fetching featured:', error);\n    return [];"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\revendications\\page.tsx",
+      "line": 105,
+      "type": "error",
+      "content": "console.error('Error fetching claims:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching claims:', error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\revendications\\page.tsx",
+      "line": 136,
+      "type": "error",
+      "content": "console.error('Error saving settings:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error saving settings:', error);\r\n      toast({ title: 'Erreur', description: 'Une erreur est survenue.', variant: 'destructive' });\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\revendications\\page.tsx",
+      "line": 159,
+      "type": "error",
+      "content": "console.error('Error updating claim:', error);",
+      "context": "    } catch (error: any) {\r\n      console.error('Error updating claim:', error);\r\n      toast({ title: 'Erreur', description: error.message || 'Une erreur est survenue.', variant: 'destructive' });\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\admin\\support\\page.tsx",
+      "line": 90,
+      "type": "error",
+      "content": "console.error('Error fetching data:', error);",
+      "context": "        } catch (error) {\r\n            console.error('Error fetching data:', error);\r\n            toast({\r"
+    },
+    {
+      "file": ".\\src\\app\\(admin)\\layout.tsx",
+      "line": 154,
+      "type": "error",
+      "content": "console.error('Error fetching site settings:', error);",
+      "context": "      } catch (error) {\n        console.error('Error fetching site settings:', error);\n      }"
+    },
+    {
+      "file": ".\\src\\app\\actions\\admin.ts",
+      "line": 363,
+      "type": "error",
+      "content": "console.error('Error updating suggestion status:', updateError);",
+      "context": "    if (updateError) {\n      console.error('Error updating suggestion status:', updateError);\n      // Don't fail the whole operation if we can't update the suggestion"
+    },
+    {
+      "file": ".\\src\\app\\actions\\admin.ts",
+      "line": 1343,
+      "type": "error",
+      "content": "console.error('Error sending logo request notification:', notificationError);",
+      "context": "      if (notificationError) {\n        console.error('Error sending logo request notification:', notificationError);\n        // Don't return error here as the main action succeeded"
+    },
+    {
+      "file": ".\\src\\app\\actions\\admin.ts",
+      "line": 1483,
+      "type": "error",
+      "content": "console.error('Error calling safe_delete_user function:', error);",
+      "context": "    if (error) {\n      console.error('Error calling safe_delete_user function:', error);\n      return { status: 'error', message: `Erreur DB: ${error.message}` };"
+    },
+    {
+      "file": ".\\src\\app\\actions\\analytics.ts",
+      "line": 113,
+      "type": "error",
+      "content": "console.error('Error in getConsolidatedAnalytics:', error);",
+      "context": "    } catch (error) {\n        console.error('Error in getConsolidatedAnalytics:', error);\n        return null;"
+    },
+    {
+      "file": ".\\src\\app\\actions\\analytics.ts",
+      "line": 267,
+      "type": "error",
+      "content": "console.error('Error fetching admin analytics:', error);",
+      "context": "    } catch (error) {\n        console.error('Error fetching admin analytics:', error);\n        return null;"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 61,
+      "type": "error",
+      "content": "console.error('Error creating business suggestion:', error);",
+      "context": "        if (error) {\r\n            console.error('Error creating business suggestion:', error);\r\n            return { status: 'error', message: 'Erreur lors de la suggestion de l\\'établissement.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 70,
+      "type": "error",
+      "content": "console.error('Server error proposing business:', error);",
+      "context": "    } catch (error) {\r\n        console.error('Server error proposing business:', error);\r\n        return { status: 'error', message: 'Une erreur inattendue est survenue.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 144,
+      "type": "error",
+      "content": "console.error('Error reporting media:', error);",
+      "context": "        if (error) {\r\n            console.error('Error reporting media:', error);\r\n            return { status: 'error', message: 'Erreur lors du signalement.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 150,
+      "type": "error",
+      "content": "console.error('Server error reporting media:', error);",
+      "context": "    } catch (error) {\r\n        console.error('Server error reporting media:', error);\r\n        return { status: 'error', message: 'Une erreur inattendue est survenue.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 213,
+      "type": "error",
+      "content": "console.error('Update create error:', insertError);",
+      "context": "        if (insertError) {\r\n            console.error('Update create error:', insertError);\r\n            return { status: 'error', message: 'Erreur lors de la publication.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 247,
+      "type": "error",
+      "content": "console.error(err);",
+      "context": "    } catch (err) {\r\n        console.error(err);\r\n        return { status: 'error', message: 'Erreur interne.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 342,
+      "type": "error",
+      "content": "console.error('❌ [DEBUG] Validation failed:', validatedFields.error.flatten().fieldErrors);",
+      "context": "        if (!validatedFields.success) {\r\n            console.error('❌ [DEBUG] Validation failed:', validatedFields.error.flatten().fieldErrors);\r\n            return {\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 365,
+      "type": "error",
+      "content": "console.error('❌ [DEBUG] Database update error:', error);",
+      "context": "        if (error) {\r\n            console.error('❌ [DEBUG] Database update error:', error);\r\n            console.error('Error updating business profile:', error);\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 366,
+      "type": "error",
+      "content": "console.error('Error updating business profile:', error);",
+      "context": "            console.error('❌ [DEBUG] Database update error:', error);\r\n            console.error('Error updating business profile:', error);\r\n            return { status: 'error', message: 'Erreur lors de la mise à jour du profil' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 378,
+      "type": "error",
+      "content": "console.error('Server error updating business profile:', err);",
+      "context": "    } catch (err) {\r\n        console.error('Server error updating business profile:', err);\r\n        return { status: 'error', message: 'Erreur serveur lors de la mise à jour du profil' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 435,
+      "type": "error",
+      "content": "console.error('Error updating business images:', error);",
+      "context": "        if (error) {\r\n            console.error('Error updating business images:', error);\r\n            return { status: 'error', message: 'Erreur lors de la mise à jour des images' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 444,
+      "type": "error",
+      "content": "console.error('Server error updating business images:', err);",
+      "context": "    } catch (err) {\r\n        console.error('Server error updating business images:', err);\r\n        return { status: 'error', message: 'Erreur serveur lors de la mise à jour des images' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 488,
+      "type": "error",
+      "content": "console.error('Error saving business hours:', error);",
+      "context": "        if (error) {\r\n            console.error('Error saving business hours:', error);\r\n            return { status: 'error', message: 'Erreur lors de l\\'enregistrement des heures' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 497,
+      "type": "error",
+      "content": "console.error('Server error saving business hours:', err);",
+      "context": "    } catch (err) {\r\n        console.error('Server error saving business hours:', err);\r\n        return { status: 'error', message: 'Erreur serveur lors de l\\'enregistrement des heures' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 530,
+      "type": "error",
+      "content": "console.error('Error fetching business hours:', error);",
+      "context": "        if (error) {\r\n            console.error('Error fetching business hours:', error);\r\n            return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\business.ts",
+      "line": 536,
+      "type": "error",
+      "content": "console.error('Server error fetching business hours:', err);",
+      "context": "    } catch (err) {\r\n        console.error('Server error fetching business hours:', err);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\categories.ts",
+      "line": 37,
+      "type": "error",
+      "content": "console.error('Error fetching categories:', error.message, error.code, error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching categories:', error.message, error.code, error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\categories.ts",
+      "line": 55,
+      "type": "error",
+      "content": "console.error('Error fetching active categories:', error.message, error.code, error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching active categories:', error.message, error.code, error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\categories.ts",
+      "line": 73,
+      "type": "error",
+      "content": "console.error('Error fetching subcategories:', error.message, error.code, error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching subcategories:', error.message, error.code, error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\categories.ts",
+      "line": 325,
+      "type": "error",
+      "content": "console.error(`Error syncing category ${catName}:`, catError);",
+      "context": "            if (catError) {\r\n                console.error(`Error syncing category ${catName}:`, catError);\r\n                continue;\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\categories.ts",
+      "line": 343,
+      "type": "error",
+      "content": "console.error(`Error syncing subcategory ${subName} for ${catName}:`, subError);",
+      "context": "                if (subError) {\r\n                    console.error(`Error syncing subcategory ${subName} for ${catName}:`, subError);\r\n                    continue;\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim-admin.ts",
+      "line": 171,
+      "type": "error",
+      "content": "console.error('Error updating business owner:', businessUpdateError);",
+      "context": "            if (businessUpdateError) {\r\n                console.error('Error updating business owner:', businessUpdateError);\r\n                // Continue but log error\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim-admin.ts",
+      "line": 181,
+      "type": "error",
+      "content": "console.error('Error applying requested business updates:', requestedUpdateError);",
+      "context": "                if (requestedUpdateError) {\r\n                    console.error('Error applying requested business updates:', requestedUpdateError);\r\n                    // Continue but log error\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 432,
+      "type": "error",
+      "content": "console.error(`Error generating verification code for ${method}:`, error);",
+      "context": "    } catch (error) {\r\n        console.error(`Error generating verification code for ${method}:`, error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 495,
+      "type": "error",
+      "content": "console.error('Error marking code as verified:', codeUpdateError);",
+      "context": "        if (codeUpdateError) {\r\n            console.error('Error marking code as verified:', codeUpdateError);\r\n            return { status: 'error', message: 'Erreur lors de la vérification du code.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 510,
+      "type": "error",
+      "content": "console.error('Error updating proof status:', proofUpdateError);",
+      "context": "        if (proofUpdateError) {\r\n            console.error('Error updating proof status:', proofUpdateError);\r\n            return { status: 'error', message: 'Erreur lors de la mise à jour du statut de vérification.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 516,
+      "type": "log",
+      "content": "console.log('Verification successful:', {",
+      "context": "\r\n        console.log('Verification successful:', {\r\n            claimId,\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 527,
+      "type": "error",
+      "content": "console.error('Verification error:', error);",
+      "context": "    } catch (error) {\r\n        console.error('Verification error:', error);\r\n        return { status: 'error', message: 'Une erreur est survenue lors de la vérification.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 548,
+      "type": "error",
+      "content": "console.error('Error checking business claim status:', error);",
+      "context": "        }\r\n        console.error('Error checking business claim status:', error);\r\n        return false;\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 574,
+      "type": "error",
+      "content": "console.error('Error checking user business claim:', error);",
+      "context": "    if (error) {\r\n        console.error('Error checking user business claim:', error);\r\n        return null;\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 623,
+      "type": "error",
+      "content": "console.error('Error handling document:', error);",
+      "context": "        } catch (error) {\r\n            console.error('Error handling document:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 647,
+      "type": "error",
+      "content": "console.error('Error handling video:', error);",
+      "context": "        } catch (error) {\r\n            console.error('Error handling video:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 682,
+      "type": "error",
+      "content": "console.error('Error handling logo:', error);",
+      "context": "        } catch (error) {\r\n            console.error('Error handling logo:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 704,
+      "type": "error",
+      "content": "console.error('Error handling cover:', error);",
+      "context": "        } catch (error) {\r\n            console.error('Error handling cover:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 729,
+      "type": "error",
+      "content": "console.error(`Error handling gallery image ${i}:`, error);",
+      "context": "            } catch (error) {\r\n                console.error(`Error handling gallery image ${i}:`, error);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 751,
+      "type": "error",
+      "content": "console.error('Error updating business images:', updateError);",
+      "context": "            if (updateError) {\r\n                console.error('Error updating business images:', updateError);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 818,
+      "type": "error",
+      "content": "console.error('Error creating verification code:', codeError);",
+      "context": "        if (codeError) {\r\n            console.error('Error creating verification code:', codeError);\r\n            return { status: 'error', message: 'Erreur lors de la création du code de vérification.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 834,
+      "type": "log",
+      "content": "console.log(`📧 Verification email sent for ${claim.email}`);",
+      "context": "\r\n                console.log(`📧 Verification email sent for ${claim.email}`);\r\n            } catch (emailError) {\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 836,
+      "type": "error",
+      "content": "console.error('Error sending verification email:', emailError);",
+      "context": "            } catch (emailError) {\r\n                console.error('Error sending verification email:', emailError);\r\n                // Don't fail if email send fails - code is still created\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\claim.ts",
+      "line": 846,
+      "type": "error",
+      "content": "console.error('Error resending verification code:', error);",
+      "context": "    } catch (error) {\r\n        console.error('Error resending verification code:', error);\r\n        return {\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\collections.ts",
+      "line": 89,
+      "type": "error",
+      "content": "console.error('Error adding collection:', error);",
+      "context": "    if (error) {\r\n        console.error('Error adding collection:', error);\r\n        return { status: 'error', message: `Erreur: ${error.message}` };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\collections.ts",
+      "line": 105,
+      "type": "error",
+      "content": "console.error('Error deleting collection:', error);",
+      "context": "    if (error) {\r\n        console.error('Error deleting collection:', error);\r\n        return { status: 'error', message: `Erreur: ${error.message}` };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\collections.ts",
+      "line": 121,
+      "type": "error",
+      "content": "console.error('Error toggling collection:', error);",
+      "context": "    if (error) {\r\n        console.error('Error toggling collection:', error);\r\n        return { status: 'error', message: `Erreur: ${error.message}` };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\collections.ts",
+      "line": 189,
+      "type": "error",
+      "content": "console.error('Error updating collection:', error);",
+      "context": "    if (error) {\r\n        console.error('Error updating collection:', error);\r\n        return { status: 'error', message: `Erreur: ${error.message}` };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\favorites.ts",
+      "line": 31,
+      "type": "error",
+      "content": "console.error('Error removing favorite:', error);",
+      "context": "        if (error) {\r\n            console.error('Error removing favorite:', error);\r\n            return { status: 'error', message: 'Erreur lors de la suppression' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\favorites.ts",
+      "line": 47,
+      "type": "error",
+      "content": "console.error('Error adding favorite:', error);",
+      "context": "        if (error) {\r\n            console.error('Error adding favorite:', error);\r\n            return { status: 'error', message: 'Erreur lors de l\\'ajout' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\messages.ts",
+      "line": 63,
+      "type": "error",
+      "content": "console.error('Fetch messages error:', error);",
+      "context": "        if (error) {\r\n            console.error('Fetch messages error:', error);\r\n            return { status: 'error', message: 'Erreur lors du chargement des messages.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\messages.ts",
+      "line": 131,
+      "type": "error",
+      "content": "console.error('Send message error:', error);",
+      "context": "        if (error) {\r\n            console.error('Send message error:', error);\r\n            return { status: 'error', message: 'Erreur lors de l\\'envoi du message.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\messages.ts",
+      "line": 137,
+      "type": "error",
+      "content": "console.error('Send message unexpected error:', error);",
+      "context": "    } catch (error: any) {\r\n        console.error('Send message unexpected error:', error);\r\n        return { status: 'error', message: 'Une erreur est survenue.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\notifications.ts",
+      "line": 52,
+      "type": "error",
+      "content": "console.error('Error fetching notifications:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching notifications:', error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\payment.ts",
+      "line": 58,
+      "type": "error",
+      "content": "console.error('Error submitting payment:', insertError);",
+      "context": "        if (insertError) {\r\n            console.error('Error submitting payment:', insertError);\r\n            return { status: 'error', message: 'Une erreur est survenue lors de la soumission.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\platform-contact.ts",
+      "line": 82,
+      "type": "error",
+      "content": "console.error('Failed to send contact email:', emailResult.message);",
+      "context": "        if (emailResult.status === 'error') {\r\n            console.error('Failed to send contact email:', emailResult.message);\r\n            // Still return success to user for better UX, but log error internally\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\platform-contact.ts",
+      "line": 88,
+      "type": "error",
+      "content": "console.error('Contact form error:', error);",
+      "context": "    } catch (error) {\r\n        console.error('Contact form error:', error);\r\n        return { status: 'error', message: 'Une erreur est survenue lors de l\\'envoi du message.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\search.ts",
+      "line": 113,
+      "type": "error",
+      "content": "console.error('Error logging search:', error);",
+      "context": "    } catch (error) {\r\n        console.error('Error logging search:', error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\support.ts",
+      "line": 110,
+      "type": "error",
+      "content": "console.error('[getUserSupportTickets] Join failed, attempting simple select:', error);",
+      "context": "        if (error) {\r\n            console.error('[getUserSupportTickets] Join failed, attempting simple select:', error);\r\n            // Fallback to simple select\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\support.ts",
+      "line": 119,
+      "type": "error",
+      "content": "console.error('[getUserSupportTickets] Simple select also failed:', simpleError);",
+      "context": "            if (simpleError) {\r\n                console.error('[getUserSupportTickets] Simple select also failed:', simpleError);\r\n                logError('get_user_support_tickets', simpleError, { userId: user.id });\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\support.ts",
+      "line": 178,
+      "type": "error",
+      "content": "console.error('[getAllSupportTickets] Join failed, attempting simple select:', error);",
+      "context": "        if (error) {\r\n            console.error('[getAllSupportTickets] Join failed, attempting simple select:', error);\r\n            // Fallback to simple select if join fails\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\support.ts",
+      "line": 186,
+      "type": "error",
+      "content": "console.error('[getAllSupportTickets] Simple select also failed:', simpleError);",
+      "context": "            if (simpleError) {\r\n                console.error('[getAllSupportTickets] Simple select also failed:', simpleError);\r\n                return [];\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\support.ts",
+      "line": 294,
+      "type": "error",
+      "content": "console.error('Error sending support response email:', emailError);",
+      "context": "            } catch (emailError) {\r\n                console.error('Error sending support response email:', emailError);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\support.ts",
+      "line": 480,
+      "type": "error",
+      "content": "console.error('Error sending support message email:', emailError);",
+      "context": "            } catch (emailError) {\r\n                console.error('Error sending support message email:', emailError);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\user.ts",
+      "line": 50,
+      "type": "error",
+      "content": "console.error('Sync profile error:', updateError);",
+      "context": "        if (updateError) {\r\n            console.error('Sync profile error:', updateError);\r\n            return { status: 'error', message: 'Erreur lors de la synchronisation du profil.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\user.ts",
+      "line": 56,
+      "type": "error",
+      "content": "console.error('Sync action error:', error);",
+      "context": "    } catch (error: any) {\r\n        console.error('Sync action error:', error);\r\n        return { status: 'error', message: error.message || 'Une erreur est survenue.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\user.ts",
+      "line": 134,
+      "type": "error",
+      "content": "console.error('Error fetching saved/favorites:', savedError || favoritesError);",
+      "context": "    if (savedError || favoritesError) {\r\n        console.error('Error fetching saved/favorites:', savedError || favoritesError);\r\n        throw new Error('Failed to fetch saved businesses');\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\user.ts",
+      "line": 162,
+      "type": "error",
+      "content": "console.error('Error fetching businesses:', businessesError);",
+      "context": "    if (businessesError) {\r\n        console.error('Error fetching businesses:', businessesError);\r\n        throw new Error('Failed to fetch business data');\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\user.ts",
+      "line": 238,
+      "type": "error",
+      "content": "console.error('Update profile error:', error);",
+      "context": "        if (error) {\r\n            console.error('Update profile error:', error);\r\n            return { status: 'error', message: 'Erreur lors de la mise à jour du profil.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\actions\\user.ts",
+      "line": 244,
+      "type": "error",
+      "content": "console.error('Update profile exception:', error);",
+      "context": "    } catch (error: any) {\r\n        console.error('Update profile exception:', error);\r\n        return { status: 'error', message: 'Une erreur est survenue lors de la mise à jour du profil.' };\r"
+    },
+    {
+      "file": ".\\src\\app\\api\\admin\\businesses\\search\\route.ts",
+      "line": 58,
+      "type": "error",
+      "content": "console.error('Business search error:', error)",
+      "context": "  } catch (error) {\n    console.error('Business search error:', error)\n    return NextResponse.json("
+    },
+    {
+      "file": ".\\src\\app\\api\\admin\\users\\search\\route.ts",
+      "line": 91,
+      "type": "error",
+      "content": "console.error('User search error:', error)",
+      "context": "  } catch (error) {\n    console.error('User search error:', error)\n    return NextResponse.json("
+    },
+    {
+      "file": ".\\src\\app\\api\\businesses\\[id]\\claimed\\route.ts",
+      "line": 24,
+      "type": "error",
+      "content": "console.error('Error checking business claim status:', error);",
+      "context": "  } catch (error) {\n    console.error('Error checking business claim status:', error);\n    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });"
+    },
+    {
+      "file": ".\\src\\app\\api\\proofs\\[id]\\route.ts",
+      "line": 128,
+      "type": "error",
+      "content": "console.error('Error fetching proof data:', error);",
+      "context": "    } catch (error) {\n        console.error('Error fetching proof data:', error);\n        return NextResponse.json("
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 63,
+      "type": "error",
+      "content": "console.error('Error checking claim status:', error);",
+      "context": "        } catch (error) {\r\n          console.error('Error checking claim status:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 92,
+      "type": "error",
+      "content": "console.error('Error checking claim status:', error);",
+      "context": "        if (error) {\r\n          console.error('Error checking claim status:', error);\r\n          setUserClaimStatus('none');\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 123,
+      "type": "error",
+      "content": "console.error('Error checking user claim status:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error checking user claim status:', error);\r\n        setUserClaimStatus('none');\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 217,
+      "type": "error",
+      "content": "console.error('Error loading draft:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error loading draft:', error);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 265,
+      "type": "error",
+      "content": "console.error('Failed to load verification settings:', err);",
+      "context": "    } catch (err) {\r\n      console.error('Failed to load verification settings:', err);\r\n      // Keep defaults if fetch fails\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 379,
+      "type": "error",
+      "content": "console.error('Error in loadBusinessData:', error);",
+      "context": "        } catch (error) {\r\n          console.error('Error in loadBusinessData:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\new\\page.tsx",
+      "line": 477,
+      "type": "error",
+      "content": "console.error('Error during client-side upload:', error);",
+      "context": "    } catch (error: any) {\r\n      console.error('Error during client-side upload:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\page.tsx",
+      "line": 36,
+      "type": "error",
+      "content": "console.error('Error fetching site settings:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error fetching site settings:', error);\r\n        // Keep default value\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\page.tsx",
+      "line": 64,
+      "type": "error",
+      "content": "console.error('Error checking claim status:', error);",
+      "context": "        if (error) {\r\n          console.error('Error checking claim status:', error);\r\n          setUserClaimStatus('none');\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\page.tsx",
+      "line": 85,
+      "type": "error",
+      "content": "console.error('Error checking user claim status:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error checking user claim status:', error);\r\n        setUserClaimStatus('none');\r"
+    },
+    {
+      "file": ".\\src\\app\\claim\\page.tsx",
+      "line": 106,
+      "type": "error",
+      "content": "console.error('Search error:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Search error:', error);\r\n        setSearchResults([]);\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\DashboardClient.tsx",
+      "line": 79,
+      "type": "error",
+      "content": "console.error('DashboardClient: No authenticated user found');",
+      "context": "                if (authError || !user) {\r\n                    console.error('DashboardClient: No authenticated user found');\r\n                    router.push('/login');\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\DashboardClient.tsx",
+      "line": 86,
+      "type": "error",
+      "content": "console.error('DashboardClient: No valid data provided');",
+      "context": "                if (!stats || !profile) {\r\n                    console.error('DashboardClient: No valid data provided');\r\n                    return;\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\DashboardClient.tsx",
+      "line": 101,
+      "type": "error",
+      "content": "console.error('DashboardClient: User does not have access to this business data');",
+      "context": "                    if (!hasBusinessAccess) {\r\n                        console.error('DashboardClient: User does not have access to this business data');\r\n                        router.push('/dashboard');\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\DashboardClient.tsx",
+      "line": 109,
+      "type": "error",
+      "content": "console.error('DashboardClient: Verification error:', error);",
+      "context": "            } catch (error) {\r\n                console.error('DashboardClient: Verification error:', error);\r\n                router.push('/login');\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 166,
+      "type": "log",
+      "content": "console.log('📥 [CLIENT] Business data fetched from DB:', business);",
+      "context": "\n      console.log('📥 [CLIENT] Business data fetched from DB:', business);\n      console.log('📥 [CLIENT] Amenities from DB:', business.amenities);"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 167,
+      "type": "log",
+      "content": "console.log('📥 [CLIENT] Amenities from DB:', business.amenities);",
+      "context": "      console.log('📥 [CLIENT] Business data fetched from DB:', business);\n      console.log('📥 [CLIENT] Amenities from DB:', business.amenities);\n"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 228,
+      "type": "log",
+      "content": "console.log('📤 [CLIENT] Form data before FormData conversion:', data);",
+      "context": "  const onSubmit = (data: BusinessProfileUpdateData) => {\n    console.log('📤 [CLIENT] Form data before FormData conversion:', data);\n    console.log('📤 [CLIENT] Amenities from form:', data.amenities);"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 229,
+      "type": "log",
+      "content": "console.log('📤 [CLIENT] Amenities from form:', data.amenities);",
+      "context": "    console.log('📤 [CLIENT] Form data before FormData conversion:', data);\n    console.log('📤 [CLIENT] Amenities from form:', data.amenities);\n    console.log('📤 [CLIENT] Business ID being edited:', businessId);"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 230,
+      "type": "log",
+      "content": "console.log('📤 [CLIENT] Business ID being edited:', businessId);",
+      "context": "    console.log('📤 [CLIENT] Amenities from form:', data.amenities);\n    console.log('📤 [CLIENT] Business ID being edited:', businessId);\n"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 250,
+      "type": "log",
+      "content": "console.log('📤 [CLIENT] Amenities as comma-separated string:', amenitiesValue);",
+      "context": "        const amenitiesValue = Array.isArray(value) ? value.join(',') : '';\n        console.log('📤 [CLIENT] Amenities as comma-separated string:', amenitiesValue);\n        formData.append(key, amenitiesValue);"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 258,
+      "type": "log",
+      "content": "console.log('📤 [CLIENT] FormData entries:');",
+      "context": "    // Log all FormData entries\n    console.log('📤 [CLIENT] FormData entries:');\n    for (const [key, value] of formData.entries()) {"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 260,
+      "type": "log",
+      "content": "console.log(`  ${key}:`, value);",
+      "context": "    for (const [key, value] of formData.entries()) {\n      console.log(`  ${key}:`, value);\n    }"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 352,
+      "type": "error",
+      "content": "console.error('Error uploading image:', error);",
+      "context": "    } catch (error: any) {\n      console.error('Error uploading image:', error);\n      toast({"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\edit-profile\\page.tsx",
+      "line": 385,
+      "type": "error",
+      "content": "console.error('Error removing image:', error);",
+      "context": "    } catch (error: any) {\n      console.error('Error removing image:', error);\n      toast({"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\page.tsx",
+      "line": 28,
+      "type": "error",
+      "content": "console.error(\"Profile fetch error:\", JSON.stringify(profileError, null, 2));",
+      "context": "  if (profileError || !profileData) {\n    console.error(\"Profile fetch error:\", JSON.stringify(profileError, null, 2));\n    return <DashboardClient stats={null} profile={null} error=\"Impossible de charger le profil.\" />;"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\page.tsx",
+      "line": 63,
+      "type": "log",
+      "content": "console.log(`[Dashboard] User: ${user.id}, ActiveBusinessID: ${activeBusinessId}, Total: ${allBusinessIds.size}`);",
+      "context": "  // Debug log to trace what business we are looking for\n  console.log(`[Dashboard] User: ${user.id}, ActiveBusinessID: ${activeBusinessId}, Total: ${allBusinessIds.size}`);\n"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\page.tsx",
+      "line": 116,
+      "type": "error",
+      "content": "console.error(`[Dashboard] Business fetch error for ID ${activeBusinessId}:`, JSON.stringify(businessResult.error, null, 2));",
+      "context": "    if (businessResult.error) {\n      console.error(`[Dashboard] Business fetch error for ID ${activeBusinessId}:`, JSON.stringify(businessResult.error, null, 2));\n      return <DashboardClient stats={null} profile={profileData} error=\"Erreur lors de la récupération des données d'entreprise.\" />;"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\page.tsx",
+      "line": 121,
+      "type": "warn",
+      "content": "console.warn(`[Dashboard] Business ID ${activeBusinessId} found in profile but not in businesses table.`);",
+      "context": "    if (!businessResult.data) {\n      console.warn(`[Dashboard] Business ID ${activeBusinessId} found in profile but not in businesses table.`);\n      return <DashboardClient stats={null} profile={profileData} error=\"Données d'entreprise introuvables (ID invalide ou supprimé).\" />;"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\page.tsx",
+      "line": 155,
+      "type": "error",
+      "content": "console.error(\"[Dashboard] Unexpected fatal error:\", error);",
+      "context": "  } catch (error) {\n    console.error(\"[Dashboard] Unexpected fatal error:\", error);\n    return <DashboardClient stats={null} profile={profileData} error=\"Erreur technique lors du chargement.\" />;"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 52,
+      "type": "error",
+      "content": "console.error('Auth error:', authError);",
+      "context": "                if (authError) {\r\n                    console.error('Auth error:', authError);\r\n                    setError('Authentication error');\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 58,
+      "type": "log",
+      "content": "console.log('No user found');",
+      "context": "                if (!user) {\r\n                    console.log('No user found');\r\n                    router.push('/login');\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 63,
+      "type": "log",
+      "content": "console.log('Fetching claim for user:', user.id);",
+      "context": "\r\n                console.log('Fetching claim for user:', user.id);\r\n\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 73,
+      "type": "error",
+      "content": "console.error('Claim error:', {",
+      "context": "                if (claimError) {\r\n                    console.error('Claim error:', {\r\n                        message: claimError.message,\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 84,
+      "type": "log",
+      "content": "console.log('No claims found');",
+      "context": "                if (!claims || claims.length === 0) {\r\n                    console.log('No claims found');\r\n                    router.push('/');\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 90,
+      "type": "log",
+      "content": "console.log('Claim loaded:', userClaim);",
+      "context": "                const userClaim = claims[0];\r\n                console.log('Claim loaded:', userClaim);\r\n                \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 93,
+      "type": "log",
+      "content": "console.log('Claim approved, updating profile');",
+      "context": "                if (userClaim.status === 'approved') {\r\n                    console.log('Claim approved, updating profile');\r\n                    const { data: profile, error: profileError } = await supabase\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 108,
+      "type": "log",
+      "content": "console.log('User already has a business, skipping profile update');",
+      "context": "                        } else {\r\n                            console.log('User already has a business, skipping profile update');\r\n                        }\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 132,
+      "type": "error",
+      "content": "console.error('Error fetching claim:', err);",
+      "context": "            } catch (err: any) {\r\n                console.error('Error fetching claim:', err);\r\n                setError('Error: ' + (err?.message || 'Unknown error'));\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 186,
+      "type": "error",
+      "content": "console.error('Verification error:', err);",
+      "context": "        } catch (err: any) {\r\n            console.error('Verification error:', err);\r\n            toast({ title: 'Error', description: 'Verification failed. Please try again.', variant: 'destructive' });\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 207,
+      "type": "log",
+      "content": "console.log('Document upload starting:', { path: docPath, size: file.size, type: file.type });",
+      "context": "            \r\n            console.log('Document upload starting:', { path: docPath, size: file.size, type: file.type });\r\n            \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 213,
+      "type": "log",
+      "content": "console.log('Upload response:', { uploadError, uploadData });",
+      "context": "\r\n            console.log('Upload response:', { uploadError, uploadData });\r\n            \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 216,
+      "type": "error",
+      "content": "console.error('Storage error details:', {",
+      "context": "            if (uploadError) {\r\n                console.error('Storage error details:', {\r\n                    message: uploadError.message,\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 232,
+      "type": "log",
+      "content": "console.log('Updating claim with:', { newProofStatus, newProofData });",
+      "context": "            \r\n            console.log('Updating claim with:', { newProofStatus, newProofData });\r\n            \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 243,
+      "type": "error",
+      "content": "console.error('Update error:', updateError);",
+      "context": "            if (updateError) {\r\n                console.error('Update error:', updateError);\r\n                throw updateError;\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 252,
+      "type": "error",
+      "content": "console.error('Document upload error:', err);",
+      "context": "        } catch (err: any) {\r\n            console.error('Document upload error:', err);\r\n            console.error('Error details:', {\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 253,
+      "type": "error",
+      "content": "console.error('Error details:', {",
+      "context": "            console.error('Document upload error:', err);\r\n            console.error('Error details:', {\r\n                message: err?.message,\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 277,
+      "type": "log",
+      "content": "console.log('Video upload starting:', { path: vidPath, size: file.size, type: file.type });",
+      "context": "            \r\n            console.log('Video upload starting:', { path: vidPath, size: file.size, type: file.type });\r\n            \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 283,
+      "type": "log",
+      "content": "console.log('Upload response:', { uploadError, uploadData });",
+      "context": "\r\n            console.log('Upload response:', { uploadError, uploadData });\r\n            \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 286,
+      "type": "error",
+      "content": "console.error('Storage error details:', {",
+      "context": "            if (uploadError) {\r\n                console.error('Storage error details:', {\r\n                    message: uploadError.message,\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 301,
+      "type": "log",
+      "content": "console.log('Updating claim with:', { newProofStatus, newProofData });",
+      "context": "            \r\n            console.log('Updating claim with:', { newProofStatus, newProofData });\r\n            \r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 312,
+      "type": "error",
+      "content": "console.error('Update error:', updateError);",
+      "context": "            if (updateError) {\r\n                console.error('Update error:', updateError);\r\n                throw updateError;\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 321,
+      "type": "error",
+      "content": "console.error('Video upload error:', err);",
+      "context": "        } catch (err: any) {\r\n            console.error('Video upload error:', err);\r\n            console.error('Error details:', {\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\pending\\page.tsx",
+      "line": 322,
+      "type": "error",
+      "content": "console.error('Error details:', {",
+      "context": "            console.error('Video upload error:', err);\r\n            console.error('Error details:', {\r\n                message: err?.message,\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\premium\\page.tsx",
+      "line": 66,
+      "type": "error",
+      "content": "console.error('Error loading user data:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error loading user data:', error);\r\n      } finally {\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\reviews\\page.tsx",
+      "line": 131,
+      "type": "error",
+      "content": "console.error('Error fetching reviews:', reviewsError?.message || reviewsError || 'Unknown error');",
+      "context": "            if (reviewsError) {\n                console.error('Error fetching reviews:', reviewsError?.message || reviewsError || 'Unknown error');\n            } else {"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\support\\page.tsx",
+      "line": 78,
+      "type": "error",
+      "content": "console.error('Error fetching tickets:', error);",
+      "context": "        } catch (error) {\r\n            console.error('Error fetching tickets:', error);\r\n            toast({\r"
+    },
+    {
+      "file": ".\\src\\app\\dashboard\\test-auth.tsx",
+      "line": 54,
+      "type": "error",
+      "content": "console.error('Auth test error:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Auth test error:', error);\r\n        setAuthStatus('error');\r"
+    },
+    {
+      "file": ".\\src\\app\\error.tsx",
+      "line": 17,
+      "type": "error",
+      "content": "console.error('Error occurred:', error);",
+      "context": "    // Log the error to an error reporting service\r\n    console.error('Error occurred:', error);\r\n  }, [error]);\r"
+    },
+    {
+      "file": ".\\src\\app\\global-error.tsx",
+      "line": 17,
+      "type": "error",
+      "content": "console.error('Global error occurred:', error);",
+      "context": "    // Log the error to an error reporting service\r\n    console.error('Global error occurred:', error);\r\n  }, [error]);\r"
+    },
+    {
+      "file": ".\\src\\app\\profile\\page.tsx",
+      "line": 223,
+      "type": "error",
+      "content": "console.error('Failed to fetch saved businesses', e);",
+      "context": "      } catch (e) {\n        console.error('Failed to fetch saved businesses', e);\n      }"
+    },
+    {
+      "file": ".\\src\\app\\review\\page.tsx",
+      "line": 46,
+      "type": "error",
+      "content": "console.error('Error fetching businesses:', error);",
+      "context": "      } catch (error) {\n        console.error('Error fetching businesses:', error);\n      } finally {"
+    },
+    {
+      "file": ".\\src\\app\\review\\page.tsx",
+      "line": 72,
+      "type": "error",
+      "content": "console.error('Error changing page:', error);",
+      "context": "    } catch (error) {\n      console.error('Error changing page:', error);\n    } finally {"
+    },
+    {
+      "file": ".\\src\\components\\admin\\ActivityFeed.tsx",
+      "line": 28,
+      "type": "error",
+      "content": "console.error('Failed to fetch activity:', error);",
+      "context": "            } catch (error) {\r\n                console.error('Failed to fetch activity:', error);\r\n            } finally {\r"
+    },
+    {
+      "file": ".\\src\\components\\admin\\AdminBusinessAssignment.tsx",
+      "line": 86,
+      "type": "error",
+      "content": "console.error('User search error:', error)",
+      "context": "      setSearchError('Error searching for user')\r\n      console.error('User search error:', error)\r\n    } finally {\r"
+    },
+    {
+      "file": ".\\src\\components\\admin\\AdminBusinessAssignment.tsx",
+      "line": 118,
+      "type": "error",
+      "content": "console.error('Business search error:', error)",
+      "context": "      setSearchError('Error searching for business')\r\n      console.error('Business search error:', error)\r\n    } finally {\r"
+    },
+    {
+      "file": ".\\src\\components\\admin\\AdminBusinessAssignment.tsx",
+      "line": 134,
+      "type": "error",
+      "content": "console.error('Error loading assignments:', error)",
+      "context": "    } catch (error) {\r\n      console.error('Error loading assignments:', error)\r\n      setSearchError('Failed to load business assignments')\r"
+    },
+    {
+      "file": ".\\src\\components\\admin\\AdminBusinessAssignment.tsx",
+      "line": 178,
+      "type": "error",
+      "content": "console.error('Assignment error:', error)",
+      "context": "      })\r\n      console.error('Assignment error:', error)\r\n    } finally {\r"
+    },
+    {
+      "file": ".\\src\\components\\admin\\AdminBusinessAssignment.tsx",
+      "line": 213,
+      "type": "error",
+      "content": "console.error('Removal error:', error)",
+      "context": "      })\r\n      console.error('Removal error:', error)\r\n    } finally {\r"
+    },
+    {
+      "file": ".\\src\\components\\auth\\DashboardAuthGuard.tsx",
+      "line": 33,
+      "type": "error",
+      "content": "console.error('AuthGuard: No authenticated user');",
+      "context": "        if (authError || !user) {\r\n          console.error('AuthGuard: No authenticated user');\r\n          router.push('/login?next=' + encodeURIComponent(pathname));\r"
+    },
+    {
+      "file": ".\\src\\components\\auth\\DashboardAuthGuard.tsx",
+      "line": 92,
+      "type": "error",
+      "content": "console.error('AuthGuard: Access check failed:', error);",
+      "context": "      } catch (error) {\r\n        console.error('AuthGuard: Access check failed:', error);\r\n        router.push('/login?next=' + encodeURIComponent(pathname));\r"
+    },
+    {
+      "file": ".\\src\\components\\auth\\ProtectedRoute.tsx",
+      "line": 30,
+      "type": "error",
+      "content": "console.error('Auth check failed:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Auth check failed:', error);\r\n        router.push(fallbackPath);\r"
+    },
+    {
+      "file": ".\\src\\components\\business\\BusinessSidebar.tsx",
+      "line": 32,
+      "type": "error",
+      "content": "console.error('Error checking claim:', err);",
+      "context": "            } catch (err) {\r\n                console.error('Error checking claim:', err);\r\n            } finally {\r"
+    },
+    {
+      "file": ".\\src\\components\\dashboard\\MultiBusinessDashboard.tsx",
+      "line": 78,
+      "type": "error",
+      "content": "console.error('Error loading dashboard data:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error loading dashboard data:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\components\\dashboard\\MultiBusinessDashboard.tsx",
+      "line": 113,
+      "type": "error",
+      "content": "console.error('Error setting primary business:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error setting primary business:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\components\\providers\\MonitoringProvider.tsx",
+      "line": 60,
+      "type": "error",
+      "content": "console.error('Failed to initialize monitoring:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Failed to initialize monitoring:', error);\r\n        if (enableErrorTracking) {\r"
+    },
+    {
+      "file": ".\\src\\components\\providers\\MonitoringProvider.tsx",
+      "line": 221,
+      "type": "error",
+      "content": "console.error(`${alert.type}: ${alert.message}`, alert.metadata);",
+      "context": "        criticalAlerts.forEach(alert => {\r\n          console.error(`${alert.type}: ${alert.message}`, alert.metadata);\r\n        });\r"
+    },
+    {
+      "file": ".\\src\\components\\providers\\MonitoringProvider.tsx",
+      "line": 274,
+      "type": "log",
+      "content": "console.log(`Event ${event} took ${duration}ms`);",
+      "context": "        const duration = performance.now() - startTime;\r\n        console.log(`Event ${event} took ${duration}ms`);\r\n      };\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\AdSlot.tsx",
+      "line": 25,
+      "type": "error",
+      "content": "console.error('AdSense Error:', err);",
+      "context": "            } catch (err) {\r\n                console.error('AdSense Error:', err);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\BusinessActions.tsx",
+      "line": 41,
+      "type": "error",
+      "content": "console.error('Error fetching settings/bookmark:', error);",
+      "context": "      } catch (error) {\n        console.error('Error fetching settings/bookmark:', error);\n      }"
+    },
+    {
+      "file": ".\\src\\components\\shared\\BusinessWidget.tsx",
+      "line": 63,
+      "type": "error",
+      "content": "console.error('Error fetching site settings:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error fetching site settings:', error);\r\n        // Keep default value\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\GoogleAnalytics.tsx",
+      "line": 25,
+      "type": "log",
+      "content": "console.log(\"GA Component Debug:\", {",
+      "context": "  if (typeof window !== \"undefined\") {\r\n    console.log(\"GA Component Debug:\", {\r\n      gaId,\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\GoogleAnalytics.tsx",
+      "line": 59,
+      "type": "error",
+      "content": "console.error('Failed to load Google Analytics script');",
+      "context": "        onError={() => {\r\n          console.error('Failed to load Google Analytics script');\r\n        }}\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\performance.tsx",
+      "line": 108,
+      "type": "warn",
+      "content": "console.warn(`${componentName} took ${loadTime.toFixed(2)}ms to load`);",
+      "context": "      if (loadTime > 100) {\r\n        console.warn(`${componentName} took ${loadTime.toFixed(2)}ms to load`);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ReviewsSection.tsx",
+      "line": 42,
+      "type": "log",
+      "content": "console.log('Current user:', user?.id);",
+      "context": "      const { data: { user } } = await supabase.auth.getUser();\r\n      console.log('Current user:', user?.id);\r\n      console.log('Business ID:', business.id);\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ReviewsSection.tsx",
+      "line": 43,
+      "type": "log",
+      "content": "console.log('Business ID:', business.id);",
+      "context": "      console.log('Current user:', user?.id);\r\n      console.log('Business ID:', business.id);\r\n\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ReviewsSection.tsx",
+      "line": 46,
+      "type": "log",
+      "content": "console.log('No user logged in');",
+      "context": "      if (!user) {\r\n        console.log('No user logged in');\r\n        return;\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ReviewsSection.tsx",
+      "line": 57,
+      "type": "log",
+      "content": "console.log('User profile:', profile);",
+      "context": "\r\n      console.log('User profile:', profile);\r\n\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ReviewsSection.tsx",
+      "line": 68,
+      "type": "log",
+      "content": "console.log('Business claim:', claim);",
+      "context": "\r\n      console.log('Business claim:', claim);\r\n\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ReviewsSection.tsx",
+      "line": 71,
+      "type": "log",
+      "content": "console.log('Is owner?', isOwnerCheck);",
+      "context": "      const isOwnerCheck = (profile?.business_id === business.id && profile?.role === 'pro') || !!claim;\r\n      console.log('Is owner?', isOwnerCheck);\r\n      setIsOwner(isOwnerCheck);\r"
+    },
+    {
+      "file": ".\\src\\components\\shared\\SearchAutocomplete.tsx",
+      "line": 49,
+      "type": "error",
+      "content": "console.error('Error fetching suggestions:', error);",
+      "context": "        } catch (error) {\n            console.error('Error fetching suggestions:', error);\n        } finally {"
+    },
+    {
+      "file": ".\\src\\components\\shared\\ShareButton.tsx",
+      "line": 38,
+      "type": "log",
+      "content": "console.log('Error sharing:', error);",
+      "context": "            } catch (error) {\r\n                console.log('Error sharing:', error);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\contexts\\auth-context.tsx",
+      "line": 55,
+      "type": "error",
+      "content": "console.error('Error fetching profile:', profileError);",
+      "context": "          if (profileError) {\r\n            console.error('Error fetching profile:', profileError);\r\n            // Still set user info from session even if profile fetch fails\r"
+    },
+    {
+      "file": ".\\src\\contexts\\auth-context.tsx",
+      "line": 70,
+      "type": "error",
+      "content": "console.error('Error initializing auth:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Error initializing auth:', error);\r\n      } finally {\r"
+    },
+    {
+      "file": ".\\src\\contexts\\auth-context.tsx",
+      "line": 90,
+      "type": "error",
+      "content": "console.error('Error fetching profile:', profileError);",
+      "context": "          if (profileError) {\r\n            console.error('Error fetching profile:', profileError);\r\n            // Still set user info from session even if profile fetch fails\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 82,
+      "type": "error",
+      "content": "console.error('Error loading user businesses:', userBusinessesError);",
+      "context": "      if (userBusinessesError) {\r\n        console.error('Error loading user businesses:', userBusinessesError);\r\n        console.error('Error details:', {\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 83,
+      "type": "error",
+      "content": "console.error('Error details:', {",
+      "context": "        console.error('Error loading user businesses:', userBusinessesError);\r\n        console.error('Error details:', {\r\n          message: userBusinessesError.message,\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 117,
+      "type": "error",
+      "content": "console.error('Error loading businesses:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error loading businesses:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 130,
+      "type": "log",
+      "content": "console.log('Falling back to old system for user:', userId);",
+      "context": "    try {\r\n      console.log('Falling back to old system for user:', userId);\r\n      const supabase = createClient();\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 139,
+      "type": "error",
+      "content": "console.error('Error loading profile in fallback:', profileError);",
+      "context": "      if (profileError) {\r\n        console.error('Error loading profile in fallback:', profileError);\r\n        console.error('Profile error details:', {\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 140,
+      "type": "error",
+      "content": "console.error('Profile error details:', {",
+      "context": "        console.error('Error loading profile in fallback:', profileError);\r\n        console.error('Profile error details:', {\r\n          message: profileError.message,\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 149,
+      "type": "log",
+      "content": "console.log('Found business in old system:', profile.business_id);",
+      "context": "      if (profile?.business_id) {\r\n        console.log('Found business in old system:', profile.business_id);\r\n        \r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 168,
+      "type": "log",
+      "content": "console.log('Original business_id:', profile.business_id);",
+      "context": "          \r\n          console.log('Original business_id:', profile.business_id);\r\n          console.log('Sanitized business_id:', sanitizedBusinessId);\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 169,
+      "type": "log",
+      "content": "console.log('Sanitized business_id:', sanitizedBusinessId);",
+      "context": "          console.log('Original business_id:', profile.business_id);\r\n          console.log('Sanitized business_id:', sanitizedBusinessId);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 181,
+      "type": "log",
+      "content": "console.log('Business not found by ID, trying by slug (stored in id field):', sanitizedBusinessId);",
+      "context": "        if (businessError && (businessError.code === 'PGRST116' || businessError.message.includes('Row not found'))) {\r\n          console.log('Business not found by ID, trying by slug (stored in id field):', sanitizedBusinessId);\r\n          \r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 195,
+      "type": "error",
+      "content": "console.error('Error loading business in fallback:', businessError);",
+      "context": "        if (businessError || !business) {\r\n          console.error('Error loading business in fallback:', businessError);\r\n          console.error('Business error details:', {\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 196,
+      "type": "error",
+      "content": "console.error('Business error details:', {",
+      "context": "          console.error('Error loading business in fallback:', businessError);\r\n          console.error('Business error details:', {\r\n            message: businessError?.message,\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 213,
+      "type": "log",
+      "content": "console.log('Setting business from fallback:', businessData);",
+      "context": "\r\n        console.log('Setting business from fallback:', businessData);\r\n        setAllBusinesses([businessData]);\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 217,
+      "type": "log",
+      "content": "console.log('No business found for user in fallback system');",
+      "context": "      } else {\r\n        console.log('No business found for user in fallback system');\r\n        setAllBusinesses([]);\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 222,
+      "type": "error",
+      "content": "console.error('Error in fallback system:', error);",
+      "context": "    } catch (error: any) {\r\n      console.error('Error in fallback system:', error);\r\n      console.error('Fallback error details:', {\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 223,
+      "type": "error",
+      "content": "console.error('Fallback error details:', {",
+      "context": "      console.error('Error in fallback system:', error);\r\n      console.error('Fallback error details:', {\r\n        message: (error as Error).message,\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 254,
+      "type": "error",
+      "content": "console.error('Error switching business:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error switching business:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\contexts\\BusinessContext.tsx",
+      "line": 303,
+      "type": "error",
+      "content": "console.error('Error setting primary business:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Error setting primary business:', error);\r\n      toast({\r"
+    },
+    {
+      "file": ".\\src\\hooks\\useBusinessProfile.ts",
+      "line": 64,
+      "type": "error",
+      "content": "console.error(e);",
+      "context": "            } catch (e) {\r\n                console.error(e);\r\n                setError('Une erreur inattendue est survenue.');\r"
+    },
+    {
+      "file": ".\\src\\hooks\\usePerformance.ts",
+      "line": 17,
+      "type": "log",
+      "content": "console.log(`${componentName} was mounted for ${totalTime.toFixed(2)}ms (${renderCount.current} renders)`);",
+      "context": "        const totalTime = performance.now() - mountTime.current;\r\n        console.log(`${componentName} was mounted for ${totalTime.toFixed(2)}ms (${renderCount.current} renders)`);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\hooks\\usePerformance.ts",
+      "line": 54,
+      "type": "log",
+      "content": "console.log('Bundle analyzer active - check Network tab for chunk sizes');",
+      "context": "      // Log bundle size information\r\n      console.log('Bundle analyzer active - check Network tab for chunk sizes');\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-queries.ts",
+      "line": 79,
+      "type": "error",
+      "content": "console.error('Error fetching admin users:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching admin users:', error);\r\n      return { users: [], total: 0 };\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-queries.ts",
+      "line": 101,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching admin users:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching admin users:', error);\r\n    return { users: [], total: 0 };\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-queries.ts",
+      "line": 174,
+      "type": "error",
+      "content": "console.error('Error fetching pending claims:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching pending claims:', error);\r\n      return { claims: [], total: 0 };\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-queries.ts",
+      "line": 196,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching pending claims:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching pending claims:', error);\r\n    return { claims: [], total: 0 };\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-queries.ts",
+      "line": 261,
+      "type": "error",
+      "content": "console.error('Error fetching admin businesses:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching admin businesses:', error);\r\n      return { businesses: [], total: 0 };\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-queries.ts",
+      "line": 282,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching admin businesses:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching admin businesses:', error);\r\n    return { businesses: [], total: 0 };\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-utils.ts",
+      "line": 29,
+      "type": "error",
+      "content": "if (businessesResult.error) console.error('Error fetching business count:', businessesResult.error);",
+      "context": "\r\n    if (businessesResult.error) console.error('Error fetching business count:', businessesResult.error);\r\n    if (reviewsResult.error) console.error('Error fetching review count:', reviewsResult.error);\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-utils.ts",
+      "line": 30,
+      "type": "error",
+      "content": "if (reviewsResult.error) console.error('Error fetching review count:', reviewsResult.error);",
+      "context": "    if (businessesResult.error) console.error('Error fetching business count:', businessesResult.error);\r\n    if (reviewsResult.error) console.error('Error fetching review count:', reviewsResult.error);\r\n    if (profilesResult.error) console.error('Error fetching user count:', profilesResult.error);\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-utils.ts",
+      "line": 31,
+      "type": "error",
+      "content": "if (profilesResult.error) console.error('Error fetching user count:', profilesResult.error);",
+      "context": "    if (reviewsResult.error) console.error('Error fetching review count:', reviewsResult.error);\r\n    if (profilesResult.error) console.error('Error fetching user count:', profilesResult.error);\r\n    if (premiumResult.error) console.error('Error fetching premium count:', premiumResult.error);\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-utils.ts",
+      "line": 32,
+      "type": "error",
+      "content": "if (premiumResult.error) console.error('Error fetching premium count:', premiumResult.error);",
+      "context": "    if (profilesResult.error) console.error('Error fetching user count:', profilesResult.error);\r\n    if (premiumResult.error) console.error('Error fetching premium count:', premiumResult.error);\r\n    if (supportResult.error) console.error('Error fetching support count:', supportResult.error);\r"
+    },
+    {
+      "file": ".\\src\\lib\\admin-utils.ts",
+      "line": 33,
+      "type": "error",
+      "content": "if (supportResult.error) console.error('Error fetching support count:', supportResult.error);",
+      "context": "    if (premiumResult.error) console.error('Error fetching premium count:', premiumResult.error);\r\n    if (supportResult.error) console.error('Error fetching support count:', supportResult.error);\r\n\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 36,
+      "type": "error",
+      "content": "console.error('Error creating ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error creating ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 43,
+      "type": "error",
+      "content": "console.error('Unexpected error creating ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error creating ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 74,
+      "type": "error",
+      "content": "console.error('Error updating ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error updating ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 82,
+      "type": "error",
+      "content": "console.error('Unexpected error updating ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error updating ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 106,
+      "type": "error",
+      "content": "console.error('Error deleting ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error deleting ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 113,
+      "type": "error",
+      "content": "console.error('Unexpected error deleting ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error deleting ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 130,
+      "type": "error",
+      "content": "console.error('Error fetching ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 136,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 163,
+      "type": "error",
+      "content": "console.error('Error fetching user ads:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching user ads:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 169,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching user ads:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching user ads:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 205,
+      "type": "error",
+      "content": "console.error('Error fetching active ads:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching active ads:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 211,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching active ads:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching active ads:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 238,
+      "type": "error",
+      "content": "console.error('Error updating ad status:', error);",
+      "context": "    if (error) {\r\n      console.error('Error updating ad status:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\ads\\server-actions.ts",
+      "line": 246,
+      "type": "error",
+      "content": "console.error('Unexpected error updating ad status:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error updating ad status:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 61,
+      "type": "error",
+      "content": "console.error('Analytics service initialization failed:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Analytics service initialization failed:', error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 91,
+      "type": "warn",
+      "content": "console.warn('Analytics not initialized, skipping event tracking');",
+      "context": "    if (!this.isInitialized) {\r\n      console.warn('Analytics not initialized, skipping event tracking');\r\n      return;\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 113,
+      "type": "warn",
+      "content": "console.warn(`Analytics table missing for event \"${event}\", skipping. Please run migrations.`);",
+      "context": "        if (error.code === 'PGRST204' || error.code === 'PGRST205') {\r\n          console.warn(`Analytics table missing for event \"${event}\", skipping. Please run migrations.`);\r\n        } else {\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 115,
+      "type": "error",
+      "content": "console.error('Analytics tracking failed:', error);",
+      "context": "        } else {\r\n          console.error('Analytics tracking failed:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 119,
+      "type": "error",
+      "content": "console.error('Analytics tracking error:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Analytics tracking error:', error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 230,
+      "type": "warn",
+      "content": "console.warn('Carousel analytics table missing, skipping. Please run migrations.');",
+      "context": "          if (error.code === 'PGRST204' || error.code === 'PGRST205') {\r\n            console.warn('Carousel analytics table missing, skipping. Please run migrations.');\r\n          } else {\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 232,
+      "type": "error",
+      "content": "console.error('Carousel analytics tracking failed:', error);",
+      "context": "          } else {\r\n            console.error('Carousel analytics tracking failed:', error);\r\n          }\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 236,
+      "type": "error",
+      "content": "console.error('Carousel analytics tracking error:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Carousel analytics tracking error:', error);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 267,
+      "type": "warn",
+      "content": "console.warn('Carousel analytics table missing, skipping. Please run migrations.');",
+      "context": "          if (error.code === 'PGRST204' || error.code === 'PGRST205') {\r\n            console.warn('Carousel analytics table missing, skipping. Please run migrations.');\r\n          } else {\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 269,
+      "type": "error",
+      "content": "console.error('Carousel impression tracking failed:', error);",
+      "context": "          } else {\r\n            console.error('Carousel impression tracking failed:', error);\r\n          }\r"
+    },
+    {
+      "file": ".\\src\\lib\\analytics.ts",
+      "line": 273,
+      "type": "error",
+      "content": "console.error('Carousel impression tracking error:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Carousel impression tracking error:', error);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\lib\\audit-logger.ts",
+      "line": 41,
+      "type": "error",
+      "content": "console.error('Failed to log audit action:', error);",
+      "context": "        if (error) {\r\n            console.error('Failed to log audit action:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\lib\\audit-logger.ts",
+      "line": 44,
+      "type": "error",
+      "content": "console.error('Error in logAuditAction:', err);",
+      "context": "    } catch (err) {\r\n        console.error('Error in logAuditAction:', err);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\cache.ts",
+      "line": 167,
+      "type": "error",
+      "content": "console.error(`Cache fetch error for ${cacheKey.join('-')}:`, error);",
+      "context": "      } catch (error) {\n        console.error(`Cache fetch error for ${cacheKey.join('-')}:`, error);\n        throw error;"
+    },
+    {
+      "file": ".\\src\\lib\\cache.ts",
+      "line": 192,
+      "type": "error",
+      "content": "console.error('Cache invalidation error:', error);",
+      "context": "    // Log error but don't throw - cache invalidation failures shouldn't break the app\n    console.error('Cache invalidation error:', error);\n  }"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 47,
+      "type": "error",
+      "content": "console.error('Error creating competitor ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error creating competitor ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 54,
+      "type": "error",
+      "content": "console.error('Unexpected error creating competitor ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error creating competitor ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 106,
+      "type": "error",
+      "content": "console.error('Error updating competitor ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error updating competitor ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 114,
+      "type": "error",
+      "content": "console.error('Unexpected error updating competitor ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error updating competitor ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 159,
+      "type": "error",
+      "content": "console.error('Error deleting competitor ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error deleting competitor ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 166,
+      "type": "error",
+      "content": "console.error('Unexpected error deleting competitor ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error deleting competitor ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 183,
+      "type": "error",
+      "content": "console.error('Error fetching competitor ad:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching competitor ad:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 189,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching competitor ad:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching competitor ad:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 206,
+      "type": "error",
+      "content": "console.error('Error fetching competitor ads for business:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching competitor ads for business:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 212,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching competitor ads for business:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching competitor ads for business:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 260,
+      "type": "error",
+      "content": "console.error('Error updating competitor ad status:', error);",
+      "context": "    if (error) {\r\n      console.error('Error updating competitor ad status:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 268,
+      "type": "error",
+      "content": "console.error('Unexpected error updating competitor ad status:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error updating competitor ad status:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 295,
+      "type": "error",
+      "content": "console.error('Error fetching active competitor ads for business:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching active competitor ads for business:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 301,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching active competitor ads for business:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching active competitor ads for business:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 340,
+      "type": "error",
+      "content": "console.error('Error fetching user competitor ads:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching user competitor ads:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\competitor-ads\\server-actions.ts",
+      "line": 346,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching user competitor ads:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching user competitor ads:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\dashboard-queries.ts",
+      "line": 92,
+      "type": "error",
+      "content": "console.error('Error fetching business:', businessResult.error);",
+      "context": "    if (businessResult.error) {\r\n      console.error('Error fetching business:', businessResult.error);\r\n      return null;\r"
+    },
+    {
+      "file": ".\\src\\lib\\dashboard-queries.ts",
+      "line": 134,
+      "type": "error",
+      "content": "console.error('Error fetching dashboard data:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error fetching dashboard data:', error);\r\n    throw error;\r"
+    },
+    {
+      "file": ".\\src\\lib\\dashboard-queries.ts",
+      "line": 181,
+      "type": "error",
+      "content": "console.error('Error fetching analytics:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching analytics:', error);\r\n      return {\r"
+    },
+    {
+      "file": ".\\src\\lib\\dashboard-queries.ts",
+      "line": 233,
+      "type": "error",
+      "content": "console.error('Error getting analytics summary:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error getting analytics summary:', error);\r\n    return {\r"
+    },
+    {
+      "file": ".\\src\\lib\\dashboard-queries.ts",
+      "line": 294,
+      "type": "error",
+      "content": "console.error('Error getting recent activity:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error getting recent activity:', error);\r\n    return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 135,
+      "type": "error",
+      "content": "console.error('Error fetching filtered businesses:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching filtered businesses:', error);\r\n\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 274,
+      "type": "error",
+      "content": "console.error(`Error fetching business ${id}:`, error.message);",
+      "context": "    if (error) {\r\n        console.error(`Error fetching business ${id}:`, error.message);\r\n        return undefined;\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 296,
+      "type": "error",
+      "content": "console.error('Error fetching reviews:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching reviews:', error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 318,
+      "type": "error",
+      "content": "console.error('Error fetching business hours:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching business hours:', error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 337,
+      "type": "error",
+      "content": "console.error('Error fetching businesses (public):', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching businesses (public):', error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 355,
+      "type": "error",
+      "content": "console.error('Error fetching businesses for sitemap:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching businesses for sitemap:', error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 371,
+      "type": "error",
+      "content": "if (error) console.error('Error fetching collections:', error);",
+      "context": "    if (error || !data || data.length === 0) {\r\n        if (error) console.error('Error fetching collections:', error);\r\n        // Return empty array - collections are managed via admin panel\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\businesses.ts",
+      "line": 391,
+      "type": "warn",
+      "content": "console.warn('Warning fetching amenities:', error.message);",
+      "context": "        if (error.code !== '42P01') { // 42P01 is undefined_table\r\n            console.warn('Warning fetching amenities:', error.message);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\client.ts",
+      "line": 14,
+      "type": "warn",
+      "content": "console.warn('Supabase URL or Key missing in environment variables');",
+      "context": "    if (!url || !key) {\r\n        console.warn('Supabase URL or Key missing in environment variables');\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\settings.ts",
+      "line": 219,
+      "type": "warn",
+      "content": "console.warn(`getSiteSettings: failed after ${maxRetries + 1} attempts, using defaults. Error: ${errorMsg} (Code: ${errorCode})`);",
+      "context": "            if (typeof console !== 'undefined' && console.warn) {\r\n                console.warn(`getSiteSettings: failed after ${maxRetries + 1} attempts, using defaults. Error: ${errorMsg} (Code: ${errorCode})`);\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\settings.ts",
+      "line": 224,
+      "type": "warn",
+      "content": "console.warn('getSiteSettings: no data found for id \"main\", using defaults.');",
+      "context": "            if (typeof console !== 'undefined' && console.warn) {\r\n                console.warn('getSiteSettings: no data found for id \"main\", using defaults.');\r\n            }\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\settings.ts",
+      "line": 233,
+      "type": "warn",
+      "content": "console.warn('getSiteSettings: unexpected error, using defaults.', errorMsg);",
+      "context": "        if (typeof console !== 'undefined' && console.warn) {\r\n            console.warn('getSiteSettings: unexpected error, using defaults.', errorMsg);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\users.ts",
+      "line": 13,
+      "type": "error",
+      "content": "console.error('Error fetching user profile:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching user profile:', error);\r\n        return null;\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\users.ts",
+      "line": 39,
+      "type": "error",
+      "content": "console.error('Error fetching user reviews:', JSON.stringify(error, null, 2));",
+      "context": "    if (error) {\r\n        console.error('Error fetching user reviews:', JSON.stringify(error, null, 2));\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\data\\users.ts",
+      "line": 53,
+      "type": "error",
+      "content": "console.error('Error fetching user claims:', error);",
+      "context": "    if (error) {\r\n        console.error('Error fetching user claims:', error);\r\n        return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 239,
+      "type": "log",
+      "content": "console.log('\\n--- EMAIL CONTENT ---');",
+      "context": "  if (process.env.NODE_ENV === 'development') {\r\n    console.log('\\n--- EMAIL CONTENT ---');\r\n    console.log(`To: ${options.to}`);\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 240,
+      "type": "log",
+      "content": "console.log(`To: ${options.to}`);",
+      "context": "    console.log('\\n--- EMAIL CONTENT ---');\r\n    console.log(`To: ${options.to}`);\r\n    console.log(`Subject: ${options.subject}`);\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 241,
+      "type": "log",
+      "content": "console.log(`Subject: ${options.subject}`);",
+      "context": "    console.log(`To: ${options.to}`);\r\n    console.log(`Subject: ${options.subject}`);\r\n    console.log(`From: ${options.from}`);\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 242,
+      "type": "log",
+      "content": "console.log(`From: ${options.from}`);",
+      "context": "    console.log(`Subject: ${options.subject}`);\r\n    console.log(`From: ${options.from}`);\r\n    console.log('\\nHTML Content:');\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 243,
+      "type": "log",
+      "content": "console.log('\\nHTML Content:');",
+      "context": "    console.log(`From: ${options.from}`);\r\n    console.log('\\nHTML Content:');\r\n    console.log(options.html);\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 244,
+      "type": "log",
+      "content": "console.log(options.html);",
+      "context": "    console.log('\\nHTML Content:');\r\n    console.log(options.html);\r\n    if (options.text) {\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 246,
+      "type": "log",
+      "content": "console.log('\\nText Content:');",
+      "context": "    if (options.text) {\r\n      console.log('\\nText Content:');\r\n      console.log(options.text);\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 247,
+      "type": "log",
+      "content": "console.log(options.text);",
+      "context": "      console.log('\\nText Content:');\r\n      console.log(options.text);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\email-service.ts",
+      "line": 249,
+      "type": "log",
+      "content": "console.log('--- END EMAIL ---\\n');",
+      "context": "    }\r\n    console.log('--- END EMAIL ---\\n');\r\n  }\r"
+    },
+    {
+      "file": ".\\src\\lib\\error-tracking.ts",
+      "line": 246,
+      "type": "error",
+      "content": "console.error('Error captured:', error?.message || error || 'Unknown error', `(Severity: ${severity})`);",
+      "context": "      if (severity !== 'low') {\r\n        console.error('Error captured:', error?.message || error || 'Unknown error', `(Severity: ${severity})`);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\lib\\error-tracking.ts",
+      "line": 277,
+      "type": "error",
+      "content": "console.error('Failed to send error to database:', error);",
+      "context": "        if (error) {\n          console.error('Failed to send error to database:', error);\n        }"
+    },
+    {
+      "file": ".\\src\\lib\\error-tracking.ts",
+      "line": 301,
+      "type": "error",
+      "content": "console.error('Failed to send error report:', err);",
+      "context": "    } catch (err) {\r\n      console.error('Failed to send error report:', err);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\errors.ts",
+      "line": 182,
+      "type": "error",
+      "content": "console.error('Server error:', error);",
+      "context": "export function handleServerError(error: any): ErrorResponse {\r\n  console.error('Server error:', error);\r\n\r"
+    },
+    {
+      "file": ".\\src\\lib\\errors.ts",
+      "line": 202,
+      "type": "error",
+      "content": "console.error(`[${context}]`, {",
+      "context": "): void {\r\n  console.error(`[${context}]`, {\r\n    error: error?.message || String(error),\r"
+    },
+    {
+      "file": ".\\src\\lib\\performance-monitoring.ts",
+      "line": 108,
+      "type": "warn",
+      "content": "console.warn('Performance monitoring setup failed:', error);",
+      "context": "    } catch (error) {\r\n      console.warn('Performance monitoring setup failed:', error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\performance-monitoring.ts",
+      "line": 125,
+      "type": "warn",
+      "content": "console.warn('Resource timing monitoring failed:', error);",
+      "context": "    } catch (error) {\r\n      console.warn('Resource timing monitoring failed:', error);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\performance-monitoring.ts",
+      "line": 209,
+      "type": "warn",
+      "content": "console.warn(`Performance issue detected: ${metric} = ${value}ms (threshold: ${threshold}ms)`);",
+      "context": "  private reportPerformanceIssue(metric: string, value: number, threshold: number) {\r\n    console.warn(`Performance issue detected: ${metric} = ${value}ms (threshold: ${threshold}ms)`);\r\n    \r"
+    },
+    {
+      "file": ".\\src\\lib\\performance-monitoring.ts",
+      "line": 254,
+      "type": "warn",
+      "content": "console.warn(`Slow API call: ${endpoint} took ${duration}ms`);",
+      "context": "    if (duration > 2000) {\r\n      console.warn(`Slow API call: ${endpoint} took ${duration}ms`);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 46,
+      "type": "error",
+      "content": "console.error('Error creating pinned content:', error);",
+      "context": "    if (error) {\r\n      console.error('Error creating pinned content:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 54,
+      "type": "error",
+      "content": "console.error('Unexpected error creating pinned content:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error creating pinned content:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 106,
+      "type": "error",
+      "content": "console.error('Error updating pinned content:', error);",
+      "context": "    if (error) {\r\n      console.error('Error updating pinned content:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 114,
+      "type": "error",
+      "content": "console.error('Unexpected error updating pinned content:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error updating pinned content:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 159,
+      "type": "error",
+      "content": "console.error('Error deleting pinned content:', error);",
+      "context": "    if (error) {\r\n      console.error('Error deleting pinned content:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 167,
+      "type": "error",
+      "content": "console.error('Unexpected error deleting pinned content:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error deleting pinned content:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 185,
+      "type": "error",
+      "content": "console.error('Error fetching pinned content:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching pinned content:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 191,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching pinned content:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching pinned content:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 209,
+      "type": "error",
+      "content": "console.error('Error fetching pinned content for business:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching pinned content for business:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 215,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching pinned content for business:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching pinned content for business:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 275,
+      "type": "error",
+      "content": "console.error('Error toggling pinned content status:', error);",
+      "context": "    if (error) {\r\n      console.error('Error toggling pinned content status:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 283,
+      "type": "error",
+      "content": "console.error('Unexpected error toggling pinned content status:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error toggling pinned content status:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 322,
+      "type": "error",
+      "content": "console.error('Error fetching user pinned content:', error);",
+      "context": "    if (error) {\r\n      console.error('Error fetching user pinned content:', error);\r\n      return { success: false, error: error.message };\r"
+    },
+    {
+      "file": ".\\src\\lib\\pinned-content\\server-actions.ts",
+      "line": 328,
+      "type": "error",
+      "content": "console.error('Unexpected error fetching user pinned content:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Unexpected error fetching user pinned content:', error);\r\n    return { success: false, error: 'An unexpected error occurred' };\r"
+    },
+    {
+      "file": ".\\src\\lib\\rate-limiter-enhanced.ts",
+      "line": 83,
+      "type": "warn",
+      "content": "console.warn(",
+      "context": "  if (!process.env.REDIS_URL) {\r\n    console.warn(\r\n      'REDIS_URL not set. Using in-memory rate limiting. ' +\r"
+    },
+    {
+      "file": ".\\src\\lib\\rate-limiter-enhanced.ts",
+      "line": 97,
+      "type": "error",
+      "content": "console.error('Redis connection error:', error);",
+      "context": "    redisClient.on('error', (error: any) => {\r\n      console.error('Redis connection error:', error);\r\n      redisReady = false;\r"
+    },
+    {
+      "file": ".\\src\\lib\\rate-limiter-enhanced.ts",
+      "line": 104,
+      "type": "log",
+      "content": "console.log('Redis rate limiting initialized');",
+      "context": "    redisReady = true;\r\n    console.log('Redis rate limiting initialized');\r\n    return redisClient;\r"
+    },
+    {
+      "file": ".\\src\\lib\\rate-limiter-enhanced.ts",
+      "line": 107,
+      "type": "warn",
+      "content": "console.warn('Failed to initialize Redis, falling back to in-memory rate limiting:', error instanceof Error ? error.message : String(error));",
+      "context": "  } catch (error: any) {\r\n    console.warn('Failed to initialize Redis, falling back to in-memory rate limiting:', error instanceof Error ? error.message : String(error));\r\n    redisReady = true;\r"
+    },
+    {
+      "file": ".\\src\\lib\\rate-limiter-enhanced.ts",
+      "line": 377,
+      "type": "log",
+      "content": "console.log(`Cleaned up ${keysToDelete.length} expired rate limit records`);",
+      "context": "  if (keysToDelete.length > 0) {\r\n    console.log(`Cleaned up ${keysToDelete.length} expired rate limit records`);\r\n  }\r"
+    },
+    {
+      "file": ".\\src\\lib\\rate-limiter.ts",
+      "line": 186,
+      "type": "log",
+      "content": "console.log(`[Rate Limiter] Cleaned up ${cleaned} expired records`);",
+      "context": "    if (cleaned > 0) {\r\n      console.log(`[Rate Limiter] Cleaned up ${cleaned} expired records`);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 51,
+      "type": "warn",
+      "content": "console.warn('WebSocket URL not configured, using polling fallback');",
+      "context": "    if (!process.env.NEXT_PUBLIC_WEBSOCKET_URL) {\r\n      console.warn('WebSocket URL not configured, using polling fallback');\r\n      this.startPollingFallback();\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 60,
+      "type": "log",
+      "content": "console.log('Real-time monitoring connected');",
+      "context": "      this.ws.onopen = () => {\r\n        console.log('Real-time monitoring connected');\r\n        this.reconnectAttempts = 0;\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 70,
+      "type": "error",
+      "content": "console.error('Failed to parse WebSocket message:', error);",
+      "context": "        } catch (error) {\r\n          console.error('Failed to parse WebSocket message:', error);\r\n        }\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 75,
+      "type": "log",
+      "content": "console.log('Real-time monitoring disconnected');",
+      "context": "      this.ws.onclose = () => {\r\n        console.log('Real-time monitoring disconnected');\r\n        this.attemptReconnect();\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 80,
+      "type": "error",
+      "content": "console.error('WebSocket error:', error);",
+      "context": "      this.ws.onerror = (error) => {\r\n        console.error('WebSocket error:', error);\r\n        this.createAlert({\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 89,
+      "type": "error",
+      "content": "console.error('Failed to create WebSocket connection:', error);",
+      "context": "    } catch (error) {\r\n      console.error('Failed to create WebSocket connection:', error);\r\n      this.startPollingFallback();\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 103,
+      "type": "warn",
+      "content": "console.warn('Unknown WebSocket message type:', data.type);",
+      "context": "      default:\r\n        console.warn('Unknown WebSocket message type:', data.type);\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 117,
+      "type": "error",
+      "content": "console.error('Failed to fetch metrics:', error);",
+      "context": "      } catch (error) {\r\n        console.error('Failed to fetch metrics:', error);\r\n      }\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 288,
+      "type": "error",
+      "content": "console.error('Max reconnection attempts reached');",
+      "context": "    if (this.reconnectAttempts >= this.maxReconnectAttempts) {\r\n      console.error('Max reconnection attempts reached');\r\n      return;\r"
+    },
+    {
+      "file": ".\\src\\lib\\real-time-monitoring.ts",
+      "line": 295,
+      "type": "log",
+      "content": "console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);",
+      "context": "      this.reconnectDelay = Math.min(this.reconnectDelay * 2, 30000); // Exponential backoff, max 30s\r\n      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);\r\n      this.connectWebSocket();\r"
+    },
+    {
+      "file": ".\\src\\lib\\sanitizer.ts",
+      "line": 47,
+      "type": "error",
+      "content": "console.error('Error sanitizing HTML:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error sanitizing HTML:', error);\r\n    // Fallback to plain text encoding\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 109,
+      "type": "error",
+      "content": "console.error('Search query error:', error);",
+      "context": "    if (error) {\r\n      console.error('Search query error:', error);\r\n      throw new Error('Failed to search businesses');\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 136,
+      "type": "error",
+      "content": "console.error('Error searching businesses:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error searching businesses:', error);\r\n    throw error;\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 228,
+      "type": "error",
+      "content": "console.error('Full-text search error:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Full-text search error:', error);\r\n    // Fallback to regular search\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 261,
+      "type": "error",
+      "content": "console.error('Suggestions error:', error);",
+      "context": "    if (error) {\r\n      console.error('Suggestions error:', error);\r\n      return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 269,
+      "type": "error",
+      "content": "console.error('Error getting suggestions:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error getting suggestions:', error);\r\n    return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 322,
+      "type": "error",
+      "content": "console.error('Trending businesses error:', error);",
+      "context": "    if (error) {\r\n      console.error('Trending businesses error:', error);\r\n      return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\server-search.ts",
+      "line": 336,
+      "type": "error",
+      "content": "console.error('Error getting trending businesses:', error);",
+      "context": "  } catch (error) {\r\n    console.error('Error getting trending businesses:', error);\r\n    return [];\r"
+    },
+    {
+      "file": ".\\src\\lib\\session.ts",
+      "line": 86,
+      "type": "error",
+      "content": "console.error('Error fetching user profile:', profileError);",
+      "context": "  if (profileError) {\r\n    console.error('Error fetching user profile:', profileError);\r\n    return null;\r"
+    },
+    {
+      "file": ".\\src\\lib\\supabase\\admin.ts",
+      "line": 77,
+      "type": "error",
+      "content": "console.error('Admin verification profile error:', profileError);",
+      "context": "  if (profileError) {\n    console.error('Admin verification profile error:', profileError);\n    throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);"
+    },
+    {
+      "file": ".\\src\\lib\\supabase\\middleware.ts",
+      "line": 55,
+      "type": "error",
+      "content": "console.error('Middleware: Auth connection timeout');",
+      "context": "    } catch (e) {\r\n        console.error('Middleware: Auth connection timeout');\r\n        return supabaseResponse;\r"
+    },
+    {
+      "file": ".\\src\\lib\\supabase\\middleware.ts",
+      "line": 74,
+      "type": "error",
+      "content": "console.error('Middleware: Settings connection timeout');",
+      "context": "    } catch (e) {\r\n        console.error('Middleware: Settings connection timeout');\r\n    }\r"
+    },
+    {
+      "file": ".\\src\\lib\\supabase\\middleware.ts",
+      "line": 111,
+      "type": "error",
+      "content": "console.error('Middleware: Profile fetch timeout');",
+      "context": "        } catch (e) {\r\n            console.error('Middleware: Profile fetch timeout');\r\n        }\r"
+    }
+  ]
+}
