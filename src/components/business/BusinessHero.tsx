@@ -5,7 +5,7 @@ import { BusinessCover } from '@/components/shared/BusinessCover';
 import { BusinessLogo } from '@/components/shared/BusinessLogo';
 import { StarRating } from '@/components/shared/StarRating';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { MapPin, ShieldCheck, Sparkles, Zap, Star } from 'lucide-react';
 import { useMemo } from 'react';
 import { isPaidTier } from '@/lib/tier-utils';
 import { cn } from '@/lib/utils';
@@ -120,18 +120,31 @@ export function BusinessHero({ business }: BusinessHeroProps) {
                             </h1>
 
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4 text-xs md:text-sm font-medium pt-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex gap-0.5 text-yellow-500">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Sparkles
-                                                key={i}
-                                                className={`w-3.5 h-3.5 md:w-4 md:h-4 ${i < Math.round(business.overallRating) ? 'fill-current' : 'text-muted-foreground/30 fill-muted-foreground/10'}`}
-                                            />
-                                        ))}
+                                {business.overallRating > 0 ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-0.5 text-yellow-500">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Sparkles
+                                                    key={i}
+                                                    className={`w-3.5 h-3.5 md:w-4 md:h-4 ${i < Math.round(business.overallRating) ? 'fill-current' : 'text-muted-foreground/30 fill-muted-foreground/10'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="font-bold text-foreground text-base md:text-lg">{business.overallRating.toFixed(1)}</span>
+                                        <span className="text-muted-foreground underline underline-offset-4 decoration-muted-foreground/30">{business.reviews.length} avis</span>
                                     </div>
-                                    <span className="font-bold text-foreground text-base md:text-lg">{business.overallRating.toFixed(1)}</span>
-                                    <span className="text-muted-foreground underline underline-offset-4 decoration-muted-foreground/30">{business.reviews.length} avis</span>
-                                </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-0.5 text-muted-foreground/40">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                            ))}
+                                        </div>
+                                        <span className="font-bold text-muted-foreground italic">Pas encore d'évaluation</span>
+                                        <span className="hidden sm:inline w-1 h-1 bg-muted-foreground/30 rounded-full mx-1" />
+                                        <span className="text-primary font-bold hover:underline cursor-pointer">Soyez le premier à donner votre avis</span>
+                                    </div>
+                                )}
 
                                 <div className="hidden sm:block w-1 h-1 bg-muted-foreground/30 rounded-full" />
 

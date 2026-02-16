@@ -186,21 +186,39 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
                 <div>
                     <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-6">Réputation & Avis</h3>
                     <div className="flex items-center gap-6">
-                        <div className="text-5xl font-black font-headline text-transparent bg-clip-text bg-gradient-to-br from-primary to-violet-600 leading-none">
-                            {business.overallRating.toFixed(1)}
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                            <StarRating rating={business.overallRating} readOnly size={18} />
-                            <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{business.reviews.length} AVIS VÉRIFIÉS</span>
-                        </div>
+                        {business.overallRating > 0 ? (
+                            <>
+                                <div className="text-5xl font-black font-headline text-transparent bg-clip-text bg-gradient-to-br from-primary to-violet-600 leading-none">
+                                    {business.overallRating.toFixed(1)}
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <StarRating rating={business.overallRating} readOnly size={18} />
+                                    <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{business.reviews.length} AVIS VÉRIFIÉS</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="text-3xl font-black font-headline text-muted-foreground/30">
+                                        N/A
+                                    </div>
+                                    <StarRating rating={0} readOnly size={16} />
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed font-medium capitalize">
+                                    Pas encore d'avis pour cet établissement.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <Separator className="bg-border/50" />
-
-                <RatingDistribution reviews={business.reviews} />
-
-                <BusinessSubRatings reviews={business.reviews} />
+                {business.reviews.length > 0 && (
+                    <>
+                        <Separator className="bg-border/50" />
+                        <RatingDistribution reviews={business.reviews} />
+                        <BusinessSubRatings reviews={business.reviews} />
+                    </>
+                )}
 
                 {!business.owner_id && !loadingClaim && (
                     <>

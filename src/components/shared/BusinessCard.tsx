@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Star, MapPin, Zap } from 'lucide-react';
+import { Star, MapPin, Zap, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Business } from '@/lib/types';
 import { isPaidTier } from '@/lib/tier-utils';
@@ -70,10 +70,17 @@ export function BusinessCard({ business }: BusinessCardProps) {
           </div>
 
           <div className="absolute top-3 md:top-4 right-3 md:right-4 z-10 flex flex-col items-end gap-2">
-            <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1.5 md:py-1 rounded-full text-xs font-bold text-white shadow-sm border border-white/10">
-              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-              <span>{typeof business.overallRating === 'number' && business.overallRating > 0 ? business.overallRating.toFixed(1) : '0.0'}</span>
-            </div>
+            {typeof business.overallRating === 'number' && business.overallRating > 0 ? (
+              <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1.5 md:py-1 rounded-full text-xs font-bold text-white shadow-sm border border-white/10">
+                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                <span>{business.overallRating.toFixed(1)}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 bg-primary/80 backdrop-blur-md px-3 py-1.5 md:py-1 rounded-full text-[10px] font-black text-white shadow-sm border border-white/20 uppercase tracking-tighter">
+                <Sparkles className="w-3 h-3 fill-white" />
+                <span>Nouveau</span>
+              </div>
+            )}
           </div>
 
           <div className="absolute bottom-3 md:bottom-4 right-3 md:right-4 z-10 flex flex-wrap justify-end gap-1.5 max-w-[80%]">
