@@ -124,7 +124,7 @@ export default async function BusinessPage({ params }: PageProps) {
       minimal: true // Use minimal data for similar businesses
     });
 
-    let similar = result.filter((b: Business) => b.id !== business.id);
+    let similar = (result.businesses || []).filter((b: Business) => b.id !== business.id);
 
     // If not enough similar businesses with subcategory, fall back to just category
     if (business.subcategory && similar.length < 3) {
@@ -136,7 +136,7 @@ export default async function BusinessPage({ params }: PageProps) {
       });
 
       // Combine results, maintaining uniqueness
-      categoryResults.forEach((b: Business) => {
+      (categoryResults.businesses || []).forEach((b: Business) => {
         if (b.id !== business.id && !similar.find((s: Business) => s.id === b.id)) {
           similar.push(b);
         }

@@ -16,7 +16,7 @@ export default async function Home() {
 
   return (
     <LazyHomeClient
-      initialBusinesses={businesses}
+      initialBusinesses={businesses.businesses || []}
       seasonalCollections={seasonalCollections}
       siteSettings={siteSettings}
       categories={categories}

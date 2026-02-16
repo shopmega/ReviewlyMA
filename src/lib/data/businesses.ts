@@ -326,3 +326,27 @@ export const getAmenities = async (): Promise<string[]> => {
 export const getAllBenefits = getAmenities;
 
 
+/**
+ * Get minimal business data for sitemap generation
+ */
+export const getBusinessesForSitemap = async (): Promise<Array<{ id: string; created_at?: string }>> => {
+    const supabase = getPublicClient();
+    const { data, error } = await supabase
+        .from('businesses')
+        .select('id, created_at')
+        .order('created_at', { ascending: false });
+
+    if (error || !data) {
+        return [];
+    }
+
+    return data;
+};
+
+// Aliases for backward compatibility in cache layer and old pages
+export const getBusinesses = getFilteredBusinesses;
+export const getBusinessBySlug = getBusinessById; // Slugs are currently IDs in this implementation
+export const getFeaturedBusinesses = async () => {
+    const result = await getFilteredBusinesses({ featured: true, limit: 12 });
+    return result.businesses;
+};

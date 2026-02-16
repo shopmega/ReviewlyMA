@@ -6,7 +6,7 @@ import { ALL_CITIES, CITIES } from '@/lib/location-discovery';
 import { Badge } from '@/components/ui/badge';
 import { slugify } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { getBusinesses } from '@/lib/data/businesses';
+
 
 export const metadata: Metadata = {
     title: 'Parcourir par Ville | Platform',
