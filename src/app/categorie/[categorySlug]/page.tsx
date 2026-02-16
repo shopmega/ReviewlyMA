@@ -110,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                             >
                                 Tout voir
                             </Link>
-                            {initialSubcategories.map((sub) => (
+                            {initialSubcategories.map((sub: string) => (
                                 <Link
                                     key={sub}
                                     href={`/categorie/${categorySlug}?subcategory=${encodeURIComponent(sub)}`}

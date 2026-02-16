@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
-import { LayoutDashboard, Store, User, LogOut, Search, MapPin, Sparkles, ChevronDown, Menu, X, Bell, Heart, Briefcase, Building2, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Store, User, LogOut, Search, MapPin, Sparkles, ChevronDown, Menu, X, Bell, Heart, Briefcase, Building2, UserCircle, Home, BookOpen, Pencil, Settings, ChevronRight, Info } from 'lucide-react';
 import { isPaidTier } from '@/lib/tier-utils';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';

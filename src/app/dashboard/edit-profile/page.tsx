@@ -117,7 +117,7 @@ export default function EditProfilePage() {
         getAllCategories(),
         getAmenities()
       ]);
-      setCategories(cats.map(c => ({ id: c, name: c })));
+      setCategories(cats.map((c: string) => ({ id: c, name: c })));
 
       // Fallback to hardcoded BENEFITS if DB is empty (migration not run yet)
       if (amens && amens.length > 0) {

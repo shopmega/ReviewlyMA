@@ -74,7 +74,7 @@ async function reportOutliers() {
     report += '\n--- Duplicate Entries Report ---\n';
     const { data: allB } = await supabase.from('businesses').select('name, city');
     const seen = new Map();
-    const dups = [];
+    const dups: { name: string | null, city: string | null }[] = [];
     allB?.forEach(b => {
         const key = `${b.name?.trim().toLowerCase()}|${b.city?.trim().toLowerCase()}`;
         if (seen.has(key)) {

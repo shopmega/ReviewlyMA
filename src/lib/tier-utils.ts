@@ -19,10 +19,11 @@ export function hasTierAccess(
 /**
  * Check if a tier is a paid/premium tier (Growth or Gold)
  * This is used to gate functional Pro features like Tags, WhatsApp, etc.
- * @param tier The user's current tier
+ * @param tier The user's current tier (can be undefined)
  * @returns Boolean indicating if the tier is paid
  */
-export function isPaidTier(tier: SubscriptionTier): boolean {
+export function isPaidTier(tier: SubscriptionTier | undefined | null): boolean {
+  if (!tier) return false;
   return tier === 'growth' || tier === 'gold';
 }
 

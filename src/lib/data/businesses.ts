@@ -239,3 +239,87 @@ export const getSeasonalCollections = async (): Promise<SeasonalCollection[]> =>
 
     return data.map(mapCollectionFromDB);
 };
+
+/**
+ * Get all unique categories from businesses table
+ */
+export const getAllCategories = async (): Promise<string[]> => {
+    const supabase = getPublicClient();
+
+    const { data, error } = await supabase
+        .from('businesses')
+        .select('category')
+        .not('category', 'is', null);
+
+    if (error || !data) {
+        return [];
+    }
+
+    const categoriesSet = new Set<string>();
+    data.forEach((item: any) => {
+        if (item.category && typeof item.category === 'string') {
+            categoriesSet.add(item.category);
+        }
+    });
+    return Array.from(categoriesSet).sort();
+};
+
+/**
+ * Get all subcategories for a specific category
+ */
+export const getSubcategoriesByCategory = async (category: string): Promise<string[]> => {
+    const supabase = getPublicClient();
+
+    const { data, error } = await supabase
+        .from('businesses')
+        .select('subcategory')
+        .eq('category', category)
+        .not('subcategory', 'is', null);
+
+    if (error || !data) {
+        return [];
+    }
+
+    const subcategoriesSet = new Set<string>();
+    data.forEach((item: any) => {
+        if (item.subcategory && typeof item.subcategory === 'string') {
+            subcategoriesSet.add(item.subcategory);
+        }
+    });
+    return Array.from(subcategoriesSet).sort();
+};
+
+/**
+ * Get all unique amenities from businesses table
+ */
+export const getAmenities = async (): Promise<string[]> => {
+    const supabase = getPublicClient();
+
+    const { data, error } = await supabase
+        .from('businesses')
+        .select('amenities')
+        .not('amenities', 'is', null);
+
+    if (error || !data) {
+        return [];
+    }
+
+    const amenitiesSet = new Set<string>();
+    data.forEach((item: any) => {
+        if (item.amenities && Array.isArray(item.amenities)) {
+            item.amenities.forEach((amenity: any) => {
+                if (typeof amenity === 'string') {
+                    amenitiesSet.add(amenity);
+                }
+            });
+        }
+    });
+    return Array.from(amenitiesSet).sort();
+};
+
+/**
+ * Alias for getAmenities for backward compatibility
+ */
+export const getAllBenefits = getAmenities;
+
+
