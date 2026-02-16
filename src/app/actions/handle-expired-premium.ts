@@ -64,12 +64,12 @@ export async function handleExpiredPremiumAccounts(authToken?: string): Promise<
     if (expiredProfiles && expiredProfiles.length > 0) {
       // Update expired profiles
       const profileIds = expiredProfiles.map(p => p.id);
-      
+
       const { error: updateProfileError } = await serviceClient
         .from('profiles')
         .update({
           is_premium: false,
-          tier: 'none' as SubscriptionTier,
+          tier: 'standard' as SubscriptionTier,
           updated_at: now
         })
         .in('id', profileIds);
@@ -86,14 +86,14 @@ export async function handleExpiredPremiumAccounts(authToken?: string): Promise<
       const businessIds = expiredProfiles
         .filter(p => p.business_id)
         .map(p => p.business_id);
-      
+
       let businessesAffected = 0;
       if (businessIds.length > 0) {
         const { error: updateBusinessError } = await serviceClient
           .from('businesses')
           .update({
             is_premium: false,
-            tier: 'none' as SubscriptionTier,
+            tier: 'standard' as SubscriptionTier,
             updated_at: now
           })
           .in('id', businessIds);

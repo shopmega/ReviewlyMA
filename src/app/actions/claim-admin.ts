@@ -124,7 +124,7 @@ export async function updateClaimStatus(
                 // Exclude the current claim business from the count of OTHER businesses
                 existingBusinessIds.delete(claim.business_id);
 
-                const userTier: SubscriptionTier = existingProfile?.tier || (existingProfile?.is_premium ? 'gold' : 'none');
+                const userTier: SubscriptionTier = existingProfile?.tier || (existingProfile?.is_premium ? 'gold' : 'standard');
                 const maxAllowed = getMaxBusinessesForTier(userTier);
 
                 if (existingBusinessIds.size >= maxAllowed) {

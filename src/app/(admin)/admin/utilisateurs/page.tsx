@@ -189,7 +189,7 @@ export default function UsersPage() {
 
   const handlePremiumToggle = async (userId: string, shouldHavePremium: boolean) => {
     setActionLoading(userId);
-    const result = await toggleUserPremium(userId, shouldHavePremium ? 'growth' : 'none');
+    const result = await toggleUserPremium(userId, shouldHavePremium ? 'growth' : 'standard');
 
     if (result.status === 'success') {
       toast({ title: 'Succès', description: result.message });

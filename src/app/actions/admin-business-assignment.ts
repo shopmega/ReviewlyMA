@@ -105,7 +105,7 @@ export async function assignBusinessToUser(
       .select('business_id, is_primary')
       .eq('user_id', resolvedUserId)
 
-    const resolvedTier: SubscriptionTier = user.tier || (user.is_premium ? 'gold' : 'none')
+    const resolvedTier: SubscriptionTier = user.tier || (user.is_premium ? 'gold' : 'standard')
     const maxBusinesses = user.role === 'admin' ? Number.POSITIVE_INFINITY : getMaxBusinessesForTier(resolvedTier)
 
     if (user.role !== 'admin') {
@@ -156,10 +156,10 @@ export async function assignBusinessToUser(
       .eq('business_id', businessId)
 
     if (deleteError) {
-      logger.error('Error removing existing assignment', { 
-        userId, 
-        businessId, 
-        error: deleteError.message 
+      logger.error('Error removing existing assignment', {
+        userId,
+        businessId,
+        error: deleteError.message
       })
       // Don't fail completely, just log the error
     }
@@ -195,12 +195,12 @@ export async function assignBusinessToUser(
       const profileUpdate: any = {
         business_id: businessId
       }
-      
+
       // Upgrade to pro role if they're currently a regular user
       if (user.role === 'user') {
         profileUpdate.role = 'pro'
       }
-      
+
       const { error: profileUpdateError } = await supabase
         .from('profiles')
         .update(profileUpdate)
@@ -263,14 +263,14 @@ export async function assignBusinessToUser(
     }
 
   } catch (error: any) {
-    logger.error('Error in assignBusinessToUser', { 
-      userId, 
-      businessId, 
-      role, 
-      isPrimary, 
-      error: error.message 
+    logger.error('Error in assignBusinessToUser', {
+      userId,
+      businessId,
+      role,
+      isPrimary,
+      error: error.message
     })
-    
+
     return {
       status: 'error',
       message: error.message || 'Failed to assign business to user'
@@ -414,12 +414,12 @@ export async function removeBusinessFromUser(
     }
 
   } catch (error: any) {
-    logger.error('Error in removeBusinessFromUser', { 
-      userId, 
-      businessId, 
-      error: error.message 
+    logger.error('Error in removeBusinessFromUser', {
+      userId,
+      businessId,
+      error: error.message
     })
-    
+
     return {
       status: 'error',
       message: error.message || 'Failed to remove business assignment'
@@ -518,9 +518,9 @@ export async function getUserBusinessAssignments(userId: string) {
       error: errorMessage,
       errorObject: JSON.stringify(error, Object.getOwnPropertyNames(error))
     };
-    
+
     logger.error('Error in getUserBusinessAssignments', errorDetails);
-    
+
     return {
       success: false,
       error: errorMessage
