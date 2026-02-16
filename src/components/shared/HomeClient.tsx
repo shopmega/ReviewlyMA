@@ -8,7 +8,7 @@ import {
     ArrowRight, Building, Utensils, Search, Star, Users, Car, MapPin,
     Sparkles, Activity, Wrench, ShoppingBag, Palmtree, Bed, ChevronRight,
     Landmark, Headphones, GraduationCap, Zap, Hotel, Home, Factory,
-    Heart, Briefcase, Laptop, Wifi, Truck, LucideIcon
+    Heart, Briefcase, Laptop, Wifi, Truck, Radio, LucideIcon
 } from 'lucide-react';
 import { BusinessCard } from '@/components/shared/BusinessCard';
 import Image from 'next/image';
@@ -30,7 +30,7 @@ import { AdSlot } from '@/components/shared/AdSlot';
 const IconMap: Record<string, LucideIcon> = {
     Landmark, Headphones, ShoppingBag, GraduationCap, Zap, Hotel,
     Home, Factory, Utensils, Heart, Briefcase, Laptop, Wifi, Truck,
-    Building, Search, Sparkles, Activity, Wrench, Palmtree, Bed
+    Building, Search, Sparkles, Activity, Wrench, Palmtree, Bed, Radio
 };
 
 const IconAliasMap: Record<string, keyof typeof IconMap> = {
@@ -47,6 +47,7 @@ const IconAliasMap: Record<string, keyof typeof IconMap> = {
     stethoscope: 'Heart',
     factory: 'Factory',
     'map-pin': 'MapPin',
+    radio: 'Radio',
 };
 
 const getCategoryIcon = (iconName?: string) => {

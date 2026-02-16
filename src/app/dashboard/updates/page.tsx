@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 import { createClient } from "@/lib/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { isPaidTier } from "@/lib/tier-utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Update = {
@@ -53,7 +54,7 @@ export default function UpdatesPage() {
     title: ''
   });
 
-  const isPro = profile?.tier === 'gold' || profile?.tier === 'growth';
+  const isPro = profile?.tier && isPaidTier(profile.tier);
 
   useEffect(() => {
     fetchUpdates();
@@ -154,14 +155,14 @@ export default function UpdatesPage() {
               <Lock className="h-8 w-8 text-amber-600 dark:text-amber-500" />
             </div>
             <div className="space-y-2 max-w-md">
-              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">Fonctionnalité Entreprise GOLD</h3>
+              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">Fonctionnalité PRO / GOLD</h3>
               <p className="text-sm text-amber-700/80 dark:text-amber-500/80">
-                La diffusion de nouveautés et promotions est réservée aux abonnés GOLD. Boostez votre visibilité en partageant vos actualités directement avec vos abonnés.
+                La diffusion de nouveautés et promotions est réservée aux abonnés PRO ou GOLD. Boostez votre visibilité en partageant vos actualités directement avec vos abonnés.
               </p>
             </div>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl" asChild>
               <Link href="/dashboard/premium">
-                Passer Entreprise GOLD
+                Passer en Version PRO
               </Link>
             </Button>
           </CardContent>

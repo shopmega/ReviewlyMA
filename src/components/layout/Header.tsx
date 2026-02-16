@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
-import { LayoutDashboard, Menu, User, Pencil, LogOut, Store, Home, Search, BookOpen, MapPin, Briefcase, ChevronRight, Settings, Info } from 'lucide-react';
+import { LayoutDashboard, Store, User, LogOut, Search, MapPin, Sparkles, ChevronDown, Menu, X, Bell, Heart, Briefcase, Building2, UserCircle } from 'lucide-react';
+import { isPaidTier } from '@/lib/tier-utils';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '../shared/ThemeToggle';
@@ -410,7 +411,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-primary/10 focus:text-primary cursor-pointer">
                       <Link href="/dashboard" className="flex items-center py-2.5 px-3">
                         <LayoutDashboard className="mr-3 h-4 w-4 text-primary" />
-                        <span className="font-medium">Tableau de bord {profile?.tier === 'gold' ? 'gold' : ''}</span>
+                        <span className="font-medium">Tableau de bord {isPaidTier(profile?.tier) ? 'PRO' : ''}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}

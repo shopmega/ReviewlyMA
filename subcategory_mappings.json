@@ -1,0 +1,101 @@
+{
+  "Industrie & Chimie": [
+    "Agriculture",
+    "Textiles",
+    "Ciment & matériaux",
+    "Extraction Minière",
+    "Mines",
+    "Printing & Packaging",
+    "Manufacturing",
+    "Pharmaceuticals",
+    "Mining",
+    "Automotive"
+  ],
+  "Services": [],
+  "Télécommunications": [
+    "Opérateur",
+    "Opérateur Global",
+    "Opérateur télécom"
+  ],
+  "Banque & Finance": [
+    "Banque",
+    "Fintech & paiement",
+    "Banque d'investissement",
+    "Accounting & Audit",
+    "Banking",
+    "Insurance"
+  ],
+  "Distribution": [
+    "Hypermarchés",
+    "Supermarchés discount",
+    "Supermarchés"
+  ],
+  "Transport & Logistique": [
+    "Messagerie express",
+    "Livraison colis",
+    "Aérien",
+    "Transport Routier",
+    "Logistics & Transport"
+  ],
+  "Hôtels & Hébergement": [
+    "Hôtel 5 étoiles",
+    "Gestion hôtelière",
+    "Hospitality"
+  ],
+  "Immobilier & Construction": [
+    "Construction BTP",
+    "Promotion immobilière",
+    "Construction",
+    "Real Estate"
+  ],
+  "Énergie & Environnement": [
+    "Énergies renouvelables",
+    "Energy"
+  ],
+  "Santé & Bien-être": [
+    "Groupe hospitalier",
+    "Cliniques & oncologie",
+    "Healthcare"
+  ],
+  "Éducation & Formation": [
+    "Université",
+    "École d’ingénieurs",
+    "Education"
+  ],
+  "Technologie & IT": [
+    "ESN / Consulting",
+    "R&D",
+    "Telecom",
+    "Solutions de paiement",
+    "Services numériques",
+    "IT & Software",
+    "Conseil IT"
+  ],
+  "Centres d’Appel & BPO": [
+    "Outsourcing"
+  ],
+  "Distribution & Commerce": [
+    "Grande Distribution",
+    "Retail",
+    "E-commerce",
+    "Food & Beverage",
+    "Import/Export"
+  ],
+  "Services Professionnels": [
+    "Audit & conseil",
+    "Security Services",
+    "Legal Services",
+    "Marketing & Advertising",
+    "Cleaning Services",
+    "Consulting",
+    "Maintenance Services",
+    "Engineering"
+  ],
+  "Centres d'Appel & BPO": [
+    "Centre d'appels",
+    "Centre d’appels",
+    "BPO / Call Center",
+    "BPO & relation client",
+    "BPO & services"
+  ]
+}

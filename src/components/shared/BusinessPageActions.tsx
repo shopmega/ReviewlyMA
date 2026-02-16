@@ -9,6 +9,7 @@ import { ShareButton } from '@/components/shared/ShareButton';
 import { FollowButton } from '@/components/shared/FollowButton';
 import { BusinessReportDialog } from '@/components/shared/BusinessReportDialog';
 import { Business } from '@/lib/types';
+import { isPaidTier } from '@/lib/tier-utils';
 
 interface BusinessPageActionsProps {
     business: Business;
@@ -44,8 +45,8 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                         </Link>
                     </Button>
 
-                    {/* GOLD Actions: WhatsApp or Affiliate - Use Primary Gradient */}
-                    {business.tier === 'gold' && (
+                    {/* PREMIUM Actions: WhatsApp or Affiliate - ALL PAID TIERS (Growth & Gold) */}
+                    {isPaidTier(business.tier || 'standard') && (
                         <>
                             {business.whatsapp_number && (
                                 <Button className="h-11 px-6 rounded-full font-bold bg-[#25D366] text-white hover:bg-[#20bd5a] shadow-lg shadow-green-900/20 transition-transform hover:scale-105 active:scale-95 border border-white/10 max-sm:flex-1 max-sm:min-w-[140px]" asChild>

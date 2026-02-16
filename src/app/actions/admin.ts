@@ -50,7 +50,7 @@ export async function toggleUserPremium(
   targetUserId: string,
   tier: SubscriptionTier
 ): Promise<AdminActionResult> {
-  const isPremium = tier !== 'none';
+  const isPremium = tier !== 'standard';
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
@@ -252,7 +252,7 @@ export async function createBusiness(data: {
   description?: string;
   tier?: SubscriptionTier;
 }): Promise<AdminActionResult> {
-  const isPremium = (data.tier && data.tier !== 'none');
+  const isPremium = (data.tier && data.tier !== 'standard');
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
@@ -269,7 +269,7 @@ export async function createBusiness(data: {
         address: data.address,
         description: data.description || '',
         is_premium: isPremium,
-        tier: data.tier || 'none',
+        tier: data.tier || 'standard',
         status: 'active',
         overall_rating: 0,
         review_count: 0
@@ -337,7 +337,7 @@ export async function approveBusinessSuggestion(suggestionId: string, reviewNote
         type: 'company',
         is_featured: false,
         is_premium: false,
-        tier: 'none',
+        tier: 'standard',
         overall_rating: 0,
         review_count: 0
       }, { onConflict: 'id' })
@@ -455,6 +455,39 @@ export async function toggleBusinessFeatured(
     return {
       status: 'success',
       message: isFeatured ? 'Établissement mis à la une.' : 'Établissement retiré de la une.'
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Toggle business sponsored status (admin only)
+ */
+export async function toggleBusinessSponsored(
+  businessId: string,
+  isSponsored: boolean
+): Promise<AdminActionResult> {
+  try {
+    const adminId = await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const { error } = await serviceClient
+      .from('businesses')
+      .update({ is_sponsored: isSponsored })
+      .eq('id', businessId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    revalidatePath('/');
+    revalidatePath('/admin/etablissements');
+    revalidatePath(`/businesses/${businessId}`);
+
+    return {
+      status: 'success',
+      message: isSponsored ? 'Établissement marqué comme sponsorisé.' : 'Établissement n\'est plus sponsorisé.'
     };
   } catch (error: any) {
     return { status: 'error', message: error.message || 'Une erreur est survenue.' };

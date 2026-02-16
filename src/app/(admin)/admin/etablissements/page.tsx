@@ -31,7 +31,8 @@ import {
   Clock,
   MoreVertical as MoreVerticalIcon,
   Crown,
-  Upload
+  Upload,
+  Zap
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -39,8 +40,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { deleteBusiness, toggleBusinessFeatured, requestLogo, createBusiness } from "@/app/actions/admin";
-import { bulkUpdateBusinesses, bulkDeleteBusinesses } from "@/app/actions/admin-bulk";
+import {
+  fetchAllUsers,
+  toggleUserPremium,
+  toggleBusinessFeatured,
+  toggleBusinessSponsored,
+  requestLogo,
+  deleteBusiness,
+  createBusiness,
+  bulkDeleteBusinesses,
+  bulkUpdateBusinesses
+} from '@/app/actions/admin';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,6 +72,7 @@ type Business = {
   type: string;
   overall_rating: number;
   is_featured: boolean;
+  is_sponsored?: boolean; // Added this type definition
   logo_url: string | null;
   logo_requested?: boolean;
   user_id?: string | null;
@@ -197,6 +208,19 @@ export default function BusinessesAdminPage() {
     }
     setLoading(false);
   }
+
+  const toggleSponsored = async (id: string, currentStatus: boolean) => {
+    setActionLoading(id);
+    const result = await toggleBusinessSponsored(id, !currentStatus);
+
+    if (result.status === 'error') {
+      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+    } else {
+      setBusinesses(prev => prev.map(b => b.id === id ? { ...b, is_sponsored: !currentStatus } : b));
+      toast({ title: 'Succès', description: result.message });
+    }
+    setActionLoading(null);
+  };
 
   const toggleFeatured = async (id: string, currentStatus: boolean) => {
     setActionLoading(id);
@@ -567,15 +591,22 @@ export default function BusinessesAdminPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {business.is_featured ? (
-                          <Badge className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-[9px] border-0 px-2.5 py-1 rounded-full shadow-lg shadow-orange-500/20 uppercase tracking-widest animate-pulse">
-                            À la une
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground font-bold text-[9px] px-2.5 py-1 rounded-full border-border/30 uppercase tracking-widest">
-                            Standard
-                          </Badge>
-                        )}
+                        <div className="flex flex-col gap-1.5">
+                          {business.is_sponsored && (
+                            <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-[9px] border-0 px-2.5 py-1 rounded-full shadow-lg shadow-indigo-500/20 uppercase tracking-widest">
+                              Sponsorisé
+                            </Badge>
+                          )}
+                          {business.is_featured ? (
+                            <Badge className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-[9px] border-0 px-2.5 py-1 rounded-full shadow-lg shadow-orange-500/20 uppercase tracking-widest animate-pulse">
+                              À la une
+                            </Badge>
+                          ) : !business.is_sponsored && (
+                            <Badge variant="outline" className="text-muted-foreground font-bold text-[9px] px-2.5 py-1 rounded-full border-border/30 uppercase tracking-widest">
+                              Standard
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right pr-8">
                         <div className="flex items-center justify-end gap-1 translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
@@ -595,6 +626,14 @@ export default function BusinessesAdminPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="rounded-2xl border-border/10 backdrop-blur-3xl shadow-2xl p-2 w-56">
+                                <DropdownMenuItem
+                                  className="rounded-xl py-3 font-bold hover:bg-amber-500/10 transition-colors"
+                                  onClick={() => toggleSponsored(business.id, business.is_sponsored || false)}
+                                >
+                                  <Zap className={cn("mr-2 h-4 w-4", business.is_sponsored ? "fill-amber-400 text-amber-400" : "")} />
+                                  {business.is_sponsored ? 'Retirer du sponsoring' : 'Marquer comme Sponsorisé'}
+                                </DropdownMenuItem>
+
                                 <DropdownMenuItem
                                   className="rounded-xl py-3 font-bold hover:bg-primary/10 transition-colors"
                                   onClick={() => toggleFeatured(business.id, business.is_featured)}
@@ -633,8 +672,8 @@ export default function BusinessesAdminPage() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
-            </div>
+              </Table >
+            </div >
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-8">
               {businesses.map((business) => (
@@ -672,11 +711,25 @@ export default function BusinessesAdminPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <Badge className="bg-slate-100 dark:bg-slate-800 text-muted-foreground border-none font-black text-[10px] uppercase">{business.category}</Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span className="font-black text-sm tabular-nums">{business.overall_rating.toFixed(1)}</span>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <Badge className="bg-slate-100 dark:bg-slate-800 text-muted-foreground border-none font-black text-[10px] uppercase">{business.category}</Badge>
+                        <div className="flex flex-wrap gap-1.5">
+                          {business.is_sponsored && (
+                            <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-[8px] border-0 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                              Sponsorisé
+                            </Badge>
+                          )}
+                          {business.is_featured && (
+                            <Badge className="bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black text-[8px] border-0 px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse">
+                              À la une
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 bg-amber-400/10 px-2 py-1 rounded-lg">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        <span className="font-black text-xs tabular-nums text-amber-600">{business.overall_rating.toFixed(1)}</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
@@ -698,95 +751,100 @@ export default function BusinessesAdminPage() {
                 </Card>
               ))}
             </div>
-          )}
+          )
+          }
 
-          {!loading && totalCount > 0 && (
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
-              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-                  <SelectTrigger className="w-[110px] h-9 rounded-xl bg-white/50 border-border/20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-border/10">
-                    <SelectItem value="12">12 / page</SelectItem>
-                    <SelectItem value="24">24 / page</SelectItem>
-                    <SelectItem value="48">48 / page</SelectItem>
-                    <SelectItem value="96">96 / page</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="text-xs font-black tabular-nums px-2">
-                  Page {currentPage} / {totalPages}
+          {
+            !loading && totalCount > 0 && (
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
+                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
-                >
-                  Précédent
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage >= totalPages}
-                >
-                  Suivant
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                    <SelectTrigger className="w-[110px] h-9 rounded-xl bg-white/50 border-border/20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-border/10">
+                      <SelectItem value="12">12 / page</SelectItem>
+                      <SelectItem value="24">24 / page</SelectItem>
+                      <SelectItem value="48">48 / page</SelectItem>
+                      <SelectItem value="96">96 / page</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="text-xs font-black tabular-nums px-2">
+                    Page {currentPage} / {totalPages}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                  >
+                    Précédent
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                  >
+                    Suivant
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )
+          }
+        </CardContent >
+      </Card >
 
 
 
       {/* Floating Batch Control bar */}
-      {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 md:bottom-10 inset-x-0 z-50 flex justify-center px-4 animate-in slide-in-from-bottom-12 duration-500">
-          <div className="w-full max-w-4xl bg-slate-950/90 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/10 p-4 md:p-5 rounded-3xl md:rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex flex-col md:flex-row items-center justify-between gap-4 ring-1 ring-white/20">
-            <div className="flex items-center gap-4 pl-0 md:pl-4">
-              <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-black text-base md:text-lg shadow-xl shadow-primary/40">
-                {selectedIds.length}
+      {
+        selectedIds.length > 0 && (
+          <div className="fixed bottom-6 md:bottom-10 inset-x-0 z-50 flex justify-center px-4 animate-in slide-in-from-bottom-12 duration-500">
+            <div className="w-full max-w-4xl bg-slate-950/90 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/10 p-4 md:p-5 rounded-3xl md:rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex flex-col md:flex-row items-center justify-between gap-4 ring-1 ring-white/20">
+              <div className="flex items-center gap-4 pl-0 md:pl-4">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-black text-base md:text-lg shadow-xl shadow-primary/40">
+                  {selectedIds.length}
+                </div>
+                <div>
+                  <p className="text-white font-black text-sm md:text-base uppercase tracking-tight">Traitement en Lot</p>
+                  <p className="text-muted-foreground text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Action sur la sélection annuaire</p>
+                </div>
               </div>
-              <div>
-                <p className="text-white font-black text-sm md:text-base uppercase tracking-tight">Traitement en Lot</p>
-                <p className="text-muted-foreground text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Action sur la sélection annuaire</p>
-              </div>
-            </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pr-0 md:pr-2">
-              <Button variant="ghost" className="rounded-xl md:rounded-2xl text-white hover:bg-white/10 font-bold px-4 h-10 md:h-12 text-xs md:text-sm" onClick={() => setSelectedIds([])} disabled={isProcessingBulk}>
-                Annuler
-              </Button>
-              <Button
-                variant="outline"
-                className="rounded-xl md:rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold h-10 md:h-12 text-xs md:text-sm transition-all"
-                onClick={() => handleBulkAction('feature')}
-                disabled={isProcessingBulk}
-              >
-                <Star className="mr-2 h-3 w-3 md:h-4 md:w-4 text-amber-500" /> Promouvoir
-              </Button>
-              <Button
-                className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl md:rounded-2xl font-black px-6 md:px-10 h-10 md:h-12 text-xs md:text-sm shadow-[0_10px_30px_rgba(244,63,94,0.3)] transition-all"
-                onClick={() => handleBulkAction('delete')}
-                disabled={isProcessingBulk}
-              >
-                {isProcessingBulk ? <Loader2 className="mr-2 h-3 w-3 md:h-4 md:w-4 animate-spin" /> : <Trash2 className="mr-2 h-3 w-3 md:h-4 md:w-4" />}
-                Bannir
-              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pr-0 md:pr-2">
+                <Button variant="ghost" className="rounded-xl md:rounded-2xl text-white hover:bg-white/10 font-bold px-4 h-10 md:h-12 text-xs md:text-sm" onClick={() => setSelectedIds([])} disabled={isProcessingBulk}>
+                  Annuler
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-xl md:rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold h-10 md:h-12 text-xs md:text-sm transition-all"
+                  onClick={() => handleBulkAction('feature')}
+                  disabled={isProcessingBulk}
+                >
+                  <Star className="mr-2 h-3 w-3 md:h-4 md:w-4 text-amber-500" /> Promouvoir
+                </Button>
+                <Button
+                  className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl md:rounded-2xl font-black px-6 md:px-10 h-10 md:h-12 text-xs md:text-sm shadow-[0_10px_30px_rgba(244,63,94,0.3)] transition-all"
+                  onClick={() => handleBulkAction('delete')}
+                  disabled={isProcessingBulk}
+                >
+                  {isProcessingBulk ? <Loader2 className="mr-2 h-3 w-3 md:h-4 md:w-4 animate-spin" /> : <Trash2 className="mr-2 h-3 w-3 md:h-4 md:w-4" />}
+                  Bannir
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, businessId: '', businessName: '' })}>
@@ -879,6 +937,6 @@ export default function BusinessesAdminPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }

@@ -76,7 +76,7 @@ export const dashboardFeatures: Array<{
     { icon: Zap, text: "Possibilité d'épingler du contenu important", requiredTier: 'gold' }
   ];
 
-export default function PremiumFeatures({ variant = 'marketing', userTier = 'none' }: PremiumFeaturesProps) {
+export default function PremiumFeatures({ variant = 'marketing', userTier = 'standard' }: PremiumFeaturesProps) {
   if (variant === 'marketing') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

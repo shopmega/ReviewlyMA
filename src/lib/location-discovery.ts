@@ -6,7 +6,7 @@
 // Main Categories with Icon Suggestions (Enterprise Focus)
 export const MAIN_CATEGORIES = [
   { id: 'banque-finance', name: 'Banque & Finance', icon: 'building-library' },
-  { id: 'centres-appel-bpo', name: 'Centres d\'Appel & BPO', icon: 'headset' },
+  { id: 'centres-appel-bpo', name: 'Centres d’Appel & BPO', icon: 'headset' },
   { id: 'distribution-commerce', name: 'Distribution & Commerce', icon: 'shopping-cart' },
   { id: 'industrie-chimie', name: 'Industrie & Chimie', icon: 'factory' },
   { id: 'technologie-it', name: 'Technologie & IT', icon: 'cpu' },
@@ -17,6 +17,7 @@ export const MAIN_CATEGORIES = [
   { id: 'immobilier-construction', name: 'Immobilier & Construction', icon: 'hammer' },
   { id: 'energie-environnement', name: 'Énergie & Environnement', icon: 'zap' },
   { id: 'education-formation', name: 'Éducation & Formation', icon: 'graduation-cap' },
+  { id: 'telecommunications', name: 'Télécommunications', icon: 'radio' },
 ] as const;
 
 // Subcategories based on Moroccan Enterprise sectors
@@ -24,30 +25,35 @@ export const SUBCATEGORIES: Record<string, string[]> = {
   'Banque & Finance': [
     'Banque',
     'Assurance',
-    'Banque d\'investissement',
-    'Fintech & paiement',
-    'Services financiers'
+    'Banque d’investissement',
+    'Fintech & Paiement',
+    'Services financiers',
+    'Comptabilité & Audit'
   ],
-  'Centres d\'Appel & BPO': [
+  'Centres d’Appel & BPO': [
+    'Centre d’Appels & BPO',
     'BPO & Relation Client',
-    'Centres d\'appels',
     'Support Technique',
-    'Back Office'
+    'Back Office',
+    'Externalisation (BPO)'
   ],
   'Distribution & Commerce': [
     'Grande Distribution',
     'Supermarchés & Hypermarchés',
     'Commerce de détail',
     'E-commerce',
-    'Import-Export'
+    'Import & Export',
+    'Alimentation & Boissons'
   ],
   'Industrie & Chimie': [
-    'Mine & Phosphates',
+    'Mines & Extraction',
     'Agro-industrie',
     'Automobile',
     'Aéronautique',
     'Textile & Habillement',
-    'Chimie & Parachimie'
+    'Chimie & Parachimie',
+    'Industrie Manufacturière',
+    'Impression & Emballage'
   ],
   'Technologie & IT': [
     'ESN / Consulting IT',
@@ -55,7 +61,8 @@ export const SUBCATEGORIES: Record<string, string[]> = {
     'Cybersécurité',
     'Cloud & Infrastructure',
     'R&D et Innovation',
-    'Solutions de paiement'
+    'Solutions de paiement',
+    'Informatique & Logiciels'
   ],
   'Transport & Logistique': [
     'Transport Aérien',
@@ -65,41 +72,56 @@ export const SUBCATEGORIES: Record<string, string[]> = {
     'Transport Maritime'
   ],
   'Services Professionnels': [
-    'Audit & Conseil',
+    'Conseil & Audit',
     'Juridique & Fiscalité',
-    'Marketing & Communication',
+    'Marketing & Publicité',
     'RH & Recrutement',
-    'Ingénierie'
+    'Ingénierie',
+    'Audit & Conseil',
+    'Services de Nettoyage',
+    'Services de Maintenance',
+    'Services de Sécurité'
   ],
   'Santé & Bien-être': [
     'Hôpitaux & Cliniques',
     'Industrie Pharmaceutique',
-    'Laboratoires d\'analyses',
-    'Centres de soins'
+    'Laboratoires d’analyses',
+    'Centres de soins',
+    'Santé'
   ],
   'Hôtels & Hébergement': [
     'Hôtellerie de luxe',
     'Chaînes hôtelières',
     'Gestion hôtelière',
-    'Tourisme & Voyage'
+    'Tourisme & Voyage',
+    'Hôtellerie'
   ],
   'Immobilier & Construction': [
     'Promotion Immobilière',
-    'BTP & Génie Civil',
+    'Construction & BTP',
     'Architecture & Design',
-    'Gestion de patrimoine'
+    'Gestion de patrimoine',
+    'Immobilier'
   ],
   'Énergie & Environnement': [
     'Énergies Renouvelables',
     'Eau & Assainissement',
     'Pétrole & Gaz',
-    'Gestion des déchets'
+    'Gestion des déchets',
+    'Énergie'
   ],
   'Éducation & Formation': [
     'Enseignement Supérieur',
-    'Écoles d\'Ingénieurs',
+    'Écoles d’Ingénieurs',
     'Centres de Formation',
-    'E-learning'
+    'E-learning',
+    'Éducation'
+  ],
+  'Télécommunications': [
+    'Opérateur télécom',
+    'Infrastructure réseau',
+    'Opérateur Global',
+    'Services mobiles'
   ]
 };
 

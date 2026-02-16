@@ -1,0 +1,132 @@
+[
+  {
+    "id": "8c7963f6-4647-4dcd-b81e-31c90e73589c",
+    "name": "Banque & Finance",
+    "slug": "banque-finance",
+    "icon": "🏦",
+    "position": 2,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "0a1fab06-8d10-4b16-bfee-c03bd1fcabcd",
+    "name": "Centres d’Appel & BPO",
+    "slug": "centres-dappel-bpo",
+    "icon": "🎧",
+    "position": 5,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "f81c62b8-635d-47eb-a298-fcdb1fd66e40",
+    "name": "Distribution & Commerce",
+    "slug": "distribution-commerce",
+    "icon": "🛍️",
+    "position": 6,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "9ba7fb37-c621-4a96-8947-f053e9304d02",
+    "name": "Éducation & Formation",
+    "slug": "education-formation",
+    "icon": "🎓",
+    "position": 13,
+    "is_active": true,
+    "created_at": "2026-02-13T14:17:08.677784+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "4f6e2375-a7a4-4090-817d-a99d2189659c",
+    "name": "Énergie & Environnement",
+    "slug": "energie-environnement",
+    "icon": "⚡",
+    "position": 12,
+    "is_active": true,
+    "created_at": "2026-02-13T14:17:08.677784+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "a179d2c5-49bd-40f2-aec1-17355635578b",
+    "name": "Hôtels & Hébergement",
+    "slug": "hotels-hebergement",
+    "icon": "🏨",
+    "position": 10,
+    "is_active": true,
+    "created_at": "2026-02-13T14:17:08.677784+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "e5f4c24e-a73e-4fe6-8d48-c63a2580d060",
+    "name": "Immobilier & Construction",
+    "slug": "immobilier-construction",
+    "icon": "🏗️",
+    "position": 11,
+    "is_active": true,
+    "created_at": "2026-02-13T14:17:08.677784+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "8460399a-59e0-43c0-ae55-dac4462937b9",
+    "name": "Industrie & Chimie",
+    "slug": "industrie-chimie",
+    "icon": "🏭",
+    "position": 0,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "904139ec-ce81-4426-944d-4abc6c853a20",
+    "name": "Santé & Bien-être",
+    "slug": "sante-bien-etre",
+    "icon": "🏥",
+    "position": 9,
+    "is_active": true,
+    "created_at": "2026-02-13T14:17:08.677784+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "a2be7e71-92c4-4bad-8166-e820ea686428",
+    "name": "Services Professionnels",
+    "slug": "services-professionnels",
+    "icon": "💼",
+    "position": 8,
+    "is_active": true,
+    "created_at": "2026-02-13T14:17:08.677784+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "2f4962ff-67d3-43d0-8e9e-67cc484426c3",
+    "name": "Technologie & IT",
+    "slug": "technologie-it",
+    "icon": "💻",
+    "position": 3,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "f9fd114a-566c-4a0f-8485-a3ea6f61e5fc",
+    "name": "Télécommunications",
+    "slug": "telecommunications",
+    "icon": "📡",
+    "position": 1,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  },
+  {
+    "id": "68b87b92-aac4-4c26-959a-adeb1b84d1e2",
+    "name": "Transport & Logistique",
+    "slug": "transport-logistique",
+    "icon": "🚚",
+    "position": 4,
+    "is_active": true,
+    "created_at": "2026-02-13T14:10:49.692374+00:00",
+    "updated_at": "2026-02-13T14:17:21.293242+00:00"
+  }
+]

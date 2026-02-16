@@ -38,7 +38,8 @@ import { getSavedBusinesses, updateUserProfile, exportUserData, requestAccountDe
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { userProfileUpdateSchema, type UserProfileUpdateData, type ActionState } from '@/lib/types';
+import { userProfileUpdateSchema, type UserProfileUpdateData, type ActionState, type SubscriptionTier } from '@/lib/types';
+import { isPaidTier } from '@/lib/tier-utils';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,7 +54,7 @@ type UserProfile = {
   created_at: string;
   role?: string;
   business_id?: string;
-  tier?: 'none' | 'growth' | 'gold';
+  tier?: SubscriptionTier;
   email_preferences?: {
     marketing: boolean;
     system: boolean;
@@ -351,7 +352,7 @@ export default function ProfilePage() {
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
-                {profile?.tier && profile.tier !== 'none' && (
+                {profile?.tier && isPaidTier(profile.tier) && (
                   <div className="absolute -bottom-2 -right-2 bg-amber-500 text-white rounded-full p-2 shadow-lg border-2 border-background">
                     <Sparkles className="w-6 h-6 fill-current" />
                   </div>

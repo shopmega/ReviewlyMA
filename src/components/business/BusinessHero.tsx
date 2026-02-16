@@ -1,12 +1,14 @@
 'use client';
 
-import { Business } from '@/lib/types';
+import { Business, SubscriptionTier } from '@/lib/types';
 import { BusinessCover } from '@/components/shared/BusinessCover';
 import { BusinessLogo } from '@/components/shared/BusinessLogo';
 import { StarRating } from '@/components/shared/StarRating';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, ShieldCheck, Sparkles } from 'lucide-react';
+import { MapPin, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { useMemo } from 'react';
+import { isPaidTier } from '@/lib/tier-utils';
+import { cn } from '@/lib/utils';
 
 interface BusinessHeroProps {
     business: Business;
@@ -84,6 +86,26 @@ export function BusinessHero({ business }: BusinessHeroProps) {
                                     <Badge variant="default" className="bg-blue-500/80 hover:bg-blue-600 border-none backdrop-blur-sm shadow-sm text-xs py-0.5">
                                         <ShieldCheck className="w-3 h-3 inline mr-1" />
                                         <span>Vérifié</span>
+                                    </Badge>
+                                )}
+                                {business.tier && isPaidTier(business.tier) && (
+                                    <Badge
+                                        variant={business.tier === 'gold' ? "default" : "outline"}
+                                        className={cn(
+                                            "backdrop-blur-md text-xs py-0.5 font-bold border-none",
+                                            business.tier === 'gold'
+                                                ? "bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-lg shadow-amber-500/20"
+                                                : "bg-primary/20 text-foreground border border-primary/20"
+                                        )}
+                                    >
+                                        {business.tier === 'gold' ? (
+                                            <span className="flex items-center gap-1">
+                                                <Zap className="w-3 h-3 fill-current animate-pulse" />
+                                                PRO GOLD
+                                            </span>
+                                        ) : (
+                                            'BUSINESS PRO'
+                                        )}
                                     </Badge>
                                 )}
                             </div>

@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
 import { logAuditAction } from '@/lib/audit-logger';
 import { AdminActionResult } from './admin';
+import { MAIN_CATEGORIES } from '@/lib/location-discovery';
 
 export type Category = {
     id: string;
@@ -310,12 +311,17 @@ export async function syncCategoriesFromBusinesses(): Promise<AdminActionResult>
         for (const [catName, subcats] of catMap.entries()) {
             const catSlug = catName.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
 
+            // Try to find the predefined icon for this category
+            const predefinedCategory = MAIN_CATEGORIES.find(c => c.name === catName);
+            const icon = predefinedCategory?.icon || null;
+
             // Upsert category
             const { data: cat, error: catError } = await serviceClient
                 .from('categories')
                 .upsert({
                     name: catName,
                     slug: catSlug,
+                    icon,
                     is_active: true
                 }, { onConflict: 'slug' })
                 .select()

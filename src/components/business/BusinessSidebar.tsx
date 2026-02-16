@@ -6,6 +6,8 @@ import { BusinessMap } from '@/components/shared/BusinessMap';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Clock, Phone, Globe, ShieldCheck, Share2, MessageCircle, ExternalLink, MapPin } from 'lucide-react';
+import { ShareButton } from '@/components/shared/ShareButton';
+import { isPaidTier } from '@/lib/tier-utils';
 import { StarRating } from '@/components/shared/StarRating';
 import { RatingDistribution } from '@/components/shared/RatingDistribution';
 import { BusinessSubRatings } from '@/components/shared/BusinessSubRatings';
@@ -114,8 +116,8 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
                             </div>
                         )}
 
-                        {/* PREMIUM FEATURES: WhatsApp & Affiliate - GOLD TIER ONLY */}
-                        {business.tier === 'gold' && (
+                        {/* PREMIUM FEATURES: WhatsApp & Affiliate - ALL PAID TIERS (Growth & Gold) */}
+                        {isPaidTier(business.tier || 'standard') && (
                             <div className="pt-2 space-y-3">
                                 {business.whatsapp_number && (
                                     <a
@@ -222,8 +224,10 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
                 )}
             </div>
 
-            {/* Sidebar Ad Slot */}
-            <AdSlot slot="business-sidebar-ad" className="min-h-[250px] rounded-2xl overflow-hidden" />
+            {/* Sidebar Ad Slot - Hidden for GOLD businesses (Ad Removal feature) */}
+            {business.tier !== 'gold' && (
+                <AdSlot slot="business-sidebar-ad" className="min-h-[250px] rounded-2xl overflow-hidden" />
+            )}
         </div>
     );
 }

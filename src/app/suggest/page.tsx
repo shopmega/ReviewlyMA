@@ -12,13 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Store, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-const CATEGORIES = [
-  'Technologie', 'Finance', 'Consulting', 'Sante', 'Ingenierie', 'Marketing', 'RH', 'Education', 'Services', 'Industrie'
-];
+import { MAIN_CATEGORIES, ALL_CITIES } from '@/lib/location-discovery';
 
-const CITIES = [
-  'Casablanca', 'Rabat', 'Marrakech', 'Fes', 'Tanger', 'Agadir', 'Meknes', 'Oujda', 'Kenitra', 'Tetouan', 'Autre'
-];
+const CATEGORIES = MAIN_CATEGORIES.map(c => c.name);
+const CITIES = ALL_CITIES;
 
 export default function SuggestBusinessPage() {
   const [isPending, startTransition] = useTransition();

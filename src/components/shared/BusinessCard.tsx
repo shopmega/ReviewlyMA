@@ -2,7 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Star, MapPin, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { Business } from '@/lib/types';
+import { isPaidTier } from '@/lib/tier-utils';
 import { getAmenityGroup } from '@/lib/location-discovery';
 import { BusinessLogo } from '@/components/shared/BusinessLogo';
 import { Badge } from '@/components/ui/badge';
@@ -112,9 +114,24 @@ export function BusinessCard({ business }: BusinessCardProps) {
                 <span className="text-xs text-muted-foreground italic">Aucun avantage listé</span>
               )}
             </div>
-            {business.tier && business.tier !== 'none' && (
-              <Badge variant="outline" className="ml-auto border-primary/20 bg-primary/5 text-primary text-[10px] px-2 py-0.5 h-6">
-                {business.tier.toUpperCase()}
+            {business.tier && isPaidTier(business.tier) && (
+              <Badge
+                variant={business.tier === 'gold' ? "default" : "outline"}
+                className={cn(
+                  "ml-auto text-[10px] px-2 py-0.5 h-6 font-bold uppercase tracking-wider transition-all duration-300",
+                  business.tier === 'gold'
+                    ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-white border-none shadow-lg shadow-amber-500/30 ring-1 ring-white/20"
+                    : "border-primary/20 bg-primary/5 text-primary"
+                )}
+              >
+                {business.tier === 'gold' ? (
+                  <span className="flex items-center gap-1">
+                    <Zap className="w-3 h-3 fill-current animate-pulse" />
+                    GOLD
+                  </span>
+                ) : (
+                  'PRO'
+                )}
               </Badge>
             )}
           </div>

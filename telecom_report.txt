@@ -1,0 +1,11 @@
+--- Subcategories of Télécommunications ---
+- Opérateur
+- Opérateur Global
+- Opérateur télécom
+- Opérateur
+- Opérateur Global
+
+--- Businesses in Télécommunications ---
+- Maroc Telecom (Opérateur)
+- Inwi (Opérateur Global)
+- Orange Maroc (Opérateur télécom)

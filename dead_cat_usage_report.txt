@@ -1,0 +1,6 @@
+--- Subcategory Usage Report for Bad Categories ---
+Category ID 55eb89fe-8a61-46b9-b3d2-7e5ddfba935e: 3 subcategories linked.
+Category ID 175b3972-8194-4d25-81f4-375a646c6128: 2 subcategories linked.
+Category ID ca3130a8-d6cd-4a6c-b472-16dd62272fc0: 3 subcategories linked.
+Category ID 5ded65c4-2e71-4b4c-bb76-9ffd6f6db8b1: 3 subcategories linked.
+Category ID a639acd9-c19e-470b-bf2d-625d8ab61285: 3 subcategories linked.

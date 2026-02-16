@@ -2,11 +2,9 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { ActionState } from '@/lib/types';
+import { ActionState, SubscriptionTier } from '@/lib/types';
 import { logger } from '@/lib/logger';
-
-import { SubscriptionTier } from '@/lib/types';
-import { getMaxBusinessesForTier } from '@/lib/tier-utils';
+import { getMaxBusinessesForTier, isPaidTier } from '@/lib/tier-utils';
 
 export async function getUserPremiumStatus(userId: string): Promise<{
   isPremium: boolean;
@@ -34,17 +32,19 @@ export async function getUserPremiumStatus(userId: string): Promise<{
       const tier = premiumUser.subscription_tier as SubscriptionTier;
       const tierLimit = getMaxBusinessesForTier(tier);
       const maxBusinesses = Math.min(premiumUser.max_businesses ?? tierLimit, tierLimit);
+
       // Check if the subscription has expired
       if (premiumUser.subscription_expires_at && new Date(premiumUser.subscription_expires_at) < new Date()) {
         return {
           isPremium: false,
           maxBusinesses: 1,
-          subscriptionTier: 'none',
+          subscriptionTier: 'standard',
           expiresAt: premiumUser.subscription_expires_at
         };
       }
+
       return {
-        isPremium: tier !== 'none',
+        isPremium: isPaidTier(tier),
         maxBusinesses,
         subscriptionTier: tier,
         expiresAt: premiumUser.subscription_expires_at
@@ -58,7 +58,7 @@ export async function getUserPremiumStatus(userId: string): Promise<{
       .eq('id', userId)
       .single();
 
-    if (profile?.tier && profile.tier !== 'none') {
+    if (profile?.tier && isPaidTier(profile.tier)) {
       // Use tier as primary source of truth
       const tier = profile.tier as SubscriptionTier;
       const maxBusinesses = getMaxBusinessesForTier(tier);
@@ -68,7 +68,7 @@ export async function getUserPremiumStatus(userId: string): Promise<{
         return {
           isPremium: false,
           maxBusinesses: 1,
-          subscriptionTier: 'none',
+          subscriptionTier: 'standard',
           expiresAt: profile.premium_expires_at
         };
       }
@@ -89,7 +89,7 @@ export async function getUserPremiumStatus(userId: string): Promise<{
         return {
           isPremium: false,
           maxBusinesses: 1,
-          subscriptionTier: 'none',
+          subscriptionTier: 'standard',
           expiresAt: profile.premium_expires_at
         };
       }
@@ -105,14 +105,14 @@ export async function getUserPremiumStatus(userId: string): Promise<{
     return {
       isPremium: false,
       maxBusinesses: 1,
-      subscriptionTier: 'none'
+      subscriptionTier: 'standard'
     };
   } catch (error) {
     logger.error('Error checking premium status', error);
     return {
       isPremium: false,
       maxBusinesses: 1,
-      subscriptionTier: 'none'
+      subscriptionTier: 'standard'
     };
   }
 }

@@ -30,7 +30,7 @@ const industryToCategory: Record<string, string> = {
   Insurance: 'Banque & Finance',
   'Accounting & Audit': 'Banque & Finance',
 
-  'BPO / Call Center': "Centres d'Appel & BPO",
+  'BPO / Call Center': "Centres d’Appel & BPO",
 
   Retail: 'Distribution & Commerce',
   'E-commerce': 'Distribution & Commerce',

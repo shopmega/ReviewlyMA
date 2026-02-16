@@ -1,0 +1,14 @@
+--- Business Counts per Category ---
+Télécommunications            : 3 businesses
+Santé & Bien-être             : 149 businesses
+Hôtels & Hébergement          : 119 businesses
+Énergie & Environnement       : 144 businesses
+Éducation & Formation         : 132 businesses
+Industrie & Chimie            : 883 businesses
+Services Professionnels       : 983 businesses
+Banque & Finance              : 408 businesses
+Immobilier & Construction     : 292 businesses
+Transport & Logistique        : 129 businesses
+Technologie & IT              : 279 businesses
+Centres d’Appel & BPO         : 157 businesses
+Distribution & Commerce       : 559 businesses

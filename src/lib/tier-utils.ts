@@ -10,10 +10,20 @@ export function hasTierAccess(
   requiredTier: SubscriptionTier,
   userTier: SubscriptionTier
 ): boolean {
-  if (requiredTier === 'none') return true; // Everyone gets basic access
+  if (requiredTier === 'standard') return true; // Everyone gets basic access
   if (requiredTier === 'growth') return userTier === 'growth' || userTier === 'gold';
   if (requiredTier === 'gold') return userTier === 'gold';
   return false;
+}
+
+/**
+ * Check if a tier is a paid/premium tier (Growth or Gold)
+ * This is used to gate functional Pro features like Tags, WhatsApp, etc.
+ * @param tier The user's current tier
+ * @returns Boolean indicating if the tier is paid
+ */
+export function isPaidTier(tier: SubscriptionTier): boolean {
+  return tier === 'growth' || tier === 'gold';
 }
 
 /**
@@ -27,7 +37,7 @@ export function getMaxBusinessesForTier(tier: SubscriptionTier): number {
       return 1;
     case 'gold':
       return 1;
-    case 'none':
+    case 'standard':
     default:
       return 1;
   }
@@ -53,5 +63,5 @@ export function getTierPrice(tier: SubscriptionTier, cycle: 'monthly' | 'yearly'
       : (siteSettings?.tier_gold_monthly_price || 299);
   }
 
-  return 0; // Free tier
+  return 0; // Standard tier
 }

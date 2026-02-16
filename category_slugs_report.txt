@@ -1,0 +1,19 @@
+--- Database Categories Detailed Audit ---
+Banque & Finance               | Slug: banque-finance            | Icon: [🏦] | ID: 8c7963f6-4647-4dcd-b81e-31c90e73589c
+Centres d’Appel & BPO          | Slug: centres-dappel-bpo        | Icon: [🎧] | ID: 0a1fab06-8d10-4b16-bfee-c03bd1fcabcd
+Distribution & Commerce        | Slug: distribution-commerce     | Icon: [🛍️] | ID: f81c62b8-635d-47eb-a298-fcdb1fd66e40
+Éducation & Formation          | Slug: ducation-formation        | Icon: >>> MISSING <<< | ID: 55eb89fe-8a61-46b9-b3d2-7e5ddfba935e
+Éducation & Formation          | Slug: education-formation       | Icon: [🎓] | ID: 9ba7fb37-c621-4a96-8947-f053e9304d02
+Énergie & Environnement        | Slug: nergie-environnement      | Icon: >>> MISSING <<< | ID: 175b3972-8194-4d25-81f4-375a646c6128
+Énergie & Environnement        | Slug: energie-environnement     | Icon: [⚡] | ID: 4f6e2375-a7a4-4090-817d-a99d2189659c
+Hôtels & Hébergement           | Slug: hotels-hebergement        | Icon: [🏨] | ID: a179d2c5-49bd-40f2-aec1-17355635578b
+Hôtels & Hébergement           | Slug: htels-hbergement          | Icon: >>> MISSING <<< | ID: ca3130a8-d6cd-4a6c-b472-16dd62272fc0
+Immobilier & Construction      | Slug: immobilier-construction   | Icon: [🏗️] | ID: e5f4c24e-a73e-4fe6-8d48-c63a2580d060
+Industrie & Chimie             | Slug: industrie-chimie          | Icon: [🏭] | ID: 8460399a-59e0-43c0-ae55-dac4462937b9
+Santé & Bien-être              | Slug: sante-bien-etre           | Icon: [🏥] | ID: 904139ec-ce81-4426-944d-4abc6c853a20
+Santé & Bien-être              | Slug: sant-bien-tre             | Icon: >>> MISSING <<< | ID: 5ded65c4-2e71-4b4c-bb76-9ffd6f6db8b1
+Services Professionnels        | Slug: services-professionnels   | Icon: [💼] | ID: a2be7e71-92c4-4bad-8166-e820ea686428
+Technologie & IT               | Slug: technologie-it            | Icon: [💻] | ID: 2f4962ff-67d3-43d0-8e9e-67cc484426c3
+Télécommunications             | Slug: tlcommunications          | Icon: >>> MISSING <<< | ID: a639acd9-c19e-470b-bf2d-625d8ab61285
+Télécommunications             | Slug: telecommunications        | Icon: [📡] | ID: f9fd114a-566c-4a0f-8485-a3ea6f61e5fc
+Transport & Logistique         | Slug: transport-logistique      | Icon: [🚚] | ID: 68b87b92-aac4-4c26-959a-adeb1b84d1e2

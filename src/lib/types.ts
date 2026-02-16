@@ -2,7 +2,7 @@ import type { ImagePlaceholder } from './placeholder-images';
 import { z } from 'zod';
 import { isValidImageUrl } from './utils';
 
-export type SubscriptionTier = 'none' | 'growth' | 'gold';
+export type SubscriptionTier = 'standard' | 'growth' | 'gold';
 
 export type DayHours = {
   day: 'Lundi' | 'Mardi' | 'Mercredi' | 'Jeudi' | 'Vendredi' | 'Samedi' | 'Dimanche';
@@ -66,6 +66,7 @@ export type Company = {
   overallRating: number;
   reviews: Review[];
   type: 'company' | 'commerce' | 'association';
+  is_sponsored?: boolean; // New: for top-tier search priority
   isFeatured?: boolean;
   is_premium?: boolean; // Legacy: keep for compatibility during migration
   tier?: SubscriptionTier; // New: tiered model
@@ -238,6 +239,7 @@ export const businessProfileUpdateSchema = z.object({
   location: z.string().min(5, { message: 'L\'adresse est requise.' }),
   website: z.string().url({ message: 'URL invalide.' }).optional().or(z.literal('')),
   amenities: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).optional().default([]),
   whatsapp_number: z.string().optional(),
   affiliate_link: z.string().url({ message: 'URL d\'affiliation invalide.' }).optional().or(z.literal('')),
   affiliate_cta: z.string().optional(),

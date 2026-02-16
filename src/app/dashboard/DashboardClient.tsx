@@ -23,7 +23,8 @@ import { cn } from '@/lib/utils';
 import { getAuthorDisplayName, getAuthorInitials } from '@/lib/utils/anonymous-reviews';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { type Profile } from '@/lib/types'; // Assuming Profile is here or I'll define a subset
+import { type Profile } from '@/lib/types';
+import { isPaidTier } from '@/lib/tier-utils';
 
 // Re-defining internal types if not available globally
 export type BusinessData = {
@@ -74,36 +75,36 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             try {
                 const supabase = createClient();
                 const { data: { user }, error: authError } = await supabase.auth.getUser();
-                
+
                 if (authError || !user) {
                     console.error('DashboardClient: No authenticated user found');
                     router.push('/login');
                     return;
                 }
-                
+
                 // Verify that the user has legitimate access to this data
                 if (!stats || !profile) {
                     console.error('DashboardClient: No valid data provided');
                     return;
                 }
-                
+
                 // Additional verification: ensure user has access to the business data
                 if (stats.business?.id) {
                     const { data: userBusinesses } = await supabase
                         .from('user_businesses')
                         .select('business_id')
                         .eq('user_id', user.id);
-                    
+
                     const hasBusinessAccess = userBusinesses?.some(ub => ub.business_id === stats.business.id) ||
-                                            profile?.business_id === stats.business.id;
-                    
+                        profile?.business_id === stats.business.id;
+
                     if (!hasBusinessAccess) {
                         console.error('DashboardClient: User does not have access to this business data');
                         router.push('/dashboard');
                         return;
                     }
                 }
-                
+
                 setIsVerified(true);
             } catch (error) {
                 console.error('DashboardClient: Verification error:', error);
@@ -112,7 +113,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 setIsValidating(false);
             }
         }
-        
+
         verifyAccess();
     }, [stats, profile, router]);
 
@@ -265,7 +266,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                 <span className="text-blue-600">{stats.business.name}</span>
                             )}
                         </h1>
-                        {profile?.tier && profile.tier !== 'none' && (
+                        {profile?.tier && isPaidTier(profile.tier) && (
                             <Badge className="bg-blue-600 text-white border-none px-3 py-1 rounded-full flex gap-1.5 items-center shadow-lg shadow-blue-600/20 text-[10px] uppercase font-bold tracking-widest">
                                 <Sparkles className="w-3 h-3 fill-white" />
                                 {profile?.tier.toUpperCase()}
@@ -273,13 +274,13 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         )}
                     </div>
                     <p className="text-slate-500 text-base font-medium">
-                        {profile?.tier && profile.tier !== 'none'
+                        {profile?.tier && isPaidTier(profile.tier)
                             ? `Propulsé par Avis ${profile.tier.toUpperCase()} • Votre entreprise se démarque.`
                             : "Voici les performances de votre entreprise aujourd'hui."}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    {(!profile?.tier || profile.tier === 'none') && (
+                    {(!profile?.tier || !isPaidTier(profile.tier)) && (
                         <Button
                             asChild
                             className="rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold border border-blue-100 h-11"

@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { isPaidTier, hasTierAccess } from '@/lib/tier-utils';
+import { SubscriptionTier } from '@/lib/types';
 
 interface PremiumFeatureGateProps {
     children: React.ReactNode;
-    level?: 'growth' | 'gold';
+    level?: SubscriptionTier;
     fallback?: React.ReactNode;
     className?: string;
     title?: string;
@@ -36,19 +38,14 @@ export function PremiumFeatureGate({
         return <div className="animate-pulse bg-muted rounded-lg h-32 w-full" />;
     }
 
-    const currentTier = profile?.tier || 'none';
+    const currentTier = profile?.tier || 'standard';
 
-    const hasAccess = () => {
-        if (level === 'growth') {
-            return currentTier === 'growth' || currentTier === 'gold';
-        }
-        if (level === 'gold') {
-            return currentTier === 'gold';
-        }
-        return false;
+    const canAccess = () => {
+        if (!currentTier) return false;
+        return hasTierAccess(level, currentTier);
     };
 
-    if (hasAccess()) {
+    if (canAccess()) {
         return <>{children}</>;
     }
 

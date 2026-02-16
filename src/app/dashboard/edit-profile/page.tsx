@@ -19,12 +19,14 @@ import { Zap, MessageCircle, ExternalLink, Loader2, AlertCircle, Upload, X, Plus
 import { BusinessHoursEditor, type DayHoursData } from '@/components/shared/BusinessHoursEditor';
 import { saveBusinessHours, getBusinessHours, updateBusinessProfile, updateBusinessImagesAction, type BusinessActionState } from '@/app/actions/business';
 import { ALL_CITIES, SUBCATEGORIES, getQuartiersForCity, BENEFITS, MAIN_CATEGORIES } from '@/lib/location-discovery';
+import { TagInput } from '@/components/shared/TagInput';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { businessProfileUpdateSchema, type BusinessProfileUpdateData } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { getStoragePublicUrl, parsePostgresArray } from '@/lib/data';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { isPaidTier } from '@/lib/tier-utils';
 
 type BusinessData = {
   id: string;
@@ -86,6 +88,7 @@ export default function EditProfilePage() {
       whatsapp_number: '',
       affiliate_link: '',
       affiliate_cta: '',
+      tags: [],
     },
   });
 
@@ -177,6 +180,7 @@ export default function EditProfilePage() {
         whatsapp_number: business.whatsapp_number || '',
         affiliate_link: business.affiliate_link || '',
         affiliate_cta: business.affiliate_cta || '',
+        tags: parsePostgresArray(business.tags) || [],
       });
 
       setLogoUrl(business.logo_url || null);
@@ -593,10 +597,10 @@ export default function EditProfilePage() {
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-amber-600 flex items-center gap-2">
                       <Zap className="w-4 h-4 fill-current" />
-                      Options Business GOLD
+                      Options Business PRO
                     </h3>
-                    {profile?.tier !== 'gold' && (
-                      <Badge variant="outline" className="text-[10px] bg-amber-50 uppercase tracking-tighter">Mise à jour GOLD requise</Badge>
+                    {!isPaidTier(profile?.tier) && (
+                      <Badge variant="outline" className="text-[10px] bg-amber-50 uppercase tracking-tighter">Plan PRO requis</Badge>
                     )}
                   </div>
 
@@ -614,13 +618,13 @@ export default function EditProfilePage() {
                             <Input
                               {...field}
                               placeholder="Ex: 212 600000000"
-                              disabled={profile?.tier !== 'gold'}
+                              disabled={!isPaidTier(profile?.tier)}
                             />
                           </FormControl>
                           <FormDescription className="text-[11px]">
-                            {profile?.tier === 'gold'
+                            {isPaidTier(profile?.tier)
                               ? "Affiche un bouton de contact direct sur votre fiche."
-                              : "Débloquez le contact direct WhatsApp avec le plan GOLD."}
+                              : "Débloquez le contact direct WhatsApp avec un plan PRO."}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -639,13 +643,13 @@ export default function EditProfilePage() {
                             <Input
                               {...field}
                               placeholder="Ex: https://booking.com/..."
-                              disabled={profile?.tier !== 'gold'}
+                              disabled={!isPaidTier(profile?.tier)}
                             />
                           </FormControl>
                           <FormDescription className="text-[11px]">
-                            {profile?.tier === 'gold'
+                            {isPaidTier(profile?.tier)
                               ? "Lien direct vers votre moteur de réservation (Booking, etc.)."
-                              : "Redirigez vos clients vers votre moteur de réservation avec le plan GOLD."}
+                              : "Redirigez vos clients vers votre moteur de réservation avec un plan PRO."}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -662,9 +666,33 @@ export default function EditProfilePage() {
                           <Input
                             {...field}
                             placeholder="Ex: Réserver sur Booking"
-                            disabled={profile?.tier !== 'gold'}
+                            disabled={!isPaidTier(profile?.tier)}
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Separator className="my-6" />
+
+                  <FormField
+                    control={form.control}
+                    name="tags"
+                    render={({ field }) => (
+                      <FormItem>
+                        <TagInput
+                          label="Mots-clés de recherche (Tags)"
+                          tags={field.value || []}
+                          onTagsChange={field.onChange}
+                          disabled={!isPaidTier(profile?.tier)}
+                          maxTags={10}
+                        />
+                        <FormDescription className="text-[11px]">
+                          {isPaidTier(profile?.tier)
+                            ? "Ajoutez jusqu'à 10 mots-clés pour aider les clients à vous trouver (ex: Terrasse, Halal, Brunch)."
+                            : "Le plan PRO permet d'ajouter des mots-clés de recherche personnalisés."}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

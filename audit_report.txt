@@ -1,0 +1,80 @@
+--- Outlier Report ---
+Found 161 businesses with invalid categories.
+Breakdown by category:
+- "Services": 1 businesses
+- "Distribution": 4 businesses
+- "Centres d'Appel & BPO": 156 businesses
+
+--- Subcategory Inconsistency Report ---
+All Category|Subcategory mappings:
+- Banque & Finance | Banking: 33
+- Banque & Finance | Insurance: 26
+- Banque & Finance | Accounting & Audit: 25
+- Banque & Finance | Banque: 3
+- Banque & Finance | Fintech & paiement: 1
+- Banque & Finance | Banque d'investissement: 1
+- Centres d'Appel & BPO | BPO / Call Center: 33
+- Centres d'Appel & BPO | Centre d'appels: 14
+- Centres d'Appel & BPO | Centre d’appels: 1
+- Centres d'Appel & BPO | BPO & relation client: 1
+- Centres d'Appel & BPO | BPO & services: 1
+- Centres d’Appel & BPO | Outsourcing: 1
+- Distribution | Hypermarchés: 2
+- Distribution | Supermarchés discount: 1
+- Distribution | Supermarchés: 1
+- Distribution & Commerce | Import/Export: 40
+- Distribution & Commerce | E-commerce: 34
+- Distribution & Commerce | Food & Beverage: 29
+- Distribution & Commerce | Retail: 27
+- Distribution & Commerce | Grande Distribution: 1
+- Hôtels & Hébergement | Hospitality: 23
+- Hôtels & Hébergement | Hôtel 5 étoiles: 3
+- Hôtels & Hébergement | Gestion hôtelière: 1
+- Immobilier & Construction | Construction: 34
+- Immobilier & Construction | Real Estate: 31
+- Immobilier & Construction | Construction BTP: 1
+- Immobilier & Construction | Promotion immobilière: 1
+- Industrie & Chimie | Agriculture: 33
+- Industrie & Chimie | Manufacturing: 32
+- Industrie & Chimie | Automotive: 30
+- Industrie & Chimie | Mining: 29
+- Industrie & Chimie | Textiles: 27
+- Industrie & Chimie | Pharmaceuticals: 24
+- Industrie & Chimie | Printing & Packaging: 20
+- Industrie & Chimie | Ciment & matériaux: 1
+- Industrie & Chimie | Extraction Minière: 1
+- Industrie & Chimie | Mines: 1
+- Santé & Bien-être | Healthcare: 33
+- Santé & Bien-être | Groupe hospitalier: 1
+- Santé & Bien-être | Cliniques & oncologie: 1
+- Services Professionnels | Marketing & Advertising: 37
+- Services Professionnels | Legal Services: 36
+- Services Professionnels | Consulting: 35
+- Services Professionnels | Cleaning Services: 34
+- Services Professionnels | Maintenance Services: 30
+- Services Professionnels | Engineering: 28
+- Services Professionnels | Security Services: 25
+- Services Professionnels | Audit & conseil: 4
+- Technologie & IT | Telecom: 37
+- Technologie & IT | IT & Software: 32
+- Technologie & IT | ESN / Consulting: 1
+- Technologie & IT | R&D: 1
+- Technologie & IT | Solutions de paiement: 1
+- Technologie & IT | Services numériques: 1
+- Technologie & IT | Conseil IT: 1
+- Transport & Logistique | Logistics & Transport: 28
+- Transport & Logistique | Messagerie express: 1
+- Transport & Logistique | Livraison colis: 1
+- Transport & Logistique | Aérien: 1
+- Transport & Logistique | Transport Routier: 1
+- Télécommunications | Opérateur: 1
+- Télécommunications | Opérateur Global: 1
+- Télécommunications | Opérateur télécom: 1
+- Éducation & Formation | Education: 27
+- Éducation & Formation | Université: 2
+- Éducation & Formation | École d’ingénieurs: 1
+- Énergie & Environnement | Energy: 29
+- Énergie & Environnement | Énergies renouvelables: 1
+
+--- Duplicate Entries Report ---
+Total potential duplicates (Name+City): 0

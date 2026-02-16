@@ -53,11 +53,11 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
             ? publishedReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / publishedReviews.length
             : 0),
         type: 'company' as const,
-
         companySize: dbItem.employee_count,
         isFeatured: dbItem.is_featured,
+        is_sponsored: dbItem.is_sponsored,
         is_premium: dbItem.is_premium,
-        tier: dbItem.tier || 'none',
+        tier: dbItem.tier === 'none' ? 'standard' : (dbItem.tier || 'standard'),
         cover_url: coverUrl || undefined,
         owner_id: dbItem.owner_id || dbItem.user_id || undefined,
         is_claimed: !!(dbItem.owner_id || dbItem.user_id),
@@ -98,19 +98,28 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
         affiliate_link: dbItem.affiliate_link,
         affiliate_cta: dbItem.affiliate_cta,
         admin_affiliate_link: dbItem.admin_affiliate_link,
-        admin_affiliate_cta: dbItem.admin_affiliate_cta,
         created_at: dbItem.created_at
-
     };
 };
 
 export const mapCollectionFromDB = (dbItem: any): SeasonalCollection => {
     return {
         id: dbItem.id,
-        title: dbItem.title,
-        subtitle: dbItem.subtitle,
-        imageUrl: getStoragePublicUrl(dbItem.image_url, 'carousel-images') || dbItem.image_url,
-        imageHint: dbItem.image_hint || '',
-        link: dbItem.link_config // Assumed to match CollectionLink structure
+        title: normalizeDisplayText(dbItem.title),
+        subtitle: normalizeDisplayText(dbItem.subtitle || ''),
+        imageUrl: getStoragePublicUrl(dbItem.image_url, 'collection-images') || dbItem.image_url || '',
+        imageHint: dbItem.image_hint || 'collection image',
+        link: {
+            type: dbItem.link_type as any,
+            ...(dbItem.link_type === 'filter' && {
+                tag: dbItem.link_tag,
+                category: dbItem.link_category,
+                city: dbItem.link_city,
+                amenities: dbItem.link_amenities ? dbItem.link_amenities.split(',') : []
+            }),
+            ...(dbItem.link_type === 'category' && { category: dbItem.link_category, city: dbItem.link_city }),
+            ...(dbItem.link_type === 'city' && { city: dbItem.link_city }),
+            ...(dbItem.link_type === 'custom' && { href: dbItem.link_href })
+        } as any
     };
 };

@@ -22,6 +22,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getSiteSettings } from '@/lib/data';
 import Link from 'next/link';
+import { isPaidTier, getTierPrice } from '@/lib/tier-utils';
 
 export default function DashboardPremiumPage() {
   const [loading, setLoading] = useState(true);
@@ -135,8 +136,8 @@ export default function DashboardPremiumPage() {
     );
   }
 
-  const isPremium = profile?.tier && profile?.tier !== 'none';
-  const currentTier = (profile?.tier as 'none' | 'growth' | 'gold') || 'none';
+  const isPremium = profile?.tier && isPaidTier(profile.tier);
+  const currentTier = (profile?.tier as 'standard' | 'growth' | 'gold') || 'standard';
   const premiumExpiresAt = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : null;
   const isExpired = premiumExpiresAt && premiumExpiresAt < new Date();
 
@@ -425,7 +426,7 @@ export default function DashboardPremiumPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <PremiumFeatures variant="dashboard" userTier={currentTier} />
+            <PremiumFeatures variant="dashboard" userTier={currentTier || 'standard'} />
             <Button variant="outline" className="w-full mt-6 rounded-xl" asChild>
               <Link href="/premium">Voir tous les détails</Link>
             </Button>

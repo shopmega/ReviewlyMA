@@ -1,0 +1,16 @@
+--- Database Categories Audit ---
+Banque & Finance               | Icon: [🏦]
+Centres d’Appel & BPO          | Icon: [🎧]
+Distribution & Commerce        | Icon: [🛍️]
+Éducation & Formation          | Icon: [🎓]
+Énergie & Environnement        | Icon: [⚡]
+Hôtels & Hébergement           | Icon: [🏨]
+Immobilier & Construction      | Icon: [🏗️]
+Industrie & Chimie             | Icon: [🏭]
+Santé & Bien-être              | Icon: [🏥]
+Services Professionnels        | Icon: [💼]
+Technologie & IT               | Icon: [💻]
+Télécommunications             | Icon: [📡]
+Transport & Logistique         | Icon: [🚚]
+
+No categories are missing icons.
