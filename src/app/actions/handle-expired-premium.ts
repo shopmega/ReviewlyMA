@@ -50,11 +50,11 @@ export async function handleExpiredPremiumAccounts(authToken?: string): Promise<
       .from('profiles')
       .select('id, business_id')
       .or(`${PREMIUM_TIER_FILTER},is_premium.eq.true`)
-      .is('premium_expires_at', 'not null')
+      .not('premium_expires_at', 'is', null)
       .lt('premium_expires_at', new Date().toISOString());
 
     if (profileError) {
-      logger.error('Error fetching expired profiles', profileError);
+      logger.error(`Error fetching expired profiles: ${profileError.message}`, profileError);
       return {
         status: 'error',
         message: `Error fetching expired profiles: ${profileError.message}`,
@@ -171,12 +171,12 @@ export async function getUpcomingPremiumExpirations(daysAhead: number = 7, authT
         premium_expires_at
       `)
       .or(`${PREMIUM_TIER_FILTER},is_premium.eq.true`)
-      .is('premium_expires_at', 'not null')
+      .not('premium_expires_at', 'is', null)
       .gte('premium_expires_at', new Date().toISOString())
       .lte('premium_expires_at', cutoffDateString);
 
     if (error) {
-      logger.error('Error fetching upcoming premium expirations', error);
+      logger.error(`Error fetching upcoming premium expirations: ${error.message}`, error);
       return { status: 'error', message: error.message, data: [] };
     }
 
