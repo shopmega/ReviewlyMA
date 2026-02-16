@@ -126,6 +126,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     ];
 
     const [searchCity, setSearchCity] = useState('Toutes les villes');
+    const [homeQuery, setHomeQuery] = useState('');
     const normalizedSearchCity = searchCity === 'Toutes les villes' ? '' : searchCity;
     const trackedImpressionsRef = useRef<Set<string>>(new Set());
 
@@ -223,6 +224,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             className="w-full"
                                             inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base md:text-lg h-12 md:h-14 px-4 shadow-none focus-visible:ring-0"
                                             showIcon={false}
+                                            onQueryChange={setHomeQuery}
                                             onSearch={(q) => {
                                                 const params = new URLSearchParams();
                                                 params.set('search', q);
@@ -252,10 +254,8 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                                     <Button
                                         onClick={() => {
-                                            const searchInput = document.querySelector('input[name="search"]') as HTMLInputElement;
-                                            const q = searchInput?.value || '';
                                             const params = new URLSearchParams();
-                                            params.set('search', q);
+                                            params.set('search', homeQuery);
                                             if (normalizedSearchCity) params.set('city', normalizedSearchCity);
                                             window.location.href = `/businesses?${params.toString()}`;
                                         }}

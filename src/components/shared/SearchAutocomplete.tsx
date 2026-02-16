@@ -13,6 +13,7 @@ interface SearchAutocompleteProps {
     inputClassName?: string;
     city?: string;
     onSearch?: (query: string) => void;
+    onQueryChange?: (query: string) => void;
     showIcon?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function SearchAutocomplete({
     inputClassName,
     city,
     onSearch,
+    onQueryChange,
     showIcon = true,
 }: SearchAutocompleteProps) {
     const [query, setQuery] = useState('');
@@ -101,13 +103,24 @@ export function SearchAutocomplete({
             <div className="relative flex items-center">
                 {showIcon && <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
                 <Input
+                    id="main-search-input"
                     value={query}
                     onChange={(e) => {
                         const next = e.target.value;
                         setQuery(next);
-                        setIsOpen(next.trim().length >= 2);
+                        if (onQueryChange) onQueryChange(next);
+                        // Only open suggestions if we actually have input
+                        if (next.trim().length >= 2 && !isOpen) {
+                            setIsOpen(true);
+                        } else if (next.trim().length < 2 && isOpen) {
+                            setIsOpen(false);
+                        }
                     }}
-                    onFocus={() => setIsOpen(query.trim().length >= 2)}
+                    onFocus={() => {
+                        if (query.trim().length >= 2) {
+                            setIsOpen(true);
+                        }
+                    }}
                     onKeyDown={(e) => {
                         const isComposing = (e.nativeEvent as any)?.isComposing;
                         if (e.key === 'Enter' && !isComposing) {
@@ -119,9 +132,10 @@ export function SearchAutocomplete({
                     className={cn(showIcon && 'pl-10', inputClassName)}
                     name="search"
                     autoComplete="off"
+                    type="text"
                 />
                 {isLoading && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     </div>
                 )}

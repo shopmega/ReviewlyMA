@@ -78,10 +78,10 @@ export function BusinessList({
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     // Only update if values actually changed
     let hasChanges = false;
-    
+
     if (searchQuery) {
       if (params.get('search') !== searchQuery) {
         params.set('search', searchQuery);
@@ -91,7 +91,7 @@ export function BusinessList({
       params.delete('search');
       hasChanges = true;
     }
-    
+
     if (typeFilter !== 'all') {
       if (params.get('type') !== typeFilter) {
         params.set('type', typeFilter);
@@ -101,7 +101,7 @@ export function BusinessList({
       params.delete('type');
       hasChanges = true;
     }
-    
+
     if (categoryFilter !== 'all') {
       if (params.get('category') !== categoryFilter) {
         params.set('category', categoryFilter);
@@ -111,7 +111,7 @@ export function BusinessList({
       params.delete('category');
       hasChanges = true;
     }
-    
+
     if (subcategoryFilter !== 'all') {
       if (params.get('subcategory') !== subcategoryFilter) {
         params.set('subcategory', subcategoryFilter);
@@ -121,7 +121,7 @@ export function BusinessList({
       params.delete('subcategory');
       hasChanges = true;
     }
-    
+
     if (ratingFilter !== 'all') {
       if (params.get('rating') !== ratingFilter) {
         params.set('rating', ratingFilter);
@@ -131,7 +131,7 @@ export function BusinessList({
       params.delete('rating');
       hasChanges = true;
     }
-    
+
     if (cityFilter !== 'all') {
       if (params.get('city') !== cityFilter) {
         params.set('city', cityFilter);
@@ -141,7 +141,7 @@ export function BusinessList({
       params.delete('city');
       hasChanges = true;
     }
-    
+
     if (quartierFilter !== 'all') {
       if (params.get('quartier') !== quartierFilter) {
         params.set('quartier', quartierFilter);
@@ -151,7 +151,7 @@ export function BusinessList({
       params.delete('quartier');
       hasChanges = true;
     }
-    
+
     const benefitsValue = benefitsFilter.length > 0 ? benefitsFilter.join(',') : '';
     if (benefitsValue) {
       if (params.get('benefits') !== benefitsValue) {
@@ -162,7 +162,7 @@ export function BusinessList({
       params.delete('benefits');
       hasChanges = true;
     }
-    
+
     if (tagFilter) {
       if (params.get('tag') !== tagFilter) {
         params.set('tag', tagFilter);
@@ -172,7 +172,7 @@ export function BusinessList({
       params.delete('tag');
       hasChanges = true;
     }
-    
+
     if (sortOrder !== 'relevance') {
       if (params.get('sort') !== sortOrder) {
         params.set('sort', sortOrder);
@@ -224,7 +224,7 @@ export function BusinessList({
           const { getSubcategoriesByCategory } = await import('@/lib/data');
           const subs = await getSubcategoriesByCategory(newCategory);
           setSubcategories(subs);
-          
+
           // Reset subcategory if current one is not in new list
           if (subcategoryFilter !== 'all' && !subs.includes(subcategoryFilter)) {
             setSubcategoryFilter('all');
@@ -292,151 +292,6 @@ export function BusinessList({
     else if (key === 'tag') setTagFilter('');
   };
 
-  // Reusable Filter Content Component
-  const FilterContent = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="search" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rechercher</Label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="search"
-            placeholder="Etablissement..."
-            className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                applySearchQuery();
-              }
-            }}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={applySearchQuery}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
-          >
-            OK
-          </Button>
-        </div>
-      </div>
-
-      <div className="h-px bg-border" />
-
-      <Accordion type="multiple" defaultValue={['category', 'city']} className="w-full">
-        <AccordionItem value="category" className="border-none">
-          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${categoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Catégorie</AccordionTrigger>
-          <AccordionContent className="pt-2">
-            <Select onValueChange={handleCategoryChange} value={categoryFilter}>
-              <SelectTrigger id="category" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
-                <SelectValue placeholder="Toutes les catégories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les catégories</SelectItem>
-                {[...new Set(categories)].map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </AccordionContent>
-        </AccordionItem>
-
-        {categoryFilter !== 'all' && subcategories.length > 0 && (
-          <AccordionItem value="subcategory" className="border-none mt-2">
-            <AccordionTrigger className={`text-sm py-2 hover:no-underline ${subcategoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Sous-catégorie</AccordionTrigger>
-            <AccordionContent className="pt-2">
-              <Select onValueChange={setSubcategoryFilter} value={subcategoryFilter}>
-                <SelectTrigger id="subcategory" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
-                  <SelectValue placeholder="Toutes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes</SelectItem>
-                  {subcategories.map(sub => (
-                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        <AccordionItem value="city" className="border-none mt-2">
-          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${cityFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Ville</AccordionTrigger>
-          <AccordionContent className="pt-2">
-            <Select onValueChange={(val) => { setCityFilter(val); setQuartierFilter('all'); }} value={cityFilter}>
-              <SelectTrigger id="city" className="h-10 border-border focus:ring-primary/20 rounded-lg text-sm bg-muted/50">
-                <SelectValue placeholder="Toutes les villes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les villes</SelectItem>
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>{city}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="rating" className="border-none mt-2">
-          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${ratingFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Note minimale</AccordionTrigger>
-          <AccordionContent className="pt-2">
-            <RadioGroup value={ratingFilter} onValueChange={setRatingFilter} className="flex flex-col space-y-2.5">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="all" id="rating-all" className="text-primary border-border" />
-                <Label htmlFor="rating-all" className="text-sm text-muted-foreground cursor-pointer">Toutes</Label>
-              </div>
-              {[4.5, 4, 3, 2].map(rating => (
-                <div key={rating} className="flex items-center space-x-2">
-                  <RadioGroupItem value={rating.toString()} id={`rating-${rating}`} className="text-primary border-border" />
-                  <Label htmlFor={`rating-${rating}`} className="text-sm text-muted-foreground cursor-pointer flex items-center">
-                    {rating}+ <Star className="w-3 h-3 ml-1 fill-primary text-primary" />
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </AccordionContent>
-        </AccordionItem>
-
-        {availableBenefits.length > 0 && (
-          <AccordionItem value="benefits" className="border-none mt-2">
-            <AccordionTrigger className={`text-sm py-2 hover:no-underline ${benefitsFilter.length > 0 ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Avantages</AccordionTrigger>
-            <AccordionContent className="pt-2 max-h-72 overflow-y-auto px-1 custom-scrollbar">
-              <div className="space-y-4">
-                {BENEFITS.map(group => (
-                  <div key={group.group}>
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-widest">{group.group}</p>
-                    <div className="space-y-2 ml-1">
-                      {group.amenities.filter((a: string) => availableBenefits.includes(a)).map((amenity: string) => (
-                        <div key={amenity} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`benefit-${amenity}`}
-                            checked={benefitsFilter.includes(amenity)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setBenefitsFilter([...benefitsFilter, amenity]);
-                              } else {
-                                setBenefitsFilter(benefitsFilter.filter((a: string) => a !== amenity));
-                              }
-                            }}
-                          />
-                          <Label htmlFor={`benefit-${amenity}`} className="text-sm font-medium cursor-pointer">
-                            {amenity}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        )}
-      </Accordion>
-    </div>
-  );
 
   return (
     <div className="space-y-6">
@@ -516,7 +371,148 @@ export function BusinessList({
 
                 {/* Filter Content */}
                 <div className="flex-1 overflow-y-auto py-6 px-6 custom-scrollbar">
-                  <FilterContent />
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="search-mobile" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rechercher</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="search-mobile"
+                          placeholder="Etablissement..."
+                          className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
+                          value={searchInput}
+                          onChange={(e) => setSearchInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              applySearchQuery();
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={applySearchQuery}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
+                        >
+                          OK
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-border" />
+
+                    <Accordion type="multiple" defaultValue={['category', 'city']} className="w-full">
+                      <AccordionItem value="category" className="border-none">
+                        <AccordionTrigger className={`text-sm py-2 hover:no-underline ${categoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Catégorie</AccordionTrigger>
+                        <AccordionContent className="pt-2">
+                          <Select onValueChange={handleCategoryChange} value={categoryFilter}>
+                            <SelectTrigger id="category-mobile" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
+                              <SelectValue placeholder="Toutes les catégories" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Toutes les catégories</SelectItem>
+                              {[...new Set(categories)].map(category => (
+                                <SelectItem key={category} value={category}>{category}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {categoryFilter !== 'all' && subcategories.length > 0 && (
+                        <AccordionItem value="subcategory" className="border-none mt-2">
+                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${subcategoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Sous-catégorie</AccordionTrigger>
+                          <AccordionContent className="pt-2">
+                            <Select onValueChange={setSubcategoryFilter} value={subcategoryFilter}>
+                              <SelectTrigger id="subcategory-mobile" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
+                                <SelectValue placeholder="Toutes" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Toutes</SelectItem>
+                                {subcategories.map(sub => (
+                                  <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </AccordionContent>
+                        </AccordionItem>
+                      )}
+
+                      <AccordionItem value="city" className="border-none mt-2">
+                        <AccordionTrigger className={`text-sm py-2 hover:no-underline ${cityFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Ville</AccordionTrigger>
+                        <AccordionContent className="pt-2">
+                          <Select onValueChange={(val) => { setCityFilter(val); setQuartierFilter('all'); }} value={cityFilter}>
+                            <SelectTrigger id="city-mobile" className="h-10 border-border focus:ring-primary/20 rounded-lg text-sm bg-muted/50">
+                              <SelectValue placeholder="Toutes les villes" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Toutes les villes</SelectItem>
+                              {cities.map(city => (
+                                <SelectItem key={city} value={city}>{city}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="rating" className="border-none mt-2">
+                        <AccordionTrigger className={`text-sm py-2 hover:no-underline ${ratingFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Note minimale</AccordionTrigger>
+                        <AccordionContent className="pt-2">
+                          <RadioGroup value={ratingFilter} onValueChange={setRatingFilter} className="flex flex-col space-y-2.5">
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="all" id="rating-all-mobile" className="text-primary border-border" />
+                              <Label htmlFor="rating-all-mobile" className="text-sm text-muted-foreground cursor-pointer">Toutes</Label>
+                            </div>
+                            {[4.5, 4, 3, 2].map(rating => (
+                              <div key={rating} className="flex items-center space-x-2">
+                                <RadioGroupItem value={rating.toString()} id={`rating-${rating}-mobile`} className="text-primary border-border" />
+                                <Label htmlFor={`rating-${rating}-mobile`} className="text-sm text-muted-foreground cursor-pointer flex items-center">
+                                  {rating}+ <Star className="w-3 h-3 ml-1 fill-primary text-primary" />
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {availableBenefits.length > 0 && (
+                        <AccordionItem value="benefits" className="border-none mt-2">
+                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${benefitsFilter.length > 0 ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Avantages</AccordionTrigger>
+                          <AccordionContent className="pt-2 max-h-72 overflow-y-auto px-1 custom-scrollbar">
+                            <div className="space-y-4">
+                              {BENEFITS.map(group => (
+                                <div key={group.group}>
+                                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-widest">{group.group}</p>
+                                  <div className="space-y-2 ml-1">
+                                    {group.amenities.filter((a: string) => availableBenefits.includes(a)).map((amenity: string) => (
+                                      <div key={amenity} className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`benefit-mobile-${amenity}`}
+                                          checked={benefitsFilter.includes(amenity)}
+                                          onCheckedChange={(checked) => {
+                                            if (checked) {
+                                              setBenefitsFilter([...benefitsFilter, amenity]);
+                                            } else {
+                                              setBenefitsFilter(benefitsFilter.filter((a: string) => a !== amenity));
+                                            }
+                                          }}
+                                        />
+                                        <Label htmlFor={`benefit-mobile-${amenity}`} className="text-sm font-medium cursor-pointer">
+                                          {amenity}
+                                        </Label>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      )}
+                    </Accordion>
+                  </div>
 
                   {/* Ad after filters on mobile */}
                   <div className="mt-8">
@@ -545,18 +541,148 @@ export function BusinessList({
         {/* Desktop Sidebar - Hidden on mobile */}
         <aside className="hidden md:block md:col-span-1">
           <div className="sticky top-24 bg-background border border-border rounded-xl p-5 shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground font-headline">Filtres</h2>
-              {activeFilters.length > 0 && (
-                <button
-                  onClick={resetFilters}
-                  className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-                >
-                  Tout effacer
-                </button>
-              )}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="search-listing" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rechercher</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search-listing"
+                    placeholder="Etablissement..."
+                    className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applySearchQuery();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={applySearchQuery}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
+                  >
+                    OK
+                  </Button>
+                </div>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              <Accordion type="multiple" defaultValue={['category', 'city']} className="w-full">
+                <AccordionItem value="category" className="border-none">
+                  <AccordionTrigger className={`text-sm py-2 hover:no-underline ${categoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Catégorie</AccordionTrigger>
+                  <AccordionContent className="pt-2">
+                    <Select onValueChange={handleCategoryChange} value={categoryFilter}>
+                      <SelectTrigger id="category-listing" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
+                        <SelectValue placeholder="Toutes les catégories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Toutes les catégories</SelectItem>
+                        {[...new Set(categories)].map(category => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {categoryFilter !== 'all' && subcategories.length > 0 && (
+                  <AccordionItem value="subcategory" className="border-none mt-2">
+                    <AccordionTrigger className={`text-sm py-2 hover:no-underline ${subcategoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Sous-catégorie</AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <Select onValueChange={setSubcategoryFilter} value={subcategoryFilter}>
+                        <SelectTrigger id="subcategory-listing" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
+                          <SelectValue placeholder="Toutes" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Toutes</SelectItem>
+                          {subcategories.map(sub => (
+                            <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                <AccordionItem value="city" className="border-none mt-2">
+                  <AccordionTrigger className={`text-sm py-2 hover:no-underline ${cityFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Ville</AccordionTrigger>
+                  <AccordionContent className="pt-2">
+                    <Select onValueChange={(val) => { setCityFilter(val); setQuartierFilter('all'); }} value={cityFilter}>
+                      <SelectTrigger id="city-listing" className="h-10 border-border focus:ring-primary/20 rounded-lg text-sm bg-muted/50">
+                        <SelectValue placeholder="Toutes les villes" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Toutes les villes</SelectItem>
+                        {cities.map(city => (
+                          <SelectItem key={city} value={city}>{city}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="rating" className="border-none mt-2">
+                  <AccordionTrigger className={`text-sm py-2 hover:no-underline ${ratingFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Note minimale</AccordionTrigger>
+                  <AccordionContent className="pt-2">
+                    <RadioGroup value={ratingFilter} onValueChange={setRatingFilter} className="flex flex-col space-y-2.5">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="all" id="rating-all-listing" className="text-primary border-border" />
+                        <Label htmlFor="rating-all-listing" className="text-sm text-muted-foreground cursor-pointer">Toutes</Label>
+                      </div>
+                      {[4.5, 4, 3, 2].map(rating => (
+                        <div key={rating} className="flex items-center space-x-2">
+                          <RadioGroupItem value={rating.toString()} id={`rating-${rating}-listing`} className="text-primary border-border" />
+                          <Label htmlFor={`rating-${rating}-listing`} className="text-sm text-muted-foreground cursor-pointer flex items-center">
+                            {rating}+ <Star className="w-3 h-3 ml-1 fill-primary text-primary" />
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {availableBenefits.length > 0 && (
+                  <AccordionItem value="benefits" className="border-none mt-2">
+                    <AccordionTrigger className={`text-sm py-2 hover:no-underline ${benefitsFilter.length > 0 ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>Avantages</AccordionTrigger>
+                    <AccordionContent className="pt-2 max-h-72 overflow-y-auto px-1 custom-scrollbar">
+                      <div className="space-y-4">
+                        {BENEFITS.map(group => (
+                          <div key={group.group}>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-widest">{group.group}</p>
+                            <div className="space-y-2 ml-1">
+                              {group.amenities.filter((a: string) => availableBenefits.includes(a)).map((amenity: string) => (
+                                <div key={amenity} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`benefit-listing-${amenity}`}
+                                    checked={benefitsFilter.includes(amenity)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setBenefitsFilter([...benefitsFilter, amenity]);
+                                      } else {
+                                        setBenefitsFilter(benefitsFilter.filter((a: string) => a !== amenity));
+                                      }
+                                    }}
+                                  />
+                                  <Label htmlFor={`benefit-listing-${amenity}`} className="text-sm font-medium cursor-pointer">
+                                    {amenity}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+              </Accordion>
             </div>
-            <FilterContent />
 
             {/* Desktop Sidebar Ad */}
             <div className="pt-4">
