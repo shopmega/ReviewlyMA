@@ -29,6 +29,17 @@ const PROOF_METHODS = [
   { value: 'video', label: '🎥 Vidéo rapide', description: 'Enregistrez une vidéo 10s montrant l\'enseigne' },
 ];
 
+const CLAIMER_TYPE_OPTIONS = [
+  { value: 'owner', label: 'Propriétaire' },
+  { value: 'co_owner', label: 'Co-propriétaire' },
+  { value: 'legal_representative', label: 'Représentant légal' },
+  { value: 'manager', label: 'Gérant / Manager' },
+  { value: 'marketing_manager', label: 'Responsable marketing' },
+  { value: 'agency_representative', label: 'Agence mandatée' },
+  { value: 'employee_delegate', label: 'Délégué interne' },
+  { value: 'other', label: 'Autre' },
+];
+
 function NewClaimContent() {
   const searchParams = useSearchParams();
   const existingBusinessId = searchParams.get('businessId');
@@ -146,6 +157,8 @@ function NewClaimContent() {
     priceLevel: '',
     fullName: '',
     position: '',
+    claimerType: 'owner',
+    claimerTitle: '',
     email: '',
     personalPhone: '',
     messageToAdmin: '',
@@ -174,6 +187,8 @@ function NewClaimContent() {
       'priceLevel',
       'fullName',
       'position',
+      'claimerType',
+      'claimerTitle',
       'email',
       'personalPhone',
       'messageToAdmin',
@@ -499,6 +514,8 @@ function NewClaimContent() {
   const canSubmit = canProceedToStep2
     && formData.fullName
     && formData.position
+    && formData.claimerType
+    && (formData.claimerType !== 'other' || !!formData.claimerTitle.trim())
     && formData.email
     && formData.personalPhone
     && selectedProofMethods.length > 0
@@ -517,6 +534,8 @@ function NewClaimContent() {
   const missingStep3Fields: string[] = [];
   if (!formData.fullName) missingStep3Fields.push('Votre nom complet');
   if (!formData.position) missingStep3Fields.push('Votre poste/fonction');
+  if (!formData.claimerType) missingStep3Fields.push('Type de représentant');
+  if (formData.claimerType === 'other' && !formData.claimerTitle.trim()) missingStep3Fields.push('Précision du rôle');
   if (!formData.email) missingStep3Fields.push('Email professionnel');
   if (!formData.personalPhone) missingStep3Fields.push('Téléphone personnel');
   if (!existingBusinessId && !formData.phone.trim() && !formData.website.trim()) {
@@ -954,6 +973,40 @@ function NewClaimContent() {
                                 />
                               </div>
                               <div className="space-y-2">
+                                <Label htmlFor="claimerType" className="text-sm font-semibold">Vous êtes *</Label>
+                                <Select
+                                  name="claimerType"
+                                  value={formData.claimerType}
+                                  onValueChange={(val) => handleSelectChange('claimerType', val)}
+                                >
+                                  <SelectTrigger className="bg-white/50">
+                                    <SelectValue placeholder="Sélectionnez votre rôle" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CLAIMER_TYPE_OPTIONS.map((opt) => (
+                                      <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {formData.claimerType === 'other' && (
+                                <div className="space-y-2 md:col-span-2">
+                                  <Label htmlFor="claimerTitle" className="text-sm font-semibold">Précisez votre rôle *</Label>
+                                  <Input
+                                    id="claimerTitle"
+                                    name="claimerTitle"
+                                    placeholder="Ex: Consultant mandaté"
+                                    value={formData.claimerTitle}
+                                    onChange={handleInputChange}
+                                    onInput={handleInputChange}
+                                    required
+                                    className="bg-white/50"
+                                  />
+                                </div>
+                              )}
+                              <div className="space-y-2">
                                 <Label htmlFor="email" className="text-sm font-semibold">Email Professionnel *</Label>
                                 <Input
                                   id="email"
@@ -1146,6 +1199,10 @@ function NewClaimContent() {
                               <div className="p-3 bg-gray-50 rounded-lg border">
                                 <p className="font-bold">{formData.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{formData.position}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {CLAIMER_TYPE_OPTIONS.find((opt) => opt.value === formData.claimerType)?.label}
+                                  {formData.claimerType === 'other' && formData.claimerTitle ? ` - ${formData.claimerTitle}` : ''}
+                                </p>
                                 <p className="text-sm font-medium mt-1">{formData.email}</p>
                               </div>
                             </div>
@@ -1202,6 +1259,8 @@ function NewClaimContent() {
                         <input type="hidden" name="priceLevel" value={formData.priceLevel} />
                         <input type="hidden" name="fullName" value={formData.fullName} />
                         <input type="hidden" name="position" value={formData.position} />
+                        <input type="hidden" name="claimerType" value={formData.claimerType} />
+                        <input type="hidden" name="claimerTitle" value={formData.claimerTitle} />
                         <input type="hidden" name="email" value={formData.email} />
                         <input type="hidden" name="personalPhone" value={formData.personalPhone} />
                         <input type="hidden" name="messageToAdmin" value={formData.messageToAdmin} />

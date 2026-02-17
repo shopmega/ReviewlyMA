@@ -42,6 +42,8 @@ interface ClaimData {
     // Step 2: Identity & Proof
     fullName: string;
     position: string;
+    claimerType: 'owner' | 'co_owner' | 'legal_representative' | 'manager' | 'marketing_manager' | 'agency_representative' | 'employee_delegate' | 'other';
+    claimerTitle?: string;
     email: string;
     personalPhone: string;
     proofMethods: string[];
@@ -333,6 +335,8 @@ export async function submitClaim(
             business_id: businessId,
             full_name: claimData.fullName,
             job_title: claimData.position,
+            claimer_type: claimData.claimerType,
+            claimer_title: claimData.claimerTitle || null,
             email: claimData.email,
             phone: claimData.personalPhone,
             status: 'pending',

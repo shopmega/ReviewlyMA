@@ -231,6 +231,17 @@ export const claimSchema = z.object({
       message: 'Veuillez saisir votre nom et prénom.',
     }),
   position: z.string().trim().min(2, { message: 'Votre poste/fonction est requis.' }).max(80, { message: 'Poste/fonction trop long.' }),
+  claimerType: z.enum([
+    'owner',
+    'co_owner',
+    'legal_representative',
+    'manager',
+    'marketing_manager',
+    'agency_representative',
+    'employee_delegate',
+    'other',
+  ]),
+  claimerTitle: z.string().trim().max(120, { message: 'Précision trop longue.' }).optional(),
   email: z.string().trim().email({ message: 'Email professionnel invalide.' }),
   personalPhone: z
     .string()
@@ -249,6 +260,14 @@ export const claimSchema = z.object({
 
   // Existing Business
   existingBusinessId: z.string().trim().min(2).max(160).optional(),
+}).superRefine((data, ctx) => {
+  if (data.claimerType === 'other' && !data.claimerTitle) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['claimerTitle'],
+      message: 'Veuillez préciser votre rôle.',
+    });
+  }
 });
 export type ClaimFormData = z.infer<typeof claimSchema>;
 

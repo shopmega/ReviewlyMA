@@ -28,6 +28,8 @@ type ClaimData = {
   business_id: string;
   full_name: string;
   job_title: string | null;
+  claimer_type?: string | null;
+  claimer_title?: string | null;
   email: string;
   personal_phone?: string;
   phone?: string;
@@ -641,6 +643,12 @@ export default function ClaimsPage() {
                         <div>
                           <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1 block">Poste occupé</label>
                           <p className="text-xl font-bold transition-all hover:text-primary">{selectedClaim.job_title || 'Non spécifié'}</p>
+                          {(selectedClaim.claimer_type || selectedClaim.claimer_title) && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Type: {selectedClaim.claimer_type || 'Non précisé'}
+                              {selectedClaim.claimer_title ? ` - ${selectedClaim.claimer_title}` : ''}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="space-y-6">

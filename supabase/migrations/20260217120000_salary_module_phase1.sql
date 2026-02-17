@@ -1,4 +1,13 @@
 -- Salary module phase 1: submission + moderation + public published insights
+CREATE TABLE IF NOT EXISTS public.salaries (
+  id BIGSERIAL PRIMARY KEY,
+  business_id TEXT REFERENCES public.businesses(id) ON DELETE CASCADE NOT NULL,
+  job_title TEXT NOT NULL,
+  salary NUMERIC NOT NULL,
+  location TEXT,
+  date TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
 
 ALTER TABLE public.salaries
 ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -72,8 +81,22 @@ WITH CHECK (
 CREATE POLICY "Admins can manage salaries"
 ON public.salaries
 FOR ALL
-USING (public.is_admin_user(auth.uid()))
-WITH CHECK (public.is_admin_user(auth.uid()));
+USING (
+  EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE p.id = auth.uid()
+      AND p.role = 'admin'
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE p.id = auth.uid()
+      AND p.role = 'admin'
+  )
+);
 
 CREATE POLICY "Service role can manage salaries"
 ON public.salaries
