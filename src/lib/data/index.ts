@@ -5,3 +5,4 @@ export * from './client';
 export * from './settings';
 export * from './users';
 export * from './businesses';
+export * from './salaries';

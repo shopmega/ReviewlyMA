@@ -6,11 +6,13 @@ import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
+import { SalarySection } from '@/components/business/SalarySection';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { Business } from '@/lib/types';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -70,6 +72,13 @@ export default async function BusinessPage({ params }: PageProps) {
   if (!business) {
     notFound();
   }
+
+  const [salaryStats, salaryEntries] = settings.enable_salaries
+    ? await Promise.all([
+      getSalaryStatsByBusiness(business.id),
+      getPublishedSalariesByBusiness(business.id, 10),
+    ])
+    : [{ count: 0, medianMonthly: null, minMonthly: null, maxMonthly: null, currency: 'MAD', roleBreakdown: [] }, []];
 
   // JSON-LD Structured Data
   const siteUrl = getServerSiteUrl();
@@ -193,6 +202,14 @@ export default async function BusinessPage({ params }: PageProps) {
 
             {business.updates && business.updates.length > 0 && (
               <UpdatesSection updates={business.updates} />
+            )}
+
+            {settings.enable_salaries && (
+              <SalarySection
+                businessId={business.id}
+                stats={salaryStats}
+                salaries={salaryEntries}
+              />
             )}
 
             <LazyReviewsSection business={business} />

@@ -252,6 +252,54 @@ export const claimSchema = z.object({
 });
 export type ClaimFormData = z.infer<typeof claimSchema>;
 
+export const salarySubmissionSchema = z.object({
+  businessId: z.string().min(1, { message: 'Entreprise invalide.' }),
+  jobTitle: z.string().trim().min(2, { message: 'Le poste est requis.' }).max(120, { message: 'Poste trop long.' }),
+  salary: z.coerce.number().min(500, { message: 'Salaire trop bas.' }).max(10000000, { message: 'Salaire trop élevé.' }),
+  payPeriod: z.enum(['monthly', 'yearly']),
+  employmentType: z.enum(['full_time', 'part_time', 'contract', 'intern']),
+  location: z.string().trim().max(120, { message: 'Localisation trop longue.' }).optional(),
+  yearsExperience: z.coerce.number().int().min(0).max(60).optional(),
+  department: z.string().trim().max(120, { message: 'Département trop long.' }).optional(),
+  isCurrent: z.boolean(),
+});
+
+export type SalarySubmissionData = z.infer<typeof salarySubmissionSchema>;
+
+export type SalaryEntry = {
+  id: number;
+  business_id: string;
+  user_id?: string | null;
+  job_title: string;
+  salary: number;
+  location?: string | null;
+  pay_period: 'monthly' | 'yearly';
+  currency: string;
+  employment_type: 'full_time' | 'part_time' | 'contract' | 'intern';
+  years_experience?: number | null;
+  department?: string | null;
+  is_current: boolean;
+  source: 'self_reported' | 'legacy' | 'imported';
+  status: 'pending' | 'published' | 'rejected';
+  moderation_notes?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  created_at: string;
+};
+
+export type SalaryStats = {
+  count: number;
+  medianMonthly: number | null;
+  minMonthly: number | null;
+  maxMonthly: number | null;
+  currency: string;
+  roleBreakdown: Array<{
+    jobTitle: string;
+    count: number;
+    medianMonthly: number;
+  }>;
+};
+
 export const businessProfileUpdateSchema = z.object({
   name: z.string().min(2, { message: 'Le nom de l\'établissement est requis.' }),
   description: z.string().optional(),
