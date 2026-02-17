@@ -236,6 +236,26 @@ export async function updateClaimStatus(
             .eq('id', claimId);
 
         if (claimUpdateError) {
+            // Fallback: if API schema cache still misses rejection_reason, retry without it.
+            if (claimUpdateError.message?.includes('rejection_reason')) {
+                const { error: fallbackUpdateError } = await supabaseService
+                    .from('business_claims')
+                    .update({
+                        status,
+                        reviewed_at: new Date().toISOString(),
+                        reviewed_by: user.id,
+                        admin_notes: status === 'rejected' && reason ? reason : null
+                    })
+                    .eq('id', claimId);
+
+                if (!fallbackUpdateError) {
+                    revalidatePath(`/businesses/${claim.business_id}`);
+                    revalidatePath('/admin/revendications');
+                    revalidatePath('/');
+                    return { status: 'success', message: `Revendication ${status === 'approved' ? 'approuvée' : 'rejetée'} avec succès.` };
+                }
+            }
+
             return { status: 'error', message: `Erreur lors de la mise à jour de la revendication: ${claimUpdateError.message}` };
         }
 
