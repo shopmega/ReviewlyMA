@@ -19,9 +19,10 @@ import { Business, Review } from '@/lib/types';
 
 interface ReviewsSectionProps {
   business: Business;
+  searchTerm?: string;
 }
 
-export default function ReviewsSection({ business }: ReviewsSectionProps) {
+export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSectionProps) {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [reviews, setReviews] = useState(business.reviews || []);
@@ -160,25 +161,35 @@ export default function ReviewsSection({ business }: ReviewsSectionProps) {
     setReplyText('');
   };
 
-  // Sort reviews based on selected criteria
+  // Sort and filter reviews based on selected criteria and search term
   const sortedReviews = useMemo(() => {
     if (!reviews || reviews.length === 0) return [];
 
-    const sorted = [...reviews];
+    let filtered = [...reviews];
+
+    // Apply search filter if provided
+    if (searchTerm && searchTerm.trim().length > 0) {
+      const term = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(review =>
+        review.text.toLowerCase().includes(term) ||
+        review.title.toLowerCase().includes(term) ||
+        review.author.toLowerCase().includes(term)
+      );
+    }
 
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       case 'oldest':
-        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       case 'rating':
-        return sorted.sort((a, b) => b.rating - a.rating);
+        return filtered.sort((a, b) => b.rating - a.rating);
       case 'helpful':
-        return sorted.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
+        return filtered.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
       default:
-        return sorted;
+        return filtered;
     }
-  }, [reviews, sortBy]);
+  }, [reviews, sortBy, searchTerm]);
 
   const hasReviews = sortedReviews && sortedReviews.length > 0;
 
