@@ -88,13 +88,15 @@ type SiteSettings = {
     mailjet_api_key: string | null;
     mailjet_api_secret: string | null;
     email_from: string | null;
-    
+
     // Payment settings
     payment_bank_name: string | null;
     payment_rib_number: string | null;
     payment_beneficiary: string | null;
     payment_chari_url: string | null;
     payment_methods_enabled: string[] | null;
+    partner_app_name: string | null;
+    partner_app_url: string | null;
 };
 
 const defaultSettings: SiteSettings = {
@@ -150,13 +152,15 @@ const defaultSettings: SiteSettings = {
     mailjet_api_key: '',
     mailjet_api_secret: '',
     email_from: 'noreply@example.com',
-    
+
     // Default payment settings
     payment_bank_name: 'BMCE Bank',
     payment_rib_number: '011 780 0000 1234567890 12 34',
     payment_beneficiary: 'Platform SARL',
     payment_chari_url: 'https://chari.ma/avis',
     payment_methods_enabled: ['bank_transfer'],
+    partner_app_name: 'MOR RH',
+    partner_app_url: 'https://monrh.vercel.app/',
 };
 
 export default function SettingsPage() {
@@ -275,6 +279,10 @@ export default function SettingsPage() {
                         <TabsTrigger value="social" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Share2 className="h-4 w-4 mr-3" />
                             Réseaux Sociaux
+                        </TabsTrigger>
+                        <TabsTrigger value="partner" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
+                            <LinkIcon className="h-4 w-4 mr-3" />
+                            Partenaire RH
                         </TabsTrigger>
                         <TabsTrigger value="security" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px]">
                             <Lock className="h-4 w-4 mr-3" />
@@ -1027,6 +1035,53 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                 ))}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="partner" className="mt-0 space-y-8">
+                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+                            <CardHeader className="p-8 border-b border-border/10">
+                                <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3 text-indigo-600">
+                                    <LinkIcon className="h-7 w-7" />
+                                    Gestion du Partenaire RH
+                                </CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Configurez l'application partenaire (ex: MOR RH) affichée sur la plateforme.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <Label htmlFor="partner_app_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom du Partenaire</Label>
+                                        <Input
+                                            id="partner_app_name"
+                                            value={settings.partner_app_name || ''}
+                                            onChange={(e) => updateSetting('partner_app_name', e.target.value)}
+                                            placeholder="Ex: MOR RH"
+                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-black text-lg"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label htmlFor="partner_app_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">URL de l'Application</Label>
+                                        <Input
+                                            id="partner_app_url"
+                                            value={settings.partner_app_url || ''}
+                                            onChange={(e) => updateSetting('partner_app_url', e.target.value)}
+                                            placeholder="https://..."
+                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="p-6 bg-indigo-500/5 border border-indigo-500/10 rounded-3xl flex items-start gap-4">
+                                    <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-600">
+                                        <Globe className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-slate-900 dark:text-white mb-1">Configuration des outils</p>
+                                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Ces paramètres contrôlent le branding et les liens dans la section "Employee Toolkit" de la page d'accueil et le widget dans la barre latérale des entreprises.
+                                        </p>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>
