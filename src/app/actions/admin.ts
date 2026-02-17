@@ -48,9 +48,14 @@ function buildDeterministicBusinessId(name: string, city: string): string {
  */
 export async function toggleUserPremium(
   targetUserId: string,
-  tier: SubscriptionTier
+  tier: SubscriptionTier,
+  periodMonths: number | null = null
 ): Promise<AdminActionResult> {
   const isPremium = tier !== 'standard';
+  const expiresAt =
+    isPremium && periodMonths && periodMonths > 0
+      ? new Date(new Date().setMonth(new Date().getMonth() + periodMonths)).toISOString()
+      : null;
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
@@ -63,7 +68,7 @@ export async function toggleUserPremium(
         p_tier: tier,
         p_is_premium: isPremium,
         p_granted_at: isPremium ? new Date().toISOString() : null,
-        p_expires_at: null
+        p_expires_at: expiresAt
       }
     );
 
@@ -86,6 +91,8 @@ export async function toggleUserPremium(
         details: {
           tier,
           is_premium: isPremium,
+          period_months: periodMonths,
+          expires_at: expiresAt,
           businesses_updated: rpcResult.businesses_updated,
           business_ids: rpcResult.business_ids
         }
@@ -711,14 +718,17 @@ export async function verifyOfflinePayment(
       return { status: 'error', message: `Ce paiement a déjà été ${payment.status}.` };
     }
 
-    // Update payment status
+    // Default expiration: 1 year if not specified
+    const expirationDate = payment.expires_at || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
+
+    // Update payment status and persist effective expiration
     const { error: updatePaymentError } = await serviceClient
       .from('premium_payments')
       .update({
         status: 'verified',
         verified_by: adminId,
         verified_at: new Date().toISOString(),
-        expires_at: payment.expires_at // Use existing if set, otherwise handled in verify
+        expires_at: expirationDate
       })
       .eq('id', paymentId);
 
@@ -726,23 +736,25 @@ export async function verifyOfflinePayment(
       return { status: 'error', message: `Erreur mise à jour paiement: ${updatePaymentError.message}` };
     }
 
-    // Default expiration: 1 year if not specified
-    const expirationDate = payment.expires_at || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
-
-    // Grant premium status to user
+    // Grant premium status to user + sync all linked businesses atomically
     const targetTier = payment.target_tier || 'gold';
-    const { error: premiumError } = await serviceClient
-      .from('profiles')
-      .update({
-        is_premium: true,
-        tier: targetTier,
-        premium_granted_at: new Date().toISOString(),
-        premium_expires_at: expirationDate
-      })
-      .eq('id', payment.user_id);
+    const { data: rpcResult, error: premiumError } = await serviceClient.rpc(
+      'toggle_user_premium',
+      {
+        p_user_id: payment.user_id,
+        p_tier: targetTier,
+        p_is_premium: true,
+        p_granted_at: new Date().toISOString(),
+        p_expires_at: expirationDate
+      }
+    );
 
     if (premiumError) {
       return { status: 'error', message: `Erreur activation premium: ${premiumError.message}` };
+    }
+
+    if (!rpcResult?.success) {
+      return { status: 'error', message: 'Erreur activation premium: echec synchronisation premium.' };
     }
 
     // Send confirmation email
@@ -776,14 +788,6 @@ export async function verifyOfflinePayment(
       });
     } catch (auditError) {
       logger.warn('Failed to log payment verification', { error: auditError, paymentId });
-    }
-
-    // Update business premium status if applicable
-    if (payment.business_id) {
-      await serviceClient
-        .from('businesses')
-        .update({ is_premium: true, tier: targetTier })
-        .eq('id', payment.business_id);
     }
 
     return {
@@ -960,33 +964,27 @@ export async function addManualPayment(data: {
       return { status: 'error', message: `Erreur création paiement: ${paymentError.message}` };
     }
 
-    // 3. Update profile
-    const { error: profileUpdateError } = await serviceClient
-      .from('profiles')
-      .update({
-        is_premium: true,
-        tier: data.tier,
-        premium_granted_at: new Date().toISOString(),
-        premium_expires_at: data.expirationDate
-      })
-      .eq('id', profile.id);
+    // 3. Activate premium and sync all linked businesses atomically
+    const { data: rpcResult, error: profileUpdateError } = await serviceClient.rpc(
+      'toggle_user_premium',
+      {
+        p_user_id: profile.id,
+        p_tier: data.tier,
+        p_is_premium: true,
+        p_granted_at: new Date().toISOString(),
+        p_expires_at: data.expirationDate
+      }
+    );
 
     if (profileUpdateError) {
       return { status: 'error', message: `Erreur mise à jour profil: ${profileUpdateError.message}` };
     }
 
-    // 4. Update business
-    if (profile.business_id) {
-      await serviceClient
-        .from('businesses')
-        .update({
-          is_premium: true,
-          tier: data.tier
-        })
-        .eq('id', profile.business_id);
+    if (!rpcResult?.success) {
+      return { status: 'error', message: 'Erreur mise a jour profil: echec synchronisation premium.' };
     }
 
-    // 5. Audit log
+    // 4. Audit log
     await logAuditAction({
       adminId,
       action: 'ADD_MANUAL_PAYMENT',
@@ -1000,7 +998,7 @@ export async function addManualPayment(data: {
       }
     });
 
-    // 6. Send email
+    // 5. Send email
     try {
       await sendPremiumActivationEmail(data.userEmail, profile.full_name || 'Professionnel');
     } catch (e) {

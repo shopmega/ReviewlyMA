@@ -56,8 +56,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const { data: profileData } = await adminClient
+      .from('profiles')
+      .select('business_id')
+      .eq('id', user.id)
+      .maybeSingle();
+
     const { error: insertError } = await adminClient.from('premium_payments').insert({
       user_id: user.id,
+      business_id: profileData?.business_id ?? null,
       payment_reference: paymentReference,
       amount_usd: typeof body.amount_usd === 'number' ? body.amount_usd : null,
       currency: body.currency || 'MAD',
@@ -91,4 +98,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

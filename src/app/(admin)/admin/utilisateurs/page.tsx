@@ -80,6 +80,13 @@ export default function UsersPage() {
     currentPremium?: boolean;
     newRole?: 'admin' | 'pro' | 'user';
   }>({ open: false, type: null, userId: '', userName: '' });
+  const [premiumConfig, setPremiumConfig] = useState<{
+    tier: 'growth' | 'gold';
+    periodMonths: number | null;
+  }>({
+    tier: 'growth',
+    periodMonths: 12,
+  });
 
   const { toast } = useToast();
 
@@ -187,9 +194,18 @@ export default function UsersPage() {
     setConfirmDialog({ open: false, type: null, userId: '', userName: '' });
   };
 
-  const handlePremiumToggle = async (userId: string, shouldHavePremium: boolean) => {
+  const handlePremiumToggle = async (
+    userId: string,
+    shouldHavePremium: boolean,
+    tier: 'growth' | 'gold' = 'growth',
+    periodMonths: number | null = 12
+  ) => {
     setActionLoading(userId);
-    const result = await toggleUserPremium(userId, shouldHavePremium ? 'growth' : 'standard');
+    const result = await toggleUserPremium(
+      userId,
+      shouldHavePremium ? tier : 'standard',
+      shouldHavePremium ? periodMonths : null
+    );
 
     if (result.status === 'success') {
       toast({ title: 'Succès', description: result.message });
@@ -462,7 +478,7 @@ export default function UsersPage() {
                         {actionLoading === user.id ? (
                           <Loader2 className="h-5 w-5 animate-spin text-primary ml-auto" />
                         ) : (
-                          <DropdownMenu>
+                          <DropdownMenu modal={false}>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all shadow-sm">
                                 <MoreVertical className="h-5 w-5" />
@@ -500,6 +516,10 @@ export default function UsersPage() {
                               <DropdownMenuItem
                                 className="rounded-xl py-3 font-bold hover:bg-amber-500/10 transition-colors"
                                 onClick={() => {
+                                  setPremiumConfig({
+                                    tier: user.is_premium ? 'gold' : 'growth',
+                                    periodMonths: 12,
+                                  });
                                   setConfirmDialog({
                                     open: true,
                                     type: 'premium',
@@ -617,13 +637,58 @@ export default function UsersPage() {
                   : confirmDialog.type === 'premium'
                     ? (confirmDialog.currentPremium
                       ? `Voulez-vous retirer les avantages Premium de "${confirmDialog.userName}" ?`
-                      : `Voulez-vous offrir un accès Premium illimité à "${confirmDialog.userName}" ?`
+                      : `Choisissez le plan et la période Premium pour "${confirmDialog.userName}".`
                     )
                     : `Voulez-vous attribuer le rôle "${getRoleLabel(confirmDialog.newRole || 'user')}" à "${confirmDialog.userName}" ?`
                 }
               </div>
             </DialogDescription>
           </DialogHeader>
+          {confirmDialog.type === 'premium' && !confirmDialog.currentPremium && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+              <div className="space-y-2">
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Plan</p>
+                <Select
+                  value={premiumConfig.tier}
+                  onValueChange={(value) =>
+                    setPremiumConfig((prev) => ({ ...prev, tier: value as 'growth' | 'gold' }))
+                  }
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Choisir un plan" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="growth">Growth</SelectItem>
+                    <SelectItem value="gold">Gold</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Periode</p>
+                <Select
+                  value={premiumConfig.periodMonths === null ? 'unlimited' : String(premiumConfig.periodMonths)}
+                  onValueChange={(value) =>
+                    setPremiumConfig((prev) => ({
+                      ...prev,
+                      periodMonths: value === 'unlimited' ? null : Number(value),
+                    }))
+                  }
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Choisir une periode" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="1">1 mois</SelectItem>
+                    <SelectItem value="3">3 mois</SelectItem>
+                    <SelectItem value="6">6 mois</SelectItem>
+                    <SelectItem value="12">12 mois</SelectItem>
+                    <SelectItem value="24">24 mois</SelectItem>
+                    <SelectItem value="unlimited">Illimite</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
           <DialogFooter className="mt-8 gap-3">
             <Button variant="outline" className="rounded-2xl border-border/40 font-bold px-8 h-12" onClick={() => setConfirmDialog({ open: false, type: null, userId: '', userName: '' })}>
               Annuler
@@ -641,7 +706,12 @@ export default function UsersPage() {
                 } else if (confirmDialog.type === 'role' && confirmDialog.newRole) {
                   handleRoleChange(confirmDialog.userId, confirmDialog.newRole);
                 } else if (confirmDialog.type === 'premium') {
-                  handlePremiumToggle(confirmDialog.userId, !confirmDialog.currentPremium);
+                  handlePremiumToggle(
+                    confirmDialog.userId,
+                    !confirmDialog.currentPremium,
+                    premiumConfig.tier,
+                    premiumConfig.periodMonths
+                  );
                 }
               }}
               disabled={actionLoading === confirmDialog.userId}

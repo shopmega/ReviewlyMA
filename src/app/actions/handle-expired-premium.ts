@@ -82,10 +82,29 @@ export async function handleExpiredPremiumAccounts(authToken?: string): Promise<
         };
       }
 
-      // Update associated businesses if they exist
-      const businessIds = expiredProfiles
-        .filter(p => p.business_id)
-        .map(p => p.business_id);
+      // Update associated businesses (legacy profile.business_id + multi-business assignments)
+      const businessIdSet = new Set<string>(
+        expiredProfiles
+          .map((p) => p.business_id)
+          .filter((id): id is string => Boolean(id))
+      );
+
+      const { data: linkedBusinesses, error: linkedBusinessesError } = await serviceClient
+        .from('user_businesses')
+        .select('business_id')
+        .in('user_id', profileIds);
+
+      if (linkedBusinessesError) {
+        logger.warn('Error fetching linked businesses for expired profiles', linkedBusinessesError);
+      } else if (linkedBusinesses) {
+        for (const link of linkedBusinesses) {
+          if (link.business_id) {
+            businessIdSet.add(link.business_id);
+          }
+        }
+      }
+
+      const businessIds = Array.from(businessIdSet);
 
       let businessesAffected = 0;
       if (businessIds.length > 0) {
