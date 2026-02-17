@@ -24,7 +24,8 @@ import {
   Megaphone,
   MessageSquare,
   UserPlus,
-  Stethoscope
+  Stethoscope,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,7 @@ const menuGroups = [
     label: 'Modération',
     items: [
       { href: '/admin/avis', label: 'Tous les avis', icon: Star },
+      { href: '/admin/salaires', label: 'Salaires', icon: DollarSign },
       { href: '/admin/avis-signalements', label: 'Signalements avis', icon: Flag },
       { href: '/admin/contenu', label: 'Médias signalés', icon: FileImage },
     ]

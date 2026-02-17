@@ -15,6 +15,9 @@ type SalarySectionProps = {
   businessId: string;
   stats: SalaryStats;
   salaries: SalaryEntry[];
+  roles?: string[];
+  departments?: string[];
+  intervals?: Array<{ id: string; label: string; min: number; max: number }>;
 };
 
 function formatMoneyMAD(value: number | null): string {
@@ -22,7 +25,14 @@ function formatMoneyMAD(value: number | null): string {
   return `${Math.round(value).toLocaleString('fr-MA')} MAD`;
 }
 
-export function SalarySection({ businessId, stats, salaries }: SalarySectionProps) {
+export function SalarySection({
+  businessId,
+  stats,
+  salaries,
+  roles = [],
+  departments = [],
+  intervals = [],
+}: SalarySectionProps) {
   const [state, formAction] = useActionState(submitSalary, { status: 'idle', message: '' });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const router = useRouter();
@@ -137,11 +147,27 @@ export function SalarySection({ businessId, stats, salaries }: SalarySectionProp
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div className="space-y-1">
                   <Label htmlFor="jobTitle">Poste</Label>
-                  <Input id="jobTitle" name="jobTitle" placeholder="Ex: Developpeur Full Stack" required />
+                  {roles.length > 0 ? (
+                    <select id="jobTitle" name="jobTitle" className="h-10 w-full rounded-md border bg-background px-3 text-sm" required>
+                      <option value="">Selectionner un poste</option>
+                      {roles.map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input id="jobTitle" name="jobTitle" placeholder="Ex: Developpeur Full Stack" required />
+                  )}
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="salary">Salaire</Label>
                   <Input id="salary" name="salary" type="number" min="500" step="1" required />
+                  {intervals.length > 0 && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Intervalles autorises: {intervals.map((item) => item.label).join(' | ')}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -185,7 +211,18 @@ export function SalarySection({ businessId, stats, salaries }: SalarySectionProp
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="department">Departement (optionnel)</Label>
-                  <Input id="department" name="department" placeholder="Ex: Engineering" />
+                  {departments.length > 0 ? (
+                    <select id="department" name="department" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="">
+                      <option value="">Selectionner un departement</option>
+                      {departments.map((department) => (
+                        <option key={department} value={department}>
+                          {department}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input id="department" name="department" placeholder="Ex: Engineering" />
+                  )}
                 </div>
               </div>
 

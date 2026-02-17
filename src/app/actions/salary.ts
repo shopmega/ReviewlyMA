@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { salarySubmissionSchema, ActionState } from '@/lib/types';
 import { checkRateLimit, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
+import { getSiteSettings } from '@/lib/data';
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -59,6 +60,41 @@ export async function submitSalary(
   }
 
   const payload = parsed.data;
+  const settings = await getSiteSettings();
+  const allowedRoles = (settings.salary_roles || []).map((value) => value.trim()).filter(Boolean);
+  const allowedDepartments = (settings.salary_departments || []).map((value) => value.trim()).filter(Boolean);
+  const configuredIntervals = Array.isArray(settings.salary_intervals) ? settings.salary_intervals : [];
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(payload.jobTitle)) {
+    return createErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Poste invalide. Veuillez selectionner un poste propose.'
+    ) as SalaryFormState;
+  }
+
+  if (payload.department && allowedDepartments.length > 0 && !allowedDepartments.includes(payload.department)) {
+    return createErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Departement invalide. Veuillez selectionner un departement propose.'
+    ) as SalaryFormState;
+  }
+
+  if (configuredIntervals.length > 0) {
+    const withinAnyInterval = configuredIntervals.some((interval: any) => {
+      const min = Number(interval?.min);
+      const max = Number(interval?.max);
+      if (!Number.isFinite(min) || !Number.isFinite(max)) return false;
+      return payload.salary >= min && payload.salary <= max;
+    });
+
+    if (!withinAnyInterval) {
+      return createErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Montant de salaire invalide. Veuillez choisir un montant dans les intervalles autorises.'
+      ) as SalaryFormState;
+    }
+  }
+
   const row = {
     business_id: payload.businessId,
     user_id: user.id,

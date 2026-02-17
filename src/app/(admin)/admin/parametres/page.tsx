@@ -97,6 +97,14 @@ type SiteSettings = {
     payment_methods_enabled: string[] | null;
     partner_app_name: string | null;
     partner_app_url: string | null;
+    salary_roles: string[] | null;
+    salary_departments: string[] | null;
+    salary_intervals: Array<{
+        id: string;
+        label: string;
+        min: number;
+        max: number;
+    }> | null;
 };
 
 const defaultSettings: SiteSettings = {
@@ -161,12 +169,54 @@ const defaultSettings: SiteSettings = {
     payment_methods_enabled: ['bank_transfer'],
     partner_app_name: 'MOR RH',
     partner_app_url: 'https://monrh.vercel.app/',
+    salary_roles: [
+        'Ingenieur logiciel',
+        'Ingenieur logiciel senior',
+        'Lead technique',
+        'Manager ingenierie',
+        'Chef de produit',
+        'Analyste data',
+        'Data scientist',
+        'Designer UX',
+        'Designer UI',
+        'Ingenieur QA',
+        'Ingenieur DevOps',
+        'Specialiste RH',
+        'Specialiste marketing',
+        'Representant commercial',
+        'Support client',
+    ],
+    salary_departments: [
+        'Ingenierie',
+        'Produit',
+        'Design',
+        'Data',
+        'Operations',
+        'Ressources humaines',
+        'Marketing',
+        'Commercial',
+        'Finance',
+        'Juridique',
+        'Support client',
+    ],
+    salary_intervals: [
+        { id: 'lt_3000', label: 'Moins de 3 000 MAD', min: 500, max: 2999 },
+        { id: '3000_4999', label: '3 000 - 4 999 MAD', min: 3000, max: 4999 },
+        { id: '5000_7999', label: '5 000 - 7 999 MAD', min: 5000, max: 7999 },
+        { id: '8000_11999', label: '8 000 - 11 999 MAD', min: 8000, max: 11999 },
+        { id: '12000_19999', label: '12 000 - 19 999 MAD', min: 12000, max: 19999 },
+        { id: '20000_29999', label: '20 000 - 29 999 MAD', min: 20000, max: 29999 },
+        { id: '30000_plus', label: '30 000+ MAD', min: 30000, max: 10000000 },
+    ],
 };
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [salaryRolesText, setSalaryRolesText] = useState((defaultSettings.salary_roles || []).join('\n'));
+    const [salaryDepartmentsText, setSalaryDepartmentsText] = useState((defaultSettings.salary_departments || []).join('\n'));
+    const [salaryIntervalsText, setSalaryIntervalsText] = useState(JSON.stringify(defaultSettings.salary_intervals || [], null, 2));
     const { toast } = useToast();
 
     useEffect(() => {
@@ -180,6 +230,9 @@ export default function SettingsPage() {
 
             if (!error && data) {
                 setSettings(data);
+                setSalaryRolesText((data.salary_roles || []).join('\n'));
+                setSalaryDepartmentsText((data.salary_departments || []).join('\n'));
+                setSalaryIntervalsText(JSON.stringify(data.salary_intervals || [], null, 2));
             }
             setLoading(false);
         }
@@ -190,7 +243,54 @@ export default function SettingsPage() {
         setSaving(true);
 
         try {
-            const result = await updateSiteSettings(settings);
+            const salaryRoles = salaryRolesText
+                .split('\n')
+                .map((value) => value.trim())
+                .filter(Boolean);
+            const salaryDepartments = salaryDepartmentsText
+                .split('\n')
+                .map((value) => value.trim())
+                .filter(Boolean);
+
+            let salaryIntervals: SiteSettings['salary_intervals'] = [];
+            try {
+                const parsed = JSON.parse(salaryIntervalsText);
+                if (!Array.isArray(parsed)) {
+                    throw new Error('Format invalide');
+                }
+                salaryIntervals = parsed.filter((item: any) =>
+                    item
+                    && typeof item.id === 'string'
+                    && typeof item.label === 'string'
+                    && Number.isFinite(Number(item.min))
+                    && Number.isFinite(Number(item.max))
+                    && Number(item.max) >= Number(item.min)
+                ).map((item: any) => ({
+                    id: item.id,
+                    label: item.label,
+                    min: Number(item.min),
+                    max: Number(item.max),
+                }));
+
+                if (salaryIntervals.length === 0) {
+                    throw new Error('Aucun intervalle valide');
+                }
+            } catch {
+                toast({
+                    title: 'Erreur',
+                    description: 'Intervalles salariaux invalides. Utilisez un JSON valide.',
+                    variant: 'destructive'
+                });
+                setSaving(false);
+                return;
+            }
+
+            const result = await updateSiteSettings({
+                ...settings,
+                salary_roles: salaryRoles,
+                salary_departments: salaryDepartments,
+                salary_intervals: salaryIntervals,
+            });
 
             if (result.status === 'error') {
                 toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
@@ -262,6 +362,10 @@ export default function SettingsPage() {
                         <TabsTrigger value="payments" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <CreditCard className="h-4 w-4 mr-3 text-green-500" />
                             Paiements
+                        </TabsTrigger>
+                        <TabsTrigger value="salary-config" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
+                            <DollarSign className="h-4 w-4 mr-3 text-primary" />
+                            Salaires
                         </TabsTrigger>
 
                         <TabsTrigger value="home" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
@@ -826,6 +930,54 @@ export default function SettingsPage() {
                                             Elles leur permettront d'effectuer les virements bancaires pour activer leurs abonnements.
                                         </p>
                                     </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="salary-config" className="mt-0 space-y-8">
+                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+                            <CardHeader className="p-8 border-b border-border/10">
+                                <CardTitle className="text-2xl font-black tracking-tight">Validation des salaires</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">
+                                    Gerez les postes, departements et intervalles autorises dans le formulaire public.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Postes autorises (1 par ligne)</Label>
+                                        <Textarea
+                                            value={salaryRolesText}
+                                            onChange={(e) => setSalaryRolesText(e.target.value)}
+                                            rows={14}
+                                            className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-medium"
+                                            placeholder="Ingenieur logiciel"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Departements autorises (1 par ligne)</Label>
+                                        <Textarea
+                                            value={salaryDepartmentsText}
+                                            onChange={(e) => setSalaryDepartmentsText(e.target.value)}
+                                            rows={14}
+                                            className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-medium"
+                                            placeholder="Ingenierie"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Intervalles salariaux (JSON)</Label>
+                                    <Textarea
+                                        value={salaryIntervalsText}
+                                        onChange={(e) => setSalaryIntervalsText(e.target.value)}
+                                        rows={12}
+                                        className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-muted-foreground font-medium">
+                                        Format attendu: [{"{"}"id":"id","label":"Libelle","min":1000,"max":5000{"}"}]
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>

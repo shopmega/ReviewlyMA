@@ -209,6 +209,9 @@ export default async function BusinessPage({ params }: PageProps) {
               enableSalaries={settings.enable_salaries}
               salaryStats={salaryStats}
               salaryEntries={salaryEntries}
+              salaryRoles={settings.salary_roles || []}
+              salaryDepartments={settings.salary_departments || []}
+              salaryIntervals={settings.salary_intervals || []}
             />
 
             {/* Similar Businesses */}

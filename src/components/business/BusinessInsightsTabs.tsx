@@ -10,6 +10,9 @@ type BusinessInsightsTabsProps = {
   enableSalaries: boolean;
   salaryStats: SalaryStats;
   salaryEntries: SalaryEntry[];
+  salaryRoles?: string[];
+  salaryDepartments?: string[];
+  salaryIntervals?: Array<{ id: string; label: string; min: number; max: number }>;
 };
 
 export function BusinessInsightsTabs({
@@ -17,6 +20,9 @@ export function BusinessInsightsTabs({
   enableSalaries,
   salaryStats,
   salaryEntries,
+  salaryRoles = [],
+  salaryDepartments = [],
+  salaryIntervals = [],
 }: BusinessInsightsTabsProps) {
   return (
     <section className="space-y-4" id="insights">
@@ -38,7 +44,14 @@ export function BusinessInsightsTabs({
 
         {enableSalaries && (
           <TabsContent value="salaries" className="mt-0">
-            <SalarySection businessId={business.id} stats={salaryStats} salaries={salaryEntries} />
+            <SalarySection
+              businessId={business.id}
+              stats={salaryStats}
+              salaries={salaryEntries}
+              roles={salaryRoles}
+              departments={salaryDepartments}
+              intervals={salaryIntervals}
+            />
           </TabsContent>
         )}
       </Tabs>
