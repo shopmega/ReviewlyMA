@@ -38,17 +38,22 @@ export function useBusinessProfile() {
 
                 // AUTO-SYNC: If no business_id but they might have an approved claim
                 if (!profileData?.business_id && profileData) {
-                    const { data: approvedClaim } = await supabase
+                    const { data: approvedClaims, error: claimsError } = await supabase
                         .from('business_claims')
-                        .select('business_id, status')
+                        .select('business_id, created_at')
                         .eq('user_id', user.id)
                         .eq('status', 'approved')
-                        .maybeSingle();
+                        .order('created_at', { ascending: false })
+                        .limit(1);
 
-                    if (approvedClaim?.business_id) {
+                    const approvedBusinessId = !claimsError && approvedClaims?.[0]?.business_id
+                        ? approvedClaims[0].business_id
+                        : null;
+
+                    if (approvedBusinessId) {
                         // Found an approved claim! Trigger background sync and use this ID
-                        mergedProfile = { ...profileData, business_id: approvedClaim.business_id, role: 'pro' };
-                        
+                        mergedProfile = { ...profileData, business_id: approvedBusinessId, role: 'pro' };
+
                         // Only call syncProProfile if the profile is missing business_id and role is not pro
                         if (!profileData.business_id || profileData.role !== 'pro') {
                             syncProProfile(); // Fire and forget background sync

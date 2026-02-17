@@ -183,6 +183,42 @@ export const getBusinessById = async (id: string): Promise<Business | null> => {
     return mapBusinessFromDB(data);
 };
 
+/**
+ * Backward-compatible helper used by legacy tests and call sites.
+ */
+export const getBusinessReviews = async (businessId: string, limit = 50): Promise<any[]> => {
+    const supabase = getPublicClient();
+    const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('business_id', businessId)
+        .order('date', { ascending: false })
+        .limit(limit);
+
+    if (error || !data) {
+        return [];
+    }
+
+    return data;
+};
+
+/**
+ * Backward-compatible helper used by legacy tests and call sites.
+ */
+export const getBusinessHours = async (businessId: string): Promise<any[]> => {
+    const supabase = getPublicClient();
+    const { data, error } = await supabase
+        .from('business_hours')
+        .select('*')
+        .eq('business_id', businessId);
+
+    if (error || !data) {
+        return [];
+    }
+
+    return data;
+};
+
 export const getCategoriesWithCount = async (): Promise<CategoryWithCount[]> => {
     const supabase = getPublicClient();
 

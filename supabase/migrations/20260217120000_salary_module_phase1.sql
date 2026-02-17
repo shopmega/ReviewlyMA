@@ -50,7 +50,10 @@ CHECK (years_experience IS NULL OR (years_experience >= 0 AND years_experience <
 
 -- Preserve visibility of old seeded rows
 UPDATE public.salaries
-SET status = 'published', source = 'legacy';
+SET status = 'published', source = 'legacy'
+WHERE user_id IS NULL
+  AND (status IS NULL OR status = 'pending')
+  AND (source IS NULL OR source = 'self_reported');
 
 CREATE INDEX IF NOT EXISTS idx_salaries_business_status ON public.salaries(business_id, status);
 CREATE INDEX IF NOT EXISTS idx_salaries_business_job_title ON public.salaries(business_id, job_title);
