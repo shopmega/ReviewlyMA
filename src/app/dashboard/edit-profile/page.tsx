@@ -38,6 +38,37 @@ type BusinessData = {
   amenities: string[] | null;
 };
 
+type AmenityGroup = {
+  group: string;
+  amenities: string[];
+};
+
+const normalizeAmenityGroups = (value: unknown): AmenityGroup[] => {
+  if (!Array.isArray(value)) return [];
+
+  const grouped = value.filter((item): item is AmenityGroup => {
+    return (
+      !!item &&
+      typeof item === 'object' &&
+      'group' in item &&
+      'amenities' in item &&
+      typeof (item as AmenityGroup).group === 'string' &&
+      Array.isArray((item as AmenityGroup).amenities)
+    );
+  });
+  if (grouped.length > 0) return grouped;
+
+  const flatAmenities = value.filter((item): item is string => typeof item === 'string');
+  if (flatAmenities.length === 0) return [];
+  return [{ group: 'Services', amenities: flatAmenities }];
+};
+
+const normalizeAmenitiesValue = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
+  const parsed = parsePostgresArray(value);
+  return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+};
+
 function FormSkeleton() {
   return (
     <div className="space-y-8">
@@ -107,7 +138,7 @@ export default function EditProfilePage() {
 
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
   const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
-  const [amenitiesList, setAmenitiesList] = useState<any[]>([]);
+  const [amenitiesList, setAmenitiesList] = useState<AmenityGroup[]>([]);
 
   // Fetch categories and amenities on mount
   useEffect(() => {
@@ -121,9 +152,9 @@ export default function EditProfilePage() {
 
       // Fallback to hardcoded BENEFITS if DB is empty (migration not run yet)
       if (amens && amens.length > 0) {
-        setAmenitiesList(amens);
+        setAmenitiesList(normalizeAmenityGroups(amens));
       } else {
-        setAmenitiesList(BENEFITS);
+        setAmenitiesList(normalizeAmenityGroups(BENEFITS));
       }
     }
     loadData();
@@ -176,7 +207,7 @@ export default function EditProfilePage() {
         quartier: business.quartier || '',
         location: business.location || '',
         website: business.website || '',
-        amenities: business.amenities || [],
+        amenities: normalizeAmenitiesValue(business.amenities),
         whatsapp_number: business.whatsapp_number || '',
         affiliate_link: business.affiliate_link || '',
         affiliate_cta: business.affiliate_cta || '',
@@ -872,7 +903,7 @@ export default function EditProfilePage() {
                   name="amenities"
                   render={({ field }) => (
                     <div className="space-y-4">
-                      {amenitiesList.map((group: any) => (
+                      {amenitiesList.map((group) => (
                         <div key={group.group}>
                           <p className="text-sm font-semibold text-muted-foreground mb-2">{group.group}</p>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-2">
@@ -880,11 +911,12 @@ export default function EditProfilePage() {
                               <FormItem key={amenity} className="flex flex-row items-start space-x-3 space-y-0">
                                 <FormControl>
                                   <Checkbox
-                                    checked={field.value?.includes(amenity)}
+                                    checked={Array.isArray(field.value) && field.value.includes(amenity)}
                                     onCheckedChange={(checked) => {
+                                      const safeValue = Array.isArray(field.value) ? field.value : [];
                                       const updatedValue = checked
-                                        ? [...(field.value || []), amenity]
-                                        : field.value?.filter((val) => val !== amenity);
+                                        ? [...safeValue, amenity]
+                                        : safeValue.filter((val) => val !== amenity);
                                       field.onChange(updatedValue);
                                     }}
                                   />
