@@ -59,7 +59,7 @@ async function handler(request: NextRequest, params: Promise<{ id: string }>) {
         // Get claim proof data
         const { data: claim, error: claimError } = await supabase
             .from('business_claims')
-            .select('proof_data, proof_methods, email, personal_phone')
+            .select('proof_data, proof_methods, email, phone')
             .eq('id', id)
             .single();
 
@@ -121,7 +121,7 @@ async function handler(request: NextRequest, params: Promise<{ id: string }>) {
             storageErrors,
             contactInfo: {
                 email: claim.email,
-                phone: claim.personal_phone,
+                phone: claim.phone,
             },
         });
     } catch (error) {

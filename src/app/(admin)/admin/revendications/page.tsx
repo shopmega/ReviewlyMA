@@ -30,9 +30,11 @@ type ClaimData = {
   job_title: string | null;
   email: string;
   personal_phone?: string;
+  phone?: string;
   proof_methods?: string[];
   proof_status?: Record<string, string>;
   message_to_admin?: string;
+  message?: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   reviewed_at?: string | null;
@@ -648,7 +650,7 @@ export default function ClaimsPage() {
                         </div>
                         <div>
                           <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1 block">Téléphone personnel</label>
-                          <p className="text-xl font-bold">{selectedClaim.personal_phone || 'Non renseigné'}</p>
+                          <p className="text-xl font-bold">{selectedClaim.personal_phone || selectedClaim.phone || 'Non renseigné'}</p>
                         </div>
                       </div>
                     </div>
@@ -660,7 +662,7 @@ export default function ClaimsPage() {
                         <AlertTriangle className="h-4 w-4 text-primary" /> Note du demandeur
                       </h4>
                       <p className="text-muted-foreground leading-relaxed italic">
-                        "{selectedClaim.message_to_admin || 'Aucun message particulier laissé pour l\'administrateur.'}"
+                        "{selectedClaim.message_to_admin || selectedClaim.message || 'Aucun message particulier laissé pour l\'administrateur.'}"
                       </p>
                     </div>
                   </TabsContent>

@@ -495,7 +495,15 @@ function NewClaimContent() {
     (!videoMethodSelected || !!proofData.videoFile)
   );
 
-  const canSubmit = canProceedToStep2 && formData.fullName && formData.position && formData.email && formData.personalPhone && selectedProofMethods.length > 0 && proofRequirementsMet;
+  const professionalContactMet = !!existingBusinessId || !!formData.phone.trim() || !!formData.website.trim();
+  const canSubmit = canProceedToStep2
+    && formData.fullName
+    && formData.position
+    && formData.email
+    && formData.personalPhone
+    && selectedProofMethods.length > 0
+    && proofRequirementsMet
+    && professionalContactMet;
 
   // Enhanced validation for better user feedback
   const missingStep1Fields: string[] = [];
@@ -511,6 +519,9 @@ function NewClaimContent() {
   if (!formData.position) missingStep3Fields.push('Votre poste/fonction');
   if (!formData.email) missingStep3Fields.push('Email professionnel');
   if (!formData.personalPhone) missingStep3Fields.push('Téléphone personnel');
+  if (!existingBusinessId && !formData.phone.trim() && !formData.website.trim()) {
+    missingStep3Fields.push('Téléphone professionnel ou site web');
+  }
   if (selectedProofMethods.length === 0) missingStep3Fields.push('Méthode de vérification');
 
   const missingStep1Message = missingStep1Fields.length > 0 ? `Champs manquants: ${missingStep1Fields.join(', ')}` : '';
@@ -1055,7 +1066,7 @@ function NewClaimContent() {
 
                             {videoMethodSelected && (
                               <div className="border rounded-lg p-5 bg-white shadow-sm border-blue-200">
-                                <Label className="font-bold text-sm block mb-3">🎥 Vidéo de preuve (Optionnel mais recommandé)</Label>
+                                <Label className="font-bold text-sm block mb-3">🎥 Vidéo de preuve (Obligatoire si sélectionnée)</Label>
                                 <label className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50/50 transition-all block border-blue-200 mb-2">
                                   <Loader2 className="h-8 w-8 mx-auto mb-2 text-blue-400" />
                                   <p className="text-sm font-semibold">Cliquez pour ajouter une vidéo</p>
@@ -1318,3 +1329,4 @@ export default function NewClaimPage() {
     </Suspense>
   );
 }
+

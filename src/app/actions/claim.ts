@@ -131,8 +131,8 @@ export async function submitClaim(
         const proofMethods = (formData.get('proofMethods') as string)?.split(',').filter(Boolean) || [];
 
         // Extract file objects separately to avoid including them in validation
-        const documentFile = formData.get('documentFile') as File | null;
-        const videoFile = formData.get('videoFile') as File | null;
+        const documentFile = formData.get('documentFile') as File | string | null;
+        const videoFile = formData.get('videoFile') as File | string | null;
         const logoFile = formData.get('logoFile') as File | null;
         const coverFile = formData.get('coverFile') as File | null;
 
@@ -158,6 +158,29 @@ export async function submitClaim(
         }
 
         const claimData = validatedFields.data;
+        const hasDocumentProof = typeof documentFile === 'string' ? documentFile.trim().length > 0 : !!documentFile;
+        const hasVideoProof = typeof videoFile === 'string' ? videoFile.trim().length > 0 : !!videoFile;
+
+        if (!claimData.existingBusinessId && !claimData.phone && !claimData.website) {
+            return handleValidationError(
+                'Veuillez ajouter au moins un contact professionnel.',
+                { phone: ['Ajoutez un tÃ©lÃ©phone professionnel ou un site web.'] }
+            ) as ClaimFormState;
+        }
+
+        if (claimData.proofMethods.includes('document') && !hasDocumentProof) {
+            return handleValidationError(
+                'Veuillez fournir les preuves requises.',
+                { documentFile: ['Un document est requis si cette mÃ©thode est sÃ©lectionnÃ©e.'] }
+            ) as ClaimFormState;
+        }
+
+        if (claimData.proofMethods.includes('video') && !hasVideoProof) {
+            return handleValidationError(
+                'Veuillez fournir les preuves requises.',
+                { videoFile: ['Une vidÃ©o est requise si cette mÃ©thode est sÃ©lectionnÃ©e.'] }
+            ) as ClaimFormState;
+        }
 
         // Step 1: Create or update user profile
         // Sync identity only if profile fields are empty to avoid data corruption/overlapping
@@ -296,9 +319,9 @@ export async function submitClaim(
             } else if (method === 'phone') {
                 acc[method] = phoneVerified ? 'verified' : 'pending';
             } else if (method === 'document') {
-                acc[method] = documentFile ? 'pending_review' : 'pending';
+                acc[method] = hasDocumentProof ? 'pending_review' : 'pending';
             } else if (method === 'video') {
-                acc[method] = videoFile ? 'pending_review' : 'pending';
+                acc[method] = hasVideoProof ? 'pending_review' : 'pending';
             } else {
                 acc[method] = 'pending';
             }
@@ -311,21 +334,21 @@ export async function submitClaim(
             full_name: claimData.fullName,
             job_title: claimData.position,
             email: claimData.email,
-            personal_phone: claimData.personalPhone,
+            phone: claimData.personalPhone,
             status: 'pending',
             proof_methods: claimData.proofMethods,
             proof_status: proofStatus,
             proof_data: {
                 email_verified: emailVerified,
                 phone_verified: phoneVerified,
-                document_uploaded: !!documentFile,
-                video_uploaded: !!videoFile,
+                document_uploaded: hasDocumentProof,
+                video_uploaded: hasVideoProof,
                 verified_at: new Date().toISOString(),
                 ...(claimData.existingBusinessId && !isAdmin && Object.keys(requestedBusinessUpdates).length > 0
                     ? { requested_updates: requestedBusinessUpdates }
                     : {}),
             },
-            message_to_admin: claimData.messageToAdmin,
+            message: claimData.messageToAdmin,
         };
 
         const { data: claimData_response, error: claimError } = await supabaseService

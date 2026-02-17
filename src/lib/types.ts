@@ -204,29 +204,52 @@ export const businessHoursSchema = z.array(z.object({
 
 export const claimSchema = z.object({
   // Step 1: Business Details
-  businessName: z.string().min(2, { message: 'Le nom de l\'établissement est requis.' }),
-  category: z.string().min(1, { message: 'La catégorie est requise.' }),
-  subcategory: z.string().min(1, { message: 'La sous-catégorie est requise.' }),
-  address: z.string().min(5, { message: 'L\'adresse est requise.' }),
-  city: z.string().min(1, { message: 'La ville est requise.' }),
-  quartier: z.string().min(1, { message: 'Le quartier est requis.' }),
-  phone: z.string().optional(),
-  website: z.string().url({ message: 'URL invalide.' }).optional().or(z.literal('')),
-  description: z.string().optional(),
+  businessName: z.string().trim().min(2, { message: 'Le nom de l\'établissement est requis.' }).max(120, { message: 'Le nom est trop long.' }),
+  category: z.string().trim().min(1, { message: 'La catégorie est requise.' }),
+  subcategory: z.string().trim().min(1, { message: 'La sous-catégorie est requise.' }),
+  address: z.string().trim().min(5, { message: 'L\'adresse est requise.' }).max(250, { message: 'Adresse trop longue.' }),
+  city: z.string().trim().min(1, { message: 'La ville est requise.' }),
+  quartier: z.string().trim().min(1, { message: 'Le quartier est requis.' }),
+  phone: z
+    .string()
+    .trim()
+    .optional()
+    .refine((value) => !value || /^[0-9+\-\s().]{8,20}$/.test(value), {
+      message: 'Numéro de téléphone professionnel invalide.',
+    }),
+  website: z.string().trim().url({ message: 'URL invalide.' }).optional().or(z.literal('')),
+  description: z.string().trim().max(2000, { message: 'Description trop longue.' }).optional(),
   amenities: z.array(z.string()).optional().default([]),
 
   // Step 2: Identity & Proof
-  fullName: z.string().min(2, { message: 'Votre nom complet est requis.' }),
-  position: z.string().min(2, { message: 'Votre poste/fonction est requis.' }),
-  email: z.string().email({ message: 'Email professionnel invalide.' }),
-  personalPhone: z.string().min(8, { message: 'Téléphone personnel invalide.' }),
-  proofMethods: z.array(z.string()).min(1, { message: 'Sélectionnez au moins une méthode de vérification.' }),
-  messageToAdmin: z.string().optional(),
+  fullName: z
+    .string()
+    .trim()
+    .min(5, { message: 'Votre nom complet est requis.' })
+    .max(120, { message: 'Nom trop long.' })
+    .refine((value) => value.split(/\s+/).length >= 2, {
+      message: 'Veuillez saisir votre nom et prénom.',
+    }),
+  position: z.string().trim().min(2, { message: 'Votre poste/fonction est requis.' }).max(80, { message: 'Poste/fonction trop long.' }),
+  email: z.string().trim().email({ message: 'Email professionnel invalide.' }),
+  personalPhone: z
+    .string()
+    .trim()
+    .refine((value) => /^[0-9+\-\s().]{8,20}$/.test(value), {
+      message: 'Téléphone personnel invalide.',
+    }),
+  proofMethods: z
+    .array(z.enum(['email', 'phone', 'document', 'video']))
+    .min(1, { message: 'Sélectionnez au moins une méthode de vérification.' })
+    .max(4)
+    .refine((methods) => new Set(methods).size === methods.length, {
+      message: 'Les méthodes de vérification ne doivent pas contenir de doublons.',
+    }),
+  messageToAdmin: z.string().trim().max(1000, { message: 'Le message est trop long (max 1000 caractères).' }).optional(),
 
   // Existing Business
-  existingBusinessId: z.string().optional(),
+  existingBusinessId: z.string().trim().min(2).max(160).optional(),
 });
-
 export type ClaimFormData = z.infer<typeof claimSchema>;
 
 export const businessProfileUpdateSchema = z.object({
@@ -398,3 +421,4 @@ export type PaginatedBusinesses = {
   limit: number;
   totalPages: number;
 };
+
