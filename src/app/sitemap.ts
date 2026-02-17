@@ -17,6 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/businesses',
         '/categories',
         '/villes',
+        '/salaires',
+        '/salaires/comparaison',
         '/about',
         '/contact',
         '/pour-les-pros',
@@ -68,6 +70,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
     }));
 
+    // Salary SEO pages (role/city + sector/city)
+    let salaryRoleCityPages: MetadataRoute.Sitemap = [];
+    let salarySectorCityPages: MetadataRoute.Sitemap = [];
+    try {
+        const { getTopSalaryRoleCityPairs, getTopSalarySectorCityPairs } = await import('@/lib/data/salaries');
+        const [roleCityPairs, sectorCityPairs] = await Promise.all([
+            getTopSalaryRoleCityPairs(120),
+            getTopSalarySectorCityPairs(120),
+        ]);
+
+        salaryRoleCityPages = roleCityPairs.map((item) => ({
+            url: `${baseUrl}/salaires/role/${slugify(item.job_title)}/${item.city_slug}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+        }));
+
+        salarySectorCityPages = sectorCityPairs.map((item) => ({
+            url: `${baseUrl}/salaires/secteur/${item.sector_slug}/${item.city_slug}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.65,
+        }));
+    } catch (e) {
+        salaryRoleCityPages = [];
+        salarySectorCityPages = [];
+    }
+
     // 4. Combined Pages (Top Combos)
     // We'll generate combined pages for top cities and all categories
     const topCities = ['Casablanca', 'Rabat', 'Marrakech', 'Tanger'];
@@ -89,6 +119,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...businessPages,
         ...categoryPages,
         ...cityPages,
-        ...combinedPages
+        ...combinedPages,
+        ...salaryRoleCityPages,
+        ...salarySectorCityPages
     ];
 }

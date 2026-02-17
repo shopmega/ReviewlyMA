@@ -1,11 +1,14 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Users, Star, Building, Loader2, TrendingUp, TrendingDown } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { generateSalaryMonthlyReport } from '@/app/actions/admin';
+import { useToast } from '@/hooks/use-toast';
 
 type MonthlyData = {
   name: string;
@@ -44,6 +47,8 @@ const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 export default function StatisticsPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchStats() {
@@ -232,6 +237,50 @@ export default function StatisticsPage() {
           Analysez les métriques clés et la croissance de la plateforme en temps réel.
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Barometre des salaires</CardTitle>
+          <CardDescription>
+            Generez un snapshot mensuel a partir des vues analytiques salaires.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row gap-3">
+          <Button
+            variant="outline"
+            disabled={isPending}
+            onClick={() => {
+              startTransition(async () => {
+                const result = await generateSalaryMonthlyReport({ publish: false });
+                if (result.status === 'success') {
+                  toast({ title: 'Succes', description: result.message });
+                } else {
+                  toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+                }
+              });
+            }}
+          >
+            {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Generer brouillon
+          </Button>
+          <Button
+            disabled={isPending}
+            onClick={() => {
+              startTransition(async () => {
+                const result = await generateSalaryMonthlyReport({ publish: true });
+                if (result.status === 'success') {
+                  toast({ title: 'Succes', description: result.message });
+                } else {
+                  toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+                }
+              });
+            }}
+          >
+            {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Generer et publier
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Stat Cards */}
       <div className="grid gap-6 md:grid-cols-3">

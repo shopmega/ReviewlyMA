@@ -1480,6 +1480,45 @@ export async function toggleMaintenanceMode(enabled: boolean): Promise<AdminActi
 }
 
 /**
+ * Generate monthly salary report snapshot ("Barometre des salaires").
+ * Requires migration: 20260217220000_salary_phase3_monthly_reporting.sql
+ */
+export async function generateSalaryMonthlyReport(
+  options?: { reportMonth?: string; publish?: boolean }
+): Promise<AdminActionResult> {
+  try {
+    await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const reportMonth = options?.reportMonth
+      ? new Date(options.reportMonth).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
+
+    const { data, error } = await serviceClient.rpc('generate_salary_monthly_report', {
+      p_report_month: reportMonth,
+      p_publish: !!options?.publish,
+    });
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    revalidatePath('/admin/statistiques');
+    revalidatePath('/salaires');
+
+    return {
+      status: 'success',
+      message: options?.publish
+        ? 'Barometre genere et publie.'
+        : 'Barometre genere en brouillon.',
+      data,
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
  * Delete a user completely (admin only)
  * This handles all related data and foreign key constraints properly
  */

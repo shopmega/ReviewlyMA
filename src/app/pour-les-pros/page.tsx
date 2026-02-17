@@ -41,6 +41,8 @@ export default async function ForProsPage() {
     "Communication directe avec les candidats",
     "Contenu épinglé pour vos offres",
     "Support prioritaire",
+    "Benchmark salaires (Gold uniquement)",
+    "Baromètre mensuel des salaires",
     "Analytics avancés",
     "Lead generation premium"
   ];
@@ -172,7 +174,7 @@ export default async function ForProsPage() {
               <div className="space-y-3 flex-grow">
                 <Badge className="bg-orange-500 text-white border-none py-1 px-3">RECOMMANDÉ</Badge>
                 <h3 className="text-2xl font-bold font-headline">Business Gold</h3>
-                <p className="text-blue-100 dark:text-blue-200 text-sm">Le pack complet pour dominer votre marché.</p>
+                <p className="text-blue-100 dark:text-blue-200 text-sm">Le pack complet: benchmark salarial, reporting et acquisition.</p>
               </div>
               <div className="text-center py-3 bg-white/10 dark:bg-slate-800/30 rounded-xl border border-white/10 dark:border-slate-600/30 my-4">
                 <div className="text-3xl font-black text-white">{goldAnnual} MAD <span className="text-base font-medium opacity-70">/ an</span></div>

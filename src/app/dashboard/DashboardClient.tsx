@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Star, TrendingUp, AlertCircle, MessageSquare, ArrowRight, Zap, Sparkles, ShieldCheck, Users, Heart, ChevronDown, Building2, Loader2 } from 'lucide-react';
+import { Eye, Star, TrendingUp, AlertCircle, MessageSquare, ArrowRight, Zap, Sparkles, ShieldCheck, Users, Heart, ChevronDown, Building2, Loader2, BarChart3, Crown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     DropdownMenu,
@@ -45,6 +45,21 @@ export type RecentReview = {
     date: string;
 };
 
+const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined) return 'Non defini';
+    return new Intl.NumberFormat('fr-MA', {
+        style: 'currency',
+        currency: 'MAD',
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
+const formatPercent = (value: number | null | undefined) => {
+    if (value === null || value === undefined) return 'Non defini';
+    const sign = value > 0 ? '+' : '';
+    return `${sign}${value.toFixed(1)}%`;
+};
+
 export type DashboardStats = {
     business: BusinessData;
     totalReviews: number;
@@ -54,6 +69,14 @@ export type DashboardStats = {
     leads: number;
     followers: number;
     unreadTickets: number;
+    salaryBenchmark?: {
+        medianMonthlySalary: number | null;
+        minMonthlySalary: number | null;
+        maxMonthlySalary: number | null;
+        pctAboveCityAvg: number | null;
+        pctAboveSectorAvg: number | null;
+        submissionCount: number;
+    } | null;
 };
 
 interface DashboardClientProps {
@@ -320,6 +343,59 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     </Card>
                 ))}
             </div>
+
+            {profile?.tier === 'gold' && (
+                <Card className="border-amber-200 bg-amber-50/50 shadow-sm rounded-2xl overflow-hidden">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-amber-900 text-xl font-bold flex items-center gap-2">
+                            <Crown className="w-5 h-5 text-amber-600" />
+                            Benchmark salaires
+                        </CardTitle>
+                        <p className="text-sm text-amber-800/80">
+                            Comparez votre competitivite salariale avec votre ville et votre secteur.
+                        </p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Mediane</p>
+                                <p className="text-lg font-bold text-amber-900">
+                                    {formatCurrency(stats.salaryBenchmark?.medianMonthlySalary)}
+                                </p>
+                            </div>
+                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Plage</p>
+                                <p className="text-sm font-bold text-amber-900">
+                                    {formatCurrency(stats.salaryBenchmark?.minMonthlySalary)} - {formatCurrency(stats.salaryBenchmark?.maxMonthlySalary)}
+                                </p>
+                            </div>
+                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Vs ville</p>
+                                <p className="text-lg font-bold text-amber-900">
+                                    {formatPercent(stats.salaryBenchmark?.pctAboveCityAvg)}
+                                </p>
+                            </div>
+                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Vs secteur</p>
+                                <p className="text-lg font-bold text-amber-900">
+                                    {formatPercent(stats.salaryBenchmark?.pctAboveSectorAvg)}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <p className="text-xs font-semibold text-amber-800/80 uppercase tracking-wider">
+                                {stats.salaryBenchmark?.submissionCount || 0} soumissions publiees
+                            </p>
+                            <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl">
+                                <Link href="/dashboard/salary-benchmark">
+                                    <BarChart3 className="w-4 h-4 mr-2" />
+                                    Voir le benchmark
+                                </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Main Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

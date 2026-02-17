@@ -279,7 +279,15 @@ export const salarySubmissionSchema = z.object({
   employmentType: z.enum(['full_time', 'part_time', 'contract', 'intern']),
   location: z.string().trim().max(120, { message: 'Localisation trop longue.' }).optional(),
   yearsExperience: z.coerce.number().int().min(0).max(60).optional(),
+  seniorityLevel: z.enum(['junior', 'confirme', 'senior', 'expert', 'manager']).optional(),
   department: z.string().trim().max(120, { message: 'Département trop long.' }).optional(),
+  workModel: z.enum(['presentiel', 'hybride', 'teletravail']).optional(),
+  bonusFlags: z.object({
+    prime: z.boolean().optional(),
+    treizieme_mois: z.boolean().optional(),
+    commission: z.boolean().optional(),
+    bonus_annuel: z.boolean().optional(),
+  }).optional(),
   isCurrent: z.boolean(),
 });
 
@@ -296,7 +304,17 @@ export type SalaryEntry = {
   currency: string;
   employment_type: 'full_time' | 'part_time' | 'contract' | 'intern';
   years_experience?: number | null;
+  seniority_level?: 'junior' | 'confirme' | 'senior' | 'expert' | 'manager' | null;
   department?: string | null;
+  sector_slug?: string | null;
+  work_model?: 'presentiel' | 'hybride' | 'teletravail' | null;
+  bonus_flags?: {
+    prime: boolean;
+    treizieme_mois: boolean;
+    commission: boolean;
+    bonus_annuel: boolean;
+  } | null;
+  salary_monthly_normalized?: number | null;
   is_current: boolean;
   source: 'self_reported' | 'legacy' | 'imported';
   status: 'pending' | 'published' | 'rejected';
@@ -317,6 +335,69 @@ export type SalaryStats = {
     count: number;
     medianMonthly: number;
   }>;
+};
+
+export type SalaryCompanyMetrics = {
+  business_id: string;
+  business_name: string;
+  city: string;
+  city_slug: string;
+  sector_slug: string;
+  submission_count: number;
+  avg_monthly_salary: number | null;
+  median_monthly_salary: number | null;
+  min_monthly_salary: number | null;
+  max_monthly_salary: number | null;
+  most_reported_job_title: string | null;
+  most_reported_job_title_count: number | null;
+  city_avg_salary: number | null;
+  sector_avg_salary: number | null;
+  pct_above_city_avg: number | null;
+  pct_above_sector_avg: number | null;
+  refreshed_at: string;
+};
+
+export type SalaryCitySectorMetrics = {
+  city: string;
+  city_slug: string;
+  sector_slug: string;
+  submission_count: number;
+  business_count: number;
+  avg_monthly_salary: number | null;
+  median_monthly_salary: number | null;
+  min_monthly_salary: number | null;
+  max_monthly_salary: number | null;
+  junior_median_monthly_salary: number | null;
+  senior_median_monthly_salary: number | null;
+  refreshed_at: string;
+};
+
+export type SalaryCityMetrics = {
+  city: string;
+  city_slug: string;
+  submission_count: number;
+  avg_monthly_salary: number | null;
+  median_monthly_salary: number | null;
+  junior_median_monthly_salary: number | null;
+  senior_median_monthly_salary: number | null;
+  refreshed_at: string;
+};
+
+export type SalaryRoleCityMetrics = {
+  job_title: string;
+  city: string;
+  city_slug: string;
+  top_sector_slug: string | null;
+  submission_count: number;
+  avg_monthly_salary: number | null;
+  median_monthly_salary: number | null;
+  min_monthly_salary: number | null;
+  max_monthly_salary: number | null;
+  junior_median_monthly_salary: number | null;
+  senior_median_monthly_salary: number | null;
+  national_median_monthly_salary: number | null;
+  pct_vs_national_role_median: number | null;
+  refreshed_at: string;
 };
 
 export const businessProfileUpdateSchema = z.object({

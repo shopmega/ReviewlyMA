@@ -16,6 +16,14 @@ import {
 
 export type SalaryFormState = ActionState;
 
+function deriveSeniorityLevel(yearsExperience?: number) {
+  if (typeof yearsExperience !== 'number') return null;
+  if (yearsExperience <= 2) return 'junior';
+  if (yearsExperience <= 5) return 'confirme';
+  if (yearsExperience <= 10) return 'senior';
+  return 'expert';
+}
+
 export async function submitSalary(
   prevState: SalaryFormState,
   formData: FormData
@@ -40,6 +48,13 @@ export async function submitSalary(
   }
 
   const entries = Object.fromEntries(formData.entries());
+  const hasBonusInput = (
+    entries.bonusPrime !== undefined
+    || entries.bonusTreiziemeMois !== undefined
+    || entries.bonusCommission !== undefined
+    || entries.bonusAnnuel !== undefined
+  );
+
   const parsed = salarySubmissionSchema.safeParse({
     businessId: entries.businessId,
     jobTitle: entries.jobTitle,
@@ -48,7 +63,15 @@ export async function submitSalary(
     employmentType: entries.employmentType,
     location: entries.location || undefined,
     yearsExperience: entries.yearsExperience === '' ? undefined : entries.yearsExperience,
+    seniorityLevel: entries.seniorityLevel || undefined,
     department: entries.department || undefined,
+    workModel: entries.workModel || undefined,
+    bonusFlags: hasBonusInput ? {
+      prime: entries.bonusPrime === 'true',
+      treizieme_mois: entries.bonusTreiziemeMois === 'true',
+      commission: entries.bonusCommission === 'true',
+      bonus_annuel: entries.bonusAnnuel === 'true',
+    } : undefined,
     isCurrent: entries.isCurrent === 'true',
   });
 
@@ -60,6 +83,13 @@ export async function submitSalary(
   }
 
   const payload = parsed.data;
+  const seniorityLevel = payload.seniorityLevel || deriveSeniorityLevel(payload.yearsExperience);
+  const bonusFlags = payload.bonusFlags || {
+    prime: false,
+    treizieme_mois: false,
+    commission: false,
+    bonus_annuel: false,
+  };
   const settings = await getSiteSettings();
   const allowedRoles = (settings.salary_roles || []).map((value) => value.trim()).filter(Boolean);
   const allowedDepartments = (settings.salary_departments || []).map((value) => value.trim()).filter(Boolean);
@@ -105,7 +135,10 @@ export async function submitSalary(
     currency: 'MAD',
     employment_type: payload.employmentType,
     years_experience: payload.yearsExperience ?? null,
+    seniority_level: seniorityLevel,
     department: payload.department || null,
+    work_model: payload.workModel || null,
+    bonus_flags: bonusFlags,
     is_current: payload.isCurrent,
     source: 'self_reported',
     status: 'pending',

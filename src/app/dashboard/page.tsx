@@ -126,6 +126,28 @@ export default async function DashboardPage(props: {
     const views = analyticsResult.data?.filter(a => a.event_type === 'page_view').length || 0;
     const leads = analyticsResult.data?.filter(a => ['phone_click', 'website_click', 'contact_form'].includes(a.event_type)).length || 0;
 
+    let salaryBenchmark: DashboardStats['salaryBenchmark'] = null;
+    try {
+      const { data: salaryMetrics } = await supabase
+        .from('salary_company_metrics')
+        .select('median_monthly_salary,min_monthly_salary,max_monthly_salary,pct_above_city_avg,pct_above_sector_avg,submission_count')
+        .eq('business_id', activeBusinessId)
+        .maybeSingle();
+
+      if (salaryMetrics) {
+        salaryBenchmark = {
+          medianMonthlySalary: salaryMetrics.median_monthly_salary,
+          minMonthlySalary: salaryMetrics.min_monthly_salary,
+          maxMonthlySalary: salaryMetrics.max_monthly_salary,
+          pctAboveCityAvg: salaryMetrics.pct_above_city_avg,
+          pctAboveSectorAvg: salaryMetrics.pct_above_sector_avg,
+          submissionCount: salaryMetrics.submission_count || 0,
+        };
+      }
+    } catch (salaryMetricsError) {
+      console.warn('[Dashboard] Salary benchmark metrics unavailable:', salaryMetricsError);
+    }
+
     const stats: DashboardStats = {
       business: {
         id: business.id,
@@ -140,6 +162,7 @@ export default async function DashboardPage(props: {
       leads,
       followers: followersResult.count || 0,
       unreadTickets: ticketsResult.count || 0,
+      salaryBenchmark,
     };
 
     return <DashboardClient

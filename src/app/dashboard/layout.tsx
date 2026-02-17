@@ -11,7 +11,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Edit, Home, Megaphone, PieChart, Star, CodeXml, MessageSquare, Zap, Store, HelpCircle } from 'lucide-react';
+import { Edit, Home, Megaphone, PieChart, Star, CodeXml, MessageSquare, Zap, Store, HelpCircle, BarChart3 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -39,15 +39,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/reviews', label: 'Mes Avis', icon: Star },
     { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
     { href: '/dashboard/premium', label: 'Premium', icon: Zap },
-    { href: '/dashboard/updates', label: 'Nouveautés', icon: Megaphone },
-    { href: '/dashboard/edit-profile', label: 'Établissement', icon: Edit },
+    { href: '/dashboard/salary-benchmark', label: 'Benchmark salaires', icon: BarChart3 },
+    { href: '/dashboard/updates', label: 'Nouveautes', icon: Megaphone },
+    { href: '/dashboard/edit-profile', label: 'Etablissement', icon: Edit },
     { href: '/dashboard/analytics', label: 'Statistiques', icon: PieChart },
     { href: '/dashboard/widget', label: 'Badge Site Web', icon: CodeXml },
     { href: '/dashboard/support', label: 'Assistance', icon: HelpCircle },
   ];
 
   if (isMultiBusiness) {
-    menuItems.push({ href: '/dashboard/companies', label: 'Mes Établissements', icon: Store });
+    menuItems.push({ href: '/dashboard/companies', label: 'Mes Etablissements', icon: Store });
   }
 
   useEffect(() => {

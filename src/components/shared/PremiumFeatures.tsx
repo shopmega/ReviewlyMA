@@ -56,6 +56,18 @@ export const marketingFeatures: PremiumFeature[] = [
     requiredTier: 'gold'
   },
   {
+    title: 'Benchmark Salaires',
+    description: 'Comparez vos salaires avec la ville et le secteur sur un tableau dédié.',
+    icon: TrendingUp,
+    requiredTier: 'gold'
+  },
+  {
+    title: 'Baromètre Mensuel',
+    description: 'Suivez et exploitez les snapshots mensuels de tendances salariales.',
+    icon: Star,
+    requiredTier: 'gold'
+  },
+  {
     title: 'Support Prioritaire',
     description: 'Bénéficiez d\'un service client exclusif pour les entreprises.',
     icon: CreditCard,
@@ -73,7 +85,9 @@ export const dashboardFeatures: Array<{
     { icon: Star, text: "Accès complet aux statistiques détaillées sur votre réputation employeur", requiredTier: 'growth' },
     { icon: ShieldCheck, text: "Suppression des publicités concurrentes", requiredTier: 'growth' },
     { icon: MessageSquare, text: "Communication directe avec les candidats", requiredTier: 'gold' },
-    { icon: Zap, text: "Possibilité d'épingler du contenu important", requiredTier: 'gold' }
+    { icon: Zap, text: "Possibilité d'épingler du contenu important", requiredTier: 'gold' },
+    { icon: TrendingUp, text: "Benchmark salaires Gold (ville + secteur)", requiredTier: 'gold' },
+    { icon: Star, text: "Baromètre mensuel des salaires", requiredTier: 'gold' }
   ];
 
 export default function PremiumFeatures({ variant = 'marketing', userTier = 'standard' }: PremiumFeaturesProps) {
