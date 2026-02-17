@@ -20,7 +20,7 @@ import { BusinessHoursEditor, type DayHoursData } from '@/components/shared/Busi
 import { saveBusinessHours, getBusinessHours, updateBusinessProfile, updateBusinessImagesAction, type BusinessActionState } from '@/app/actions/business';
 import { ALL_CITIES, SUBCATEGORIES, getQuartiersForCity, BENEFITS, MAIN_CATEGORIES } from '@/lib/location-discovery';
 import { TagInput } from '@/components/shared/TagInput';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { businessProfileUpdateSchema, type BusinessProfileUpdateData } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
@@ -91,6 +91,7 @@ export default function EditProfilePage() {
       tags: [],
     },
   });
+  const watchedCategory = useWatch({ control: form.control, name: 'category' });
 
   // Image state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -131,23 +132,32 @@ export default function EditProfilePage() {
 
   // Update subcategories when category changes
   useEffect(() => {
-    const category = form.watch('category');
-    if (!category) {
+    if (!watchedCategory) {
       setAvailableSubcategories([]);
       return;
     }
 
     async function loadSubcategories() {
       const { getSubcategoriesByCategory } = await import('@/lib/data/businesses');
-      const subs = await getSubcategoriesByCategory(category);
+      const subs = await getSubcategoriesByCategory(watchedCategory);
       setAvailableSubcategories(subs);
     }
     loadSubcategories();
-  }, [form.watch('category')]);
+  }, [watchedCategory]);
 
   // Reset form when businessId changes
   useEffect(() => {
-    if (profileLoading || !businessId) return;
+    if (profileLoading) return;
+    if (profileError) {
+      setError(profileError);
+      setLoading(false);
+      return;
+    }
+    if (!businessId) {
+      setError('Aucun établissement associé à votre compte.');
+      setLoading(false);
+      return;
+    }
 
     async function fetchBusinessData() {
       setLoading(true);
@@ -197,7 +207,7 @@ export default function EditProfilePage() {
     }
 
     fetchBusinessData();
-  }, [businessId, profileLoading, form]);
+  }, [businessId, profileLoading, profileError, form]);
 
   useEffect(() => {
     if (state.status === 'success') {
