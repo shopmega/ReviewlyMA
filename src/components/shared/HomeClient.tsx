@@ -8,7 +8,7 @@ import {
     ArrowRight, Building, Utensils, Search, Star, Users, Car, MapPin,
     Sparkles, Activity, Wrench, ShoppingBag, Palmtree, Bed, ChevronRight,
     Landmark, Headphones, GraduationCap, Zap, Hotel, Home, Factory,
-    Heart, Briefcase, Laptop, Wifi, Truck, Radio, LucideIcon
+    Heart, Briefcase, Laptop, Wifi, Truck, Radio, LucideIcon, ExternalLink
 } from 'lucide-react';
 import { BusinessCard } from '@/components/shared/BusinessCard';
 import Image from 'next/image';
@@ -510,6 +510,87 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                     </section>
                 ) : null;
+            case 'resources':
+                return (
+                    <section key="resources" className="py-24 bg-gradient-to-b from-background to-indigo-50/30 dark:to-indigo-950/10">
+                        <div className="container mx-auto px-4">
+                            <div className="flex flex-col lg:flex-row items-center gap-16">
+                                <div className="flex-1 space-y-8 text-center lg:text-left">
+                                    <Badge variant="outline" className="px-4 py-1.5 border-indigo-200 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-full font-bold uppercase tracking-wider text-[10px]">
+                                        Outils & Droits du Travail
+                                    </Badge>
+                                    <h2 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
+                                        Tout pour réussir votre <br />
+                                        <span className="text-primary">carrière au Maroc</span>
+                                    </h2>
+                                    <p className="text-xl text-muted-foreground leading-relaxed">
+                                        En partenariat avec <span className="font-bold text-foreground">{siteSettings?.partner_app_name || "MOR RH"}</span>, nous mettons à votre disposition des outils gratuits pour mieux gérer votre vie professionnelle.
+                                    </p>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {[
+                                            { title: 'Simulateur de Salaire', desc: 'Calculez votre brut en net', icon: Activity },
+                                            { title: 'Calcul d\'indemnités', desc: 'Estimez vos droits de départ', icon: Zap },
+                                            { title: 'Modèles de lettres', desc: 'Démission, réclammation...', icon: Briefcase },
+                                            { title: 'Droit du travail', desc: 'Articles et guides experts', icon: GraduationCap },
+                                        ].map((tool, idx) => (
+                                            <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600">
+                                                    <tool.icon className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-sm">{tool.title}</h4>
+                                                    <p className="text-xs text-muted-foreground">{tool.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="pt-4">
+                                        <Button asChild size="lg" className="rounded-2xl h-14 px-8 font-bold shadow-lg shadow-primary/20 group">
+                                            <a href={siteSettings?.partner_app_url || "https://monrh.vercel.app/"} target="_blank" rel="noopener noreferrer">
+                                                Découvrir tous les outils
+                                                <ExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                            </a>
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="flex-1 relative w-full max-w-xl mx-auto lg:mx-0">
+                                    <div className="absolute inset-0 bg-primary/10 blur-[100px] rounded-full transform translate-x-10 translate-y-10" />
+                                    <div className="relative glass-card overflow-hidden rounded-[2.5rem] border border-white/20 dark:border-white/10 shadow-2xl">
+                                        <div className="aspect-[4/3] bg-slate-900 flex items-center justify-center">
+                                            {/* Mocking the UI or an image from Salarie.ma */}
+                                            <div className="p-10 space-y-6 w-full">
+                                                <div className="h-4 w-1/3 bg-white/20 rounded-full animate-pulse" />
+                                                <div className="h-12 w-3/4 bg-primary/40 rounded-2xl animate-pulse" />
+                                                <div className="space-y-3">
+                                                    <div className="h-3 w-full bg-white/10 rounded-full" />
+                                                    <div className="h-3 w-5/6 bg-white/10 rounded-full" />
+                                                    <div className="h-3 w-4/6 bg-white/10 rounded-full" />
+                                                </div>
+                                                <div className="pt-4 grid grid-cols-3 gap-3">
+                                                    <div className="h-20 rounded-2xl bg-indigo-500/20 border border-indigo-500/30" />
+                                                    <div className="h-20 rounded-2xl bg-primary/20 border border-primary/30" />
+                                                    <div className="h-20 rounded-2xl bg-emerald-500/20 border border-emerald-500/30" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Small floating badge */}
+                                    <div className="absolute -bottom-6 -left-6 glass border-white/20 p-4 rounded-3xl shadow-xl flex items-center gap-3 animate-bounce shadow-indigo-500/20">
+                                        <div className="h-10 w-10 flex items-center justify-center bg-indigo-600 rounded-2xl text-white shadow-lg">
+                                            <Star className="w-5 h-5 fill-current" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-1">Populaire</p>
+                                            <p className="text-sm font-bold leading-none">Simulateur CNSS 2024</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                );
             default:
                 return null;
         }
@@ -522,6 +603,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         { id: 'collections', visible: true },
         { id: 'categories', visible: true },
         { id: 'cities', visible: true },
+        { id: 'resources', visible: true },
         { id: 'featured', visible: true },
     ];
 

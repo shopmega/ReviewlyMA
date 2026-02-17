@@ -52,6 +52,8 @@ export type SiteSettings = {
     payment_beneficiary?: string;
     payment_chari_url?: string;
     payment_methods_enabled?: string[];
+    partner_app_name?: string;
+    partner_app_url?: string;
 };
 
 export const getDefaultSettings = (): SiteSettings => ({
@@ -110,6 +112,8 @@ export const getDefaultSettings = (): SiteSettings => ({
     payment_beneficiary: `${getSiteName()} SARL`,
     payment_chari_url: 'https://chari.ma/avis',
     payment_methods_enabled: ['bank_transfer'],
+    partner_app_name: 'MOR RH',
+    partner_app_url: 'https://monrh.vercel.app/',
 });
 
 export const getSiteSettings = async (): Promise<SiteSettings> => {
@@ -197,6 +201,8 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                     payment_beneficiary: data.payment_beneficiary || `${getSiteName(data)} SARL`,
                     payment_chari_url: data.payment_chari_url || 'https://chari.ma/avis',
                     payment_methods_enabled: data.payment_methods_enabled || ['bank_transfer'],
+                    partner_app_name: data.partner_app_name || 'MOR RH',
+                    partner_app_url: data.partner_app_url || 'https://monrh.vercel.app/',
                 };
             } catch (err: any) {
                 lastError = err;

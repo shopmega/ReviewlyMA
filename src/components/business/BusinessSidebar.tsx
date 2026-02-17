@@ -5,7 +5,8 @@ import { CardContent } from '@/components/ui/card';
 import { BusinessMap } from '@/components/shared/BusinessMap';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Clock, Phone, Globe, ShieldCheck, Share2, MessageCircle, ExternalLink, MapPin } from 'lucide-react';
+import { Clock, Phone, Globe, ShieldCheck, Share2, MessageCircle, ExternalLink, MapPin, GraduationCap, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { ShareButton } from '@/components/shared/ShareButton';
 import { isPaidTier } from '@/lib/tier-utils';
 import { StarRating } from '@/components/shared/StarRating';
@@ -17,11 +18,15 @@ import { getUserBusinessClaim } from '@/app/actions/claim';
 import { AdSlot } from '../shared/AdSlot';
 import { useState, useEffect } from 'react';
 
+import { getSiteSettings, SiteSettings } from '@/lib/data';
+
 interface BusinessSidebarProps {
     business: Business;
+    settings?: SiteSettings;
 }
 
-export function BusinessSidebar({ business }: BusinessSidebarProps) {
+export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
+    const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(settings || null);
     const [userClaim, setUserClaim] = useState<any>(null);
     const [loadingClaim, setLoadingClaim] = useState(true);
 
@@ -38,6 +43,12 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
         }
         checkClaim();
     }, [business.id]);
+
+    useEffect(() => {
+        if (!settings) {
+            getSiteSettings().then(setSiteSettings);
+        }
+    }, [settings]);
 
     const daysFr = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
     const todayIndex = new Date().getDay();
@@ -240,6 +251,48 @@ export function BusinessSidebar({ business }: BusinessSidebarProps) {
                 {loadingClaim && !business.owner_id && (
                     <div className="h-10 w-full bg-secondary/50 animate-pulse rounded-xl mt-4" />
                 )}
+            </div>
+
+            {/* Salarie.ma Integration Widget */}
+            <div className="relative group overflow-hidden rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-primary/5 p-6 space-y-4">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                    <GraduationCap className="w-20 h-20 text-indigo-500" />
+                </div>
+
+                <div className="relative z-10 space-y-2">
+                    <Badge variant="outline" className="bg-indigo-500/10 text-indigo-600 border-indigo-500/20 text-[10px] font-black uppercase tracking-tighter">Outils Employés</Badge>
+                    <h3 className="text-lg font-bold font-headline text-foreground leading-tight">Connaissez-vous vos droits ?</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        Calculez votre salaire net, vos indemnités de départ ou générez vos documents juridiques en quelques clics.
+                    </p>
+                </div>
+
+                <div className="relative z-10 grid grid-cols-1 gap-2 pt-2">
+                    <a
+                        href={siteSettings?.partner_app_url || "https://monrh.vercel.app/simulateurs"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-border hover:border-indigo-500/50 hover:shadow-md transition-all group/item"
+                    >
+                        <span className="text-xs font-bold text-foreground">Simulateur de Salaire</span>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover/item:text-indigo-500 group-hover/item:translate-x-1 transition-all" />
+                    </a>
+                    <a
+                        href={`${siteSettings?.partner_app_url || "https://monrh.vercel.app"}/documents`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-border hover:border-indigo-500/50 hover:shadow-md transition-all group/item"
+                    >
+                        <span className="text-xs font-bold text-foreground">Modèles de Documents</span>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover/item:text-indigo-500 group-hover/item:translate-x-1 transition-all" />
+                    </a>
+                </div>
+
+                <div className="relative z-10 pt-2 flex items-center justify-center">
+                    <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1.5">
+                        Propulsé par <span className="font-bold text-indigo-600">{siteSettings?.partner_app_name || "MOR RH"}</span>
+                    </span>
+                </div>
             </div>
 
             {/* Sidebar Ad Slot - Hidden for GOLD businesses (Ad Removal feature) */}

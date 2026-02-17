@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
 import { getSiteSettings, SiteSettings } from '@/lib/data';
 
 export async function Footer({ settings }: { settings?: SiteSettings }) {
@@ -58,13 +58,28 @@ export async function Footer({ settings }: { settings?: SiteSettings }) {
 
           {/* Popular Collections */}
           <div className="space-y-6">
-            <h4 className="font-bold font-headline uppercase tracking-widest text-xs text-foreground/80">Top Secteurs</h4>
+            <h4 className="font-bold font-headline uppercase tracking-widest text-xs text-foreground/80">Secteurs</h4>
             <nav className="flex flex-col gap-3 text-sm font-medium text-muted-foreground">
               <Link href="/ville/casablanca/technologie-it" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Tech & IT à Casablanca</Link>
               <Link href="/ville/rabat/banque-finance" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Finance à Rabat</Link>
-              <Link href="/ville/marrakech/sante-bien-etre" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Santé à Marrakech</Link>
-              <Link href="/ville/tanger/services-professionnels" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Conseil à Tanger</Link>
+              <Link href="/pour-les-pros" className="hover:text-amber-600 transition-colors hover:translate-x-1 duration-200 inline-block font-bold">Espace Recruteurs</Link>
             </nav>
+
+            <div className="pt-4">
+              <h4 className="font-bold font-headline uppercase tracking-widest text-[10px] text-foreground/60 mb-3">Partenaire RH</h4>
+              <a
+                href={siteSettings.partner_app_url || "https://monrh.vercel.app/"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col gap-1 p-3 rounded-xl bg-primary/5 border border-primary/10 hover:border-primary/30 transition-all hover:shadow-sm"
+              >
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                  {siteSettings.partner_app_name || "MOR RH"}
+                  <ExternalLink className="w-3 h-3" />
+                </span>
+                <span className="text-[10px] text-muted-foreground leading-tight">Simulateurs Salaire, CNSS & Droits du Travail</span>
+              </a>
+            </div>
           </div>
 
           {/* Contact */}

@@ -1,4 +1,4 @@
-import { getBusinessById, getFilteredBusinesses } from '@/lib/data';
+import { getBusinessById, getFilteredBusinesses, getSiteSettings } from '@/lib/data';
 import { LazyBusinessHero, LazyReviewsSection, LazyPhotoGallery } from '@/components/shared/performance';
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
 import { BusinessSidebar } from '@/components/business/BusinessSidebar';
@@ -65,6 +65,7 @@ export default async function BusinessPage({ params }: PageProps) {
 
   // 1. Fetch Data
   const business = await getBusinessById(slug);
+  const settings = await getSiteSettings();
 
   if (!business) {
     notFound();
@@ -204,7 +205,7 @@ export default async function BusinessPage({ params }: PageProps) {
 
           {/* Sidebar (Right) - Sticky */}
           <aside className="lg:w-1/3 order-first lg:order-last">
-            <BusinessSidebar business={business} />
+            <BusinessSidebar business={business} settings={settings} />
           </aside>
 
         </div>
