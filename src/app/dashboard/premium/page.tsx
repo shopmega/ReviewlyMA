@@ -10,19 +10,16 @@ import {
   ShieldCheck,
   Star,
   Zap,
-  MessageSquare,
-  TrendingUp,
   Clock,
   CheckCircle,
-  Loader2,
-  AlertCircle
+  Loader2
 } from 'lucide-react';
 import PremiumFeatures, { dashboardFeatures } from '@/components/shared/PremiumFeatures';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getSiteSettings } from '@/lib/data';
 import Link from 'next/link';
-import { isPaidTier, getTierPrice } from '@/lib/tier-utils';
+import { isPaidTier } from '@/lib/tier-utils';
 
 export default function DashboardPremiumPage() {
   const [loading, setLoading] = useState(true);
@@ -86,10 +83,14 @@ export default function DashboardPremiumPage() {
     setSubmitting(true);
     try {
       const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
       const { error } = await supabase
         .from('premium_payments')
         .insert([{
-          user_id: profile.id,
+          user_id: user.id,
           payment_reference: paymentReference.trim(),
           amount_usd: billingCycle === 'yearly'
             ? (selectedTier === 'gold' ? (siteSettings?.tier_gold_annual_price || 2900) : (siteSettings?.tier_growth_annual_price || 990))
@@ -113,7 +114,7 @@ export default function DashboardPremiumPage() {
       const { data: payments } = await supabase
         .from('premium_payments')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
       setPendingPayments(payments || []);
@@ -144,6 +145,8 @@ export default function DashboardPremiumPage() {
   const daysRemaining = premiumExpiresAt
     ? Math.ceil((premiumExpiresAt.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
+  const growthPlanFeatures = dashboardFeatures.filter((feature) => feature.requiredTier === 'growth');
+  const goldPlanFeatures = dashboardFeatures;
 
   const getTierPrice = (tier: 'growth' | 'gold', cycle: 'monthly' | 'yearly') => {
     if (cycle === 'yearly') {
@@ -290,6 +293,52 @@ export default function DashboardPremiumPage() {
           </div>
         )}
       </div>
+
+      <Card className="border-primary/15 bg-background">
+        <CardHeader>
+          <CardTitle>Fonctionnalités par plan</CardTitle>
+          <CardDescription>
+            Comparez Growth et Gold avant de soumettre votre paiement.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={`rounded-xl border p-4 ${selectedTier === 'growth' ? 'border-amber-400 bg-amber-50/20' : 'border-border'}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-amber-500 fill-current" />
+                <p className="font-bold">Plan GROWTH</p>
+              </div>
+              <Badge variant="outline">{getTierPrice('growth', billingCycle)} MAD</Badge>
+            </div>
+            <ul className="space-y-2">
+              {growthPlanFeatures.map((feature, idx) => (
+                <li key={`growth-feature-${idx}`} className="text-sm flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <span>{feature.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className={`rounded-xl border p-4 ${selectedTier === 'gold' ? 'border-amber-600 bg-amber-50/20' : 'border-border'}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-600 fill-current" />
+                <p className="font-bold">Plan GOLD</p>
+              </div>
+              <Badge variant="outline">{getTierPrice('gold', billingCycle)} MAD</Badge>
+            </div>
+            <ul className="space-y-2">
+              {goldPlanFeatures.map((feature, idx) => (
+                <li key={`gold-feature-${idx}`} className="text-sm flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <span>{feature.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {pendingPayments.length > 0 && (
