@@ -252,6 +252,45 @@ export default function PaiementsPage() {
     }
   };
 
+  const formatPaymentMethod = (method?: string | null) => {
+    if (!method) return 'Methode non renseignee';
+    return method
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  };
+
+  const getExpiryText = (payment: Payment) => {
+    if (payment.expires_at) {
+      return {
+        label: `Exp: ${format(new Date(payment.expires_at), 'dd/MM/yy')}`,
+        className:
+          new Date(payment.expires_at) < new Date()
+            ? 'text-rose-500'
+            : 'text-emerald-500',
+      };
+    }
+
+    if (payment.status === 'pending') {
+      return {
+        label: 'Activation apres verification',
+        className: 'text-amber-600',
+      };
+    }
+
+    if (payment.status === 'rejected') {
+      return {
+        label: 'Refuse',
+        className: 'text-rose-500',
+      };
+    }
+
+    return {
+      label: 'Expiration non definie',
+      className: 'text-muted-foreground italic',
+    };
+  };
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const pageStart = (currentPage - 1) * pageSize;
   const pageEnd = pageStart + pageSize;
@@ -503,10 +542,10 @@ export default function PaiementsPage() {
                     <TableRow key={payment.id} className="group border-b border-border/10 hover:bg-muted/40 transition-all duration-300">
                       <TableCell className="py-6 pl-8">
                         <div className="flex flex-col">
-                          <span className="font-black text-slate-800 dark:text-white text-sm group-hover:text-primary transition-colors">{payment.profiles?.full_name || 'Sans Nom'}</span>
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight opacity-70">{payment.profiles?.email}</span>
+                          <span className="font-black text-slate-800 dark:text-white text-sm group-hover:text-primary transition-colors">{payment.profiles?.full_name?.trim() || payment.profiles?.email?.split('@')?.[0] || 'Utilisateur'}</span>
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight opacity-70">{payment.profiles?.email || 'Email indisponible'}</span>
                           <span className="text-[9px] font-black text-indigo-500 mt-1 uppercase tracking-widest flex items-center gap-1">
-                            <History className="h-2 w-2" /> {payment.businesses?.name || 'Vérification en cours'}
+                            <History className="h-2 w-2" /> {payment.businesses?.name || (payment.status === 'pending' ? 'Verification en cours' : 'Entreprise non associee')}
                           </span>
                         </div>
                       </TableCell>
@@ -524,7 +563,7 @@ export default function PaiementsPage() {
                               </Badge>
                             )}
                           </div>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase mt-1 tracking-widest">{payment.payment_method} • {payment.payment_reference}</span>
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase mt-1 tracking-widest">{formatPaymentMethod(payment.payment_method)} • {payment.payment_reference || 'Reference manquante'}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -532,14 +571,14 @@ export default function PaiementsPage() {
                           <span className="text-xs font-black tabular-nums">{format(new Date(payment.created_at), 'dd/MM/yyyy')}</span>
                           <div className="mt-1 flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground opacity-50" />
-                            {payment.expires_at ? (
-                              <span className={cn(
-                                "text-[9px] font-black uppercase tracking-widest",
-                                new Date(payment.expires_at) < new Date() ? "text-rose-500" : "text-emerald-500"
-                              )}>
-                                Exp: {format(new Date(payment.expires_at), 'dd/MM/yy')}
-                              </span>
-                            ) : <span className="text-[9px] font-bold text-muted-foreground italic">Non défini</span>}
+                            {(() => {
+                              const expiryInfo = getExpiryText(payment);
+                              return (
+                                <span className={cn("text-[9px] font-black uppercase tracking-widest", expiryInfo.className)}>
+                                  {expiryInfo.label}
+                                </span>
+                              );
+                            })()}
                           </div>
                         </div>
                       </TableCell>
