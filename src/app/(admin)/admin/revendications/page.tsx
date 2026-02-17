@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { updateClaimStatus } from "@/app/actions/claim-admin";
+import { updateClaimStatus } from "@/app/actions/claim-admin-resilient";
 import { bulkUpdateClaims } from "@/app/actions/admin-bulk";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";

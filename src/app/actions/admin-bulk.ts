@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/errors';
-import { updateClaimStatus } from './claim-admin';
+import { updateClaimStatus } from './claim-admin-resilient';
 
 export type AdminActionResult = {
   status: 'success' | 'error';
