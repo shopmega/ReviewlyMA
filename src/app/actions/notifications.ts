@@ -6,6 +6,7 @@ import { ActionState } from '@/lib/types';
 
 export type Notification = {
     id: number;
+    user_id: string | null;
     title: string;
     message: string;
     type: string;
@@ -44,7 +45,7 @@ export async function getNotifications(): Promise<Notification[]> {
     const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -81,11 +82,29 @@ export async function markAsRead(notificationId: number): Promise<ActionState> {
 
     if (!user) return { status: 'error', message: 'Non authentifié.' };
 
+    const { data: targetNotification, error: targetError } = await supabase
+        .from('notifications')
+        .select('id, user_id')
+        .eq('id', notificationId)
+        .maybeSingle();
+
+    if (targetError || !targetNotification) {
+        return { status: 'error', message: 'Notification introuvable.' };
+    }
+
+    // Global notifications are shared rows; keep them read-only to avoid mutating state for all users.
+    if (targetNotification.user_id === null) {
+        return { status: 'success', message: 'Notification consultee.' };
+    }
+
+    if (targetNotification.user_id !== user.id) {
+        return { status: 'error', message: 'Acces non autorise.' };
+    }
+
     const { data, error } = await supabase
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
-        .eq('user_id', user.id)
         .select('id');
 
     if (error || !data || data.length === 0) {

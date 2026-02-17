@@ -38,10 +38,11 @@ export async function sendEmail(options: EmailOptions): Promise<ActionState> {
 
   const emailProvider = dbSettings?.email_provider || process.env.EMAIL_PROVIDER || 'console';
   const fromEmail = options.from || getFromEmail(dbSettings);
-  const resendApiKey = dbSettings?.resend_api_key || process.env.RESEND_API_KEY;
-  const sendgridApiKey = dbSettings?.sendgrid_api_key || process.env.SENDGRID_API_KEY;
-  const mailjetApiKey = dbSettings?.mailjet_api_key || process.env.MAILJET_API_KEY;
-  const mailjetApiSecret = dbSettings?.mailjet_api_secret || process.env.MAILJET_API_SECRET;
+  // Prefer environment variables for secrets in production, fallback to DB settings.
+  const resendApiKey = process.env.RESEND_API_KEY || dbSettings?.resend_api_key;
+  const sendgridApiKey = process.env.SENDGRID_API_KEY || dbSettings?.sendgrid_api_key;
+  const mailjetApiKey = process.env.MAILJET_API_KEY || dbSettings?.mailjet_api_key;
+  const mailjetApiSecret = process.env.MAILJET_API_SECRET || dbSettings?.mailjet_api_secret;
 
   try {
     switch (emailProvider) {

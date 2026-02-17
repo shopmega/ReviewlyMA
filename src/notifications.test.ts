@@ -70,6 +70,7 @@ describe('Notification System Tests', () => {
       const mockNotifications: Notification[] = [
         {
           id: 1,
+          user_id: 'test-user-id',
           title: 'Test Notification',
           message: 'This is a test notification',
           type: 'system',
@@ -174,6 +175,7 @@ describe('Notification Integration Test', () => {
     // Verify Notification type exists
     const mockNotification: Notification = {
       id: 1,
+      user_id: 'test-user-id',
       title: 'Test',
       message: 'Test message',
       type: 'system',

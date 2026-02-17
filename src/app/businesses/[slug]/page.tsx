@@ -1,12 +1,12 @@
 import { getBusinessById, getFilteredBusinesses, getSiteSettings } from '@/lib/data';
-import { LazyBusinessHero, LazyReviewsSection, LazyPhotoGallery } from '@/components/shared/performance';
+import { LazyBusinessHero, LazyPhotoGallery } from '@/components/shared/performance';
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
 import { BusinessSidebar } from '@/components/business/BusinessSidebar';
 import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
-import { SalarySection } from '@/components/business/SalarySection';
+import { BusinessInsightsTabs } from '@/components/business/BusinessInsightsTabs';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
@@ -204,15 +204,12 @@ export default async function BusinessPage({ params }: PageProps) {
               <UpdatesSection updates={business.updates} />
             )}
 
-            {settings.enable_salaries && (
-              <SalarySection
-                businessId={business.id}
-                stats={salaryStats}
-                salaries={salaryEntries}
-              />
-            )}
-
-            <LazyReviewsSection business={business} />
+            <BusinessInsightsTabs
+              business={business}
+              enableSalaries={settings.enable_salaries}
+              salaryStats={salaryStats}
+              salaryEntries={salaryEntries}
+            />
 
             {/* Similar Businesses */}
             <div className="pt-8">

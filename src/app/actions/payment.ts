@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { ActionState } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { notifyAdmins } from '@/lib/notifications';
 
 /**
  * Submit an offline premium payment reference for verification.
@@ -77,6 +78,13 @@ export async function submitPremiumPayment(formData: {
       };
     }
 
+    await notifyAdmins({
+      title: 'Nouveau paiement premium en attente',
+      message: `${user.email || 'Un utilisateur'} a soumis la reference ${formData.payment_reference}.`,
+      type: 'admin_payment_pending',
+      link: '/admin/paiements',
+    });
+
     revalidatePath('/dashboard');
 
     return {
@@ -115,4 +123,3 @@ export async function getUserPayments(): Promise<ActionState> {
 
   return { status: 'success', message: 'Paiements recuperes avec succes', data };
 }
-

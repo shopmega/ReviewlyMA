@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient as createAuthClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { notifyAdmins } from '@/lib/notifications';
 
 type SubmitPaymentBody = {
   payment_reference?: string;
@@ -89,6 +90,13 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    await notifyAdmins({
+      title: 'Nouveau paiement premium en attente',
+      message: `${user.email || 'Un utilisateur'} a soumis la reference ${paymentReference}.`,
+      type: 'admin_payment_pending',
+      link: '/admin/paiements',
+    });
 
     return NextResponse.json({ ok: true });
   } catch {

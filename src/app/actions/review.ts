@@ -18,6 +18,7 @@ import {
   ErrorCode
 } from '@/lib/errors';
 import { createServiceClient } from '@/lib/supabase/server';
+import { notifyAdmins } from '@/lib/notifications';
 
 export async function submitReview(
   prevState: ReviewFormState,
@@ -256,6 +257,13 @@ export async function reportReview(
       logError('review_report_insert_error', error, { reviewId: validatedFields.data.review_id });
       return handleDatabaseError(error) as ActionState;
     }
+
+    await notifyAdmins({
+      title: 'Nouveau signalement d avis',
+      message: 'Un avis utilisateur vient d etre signale et attend moderation.',
+      type: 'admin_review_report_pending',
+      link: '/admin/avis-signalements',
+    });
 
     return createSuccessResponse('Signalement envoyé avec succès. Merci de votre contribution.') as ActionState;
   } catch (error) {

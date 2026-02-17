@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionState, businessProfileUpdateSchema } from '@/lib/types';
 import { createServiceClient } from '@/lib/supabase/server';
 import { logger, LogLevel } from '@/lib/logger';
+import { notifyAdmins } from '@/lib/notifications';
 
 export async function suggestBusiness(formData: FormData): Promise<ActionState> {
     const cookieStore = await cookies();
@@ -107,6 +108,92 @@ async function verifyBusinessOwnership(supabase: any, userId: string, businessId
     return { authorized: false, profile };
 }
 
+type BusinessFollowerNotificationInput = {
+    businessId: string;
+    title: string;
+    message: string;
+    type: string;
+    link: string;
+    actorUserId?: string;
+    dedupeMinutes?: number;
+};
+
+async function notifyBusinessFollowers(input: BusinessFollowerNotificationInput): Promise<void> {
+    try {
+        const serviceClient = await createServiceClient();
+
+        const { data: followers, error: followersError } = await serviceClient
+            .from('favorites')
+            .select('user_id')
+            .eq('business_id', input.businessId);
+
+        if (followersError) {
+            console.error('Error fetching followers for notification:', followersError);
+            return;
+        }
+
+        const uniqueRecipientIds = Array.from(
+            new Set(
+                (followers ?? [])
+                    .map((row: { user_id: string | null }) => row.user_id)
+                    .filter((userId): userId is string => Boolean(userId) && userId !== input.actorUserId)
+            )
+        );
+
+        if (uniqueRecipientIds.length === 0) {
+            return;
+        }
+
+        let finalRecipientIds = uniqueRecipientIds;
+        const dedupeMinutes = input.dedupeMinutes ?? 0;
+        if (dedupeMinutes > 0) {
+            const dedupeSince = new Date(Date.now() - dedupeMinutes * 60 * 1000).toISOString();
+            const { data: recentNotifications, error: recentError } = await serviceClient
+                .from('notifications')
+                .select('user_id')
+                .in('user_id', uniqueRecipientIds)
+                .eq('type', input.type)
+                .eq('link', input.link)
+                .gte('created_at', dedupeSince);
+
+            if (recentError) {
+                console.error('Error checking recent notifications:', recentError);
+            } else if (recentNotifications && recentNotifications.length > 0) {
+                const recentlyNotifiedIds = new Set(
+                    recentNotifications
+                        .map((row: { user_id: string | null }) => row.user_id)
+                        .filter((userId): userId is string => Boolean(userId))
+                );
+
+                finalRecipientIds = uniqueRecipientIds.filter((userId) => !recentlyNotifiedIds.has(userId));
+            }
+        }
+
+        if (finalRecipientIds.length === 0) {
+            return;
+        }
+
+        const notifications = finalRecipientIds.map((userId) => ({
+            user_id: userId,
+            title: input.title,
+            message: input.message,
+            type: input.type,
+            link: input.link,
+            is_read: false,
+        }));
+
+        const { error: insertError } = await serviceClient
+            .from('notifications')
+            .insert(notifications);
+
+        if (insertError) {
+            console.error('Error inserting follower notifications:', insertError);
+        }
+    } catch (error) {
+        console.error('Unexpected error while notifying followers:', error);
+    }
+}
+
 export async function reportMedia(data: MediaReportFormData): Promise<ActionState> {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -144,6 +231,13 @@ export async function reportMedia(data: MediaReportFormData): Promise<ActionStat
             console.error('Error reporting media:', error);
             return { status: 'error', message: 'Erreur lors du signalement.' };
         }
+
+        await notifyAdmins({
+            title: 'Nouveau signalement media',
+            message: 'Un media a ete signale et attend moderation.',
+            type: 'admin_media_report_pending',
+            link: '/admin/medias',
+        });
 
         return { status: 'success', message: 'Signalement envoyé avec succès.' };
     } catch (error) {
@@ -215,28 +309,21 @@ export async function submitUpdate(
         }
 
         // NOTIFY FOLLOWERS
-        // 1. Get business name
-        const { data: business } = await supabase.from('businesses').select('name').eq('id', businessId).single();
+        const { data: business } = await supabase
+            .from('businesses')
+            .select('name')
+            .eq('id', businessId)
+            .single();
 
-        // 2. Get followers
-        const { data: followers } = await supabase
-            .from('favorites')
-            .select('user_id')
-            .eq('business_id', businessId);
+        await notifyBusinessFollowers({
+            businessId,
+            actorUserId: user.id,
+            title: `Nouvelle annonce de ${business?.name || 'un etablissement'}`,
+            message: title,
+            type: 'business_update',
+            link: `/businesses/${businessId}?tab=updates`,
+        });
 
-        if (followers && followers.length > 0) {
-            const notifications = followers.map(f => ({
-                user_id: f.user_id,
-                title: `📢 Nouvelle annonce de ${business?.name || 'un établissement'}`,
-                message: title,
-                type: 'business_update',
-                link: `/businesses/${businessId}?tab=updates`,
-                is_read: false
-            }));
-
-            const serviceClient = await createServiceClient();
-            await serviceClient.from('notifications').insert(notifications);
-        }
 
         revalidatePath(`/dashboard/updates`);
         revalidatePath(`/businesses/${businessId}`);
@@ -369,6 +456,22 @@ export async function updateBusinessProfile(
 
         logger.server(LogLevel.INFO, '[DEBUG] Business updated successfully', { updatedBusiness, amenities: updateData.amenities });
 
+        const updatedFields = Object.keys(updateData as Record<string, unknown>).filter((key) => key !== 'businessId');
+        const fieldPreview = updatedFields.slice(0, 3).join(', ');
+        const hasMoreFields = updatedFields.length > 3;
+
+        await notifyBusinessFollowers({
+            businessId: businessIdToUpdate,
+            actorUserId: user.id,
+            title: 'Page entreprise mise a jour',
+            message: updatedFields.length > 0
+                ? `Informations modifiees: ${fieldPreview}${hasMoreFields ? ', ...' : ''}.`
+                : 'Informations de la page mises a jour.',
+            type: 'business_profile_update',
+            link: `/businesses/${businessIdToUpdate}`,
+            dedupeMinutes: 15,
+        });
+
         revalidatePath(`/dashboard/edit-profile`);
         revalidatePath(`/businesses/${businessIdToUpdate}`);
         revalidatePath(`/dashboard`);
@@ -436,6 +539,16 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
             return { status: 'error', message: 'Erreur lors de la mise à jour des images' };
         }
 
+        await notifyBusinessFollowers({
+            businessId,
+            actorUserId: user.id,
+            title: 'Media de la page mis a jour',
+            message: 'Le logo, la couverture ou la galerie de cette page a ete mise a jour.',
+            type: 'business_profile_update',
+            link: `/businesses/${businessId}`,
+            dedupeMinutes: 15,
+        });
+
         revalidatePath(`/dashboard/edit-profile`);
         revalidatePath(`/businesses/${businessId}`);
 
@@ -488,6 +601,16 @@ export async function saveBusinessHours(hours: any[], businessId: string): Promi
             console.error('Error saving business hours:', error);
             return { status: 'error', message: 'Erreur lors de l\'enregistrement des heures' };
         }
+
+        await notifyBusinessFollowers({
+            businessId,
+            actorUserId: user.id,
+            title: 'Horaires mis a jour',
+            message: 'Les horaires de cette page ont ete modifies.',
+            type: 'business_profile_update',
+            link: `/businesses/${businessId}`,
+            dedupeMinutes: 15,
+        });
 
         revalidatePath(`/dashboard/edit-profile`);
         revalidatePath(`/businesses/${businessId}`);

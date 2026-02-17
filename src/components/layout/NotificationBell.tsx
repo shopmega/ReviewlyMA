@@ -26,7 +26,7 @@ export function NotificationBell() {
     const fetchNotifications = async () => {
         const data = await getNotifications();
         setNotifications(data);
-        setUnreadCount(data.filter(n => !n.is_read).length);
+        setUnreadCount(data.filter(n => !n.is_read && n.user_id !== null).length);
     };
 
     // Initial fetch and poller
@@ -39,7 +39,7 @@ export function NotificationBell() {
     }, []);
 
     const handleNotificationClick = async (n: Notification) => {
-        if (!n.is_read) {
+        if (!n.is_read && n.user_id !== null) {
             await markAsRead(n.id);
             // Optimistic update
             setNotifications(prev => prev.map(item =>
@@ -99,14 +99,14 @@ export function NotificationBell() {
                                 key={n.id}
                                 className={cn(
                                     "flex flex-col items-start p-4 cursor-pointer focus:bg-slate-50",
-                                    !n.is_read && "bg-blue-50/50"
+                                    !n.is_read && n.user_id !== null && "bg-blue-50/50"
                                 )}
                                 onClick={() => handleNotificationClick(n)}
                             >
                                 <div className="flex w-full justify-between items-start gap-2">
                                     <div className="font-medium text-sm leading-tight mb-1">
                                         {n.title}
-                                        {!n.is_read && <span className="ml-2 inline-block w-1.5 h-1.5 bg-blue-500 rounded-full align-middle" />}
+                                        {!n.is_read && n.user_id !== null && <span className="ml-2 inline-block w-1.5 h-1.5 bg-blue-500 rounded-full align-middle" />}
                                     </div>
                                     <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
                                         {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}

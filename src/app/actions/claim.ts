@@ -23,6 +23,7 @@ import { sendEmail, emailTemplates } from '@/lib/email-service';
 import { getSiteSettings } from '@/lib/data';
 import { getMaxBusinessesForTier } from '@/lib/tier-utils';
 import { getSiteName } from '@/lib/site-config';
+import { notifyAdmins } from '@/lib/notifications';
 
 export type ClaimFormState = ActionState & { claimId?: string };
 
@@ -407,6 +408,13 @@ export async function submitClaim(
                 // Don't block claim on code generation failure
             }
         }
+
+        await notifyAdmins({
+            title: 'Nouvelle revendication a valider',
+            message: `${claimData.fullName} a soumis une revendication pour ${claimData.businessName}.`,
+            type: 'admin_claim_pending',
+            link: '/admin/revendications',
+        });
 
         return createSuccessResponse(
             'Revendication soumise avec succès! Vérifiez votre email pour les prochaines étapes.',
