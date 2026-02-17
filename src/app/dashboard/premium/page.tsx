@@ -87,22 +87,31 @@ export default function DashboardPremiumPage() {
       if (!user) {
         throw new Error('Session expirée. Veuillez vous reconnecter.');
       }
-      const { error } = await supabase
-        .from('premium_payments')
-        .insert([{
-          user_id: user.id,
+      const response = await fetch('/api/premium-payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           payment_reference: paymentReference.trim(),
           amount_usd: billingCycle === 'yearly'
             ? (selectedTier === 'gold' ? (siteSettings?.tier_gold_annual_price || 2900) : (siteSettings?.tier_growth_annual_price || 990))
             : (selectedTier === 'gold' ? (siteSettings?.tier_gold_monthly_price || 299) : (siteSettings?.tier_growth_monthly_price || 99)),
           currency: 'MAD',
-          status: 'pending',
           payment_method: 'offline_transfer',
           target_tier: selectedTier,
-          notes: `Abonnement ${selectedTier.toUpperCase()} ${billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}`
-        }]);
-
-      if (error) throw error;
+          notes: `Abonnement ${selectedTier.toUpperCase()} ${billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}`,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok) {
+        const detail =
+          payload?.error?.message ||
+          payload?.error?.details ||
+          payload?.message ||
+          'Soumission Ã©chouÃ©e.';
+        throw new Error(detail);
+      }
 
       toast({
         title: 'Succès',
