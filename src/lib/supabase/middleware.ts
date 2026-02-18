@@ -110,14 +110,16 @@ export async function updateSession(request: NextRequest) {
         } catch (e) {
             // Fail closed for admin routes if profile verification fails.
             if (request.nextUrl.pathname.startsWith('/admin')) {
-                return NextResponse.redirect(new URL('/', request.url));
+                const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+                return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
             }
         }
 
         if (!roleData) {
             // User doesn't exist in profiles table or connection failed
             if (request.nextUrl.pathname.startsWith('/admin')) {
-                return NextResponse.redirect(new URL('/', request.url));
+                const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+                return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
             }
             // Allow them to try to load the page if it's a transient network error
             // Otherwise they get stuck in a redirect loop during downtime
@@ -127,7 +129,7 @@ export async function updateSession(request: NextRequest) {
         // Admin route protection
         if (request.nextUrl.pathname.startsWith('/admin')) {
             if (roleData?.role !== 'admin') {
-                return NextResponse.redirect(new URL('/', request.url));
+                return NextResponse.redirect(new URL('/dashboard', request.url));
             }
         }
 

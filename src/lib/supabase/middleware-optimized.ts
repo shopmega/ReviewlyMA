@@ -191,7 +191,8 @@ export async function updateSession(request: NextRequest) {
       } catch (e) {
         // Fail closed for admin routes if profile verification fails.
         if (request.nextUrl.pathname.startsWith('/admin')) {
-          return NextResponse.redirect(new URL('/', request.url));
+          const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+          return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
         }
         return supabaseResponse;
       }
@@ -200,7 +201,8 @@ export async function updateSession(request: NextRequest) {
     if (!roleData) {
       // User doesn't exist in profiles table or connection failed
       if (request.nextUrl.pathname.startsWith('/admin')) {
-        return NextResponse.redirect(new URL('/', request.url));
+        const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+        return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
       }
       return supabaseResponse;
     }
@@ -208,7 +210,7 @@ export async function updateSession(request: NextRequest) {
     // Admin route protection
     if (request.nextUrl.pathname.startsWith('/admin')) {
       if (roleData?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/', request.url));
+        return NextResponse.redirect(new URL('/dashboard', request.url));
       }
     }
 

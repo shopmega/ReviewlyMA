@@ -288,7 +288,7 @@ export async function getActiveCompetitorAdsForBusiness(targetBusinessId: string
     // or the target_competitor_ids is null/empty (meaning it targets all competitors)
     query = query.or(`target_competitor_ids.cs.{${targetBusinessId}}, target_competitor_ids.is.null`);
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(12);
 
     if (error) {
       console.error('Error fetching active competitor ads for business:', error);
@@ -321,7 +321,7 @@ export async function trackCompetitorAdEvent(payload: TrackCompetitorAdEventPayl
       return { success: false, error: 'Invalid event type' };
     }
 
-    const [{ data: settings }, { data: ad, error: adError }, { data: authData }] = await Promise.all([
+    const [{ data: settings }, { data: ad, error: adError }] = await Promise.all([
       supabase
         .from('site_settings')
         .select('enable_competitor_ads, enable_competitor_ads_tracking')
@@ -332,7 +332,6 @@ export async function trackCompetitorAdEvent(payload: TrackCompetitorAdEventPayl
         .select('id, advertiser_business_id, target_competitor_ids, status, start_date, end_date')
         .eq('id', payload.adId)
         .maybeSingle(),
-      supabase.auth.getUser(),
     ]);
 
     if (settings?.enable_competitor_ads === false || settings?.enable_competitor_ads_tracking === false) {
@@ -363,6 +362,7 @@ export async function trackCompetitorAdEvent(payload: TrackCompetitorAdEventPayl
       return { success: false, error: 'Ad does not target this business' };
     }
 
+    const { data: authData } = await supabase.auth.getUser();
     const userId = authData?.user?.id || null;
 
     const { error: insertError } = await supabase
@@ -407,62 +407,27 @@ export async function getUserCompetitorAdMetrics(): Promise<{ success: boolean; 
       return { success: false, error: 'User not authenticated' };
     }
 
-    const { data: businesses, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('owner_id', user.id);
-
-    if (businessError || !businesses) {
-      return { success: false, error: 'Could not fetch user businesses' };
+    const { data: metricRows, error: metricError } = await supabase.rpc('get_my_competitor_ad_metrics');
+    if (metricError) {
+      return { success: false, error: metricError.message };
     }
 
-    const businessIds = businesses.map((b) => b.id);
-    if (businessIds.length === 0) {
-      return { success: true, metrics: [] };
-    }
+    type MetricRow = {
+      ad_id: string;
+      impressions: number | string | null;
+      clicks: number | string | null;
+    };
 
-    const { data: ads, error: adsError } = await supabase
-      .from('competitor_ads')
-      .select('id')
-      .in('advertiser_business_id', businessIds);
+    const rows = (metricRows || []) as MetricRow[];
+    const metrics: CompetitorAdMetrics[] = rows.map((row) => {
+      const impressions = Number(row.impressions || 0);
+      const clicks = Number(row.clicks || 0);
+      const ctr = impressions > 0 ? Number(((clicks / impressions) * 100).toFixed(2)) : 0;
 
-    if (adsError) {
-      return { success: false, error: adsError.message };
-    }
-
-    const adIds = (ads || []).map((ad) => ad.id);
-    if (adIds.length === 0) {
-      return { success: true, metrics: [] };
-    }
-
-    const { data: events, error: eventsError } = await supabase
-      .from('competitor_ad_events')
-      .select('ad_id, event_type')
-      .in('ad_id', adIds);
-
-    if (eventsError) {
-      return { success: false, error: eventsError.message };
-    }
-
-    const aggregates = new Map<string, { impressions: number; clicks: number }>();
-    for (const adId of adIds) {
-      aggregates.set(adId, { impressions: 0, clicks: 0 });
-    }
-
-    for (const event of events || []) {
-      const agg = aggregates.get(event.ad_id);
-      if (!agg) continue;
-      if (event.event_type === 'impression') agg.impressions += 1;
-      if (event.event_type === 'click') agg.clicks += 1;
-    }
-
-    const metrics: CompetitorAdMetrics[] = adIds.map((adId) => {
-      const agg = aggregates.get(adId) || { impressions: 0, clicks: 0 };
-      const ctr = agg.impressions > 0 ? Number(((agg.clicks / agg.impressions) * 100).toFixed(2)) : 0;
       return {
-        adId,
-        impressions: agg.impressions,
-        clicks: agg.clicks,
+        adId: row.ad_id,
+        impressions,
+        clicks,
         ctr,
       };
     });

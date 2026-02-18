@@ -24,7 +24,6 @@ export interface BulkOperationResult {
   errors: string[];
   message: string;
 }
-
 function slugifyForBusinessId(value: string): string {
   return value
     .toLowerCase()
@@ -1043,39 +1042,31 @@ export async function bulkUpdateReviews(
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
 
-    const results = {
-      processed: 0,
-      failed: 0,
-      errors: [] as string[],
-      success: true
-    };
-
-    // Process each review
-    for (const reviewId of reviewIds) {
-      try {
-        const { error } = await serviceClient
-          .from('reviews')
-          .update({
-            status: updateData.status,
-            ...(updateData.reason && {
-              moderation_reason: updateData.reason,
-              moderated_at: new Date().toISOString(),
-              moderated_by: adminId
-            })
-          })
-          .eq('id', reviewId);
-
-        if (error) {
-          results.failed++;
-          results.errors.push(`Review ${reviewId}: ${error.message}`);
-        } else {
-          results.processed++;
-        }
-      } catch (error: any) {
-        results.failed++;
-        results.errors.push(`Review ${reviewId}: ${error.message || error}`);
-      }
+    if (reviewIds.length === 0) {
+      return {
+        success: true,
+        processed: 0,
+        failed: 0,
+        errors: [],
+        message: 'Aucun avis selectionne.'
+      };
     }
+
+    const { error, count } = await serviceClient
+      .from('reviews')
+      .update({
+        status: updateData.status,
+        ...(updateData.reason && {
+          moderation_reason: updateData.reason,
+          moderated_at: new Date().toISOString(),
+          moderated_by: adminId
+        })
+      }, { count: 'exact' })
+      .in('id', reviewIds);
+
+    const processed = error ? 0 : Math.min(count ?? reviewIds.length, reviewIds.length);
+    const failed = error ? reviewIds.length : Math.max(0, reviewIds.length - processed);
+    const errors = error ? [`Bulk review update failed: ${error.message}`] : [];
 
     // Log bulk operation
     await logAuditAction({
@@ -1085,16 +1076,20 @@ export async function bulkUpdateReviews(
       details: {
         review_ids: reviewIds,
         update_data: updateData,
-        processed: results.processed,
-        failed: results.failed
+        processed,
+        failed,
+        errors
       }
     });
 
     revalidatePath('/admin/avis');
 
     return {
-      ...results,
-      message: `${results.processed} avis traités, ${results.failed} échecs`
+      success: !error,
+      processed,
+      failed,
+      errors,
+      message: `${processed} avis traites, ${failed} echecs`
     };
   } catch (error: any) {
     return {
@@ -1102,7 +1097,7 @@ export async function bulkUpdateReviews(
       processed: 0,
       failed: reviewIds.length,
       errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la mise à jour groupée.'
+      message: 'Erreur lors de la mise a jour groupee.'
     };
   }
 }
@@ -1117,36 +1112,28 @@ export async function bulkDeleteReviews(
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
 
-    const results = {
-      processed: 0,
-      failed: 0,
-      errors: [] as string[],
-      success: true
-    };
-
-    // Process each review
-    for (const reviewId of reviewIds) {
-      try {
-        const { error } = await serviceClient
-          .from('reviews')
-          .update({
-            status: 'deleted',
-            deleted_at: new Date().toISOString(),
-            deleted_by: adminId
-          })
-          .eq('id', reviewId);
-
-        if (error) {
-          results.failed++;
-          results.errors.push(`Review ${reviewId}: ${error.message}`);
-        } else {
-          results.processed++;
-        }
-      } catch (error: any) {
-        results.failed++;
-        results.errors.push(`Review ${reviewId}: ${error.message || error}`);
-      }
+    if (reviewIds.length === 0) {
+      return {
+        success: true,
+        processed: 0,
+        failed: 0,
+        errors: [],
+        message: 'Aucun avis selectionne.'
+      };
     }
+
+    const { error, count } = await serviceClient
+      .from('reviews')
+      .update({
+        status: 'deleted',
+        deleted_at: new Date().toISOString(),
+        deleted_by: adminId
+      }, { count: 'exact' })
+      .in('id', reviewIds);
+
+    const processed = error ? 0 : Math.min(count ?? reviewIds.length, reviewIds.length);
+    const failed = error ? reviewIds.length : Math.max(0, reviewIds.length - processed);
+    const errors = error ? [`Bulk review delete failed: ${error.message}`] : [];
 
     // Log bulk operation
     await serviceClient
@@ -1156,9 +1143,9 @@ export async function bulkDeleteReviews(
         action: 'bulk_delete_reviews',
         details: {
           review_ids: reviewIds,
-          processed: results.processed,
-          failed: results.failed,
-          errors: results.errors
+          processed,
+          failed,
+          errors
         },
         created_at: new Date().toISOString()
       });
@@ -1166,8 +1153,11 @@ export async function bulkDeleteReviews(
     revalidatePath('/admin/avis');
 
     return {
-      ...results,
-      message: `${results.processed} avis supprimés, ${results.failed} échecs`
+      success: !error,
+      processed,
+      failed,
+      errors,
+      message: `${processed} avis supprimes, ${failed} echecs`
     };
   } catch (error: any) {
     return {
@@ -1175,7 +1165,7 @@ export async function bulkDeleteReviews(
       processed: 0,
       failed: reviewIds.length,
       errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la suppression groupée.'
+      message: 'Erreur lors de la suppression groupee.'
     };
   }
 }
@@ -1195,32 +1185,24 @@ export async function bulkUpdateBusinesses(
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
 
-    const results = {
-      processed: 0,
-      failed: 0,
-      errors: [] as string[],
-      success: true
-    };
-
-    // Process each business
-    for (const businessId of businessIds) {
-      try {
-        const { error } = await serviceClient
-          .from('businesses')
-          .update(updateData)
-          .eq('id', businessId);
-
-        if (error) {
-          results.failed++;
-          results.errors.push(`Business ${businessId}: ${error.message}`);
-        } else {
-          results.processed++;
-        }
-      } catch (error: any) {
-        results.failed++;
-        results.errors.push(`Business ${businessId}: ${error.message || error}`);
-      }
+    if (businessIds.length === 0) {
+      return {
+        success: true,
+        processed: 0,
+        failed: 0,
+        errors: [],
+        message: 'Aucun etablissement selectionne.'
+      };
     }
+
+    const { error, count } = await serviceClient
+      .from('businesses')
+      .update(updateData, { count: 'exact' })
+      .in('id', businessIds);
+
+    const processed = error ? 0 : Math.min(count ?? businessIds.length, businessIds.length);
+    const failed = error ? businessIds.length : Math.max(0, businessIds.length - processed);
+    const errors = error ? [`Bulk business update failed: ${error.message}`] : [];
 
     // Log bulk operation
     await serviceClient
@@ -1231,9 +1213,9 @@ export async function bulkUpdateBusinesses(
         details: {
           business_ids: businessIds,
           update_data: updateData,
-          processed: results.processed,
-          failed: results.failed,
-          errors: results.errors
+          processed,
+          failed,
+          errors
         },
         created_at: new Date().toISOString()
       });
@@ -1241,8 +1223,11 @@ export async function bulkUpdateBusinesses(
     revalidatePath('/admin/etablissements');
 
     return {
-      ...results,
-      message: `${results.processed} établissements mis à jour, ${results.failed} échecs`
+      success: !error,
+      processed,
+      failed,
+      errors,
+      message: `${processed} etablissements mis a jour, ${failed} echecs`
     };
   } catch (error: any) {
     return {
@@ -1250,7 +1235,7 @@ export async function bulkUpdateBusinesses(
       processed: 0,
       failed: businessIds.length,
       errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la mise à jour groupée.'
+      message: 'Erreur lors de la mise a jour groupee.'
     };
   }
 }
@@ -1265,36 +1250,28 @@ export async function bulkDeleteBusinesses(
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
 
-    const results = {
-      processed: 0,
-      failed: 0,
-      errors: [] as string[],
-      success: true
-    };
-
-    // Process each business
-    for (const businessId of businessIds) {
-      try {
-        const { error } = await serviceClient
-          .from('businesses')
-          .update({
-            status: 'deleted',
-            deleted_at: new Date().toISOString(),
-            deleted_by: adminId
-          })
-          .eq('id', businessId);
-
-        if (error) {
-          results.failed++;
-          results.errors.push(`Business ${businessId}: ${error.message}`);
-        } else {
-          results.processed++;
-        }
-      } catch (error: any) {
-        results.failed++;
-        results.errors.push(`Business ${businessId}: ${error.message || error}`);
-      }
+    if (businessIds.length === 0) {
+      return {
+        success: true,
+        processed: 0,
+        failed: 0,
+        errors: [],
+        message: 'Aucun etablissement selectionne.'
+      };
     }
+
+    const { error, count } = await serviceClient
+      .from('businesses')
+      .update({
+        status: 'deleted',
+        deleted_at: new Date().toISOString(),
+        deleted_by: adminId
+      }, { count: 'exact' })
+      .in('id', businessIds);
+
+    const processed = error ? 0 : Math.min(count ?? businessIds.length, businessIds.length);
+    const failed = error ? businessIds.length : Math.max(0, businessIds.length - processed);
+    const errors = error ? [`Bulk business delete failed: ${error.message}`] : [];
 
     // Log bulk operation
     await serviceClient
@@ -1304,9 +1281,9 @@ export async function bulkDeleteBusinesses(
         action: 'bulk_delete_businesses',
         details: {
           business_ids: businessIds,
-          processed: results.processed,
-          failed: results.failed,
-          errors: results.errors
+          processed,
+          failed,
+          errors
         },
         created_at: new Date().toISOString()
       });
@@ -1314,8 +1291,11 @@ export async function bulkDeleteBusinesses(
     revalidatePath('/admin/etablissements');
 
     return {
-      ...results,
-      message: `${results.processed} établissements supprimés, ${results.failed} échecs`
+      success: !error,
+      processed,
+      failed,
+      errors,
+      message: `${processed} etablissements supprimes, ${failed} echecs`
     };
   } catch (error: any) {
     return {
@@ -1323,7 +1303,7 @@ export async function bulkDeleteBusinesses(
       processed: 0,
       failed: businessIds.length,
       errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la suppression groupée.'
+      message: 'Erreur lors de la suppression groupee.'
     };
   }
 }
