@@ -171,15 +171,18 @@ export async function updateSession(request: NextRequest) {
           setCache(profileCacheKey, roleData, 2 * 60 * 1000); // Cache for 2 minutes
         }
       } catch (e) {
-        // Allow them to try to load the page if it's a transient network error
+        // Fail closed for admin routes if profile verification fails.
+        if (request.nextUrl.pathname.startsWith('/admin')) {
+          return NextResponse.redirect(new URL('/', request.url));
+        }
         return supabaseResponse;
       }
     }
 
     if (!roleData) {
       // User doesn't exist in profiles table or connection failed
-      if (request.nextUrl.pathname === '/login') {
-        return supabaseResponse;
+      if (request.nextUrl.pathname.startsWith('/admin')) {
+        return NextResponse.redirect(new URL('/', request.url));
       }
       return supabaseResponse;
     }

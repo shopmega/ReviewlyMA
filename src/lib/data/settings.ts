@@ -20,6 +20,8 @@ export type SiteSettings = {
     enable_interviews: boolean;
     enable_messaging: boolean;
     enable_claims: boolean;
+    enable_competitor_ads: boolean;
+    enable_competitor_ads_tracking: boolean;
     premium_annual_price: number;
     premium_monthly_price: number;
     tier_growth_monthly_price: number;
@@ -77,6 +79,8 @@ export const getDefaultSettings = (): SiteSettings => ({
     enable_interviews: true,
     enable_messaging: false,
     enable_claims: true,
+    enable_competitor_ads: true,
+    enable_competitor_ads_tracking: true,
     premium_annual_price: 500.00,
     premium_monthly_price: 50.00,
     tier_growth_monthly_price: 99.00,
@@ -85,7 +89,7 @@ export const getDefaultSettings = (): SiteSettings => ({
     tier_gold_annual_price: 2900.00,
     premium_enabled: true,
     premium_description: 'Devenez membre Premium et bénéficiez de fonctionnalités exclusives pour propulser votre établissement.',
-    site_logo_url: undefined,
+    site_logo_url: '/logo.svg',
     google_analytics_id: undefined,
     facebook_pixel_id: undefined,
     adsense_enabled: false,
@@ -213,7 +217,9 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                     enable_interviews: data.enable_interviews ?? true,
                     enable_messaging: data.enable_messaging ?? false,
                     enable_claims: data.enable_claims ?? true,
-                    site_logo_url: data.site_logo_url || null,
+                    enable_competitor_ads: data.enable_competitor_ads ?? true,
+                    enable_competitor_ads_tracking: data.enable_competitor_ads_tracking ?? true,
+                    site_logo_url: data.site_logo_url || '/logo.svg',
                     google_analytics_id: data.google_analytics_id || null,
                     facebook_pixel_id: data.facebook_pixel_id || null,
                     adsense_enabled: data.adsense_enabled ?? false,

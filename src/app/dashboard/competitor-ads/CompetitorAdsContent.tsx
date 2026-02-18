@@ -25,6 +25,8 @@ import {
   updateCompetitorAd, 
   deleteCompetitorAd, 
   getUserCompetitorAds,
+  getUserCompetitorAdMetrics,
+  type CompetitorAdMetrics,
   toggleCompetitorAdStatus
 } from '@/lib/competitor-ads/server-actions';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +44,7 @@ export function CompetitorAdsContent() {
 
 function CompetitorAdsContentInner() {
   const [ads, setAds] = useState<CompetitorAd[]>([]);
+  const [adMetrics, setAdMetrics] = useState<Record<string, CompetitorAdMetrics>>({});
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingAd, setEditingAd] = useState<CompetitorAd | null>(null);
@@ -67,15 +70,28 @@ function CompetitorAdsContentInner() {
 
   const loadCompetitorAds = async () => {
     setLoading(true);
-    const result = await getUserCompetitorAds();
-    if (result.success) {
-      setAds(result.ads || []);
+    const [adsResult, metricsResult] = await Promise.all([
+      getUserCompetitorAds(),
+      getUserCompetitorAdMetrics(),
+    ]);
+
+    if (adsResult.success) {
+      setAds(adsResult.ads || []);
     } else {
       toast({
         title: 'Erreur',
-        description: result.error || 'Impossible de charger les annonces concurrentes',
+        description: adsResult.error || 'Impossible de charger les annonces concurrentes',
         variant: 'destructive',
       });
+    }
+
+    if (metricsResult.success && metricsResult.metrics) {
+      const metricsMap = Object.fromEntries(
+        metricsResult.metrics.map((metric) => [metric.adId, metric])
+      );
+      setAdMetrics(metricsMap);
+    } else {
+      setAdMetrics({});
     }
     setLoading(false);
   };
@@ -208,6 +224,9 @@ function CompetitorAdsContentInner() {
         <h1 className="text-3xl font-bold tracking-tight">Annonces Concurrentes</h1>
         <p className="text-muted-foreground mt-2">
           Créez des annonces pour apparaître sur les pages de vos concurrents
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Disponible pour tous les comptes entreprise. Les impressions et clics sont suivis automatiquement.
         </p>
       </div>
 
@@ -357,7 +376,9 @@ function CompetitorAdsContentInner() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {ads.map((ad) => (
+          {ads.map((ad) => {
+            const metrics = adMetrics[ad.id] || { adId: ad.id, impressions: 0, clicks: 0, ctr: 0 };
+            return (
             <Card key={ad.id} className="overflow-hidden">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
@@ -440,10 +461,26 @@ function CompetitorAdsContentInner() {
                       Ciblage: {ad.target_competitor_ids.length} concurrent(s)
                     </div>
                   )}
+
+                  <div className="grid grid-cols-3 gap-2 text-xs mt-3">
+                    <div className="rounded-md border p-2 text-center">
+                      <p className="text-muted-foreground">Impressions</p>
+                      <p className="font-semibold">{metrics.impressions}</p>
+                    </div>
+                    <div className="rounded-md border p-2 text-center">
+                      <p className="text-muted-foreground">Clics</p>
+                      <p className="font-semibold">{metrics.clicks}</p>
+                    </div>
+                    <div className="rounded-md border p-2 text-center">
+                      <p className="text-muted-foreground">CTR</p>
+                      <p className="font-semibold">{metrics.ctr}%</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 

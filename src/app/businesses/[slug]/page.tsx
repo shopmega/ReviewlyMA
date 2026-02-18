@@ -6,6 +6,7 @@ import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
+import CompetitorAds from '@/components/business/CompetitorAds';
 import { BusinessInsightsTabs } from '@/components/business/BusinessInsightsTabs';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -30,7 +31,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = `${business.name} | Avis, Horaires et Contact à ${business.city}`;
   const description = business.description?.substring(0, 160) || `Découvrez les avis, horaires, photos et informations de contact de ${business.name} à ${business.city}.`;
-  const image = business.cover_url || business.logo?.imageUrl || '/images/og-default.jpg';
+  const logoImage = business.logo?.imageUrl;
+  const hasRealLogo = !!logoImage && !logoImage.includes('/placeholders/');
+  const image = business.cover_url || (hasRealLogo ? logoImage : '/opengraph-image');
   const siteUrl = getServerSiteUrl();
 
   return {
@@ -213,6 +216,13 @@ export default async function BusinessPage({ params }: PageProps) {
               salaryDepartments={settings.salary_departments || []}
               salaryIntervals={settings.salary_intervals || []}
             />
+
+            {settings.enable_competitor_ads && (
+              <CompetitorAds
+                businessId={business.id}
+                trackingEnabled={settings.enable_competitor_ads_tracking}
+              />
+            )}
 
             {/* Similar Businesses */}
             <div className="pt-8">

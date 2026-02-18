@@ -62,6 +62,8 @@ type SiteSettings = {
     enable_interviews: boolean;
     enable_messaging: boolean;
     enable_claims: boolean;
+    enable_competitor_ads: boolean;
+    enable_competitor_ads_tracking: boolean;
     tier_growth_monthly_price?: number;
     tier_growth_annual_price?: number;
     tier_pro_monthly_price?: number;
@@ -126,6 +128,8 @@ const defaultSettings: SiteSettings = {
     enable_interviews: true,
     enable_messaging: false,
     enable_claims: true,
+    enable_competitor_ads: true,
+    enable_competitor_ads_tracking: true,
     tier_growth_monthly_price: 99.00,
     tier_growth_annual_price: 990.00,
     tier_pro_monthly_price: 299.00,
@@ -229,7 +233,7 @@ export default function SettingsPage() {
                 .single();
 
             if (!error && data) {
-                setSettings(data);
+                setSettings({ ...defaultSettings, ...data });
                 setSalaryRolesText((data.salary_roles || []).join('\n'));
                 setSalaryDepartmentsText((data.salary_departments || []).join('\n'));
                 setSalaryIntervalsText(JSON.stringify(data.salary_intervals || [], null, 2));
@@ -708,6 +712,8 @@ export default function SettingsPage() {
                                     { id: 'enable_interviews', label: 'Processus de Recrutement', desc: 'Retours d\'expérience sur les entretiens', icon: <UsersIcon className="h-5 w-5" /> },
                                     { id: 'enable_claims', label: 'Claims Engine', desc: 'Système de revendication d\'entreprises', icon: <ShieldCheck className="h-5 w-5" /> },
                                     { id: 'enable_messaging', label: 'Real-time Chat', desc: 'Messagerie instantanée propriétaire (Bêta)', badge: 'Bêta', icon: <Mail className="h-5 w-5" /> },
+                                    { id: 'enable_competitor_ads', label: 'Annonces concurrentes', desc: 'Réseau publicitaire entre pages entreprises', icon: <Activity className="h-5 w-5" /> },
+                                    { id: 'enable_competitor_ads_tracking', label: 'Tracking annonces concurrentes', desc: 'Collecte des impressions et clics des annonces', icon: <Database className="h-5 w-5" /> },
                                 ].map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-6 rounded-[2rem] border border-border/10 bg-white/40 dark:bg-slate-950/20 hover:bg-white/70 dark:hover:bg-slate-950/40 transition-all group">
                                         <div className="flex gap-4 items-center">

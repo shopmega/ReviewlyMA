@@ -5,4 +5,4 @@ ADD COLUMN IF NOT EXISTS resend_api_key TEXT,
 ADD COLUMN IF NOT EXISTS sendgrid_api_key TEXT,
 ADD COLUMN IF NOT EXISTS mailjet_api_key TEXT,
 ADD COLUMN IF NOT EXISTS mailjet_api_secret TEXT,
-ADD COLUMN IF NOT EXISTS email_from TEXT DEFAULT 'noreply@avis.ma';
+ADD COLUMN IF NOT EXISTS email_from TEXT DEFAULT 'noreply@example.com';

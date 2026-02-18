@@ -10,6 +10,7 @@ require('dotenv').config({ path: '.env.local' });
 
 const USER_ID = 'be90faa9-ed5a-4908-abe8-765e986ac497';
 const BUSINESS_ID = 'cgi-maroc';
+const dashboardBaseUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://example.com').replace(/\/+$/, '');
 
 async function completeRestoration() {
   console.log('🔄 Starting complete business ownership restoration...\n');
@@ -166,7 +167,7 @@ async function completeRestoration() {
     console.log(`\n📄 Summary:`);
     console.log(`   User: ${user.full_name} (${USER_ID})`);
     console.log(`   Business: ${business.name} (${BUSINESS_ID})`);
-    console.log(`   Dashboard URL: https://avis.ma/dashboard/business/${BUSINESS_ID}`);
+    console.log(`   Dashboard URL: ${dashboardBaseUrl}/dashboard/business/${BUSINESS_ID}`);
     
   } catch (error) {
     console.error('❌ Restoration failed with error:', error.message);

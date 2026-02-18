@@ -38,12 +38,6 @@ export const marketingFeatures: PremiumFeature[] = [
     requiredTier: 'growth'
   },
   {
-    title: 'Suppression des Publicités Concurrentes',
-    description: 'Éliminez la concurrence publicitaire sur votre page.',
-    icon: ShieldCheck,
-    requiredTier: 'growth'
-  },
-  {
     title: 'Communication avec les Candidats',
     description: 'Engagez directement les talents potentiels.',
     icon: MessageSquare,
@@ -83,7 +77,6 @@ export const dashboardFeatures: Array<{
     { icon: ShieldCheck, text: "Badge de confiance GOLD sur votre profil", requiredTier: 'growth' },
     { icon: TrendingUp, text: "Placement prioritaire dans les résultats", requiredTier: 'growth' },
     { icon: Star, text: "Accès complet aux statistiques détaillées sur votre réputation employeur", requiredTier: 'growth' },
-    { icon: ShieldCheck, text: "Suppression des publicités concurrentes", requiredTier: 'growth' },
     { icon: MessageSquare, text: "Communication directe avec les candidats", requiredTier: 'gold' },
     { icon: Zap, text: "Possibilité d'épingler du contenu important", requiredTier: 'gold' },
     { icon: TrendingUp, text: "Benchmark salaires Gold (ville + secteur)", requiredTier: 'gold' },
@@ -139,3 +132,4 @@ export default function PremiumFeatures({ variant = 'marketing', userTier = 'sta
     </ul>
   );
 }
+

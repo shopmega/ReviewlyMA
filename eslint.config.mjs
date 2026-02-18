@@ -17,9 +17,10 @@ export default [
   },
   {
     ignores: [
+      'archive/**',
+      'tmp_*.html',
       'temp_test_import.js',
       'updated-suggest-business-function.ts',
     ],
   },
 ];
-

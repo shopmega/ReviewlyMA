@@ -33,12 +33,20 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getServerSiteUrl();
   const title = settings.site_name || 'CityGuide App';
   const description = settings.site_description || 'Decouvrez les meilleurs commerces de votre ville';
-  const ogImage = '/images/og-default.jpg';
+  const ogImage = '/opengraph-image';
 
   return {
     metadataBase: new URL(siteUrl),
     title,
     description,
+    icons: {
+      icon: [
+        { url: '/logo-mark.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico' },
+      ],
+      shortcut: ['/favicon.ico'],
+      apple: [{ url: '/apple-icon' }],
+    },
     openGraph: {
       title,
       description,

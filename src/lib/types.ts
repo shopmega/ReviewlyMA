@@ -561,6 +561,20 @@ export type CompetitorAd = {
   updated_at: string;
 };
 
+export type CompetitorAdEventType = 'impression' | 'click';
+
+export type CompetitorAdEvent = {
+  id: number;
+  ad_id: string;
+  advertiser_business_id: string;
+  target_business_id: string;
+  event_type: CompetitorAdEventType;
+  viewer_session_id?: string | null;
+  user_id?: string | null;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+};
+
 // Type for paginated businesses
 export type PaginatedBusinesses = {
   businesses: Business[];

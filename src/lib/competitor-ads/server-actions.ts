@@ -2,8 +2,7 @@
 
 import { createClient } from '../supabase/server';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { CompetitorAd } from '../types';
+import { CompetitorAd, CompetitorAdEventType } from '../types';
 
 // Create a new competitor ad
 export async function createCompetitorAd(adData: Omit<CompetitorAd, 'id' | 'created_at' | 'updated_at' | 'spent_cents'>): Promise<{ success: boolean; error?: string; ad?: CompetitorAd }> {
@@ -299,6 +298,178 @@ export async function getActiveCompetitorAdsForBusiness(targetBusinessId: string
     return { success: true, ads: data as CompetitorAd[] };
   } catch (error) {
     console.error('Unexpected error fetching active competitor ads for business:', error);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+type TrackCompetitorAdEventPayload = {
+  adId: string;
+  targetBusinessId: string;
+  eventType: CompetitorAdEventType;
+  viewerSessionId?: string;
+};
+
+export async function trackCompetitorAdEvent(payload: TrackCompetitorAdEventPayload): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  try {
+    if (!payload.adId || !payload.targetBusinessId) {
+      return { success: false, error: 'Missing required tracking fields' };
+    }
+
+    if (payload.eventType !== 'impression' && payload.eventType !== 'click') {
+      return { success: false, error: 'Invalid event type' };
+    }
+
+    const [{ data: settings }, { data: ad, error: adError }, { data: authData }] = await Promise.all([
+      supabase
+        .from('site_settings')
+        .select('enable_competitor_ads, enable_competitor_ads_tracking')
+        .eq('id', 'main')
+        .maybeSingle(),
+      supabase
+        .from('competitor_ads')
+        .select('id, advertiser_business_id, target_competitor_ids, status, start_date, end_date')
+        .eq('id', payload.adId)
+        .maybeSingle(),
+      supabase.auth.getUser(),
+    ]);
+
+    if (settings?.enable_competitor_ads === false || settings?.enable_competitor_ads_tracking === false) {
+      return { success: true };
+    }
+
+    if (adError || !ad) {
+      return { success: false, error: 'Ad not found' };
+    }
+
+    const now = new Date();
+    const started = ad.start_date ? new Date(ad.start_date) : null;
+    const ended = ad.end_date ? new Date(ad.end_date) : null;
+    const isActive =
+      ad.status === 'active' &&
+      (!started || started <= now) &&
+      (!ended || ended >= now);
+
+    if (!isActive) {
+      return { success: false, error: 'Ad not active' };
+    }
+
+    if (
+      Array.isArray(ad.target_competitor_ids) &&
+      ad.target_competitor_ids.length > 0 &&
+      !ad.target_competitor_ids.includes(payload.targetBusinessId)
+    ) {
+      return { success: false, error: 'Ad does not target this business' };
+    }
+
+    const userId = authData?.user?.id || null;
+
+    const { error: insertError } = await supabase
+      .from('competitor_ad_events')
+      .insert({
+        ad_id: ad.id,
+        advertiser_business_id: ad.advertiser_business_id,
+        target_business_id: payload.targetBusinessId,
+        event_type: payload.eventType,
+        viewer_session_id: payload.viewerSessionId || null,
+        user_id: userId,
+        metadata: {
+          source: 'business_page',
+        },
+      });
+
+    if (insertError) {
+      console.error('Error tracking competitor ad event:', insertError);
+      return { success: false, error: insertError.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Unexpected error tracking competitor ad event:', error);
+    return { success: false, error: 'An unexpected error occurred' };
+  }
+}
+
+export type CompetitorAdMetrics = {
+  adId: string;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+};
+
+export async function getUserCompetitorAdMetrics(): Promise<{ success: boolean; error?: string; metrics?: CompetitorAdMetrics[] }> {
+  const supabase = await createClient();
+
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    const { data: businesses, error: businessError } = await supabase
+      .from('businesses')
+      .select('id')
+      .eq('owner_id', user.id);
+
+    if (businessError || !businesses) {
+      return { success: false, error: 'Could not fetch user businesses' };
+    }
+
+    const businessIds = businesses.map((b) => b.id);
+    if (businessIds.length === 0) {
+      return { success: true, metrics: [] };
+    }
+
+    const { data: ads, error: adsError } = await supabase
+      .from('competitor_ads')
+      .select('id')
+      .in('advertiser_business_id', businessIds);
+
+    if (adsError) {
+      return { success: false, error: adsError.message };
+    }
+
+    const adIds = (ads || []).map((ad) => ad.id);
+    if (adIds.length === 0) {
+      return { success: true, metrics: [] };
+    }
+
+    const { data: events, error: eventsError } = await supabase
+      .from('competitor_ad_events')
+      .select('ad_id, event_type')
+      .in('ad_id', adIds);
+
+    if (eventsError) {
+      return { success: false, error: eventsError.message };
+    }
+
+    const aggregates = new Map<string, { impressions: number; clicks: number }>();
+    for (const adId of adIds) {
+      aggregates.set(adId, { impressions: 0, clicks: 0 });
+    }
+
+    for (const event of events || []) {
+      const agg = aggregates.get(event.ad_id);
+      if (!agg) continue;
+      if (event.event_type === 'impression') agg.impressions += 1;
+      if (event.event_type === 'click') agg.clicks += 1;
+    }
+
+    const metrics: CompetitorAdMetrics[] = adIds.map((adId) => {
+      const agg = aggregates.get(adId) || { impressions: 0, clicks: 0 };
+      const ctr = agg.impressions > 0 ? Number(((agg.clicks / agg.impressions) * 100).toFixed(2)) : 0;
+      return {
+        adId,
+        impressions: agg.impressions,
+        clicks: agg.clicks,
+        ctr,
+      };
+    });
+
+    return { success: true, metrics };
+  } catch (error) {
+    console.error('Unexpected error fetching competitor ad metrics:', error);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }

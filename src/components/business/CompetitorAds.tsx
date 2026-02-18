@@ -1,26 +1,46 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, Target, Coins, ExternalLink } from 'lucide-react';
 import { CompetitorAd } from '@/lib/types';
-import { getActiveCompetitorAdsForBusiness } from '@/lib/competitor-ads/server-actions';
+import { getActiveCompetitorAdsForBusiness, trackCompetitorAdEvent } from '@/lib/competitor-ads/server-actions';
 import { useToast } from '@/hooks/use-toast';
 
 interface CompetitorAdsProps {
   businessId: string;
+  trackingEnabled?: boolean;
   className?: string;
 }
 
 const CompetitorAds: React.FC<CompetitorAdsProps> = ({ 
   businessId, 
+  trackingEnabled = true,
   className = '' 
 }) => {
   const [ads, setAds] = useState<CompetitorAd[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const viewerSessionIdRef = useRef<string>('');
+  const trackedImpressionsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storageKey = 'competitor_ad_viewer_session_id';
+    const existing = window.localStorage.getItem(storageKey);
+    if (existing) {
+      viewerSessionIdRef.current = existing;
+      return;
+    }
+
+    const generated = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(storageKey, generated);
+    viewerSessionIdRef.current = generated;
+  }, []);
 
   useEffect(() => {
     loadCompetitorAds();
@@ -39,6 +59,33 @@ const CompetitorAds: React.FC<CompetitorAdsProps> = ({
       });
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!trackingEnabled || ads.length === 0) return;
+
+    for (const ad of ads) {
+      const trackingKey = `${ad.id}:${businessId}`;
+      if (trackedImpressionsRef.current.has(trackingKey)) continue;
+
+      trackedImpressionsRef.current.add(trackingKey);
+      void trackCompetitorAdEvent({
+        adId: ad.id,
+        targetBusinessId: businessId,
+        eventType: 'impression',
+        viewerSessionId: viewerSessionIdRef.current || undefined,
+      });
+    }
+  }, [ads, businessId, trackingEnabled]);
+
+  const handleAdClick = (ad: CompetitorAd) => {
+    if (!trackingEnabled) return;
+    void trackCompetitorAdEvent({
+      adId: ad.id,
+      targetBusinessId: businessId,
+      eventType: 'click',
+      viewerSessionId: viewerSessionIdRef.current || undefined,
+    });
   };
 
   if (loading || ads.length === 0) {
@@ -84,8 +131,14 @@ const CompetitorAds: React.FC<CompetitorAdsProps> = ({
                   </div>
                 </div>
                 
-                <Button size="sm" variant="outline">
-                  Visiter <ExternalLink className="ml-2 h-4 w-4" />
+                <Button size="sm" variant="outline" asChild>
+                  <a
+                    href={`/businesses/${ad.advertiser_business_id}`}
+                    onClick={() => handleAdClick(ad)}
+                    className="inline-flex items-center"
+                  >
+                    Visiter <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
                 </Button>
               </div>
             </CardContent>

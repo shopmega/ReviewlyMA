@@ -1,0 +1,8 @@
+<svg width="420" height="96" viewBox="0 0 420 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="96" height="96" rx="24" fill="#0F172A"/>
+  <path d="M24 70L42 26H54L72 70H60L56 58H40L36 70H24ZM44 48H52L48 35L44 48Z" fill="#F8FAFC"/>
+  <circle cx="67" cy="30" r="8" fill="#22C55E"/>
+  <text x="116" y="60" fill="#0F172A" font-family="Outfit, Inter, Arial, sans-serif" font-size="48" font-weight="700" letter-spacing="0.5">
+    AVis
+  </text>
+</svg>

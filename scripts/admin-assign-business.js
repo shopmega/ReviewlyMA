@@ -15,6 +15,7 @@ require('dotenv').config({ path: '.env.local' });
 // Configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const dashboardBaseUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://example.com').replace(/\/+$/, '');
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Missing Supabase configuration in environment variables');
@@ -243,7 +244,7 @@ async function assignBusinessToUser() {
     if (finalProfile?.business_id === businessId && finalUserBusinesses) {
       console.log('\n🎉 Business assignment completed successfully!');
       console.log(`✅ User ${user.email} can now access business ${business.name}`);
-      console.log(`   Dashboard URL: https://avis.ma/dashboard/business/${businessId}`);
+      console.log(`   Dashboard URL: ${dashboardBaseUrl}/dashboard/business/${businessId}`);
     } else {
       console.log('\n❌ Assignment incomplete - manual verification required');
     }

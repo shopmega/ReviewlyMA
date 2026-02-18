@@ -295,10 +295,8 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                 </div>
             </div>
 
-            {/* Sidebar Ad Slot - Hidden for GOLD businesses (Ad Removal feature) */}
-            {business.tier !== 'gold' && (
-                <AdSlot slot="business-sidebar-ad" className="min-h-[250px] rounded-2xl overflow-hidden" />
-            )}
+            {/* Sidebar Ad Slot */}
+            <AdSlot slot="business-sidebar-ad" className="min-h-[250px] rounded-2xl overflow-hidden" />
         </div>
     );
 }
