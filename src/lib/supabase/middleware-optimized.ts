@@ -89,7 +89,19 @@ export async function updateSession(request: NextRequest) {
     }
   } catch (e) {
     // Log error but don't break the request
-    return supabaseResponse;
+    // continue with session fallback below
+  }
+
+  // Fallback for occasional getUser() false negatives in middleware.
+  if (!user) {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (!error && data?.session?.user) {
+        user = data.session.user;
+      }
+    } catch (e) {
+      // ignore and handle via route-specific logic below
+    }
   }
 
   // 2. Check maintenance mode with caching
@@ -144,6 +156,12 @@ export async function updateSession(request: NextRequest) {
   // Protect /review route (User must be logged in to write a review)
   if (!user && request.nextUrl.pathname.startsWith('/review')) {
     return NextResponse.redirect(new URL('/login?next=/review', request.url));
+  }
+
+  // Protect /admin route (must be authenticated before role checks).
+  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }
 
   // If unauthenticated and not in maintenance mode, stop here and allow public access

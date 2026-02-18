@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   } catch (error) {
     const message = error instanceof Error ? error.message.toLowerCase() : '';
 
-    if (message.includes('session invalide') || message.includes('profil introuvable')) {
+    if (message.includes('session invalide')) {
       redirect('/login?next=/admin');
     }
 

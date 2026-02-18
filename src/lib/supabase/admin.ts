@@ -56,7 +56,7 @@ export async function createAuthClient() {
  */
 export async function verifyAdminSession() {
   const authClient = await createAuthClient();
-  let user: { id: string } | null = null;
+  let user: any = null;
 
   const {
     data: { user: authUser },
@@ -82,6 +82,8 @@ export async function verifyAdminSession() {
     throw new Error('Non autorise: session invalide.');
   }
 
+  const metadataRole = String(user?.app_metadata?.role || '').toLowerCase();
+
   // Use service-role client for role lookup to avoid RLS recursion issues.
   const adminClient = await createAdminClient();
   const { data: profiles, error: profileError } = await adminClient
@@ -98,10 +100,17 @@ export async function verifyAdminSession() {
   const profile = profiles?.[0];
 
   if (!profile) {
+    if (metadataRole === 'admin') {
+      return user.id;
+    }
     throw new Error('Non autorise: profil introuvable. Veuillez vous reconnecter.');
   }
 
-  if (profile.role !== 'admin') {
+  const profileRole = String(profile.role || '').toLowerCase();
+  if (profileRole !== 'admin') {
+    if (metadataRole === 'admin') {
+      return user.id;
+    }
     throw new Error(`Non autorise: role '${profile.role}' insuffisant. Acces reserve aux administrateurs.`);
   }
 
