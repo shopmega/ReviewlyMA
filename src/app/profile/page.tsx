@@ -78,6 +78,8 @@ type UserReview = {
   owner_reply_date: string | null;
 };
 
+type ProfileTab = 'reviews' | 'saved' | 'settings' | 'security';
+
 function ProfileSkeleton() {
   return (
     <div className="container mx-auto px-4 md:px-6 py-12">
@@ -102,9 +104,12 @@ function ProfileSkeleton() {
 }
 
 export default function ProfilePage() {
+  const REVIEWS_INITIAL_LIMIT = 20;
+  const SAVED_BUSINESSES_PREVIEW_LIMIT = 12;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'helpful' | 'rating'>('newest');
+  const [activeTab, setActiveTab] = useState<ProfileTab>('reviews');
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -196,7 +201,7 @@ export default function ProfilePage() {
         `)
         .eq('user_id', user.id)
         .order('date', { ascending: false })
-        .limit(20); // Limit initial load
+        .limit(REVIEWS_INITIAL_LIMIT);
 
       if (!reviewsError && reviewsData) {
         setReviews(reviewsData.map((r: any) => ({
@@ -216,10 +221,8 @@ export default function ProfilePage() {
 
       // Fetch saved businesses with minimal data
       try {
-        const { getSavedBusinesses } = await import('@/app/actions/user');
         const saved = await getSavedBusinesses();
-        // Limit to first 12 for initial load
-        setSavedBusinesses(saved.slice(0, 12));
+        setSavedBusinesses(saved.slice(0, SAVED_BUSINESSES_PREVIEW_LIMIT));
       } catch (e) {
         console.error('Failed to fetch saved businesses', e);
       }
@@ -314,7 +317,7 @@ export default function ProfilePage() {
             Rejoignez la communauté pour gérer votre profil, vos avis et vos favoris.
           </p>
           <Button asChild size="lg" className="w-full rounded-full shadow-lg">
-            <Link href="/login">Se connecter</Link>
+            <Link href="/login?next=/profile">Se connecter</Link>
           </Button>
         </Card>
       </div>
@@ -406,10 +409,49 @@ export default function ProfilePage() {
             ))}
           </div>
 
+          <div className="mb-8 flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant={activeTab === 'reviews' ? 'default' : 'outline'}
+              className="rounded-full"
+              onClick={() => setActiveTab('reviews')}
+            >
+              <Star className="mr-2 h-4 w-4" />
+              Mes avis
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === 'saved' ? 'default' : 'outline'}
+              className="rounded-full"
+              onClick={() => setActiveTab('saved')}
+            >
+              <Heart className="mr-2 h-4 w-4" />
+              Mes favoris
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === 'settings' ? 'default' : 'outline'}
+              className="rounded-full"
+              onClick={() => setActiveTab('settings')}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Mon profil
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === 'security' ? 'default' : 'outline'}
+              className="rounded-full"
+              onClick={() => setActiveTab('security')}
+            >
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Securite
+            </Button>
+          </div>
+
           {/* Main Content Tabs */}
-          <Tabs defaultValue="reviews" className="space-y-8">
-            <div className="flex justify-center md:justify-start overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-              <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 backdrop-blur-sm h-14 w-full md:w-auto">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ProfileTab)} className="space-y-8">
+            <div className="flex justify-start overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+              <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 backdrop-blur-sm h-14 w-max min-w-full md:min-w-0">
                 <TabsTrigger value="reviews" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Star className="w-4 h-4" />
                   Mes Avis
@@ -432,12 +474,19 @@ export default function ProfilePage() {
             {/* TAB: REVIEWS */}
             <TabsContent value="reviews" className="space-y-6">
               {/* Sorting Controls */}
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold">Mes Avis ({sortedReviews.length})</h3>
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h3 className="text-xl font-bold">Mes Avis ({sortedReviews.length})</h3>
+                  {sortedReviews.length >= REVIEWS_INITIAL_LIMIT && (
+                    <p className="text-xs text-muted-foreground">
+                      Affichage des {REVIEWS_INITIAL_LIMIT} avis les plus recents.
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <span className="text-sm text-muted-foreground">Trier par:</span>
                   <Select value={sortOption} onValueChange={(value: any) => setSortOption(value)}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -507,15 +556,23 @@ export default function ProfilePage() {
                             </div>
                           )}
 
-                          <div className="flex items-center justify-between pt-6 border-t border-border/50">
-                            <div className="flex gap-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-6 border-t border-border/50">
+                            <div className="flex flex-wrap gap-4 items-center">
+                              <Button asChild variant="outline" size="sm" className="rounded-full">
+                                <Link href={`/reviews/${review.id}/edit`}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Modifier
+                                </Link>
+                              </Button>
                               <VoteButtons
                                 reviewId={review.id}
                                 initialLikes={review.likes}
                                 initialDislikes={review.dislikes}
                               />
                             </div>
-                            <ReviewReportDialog reviewId={review.id} businessId={review.business_id} />
+                            <div className="self-start sm:self-auto">
+                              <ReviewReportDialog reviewId={review.id} businessId={review.business_id} />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -527,6 +584,16 @@ export default function ProfilePage() {
 
             {/* TAB: SAVED */}
             <TabsContent value="saved" className="space-y-6">
+              {savedBusinesses.length > 0 && (
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Affichage des {Math.min(savedBusinesses.length, SAVED_BUSINESSES_PREVIEW_LIMIT)} premiers favoris.
+                  </p>
+                  <Button asChild variant="outline" size="sm" className="rounded-full">
+                    <Link href="/profile/saved-businesses">Voir tous mes favoris</Link>
+                  </Button>
+                </div>
+              )}
               {savedBusinesses.length === 0 ? (
                 <Card className="border-2 border-dashed border-muted bg-transparent p-12 text-center">
                   <div className="bg-muted p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
