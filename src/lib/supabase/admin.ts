@@ -67,16 +67,18 @@ export async function verifyAdminSession() {
 
   // Use service-role client for role lookup to avoid RLS recursion issues.
   const adminClient = await createAdminClient();
-  const { data: profile, error: profileError } = await adminClient
+  const { data: profiles, error: profileError } = await adminClient
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .limit(1);
 
   if (profileError) {
     console.error('Admin verification profile error:', profileError);
     throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);
   }
+
+  const profile = profiles?.[0];
 
   if (!profile) {
     throw new Error('Non autorise: profil introuvable. Veuillez vous reconnecter.');

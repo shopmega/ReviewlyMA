@@ -209,13 +209,25 @@ begin
     updated_at = timezone('utc'::text, now())
   where id = p_user_id;
 
-  select coalesce(array_agg(business_id), array[]::text[])
-  into v_business_ids
-  from (
-    select business_id from public.profiles where id = p_user_id and business_id is not null
-    union
-    select business_id from public.user_businesses where user_id = p_user_id
-  ) x;
+  select coalesce(
+    array(
+      select distinct x.business_id
+      from (
+        select p.business_id
+        from public.profiles p
+        where p.id = p_user_id
+          and p.business_id is not null
+        union
+        select ub.business_id
+        from public.user_businesses ub
+        where ub.user_id = p_user_id
+          and ub.business_id is not null
+      ) x
+      order by x.business_id
+    ),
+    array[]::text[]
+  )
+  into v_business_ids;
 
   if array_length(v_business_ids, 1) > 0 then
     update public.businesses
@@ -242,4 +254,3 @@ $$;
 
 grant execute on function public.toggle_user_premium(uuid, text, boolean, timestamptz, timestamptz) to service_role;
 grant execute on function public.toggle_user_premium(uuid, text, boolean, timestamptz, timestamptz) to postgres;
-

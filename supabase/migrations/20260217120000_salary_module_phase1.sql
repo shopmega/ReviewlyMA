@@ -65,6 +65,9 @@ DROP POLICY IF EXISTS "Public salaries are viewable by everyone" ON public.salar
 DROP POLICY IF EXISTS "Service role can manage salaries" ON public.salaries;
 DROP POLICY IF EXISTS "Users can view own salaries" ON public.salaries;
 DROP POLICY IF EXISTS "Admins can view all salaries" ON public.salaries;
+DROP POLICY IF EXISTS "Public can read published salaries" ON public.salaries;
+DROP POLICY IF EXISTS "Authenticated users can submit salaries" ON public.salaries;
+DROP POLICY IF EXISTS "Admins can manage salaries" ON public.salaries;
 
 CREATE POLICY "Public can read published salaries"
 ON public.salaries

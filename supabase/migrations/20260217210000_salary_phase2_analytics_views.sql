@@ -1,5 +1,11 @@
 -- Salary phase 2: analytics materialized views + refresh pipeline
 
+-- Drop dependent plain views first (they depend on materialized views)
+DROP VIEW IF EXISTS public.salary_company_metrics;
+DROP VIEW IF EXISTS public.salary_city_sector_metrics;
+DROP VIEW IF EXISTS public.salary_city_metrics;
+DROP VIEW IF EXISTS public.salary_role_city_metrics;
+
 DROP MATERIALIZED VIEW IF EXISTS public.salary_company_metrics_mv;
 CREATE MATERIALIZED VIEW public.salary_company_metrics_mv AS
 WITH published AS (
