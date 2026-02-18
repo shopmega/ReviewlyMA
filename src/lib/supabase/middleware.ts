@@ -93,6 +93,18 @@ export async function updateSession(request: NextRequest) {
     }
 
     // PROTECTED ROUTES LOGIC
+    const hasSupabaseAuthCookie = request.cookies
+        .getAll()
+        .some((cookie) => cookie.name.includes('-auth-token'));
+
+    if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+        if (hasSupabaseAuthCookie) {
+            return supabaseResponse;
+        }
+        const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+        return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+    }
+
     // Check role-based access for /admin and /dashboard
     if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/dashboard')) {
         // Fetch user role, business_id

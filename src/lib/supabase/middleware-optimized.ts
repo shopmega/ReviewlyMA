@@ -158,8 +158,18 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?next=/review', request.url));
   }
 
+  // Detect Supabase auth cookies to mitigate middleware false negatives.
+  const hasSupabaseAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.includes('-auth-token'));
+
   // Protect /admin route (must be authenticated before role checks).
   if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+    // If auth cookies exist, let server-side admin guard do the final check.
+    // This avoids redirect loops caused by occasional middleware auth misses.
+    if (hasSupabaseAuthCookie) {
+      return supabaseResponse;
+    }
     const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }
