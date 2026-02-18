@@ -50,6 +50,15 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
     loadBusinesses();
   }, []);
 
+  const sanitizeBusinessId = (rawId: string | null | undefined): string | null => {
+    if (!rawId || typeof rawId !== 'string') return null;
+    let normalized = rawId.trim();
+    if (!normalized) return null;
+    if (normalized.includes(':')) normalized = normalized.split(':')[0];
+    if (normalized.includes('?')) normalized = normalized.split('?')[0];
+    return normalized.trim() || null;
+  };
+
   const loadBusinesses = async () => {
     try {
       setIsLoading(true);
@@ -145,46 +154,40 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
         return;
       }
 
-      if (profile?.business_id) {
-        console.log('Found business in old system:', profile.business_id);
-        
-        // Sanitize the business_id to ensure it's a clean string
-        let sanitizedBusinessId = profile.business_id;
-        
-        // If the business_id contains colons or other special formatting, extract just the ID part
-        if (typeof profile.business_id === 'string') {
-          // Handle various potential formats that might include extra data
-          if (profile.business_id.includes(':')) {
-            // Extract just the part before any colon (to handle cases like 'morocco-mall:1')
-            sanitizedBusinessId = profile.business_id.split(':')[0];
-          } else if (profile.business_id.includes('?')) {
-            // Also handle query parameters
-            sanitizedBusinessId = profile.business_id.split('?')[0];
-          }
-          
-          // Additional sanitization: remove any trailing slashes or special characters
-          sanitizedBusinessId = sanitizedBusinessId.trim();
-          
-          console.log('Original business_id:', profile.business_id);
-          console.log('Sanitized business_id:', sanitizedBusinessId);
-        }
+      let fallbackBusinessId = sanitizeBusinessId(profile?.business_id);
+
+      if (!fallbackBusinessId) {
+        const { data: claim } = await supabase
+          .from('business_claims')
+          .select('business_id')
+          .eq('user_id', userId)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        fallbackBusinessId = sanitizeBusinessId((claim as { business_id?: string } | null)?.business_id || null);
+      }
+
+      if (fallbackBusinessId) {
+        console.log('Found business in fallback system:', fallbackBusinessId);
         
         // First try to find by ID, then by slug if not found
         let { data: business, error: businessError } = await supabase
           .from('businesses')
           .select('id, name, overall_rating, logo_url')
-          .eq('id', sanitizedBusinessId)
+          .eq('id', fallbackBusinessId)
           .single();
 
         // If not found by ID, the profile.business_id might be stored as the slug in the id field
         if (businessError && (businessError.code === 'PGRST116' || businessError.message.includes('Row not found'))) {
-          console.log('Business not found by ID, trying by slug (stored in id field):', sanitizedBusinessId);
+          console.log('Business not found by ID, trying by slug (stored in id field):', fallbackBusinessId);
           
           // In this schema, the id field in businesses table contains slugs like 'morocco-mall'
           const { data: businessBySlug, error: businessErrorBySlug } = await supabase
             .from('businesses')
             .select('id, name, overall_rating, logo_url')
-            .eq('id', sanitizedBusinessId)
+            .eq('id', fallbackBusinessId)
             .single();
             
           business = businessBySlug;

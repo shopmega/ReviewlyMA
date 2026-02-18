@@ -276,10 +276,10 @@ export default function EditProfilePage() {
     formData.append('businessId', businessId);
 
     Object.entries(data).forEach(([key, value]) => {
-      // Handle amenities specifically
-      if (key === 'amenities') {
-        const amenitiesValue = Array.isArray(value) ? value.join(',') : '';
-        formData.append(key, amenitiesValue);
+      // Preserve array fields for server validation.
+      if (key === 'amenities' || key === 'tags') {
+        const arrayValue = Array.isArray(value) ? value : [];
+        formData.append(key, JSON.stringify(arrayValue));
       } else if (value !== null && value !== undefined) {
         formData.append(key, String(value));
       }

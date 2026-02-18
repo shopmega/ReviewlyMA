@@ -113,12 +113,21 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
 
                 // Additional verification: ensure user has access to the business data
                 if (stats.business?.id) {
-                    const { data: userBusinesses } = await supabase
-                        .from('user_businesses')
-                        .select('business_id')
-                        .eq('user_id', user.id);
+                    const [{ data: userBusinesses }, { data: approvedClaims }] = await Promise.all([
+                        supabase
+                            .from('user_businesses')
+                            .select('business_id')
+                            .eq('user_id', user.id),
+                        supabase
+                            .from('business_claims')
+                            .select('business_id')
+                            .eq('user_id', user.id)
+                            .eq('status', 'approved')
+                    ]);
 
-                    const hasBusinessAccess = userBusinesses?.some(ub => ub.business_id === stats.business.id) ||
+                    const hasBusinessAccess =
+                        userBusinesses?.some((ub) => ub.business_id === stats.business.id) ||
+                        approvedClaims?.some((claim) => claim.business_id === stats.business.id) ||
                         profile?.business_id === stats.business.id;
 
                     if (!hasBusinessAccess) {

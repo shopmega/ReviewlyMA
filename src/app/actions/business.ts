@@ -107,6 +107,41 @@ async function verifyBusinessOwnership(supabase: any, userId: string, businessId
     return { authorized: false, profile };
 }
 
+function parseStringArrayField(raw: unknown): string[] {
+    if (Array.isArray(raw)) {
+        return raw
+            .filter((item): item is string => typeof item === 'string')
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    if (typeof raw !== 'string') {
+        return [];
+    }
+
+    const trimmed = raw.trim();
+    if (!trimmed) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+            return parsed
+                .filter((item): item is string => typeof item === 'string')
+                .map((item) => item.trim())
+                .filter(Boolean);
+        }
+    } catch {
+        // Keep backward compatibility with comma-separated strings.
+    }
+
+    return trimmed
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+}
+
 type BusinessFollowerNotificationInput = {
     businessId: string;
     title: string;
@@ -417,23 +452,17 @@ export async function updateBusinessProfile(
         const rawData: any = {};
         for (const [key, value] of formData.entries()) {
             if (value !== null && value !== '') {
-                if (key === 'amenities') {
-                    // Split by comma and clean up whitespace
-                    const amenitiesStr = value.toString();
-                    logger.server(LogLevel.DEBUG, '[DEBUG] Amenities received from form', { amenitiesStr });
-                    if (amenitiesStr) {
-                        rawData[key] = amenitiesStr.split(',').map(s => s.trim()).filter(Boolean);
-                        logger.server(LogLevel.DEBUG, '[DEBUG] Amenities parsed as array', { amenities: rawData[key] });
-                    } else {
-                        rawData[key] = [];
-                    }
+                if (key === 'amenities' || key === 'tags') {
+                    const parsedArray = parseStringArrayField(value);
+                    rawData[key] = parsedArray;
+                    logger.server(LogLevel.DEBUG, `[DEBUG] ${key} parsed as array`, { [key]: parsedArray });
                 } else {
                     rawData[key] = value;
                 }
-            } else if (key === 'amenities' && value === '') {
-                // Handle empty amenities explicitely to clear them
+            } else if ((key === 'amenities' || key === 'tags') && value === '') {
+                // Allow clearing these array fields explicitly.
                 rawData[key] = [];
-                logger.server(LogLevel.DEBUG, '[DEBUG] Amenities cleared (empty value)');
+                logger.server(LogLevel.DEBUG, `[DEBUG] ${key} cleared (empty value)`);
             }
         }
 
@@ -468,6 +497,11 @@ export async function updateBusinessProfile(
             console.error('❌ [DEBUG] Database update error:', error);
             console.error('Error updating business profile:', error);
             return { status: 'error', message: 'Erreur lors de la mise à jour du profil' };
+        }
+
+        if (!updatedBusiness || updatedBusiness.length === 0) {
+            logger.server(LogLevel.WARN, '[SERVER] Business update matched no rows', { businessId: businessIdToUpdate });
+            return { status: 'error', message: 'Aucun etablissement mis a jour. Verifiez l\'identifiant de la page.' };
         }
 
         logger.server(LogLevel.INFO, '[DEBUG] Business updated successfully', { updatedBusiness, amenities: updateData.amenities });
@@ -544,8 +578,10 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
             updateData.gallery_urls = imageData.gallery_urls;
         }
 
-        // Update the business images
-        const { error } = await supabase
+        const supabaseService = await createServiceClient();
+
+        // Update the business images with service role after ownership verification.
+        const { error } = await supabaseService
             .from('businesses')
             .update(updateData)
             .eq('id', businessId);
@@ -607,8 +643,10 @@ export async function saveBusinessHours(hours: any[], businessId: string): Promi
             return { status: 'error', message: 'Permissions insuffisantes' };
         }
 
-        // Use RPC for atomic operation to replace business hours
-        const { error } = await supabase.rpc('replace_business_hours', {
+        const supabaseService = await createServiceClient();
+
+        // Use RPC for atomic operation to replace business hours.
+        const { error } = await supabaseService.rpc('replace_business_hours', {
             p_business_id: businessId,
             p_hours: hours
         });

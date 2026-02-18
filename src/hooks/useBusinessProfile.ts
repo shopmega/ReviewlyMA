@@ -10,6 +10,15 @@ export function useBusinessProfile() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const { currentBusiness, allBusinesses, isLoading: businessLoading } = useBusiness();
 
+    const sanitizeBusinessId = (rawId: string | null | undefined): string | null => {
+        if (!rawId || typeof rawId !== 'string') return null;
+        let normalized = rawId.trim();
+        if (!normalized) return null;
+        if (normalized.includes(':')) normalized = normalized.split(':')[0];
+        if (normalized.includes('?')) normalized = normalized.split('?')[0];
+        return normalized.trim() || null;
+    };
+
     useEffect(() => {
         async function load() {
             try {
@@ -34,10 +43,13 @@ export function useBusinessProfile() {
                     return;
                 }
 
-                let mergedProfile = profileData;
+                const sanitizedProfileBusinessId = sanitizeBusinessId(profileData?.business_id);
+                let mergedProfile = profileData
+                    ? { ...profileData, business_id: sanitizedProfileBusinessId }
+                    : profileData;
 
                 // AUTO-SYNC: If no business_id but they might have an approved claim
-                if (!profileData?.business_id && profileData) {
+                if (!sanitizedProfileBusinessId && profileData) {
                     const { data: approvedClaims, error: claimsError } = await supabase
                         .from('business_claims')
                         .select('business_id, created_at')
@@ -47,7 +59,7 @@ export function useBusinessProfile() {
                         .limit(1);
 
                     const approvedBusinessId = !claimsError && approvedClaims?.[0]?.business_id
-                        ? approvedClaims[0].business_id
+                        ? sanitizeBusinessId(approvedClaims[0].business_id)
                         : null;
 
                     if (approvedBusinessId) {
