@@ -84,20 +84,45 @@ export async function verifyAdminSession() {
 
   const metadataRole = String(user?.app_metadata?.role || '').toLowerCase();
 
-  // Use service-role client for role lookup to avoid RLS recursion issues.
-  const adminClient = await createAdminClient();
-  const { data: profiles, error: profileError } = await adminClient
+  // Primary check: read the current user's profile through auth client (RLS-safe).
+  const { data: ownProfile, error: ownProfileError } = await authClient
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .limit(1);
+    .maybeSingle();
 
-  if (profileError) {
-    console.error('Admin verification profile error:', profileError);
-    throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);
+  if (!ownProfileError && ownProfile) {
+    const ownProfileRole = String(ownProfile.role || '').toLowerCase();
+    if (ownProfileRole === 'admin') {
+      return user.id;
+    }
+    if (metadataRole === 'admin') {
+      return user.id;
+    }
+    throw new Error(`Non autorise: role '${ownProfile.role}' insuffisant. Acces reserve aux administrateurs.`);
   }
 
-  const profile = profiles?.[0];
+  // Fallback: service-role lookup (if key exists) for environments where RLS check is unavailable.
+  let profile: { role: string } | null = null;
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const adminClient = await createAdminClient();
+    const { data: profiles, error: profileError } = await adminClient
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .limit(1);
+
+    if (profileError) {
+      console.error('Admin verification profile error:', profileError);
+      if (metadataRole === 'admin') {
+        return user.id;
+      }
+      throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);
+    }
+    profile = profiles?.[0] || null;
+  } else if (ownProfileError) {
+    console.error('Admin verification own-profile error (service role unavailable):', ownProfileError);
+  }
 
   if (!profile) {
     if (metadataRole === 'admin') {

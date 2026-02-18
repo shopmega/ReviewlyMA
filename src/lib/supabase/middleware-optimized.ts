@@ -65,6 +65,13 @@ export async function updateSession(request: NextRequest) {
       },
     }
   );
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
+  const withAdminDebug = (response: NextResponse, reason: string) => {
+    if (isAdminRoute) {
+      response.headers.set('x-admin-debug', reason);
+    }
+    return response;
+  };
 
   // Do not run Supabase code on static assets
   if (
@@ -72,12 +79,12 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.includes('.') ||
     request.nextUrl.pathname.startsWith('/api')
   ) {
-    return supabaseResponse;
+    return withAdminDebug(supabaseResponse, 'skip_static_or_api');
   }
 
   // Skip middleware for maintenance page itself
   if (request.nextUrl.pathname === '/maintenance') {
-    return supabaseResponse;
+    return withAdminDebug(supabaseResponse, 'skip_maintenance_page');
   }
 
   // 1. Refresh session if expired with timeout resilience
@@ -149,7 +156,7 @@ export async function updateSession(request: NextRequest) {
 
     // If not admin, redirect to maintenance page
     if (!isAdmin) {
-      return NextResponse.redirect(new URL('/maintenance', request.url));
+      return withAdminDebug(NextResponse.redirect(new URL('/maintenance', request.url)), 'maintenance_redirect');
     }
   }
 
@@ -168,15 +175,15 @@ export async function updateSession(request: NextRequest) {
     // If auth cookies exist, let server-side admin guard do the final check.
     // This avoids redirect loops caused by occasional middleware auth misses.
     if (hasSupabaseAuthCookie) {
-      return supabaseResponse;
+      return withAdminDebug(supabaseResponse, 'admin_no_user_but_cookie_passthrough');
     }
     const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+    return withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login');
   }
 
   // If unauthenticated and not in maintenance mode, stop here and allow public access
   if (!user) {
-    return supabaseResponse;
+    return withAdminDebug(supabaseResponse, 'public_no_user_passthrough');
   }
 
   // PROTECTED ROUTES LOGIC
@@ -199,20 +206,18 @@ export async function updateSession(request: NextRequest) {
           setCache(profileCacheKey, roleData, 2 * 60 * 1000); // Cache for 2 minutes
         }
       } catch (e) {
-        // Fail closed for admin routes if profile verification fails.
+        // Let server-side admin verification decide for admin routes.
         if (request.nextUrl.pathname.startsWith('/admin')) {
-          const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-          return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+          return withAdminDebug(supabaseResponse, 'admin_profile_query_exception_passthrough');
         }
         return supabaseResponse;
       }
     }
 
     if (!roleData) {
-      // User doesn't exist in profiles table or connection failed
+      // Let server-side admin verification decide for admin routes.
       if (request.nextUrl.pathname.startsWith('/admin')) {
-        const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-        return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+        return withAdminDebug(supabaseResponse, 'admin_roledata_missing_passthrough');
       }
       return supabaseResponse;
     }
@@ -220,8 +225,9 @@ export async function updateSession(request: NextRequest) {
     // Admin route protection
     if (request.nextUrl.pathname.startsWith('/admin')) {
       if (roleData?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        return withAdminDebug(NextResponse.redirect(new URL('/dashboard', request.url)), 'admin_role_not_admin_redirect_dashboard');
       }
+      return withAdminDebug(supabaseResponse, 'admin_role_admin_allow');
     }
 
     // Dashboard route protection (pro user)
@@ -287,7 +293,7 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  return supabaseResponse;
+  return withAdminDebug(supabaseResponse, 'default_passthrough');
 }
 
 
