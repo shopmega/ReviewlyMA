@@ -56,12 +56,29 @@ export async function createAuthClient() {
  */
 export async function verifyAdminSession() {
   const authClient = await createAuthClient();
+  let user: { id: string } | null = null;
+
   const {
-    data: { user },
+    data: { user: authUser },
     error: authError,
   } = await authClient.auth.getUser();
 
-  if (authError || !user) {
+  if (!authError && authUser) {
+    user = authUser;
+  } else {
+    // Fallback for occasional getUser() false negatives in server rendering:
+    // use the cookie session user if present.
+    const {
+      data: { session },
+      error: sessionError,
+    } = await authClient.auth.getSession();
+
+    if (!sessionError && session?.user) {
+      user = session.user;
+    }
+  }
+
+  if (!user) {
     throw new Error('Non autorise: session invalide.');
   }
 
