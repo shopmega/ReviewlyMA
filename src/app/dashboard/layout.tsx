@@ -11,7 +11,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Edit, Home, Megaphone, PieChart, Star, CodeXml, MessageSquare, Zap, Store, HelpCircle, BarChart3 } from 'lucide-react';
+import { Edit, Home, Megaphone, PieChart, Star, CodeXml, MessageSquare, Zap, Store, HelpCircle, BarChart3, Crown } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -21,25 +21,34 @@ import { LucideIcon } from 'lucide-react';
 import { BusinessSelector } from '@/components/shared/BusinessSelector';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { DashboardAuthGuard } from '@/components/auth/DashboardAuthGuard';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 
 interface MenuItem {
   href: string;
   label: string;
   icon: LucideIcon;
   disabled?: boolean;
+  goldOnly?: boolean;
 }
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isMultiBusiness } = useBusiness();
+  const { profile } = useBusinessProfile();
+  const hasGoldAccess = profile?.tier === 'gold';
 
   const menuItems: MenuItem[] = [
     { href: '/dashboard', label: 'Vue d\'ensemble', icon: Home },
     { href: '/dashboard/reviews', label: 'Mes Avis', icon: Star },
     { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
     { href: '/dashboard/premium', label: 'Premium', icon: Zap },
-    { href: '/dashboard/salary-benchmark', label: 'Benchmark salaires', icon: BarChart3 },
+    {
+      href: hasGoldAccess ? '/dashboard/salary-benchmark' : '/dashboard/premium',
+      label: 'Benchmark salaires',
+      icon: BarChart3,
+      goldOnly: true
+    },
     { href: '/dashboard/updates', label: 'Nouveautes', icon: Megaphone },
     { href: '/dashboard/edit-profile', label: 'Etablissement', icon: Edit },
     { href: '/dashboard/analytics', label: 'Statistiques', icon: PieChart },
@@ -110,7 +119,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 >
                   <Link href={item.href}>
                     <item.icon className="h-4 w-4" />
-                    <span className="font-medium">{item.label}</span>
+                    <span className="font-medium inline-flex items-center gap-2">
+                      {item.label}
+                      {item.goldOnly && (
+                        <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                          <Crown className="mr-1 h-3 w-3" />
+                          Gold
+                        </span>
+                      )}
+                    </span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -3,10 +3,11 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { ActionState, businessProfileUpdateSchema } from '@/lib/types';
+import { ActionState, businessProfileUpdateSchema, MediaReportFormData, type SubscriptionTier } from '@/lib/types';
 import { createServiceClient } from '@/lib/supabase/server';
 import { logger, LogLevel } from '@/lib/logger';
 import { notifyAdmins } from '@/lib/notifications';
+import { isPaidTier } from '@/lib/tier-utils';
 
 export async function suggestBusiness(formData: FormData): Promise<ActionState> {
     const cookieStore = await cookies();
@@ -73,8 +74,6 @@ export async function suggestBusiness(formData: FormData): Promise<ActionState> 
     }
 }
 
-import { MediaReportFormData } from '@/lib/types';
-
 /**
  * Helper to verify if a user has permission to manage a specific business
  */
@@ -82,7 +81,7 @@ async function verifyBusinessOwnership(supabase: any, userId: string, businessId
     // 1. Get user profile
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role, business_id')
+        .select('role, business_id, tier')
         .eq('id', userId)
         .single();
 
@@ -284,6 +283,23 @@ export async function submitUpdate(
 
         if (!authorized || !profile || (profile.role !== 'pro' && profile.role !== 'growth' && profile.role !== 'admin')) {
             return { status: 'error', message: 'Permissions insuffisantes' };
+        }
+
+        const isAdmin = profile.role === 'admin';
+        let hasPremiumAccess = isPaidTier((profile.tier ?? null) as SubscriptionTier | null);
+
+        if (!isAdmin && !hasPremiumAccess) {
+            const { data: businessTier } = await supabase
+                .from('businesses')
+                .select('tier')
+                .eq('id', businessId)
+                .maybeSingle();
+
+            hasPremiumAccess = isPaidTier((businessTier?.tier ?? null) as SubscriptionTier | null);
+        }
+
+        if (!isAdmin && !hasPremiumAccess) {
+            return { status: 'error', message: 'Fonctionnalite reservee aux comptes Premium.' };
         }
 
         const title = formData.get('updateTitle') as string;

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import Link from 'next/link';
 
 export default function MessagesPage() {
   const { profile, businessId, loading, currentBusiness } = useBusinessProfile();
@@ -132,8 +133,8 @@ export default function MessagesPage() {
             <p className="text-muted-foreground max-w-md mb-6">
               La messagerie directe est une fonctionnalité exclusive aux membres Premium. Communiquez directement avec les candidats et employés potentiels pour renforcer votre attractivité.
             </p>
-            <Button className="bg-amber-500 hover:bg-amber-600 rounded-full px-8 h-12 text-lg font-semibold shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
-              Passer à Premium
+            <Button asChild className="bg-amber-500 hover:bg-amber-600 rounded-full px-8 h-12 text-lg font-semibold shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
+              <Link href="/dashboard/premium">Passer à Premium</Link>
             </Button>
           </div>
 
@@ -253,4 +254,3 @@ export default function MessagesPage() {
     </div>
   );
 }
-

@@ -409,45 +409,6 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          <div className="mb-8 flex flex-wrap gap-3">
-            <Button
-              type="button"
-              variant={activeTab === 'reviews' ? 'default' : 'outline'}
-              className="rounded-full"
-              onClick={() => setActiveTab('reviews')}
-            >
-              <Star className="mr-2 h-4 w-4" />
-              Mes avis
-            </Button>
-            <Button
-              type="button"
-              variant={activeTab === 'saved' ? 'default' : 'outline'}
-              className="rounded-full"
-              onClick={() => setActiveTab('saved')}
-            >
-              <Heart className="mr-2 h-4 w-4" />
-              Mes favoris
-            </Button>
-            <Button
-              type="button"
-              variant={activeTab === 'settings' ? 'default' : 'outline'}
-              className="rounded-full"
-              onClick={() => setActiveTab('settings')}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Mon profil
-            </Button>
-            <Button
-              type="button"
-              variant={activeTab === 'security' ? 'default' : 'outline'}
-              className="rounded-full"
-              onClick={() => setActiveTab('security')}
-            >
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              Securite
-            </Button>
-          </div>
-
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ProfileTab)} className="space-y-8">
             <div className="flex justify-start overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
