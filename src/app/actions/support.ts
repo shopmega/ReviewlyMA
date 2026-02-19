@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { verifyAdminSession } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { ActionState, SupportTicket, SupportMessage } from '@/lib/types';
 import {
@@ -19,6 +20,13 @@ import { getServerSiteUrl, getSiteName } from '@/lib/site-config';
 export type SupportTicketStatus = 'pending' | 'in_progress' | 'resolved' | 'closed';
 export type SupportTicketPriority = 'low' | 'medium' | 'high';
 export type SupportTicketCategory = 'account' | 'billing' | 'business' | 'reviews' | 'technical' | 'other';
+
+async function getCurrentUserId(): Promise<string | null> {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return user.id;
+}
 
 /**
  * Create a new support ticket (user action)
@@ -138,22 +146,11 @@ export async function getUserSupportTickets(): Promise<SupportTicket[]> {
  */
 export async function getAllSupportTickets(): Promise<SupportTicket[]> {
     try {
-        const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError || !user) {
-            return [];
-        }
-
-        // Verify admin role
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
-            logError('get_all_support_tickets_unauthorized', new Error('Not admin'), { userId: user.id });
+        try {
+            await verifyAdminSession();
+        } catch {
+            const userId = await getCurrentUserId();
+            logError('get_all_support_tickets_unauthorized', new Error('Not admin'), { userId });
             return [];
         }
 
@@ -222,14 +219,9 @@ export async function updateSupportTicket(
             );
         }
 
-        // Verify admin role
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
+        try {
+            await verifyAdminSession();
+        } catch {
             return createErrorResponse(
                 ErrorCode.AUTHORIZATION_ERROR,
                 'Permissions insuffisantes'
@@ -251,7 +243,8 @@ export async function updateSupportTicket(
             updateData.priority = priority;
         }
 
-        const { error } = await supabase
+        const serviceClient = await createServiceClient();
+        const { error } = await serviceClient
             .from('support_tickets')
             .update(updateData)
             .eq('id', ticketId);
@@ -319,21 +312,9 @@ export async function getSupportTicketStats(): Promise<{
     unread_admin: number;
 }> {
     try {
-        const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError || !user) {
-            return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0 };
-        }
-
-        // Verify admin role
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
+        try {
+            await verifyAdminSession();
+        } catch {
             return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0 };
         }
 
@@ -378,18 +359,20 @@ export async function markSupportTicketAsRead(
         }
 
         const updateData: any = {};
+        let updateClient = supabase;
         if (role === 'user') {
             updateData.is_read_by_user = true;
         } else {
-            // Verify admin for admin read toggle
-            const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-            if (profile?.role !== 'admin') {
+            try {
+                await verifyAdminSession();
+            } catch {
                 return createErrorResponse(ErrorCode.AUTHORIZATION_ERROR, 'Non autorisé');
             }
             updateData.is_read_by_admin = true;
+            updateClient = await createServiceClient();
         }
 
-        const { error } = await supabase
+        const { error } = await updateClient
             .from('support_tickets')
             .update(updateData)
             .eq('id', ticketId);
@@ -420,9 +403,13 @@ export async function sendSupportMessage(
             return createErrorResponse(ErrorCode.AUTHENTICATION_ERROR, 'Non authentifié');
         }
 
-        // Get user profile to check role
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        const isAdmin = profile?.role === 'admin';
+        let isAdmin = false;
+        try {
+            await verifyAdminSession();
+            isAdmin = true;
+        } catch {
+            isAdmin = false;
+        }
 
         const { error } = await supabase
             .from('support_ticket_messages')

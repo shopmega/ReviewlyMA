@@ -217,6 +217,7 @@ const defaultSettings: SiteSettings = {
 export default function SettingsPage() {
     const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
     const [loading, setLoading] = useState(true);
+    const [loadFailed, setLoadFailed] = useState(false);
     const [saving, setSaving] = useState(false);
     const [salaryRolesText, setSalaryRolesText] = useState((defaultSettings.salary_roles || []).join('\n'));
     const [salaryDepartmentsText, setSalaryDepartmentsText] = useState((defaultSettings.salary_departments || []).join('\n'));
@@ -230,20 +231,44 @@ export default function SettingsPage() {
                 .from('site_settings')
                 .select('*')
                 .eq('id', 'main')
-                .single();
+                .maybeSingle();
 
-            if (!error && data) {
+            if (error) {
+                setLoadFailed(true);
+                toast({
+                    title: 'Erreur',
+                    description: "Impossible de charger les paramètres actuels. Le formulaire affiche des valeurs par défaut.",
+                    variant: 'destructive'
+                });
+            } else if (data) {
                 setSettings({ ...defaultSettings, ...data });
                 setSalaryRolesText((data.salary_roles || []).join('\n'));
                 setSalaryDepartmentsText((data.salary_departments || []).join('\n'));
                 setSalaryIntervalsText(JSON.stringify(data.salary_intervals || [], null, 2));
+                setLoadFailed(false);
+            } else {
+                setLoadFailed(true);
+                toast({
+                    title: 'Erreur',
+                    description: "Aucun enregistrement site_settings (id='main') n'a été trouvé.",
+                    variant: 'destructive'
+                });
             }
             setLoading(false);
         }
         fetchSettings();
-    }, []);
+    }, [toast]);
 
     const handleSave = async () => {
+        if (loadFailed) {
+            toast({
+                title: 'Sauvegarde bloquée',
+                description: "Rechargez la page après avoir résolu le chargement des paramètres pour éviter d'écraser les données existantes.",
+                variant: 'destructive'
+            });
+            return;
+        }
+
         setSaving(true);
 
         try {
@@ -340,7 +365,7 @@ export default function SettingsPage() {
 
                 <Button
                     onClick={handleSave}
-                    disabled={saving}
+                    disabled={saving || loadFailed}
                     className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
                 >
                     {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}

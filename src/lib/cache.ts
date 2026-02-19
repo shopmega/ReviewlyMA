@@ -55,11 +55,7 @@ export const CACHE_CONFIG = {
  */
 export const getCachedSiteSettings = async () => {
   const { getSiteSettings } = await import('./data');
-  return unstable_cache(
-    async () => getSiteSettings(),
-    [CACHE_KEYS.SITE_SETTINGS],
-    { revalidate: CACHE_CONFIG.VERY_LONG, tags: [CACHE_TAGS.SITE_SETTINGS] }
-  )();
+  return getSiteSettings();
 };
 
 /**
