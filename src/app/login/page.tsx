@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState, useTransition } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -13,24 +12,28 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createClient } from '@/lib/supabase/client';
 import { getClientOAuthRedirectUrl } from '@/lib/site-config';
-import { loginSchema, type LoginFormData } from '@/lib/types';
+import { loginSchema, type AuthFormState, type LoginFormData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { login } from '@/app/actions/auth';
 
 export default function LoginPage() {
+  const initialState: AuthFormState = { status: 'idle', message: '' };
+  const [state, formAction] = useActionState(login, initialState);
   const { toast } = useToast();
-  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [oauthPending, setOauthPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [nextPath, setNextPath] = useState('/');
   const supabase = createClient();
 
-  const nextPath = useMemo(() => {
-    const rawNext = searchParams.get('next');
+  useEffect(() => {
+    const rawNext = new URLSearchParams(window.location.search).get('next');
     if (!rawNext || !rawNext.startsWith('/')) {
-      return '/';
+      setNextPath('/');
+      return;
     }
-    return rawNext;
-  }, [searchParams]);
+    setNextPath(rawNext);
+  }, []);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -40,33 +43,35 @@ export default function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    if (state.status === 'success') {
+      setErrorMessage('');
+      toast({
+        title: 'Succes',
+        description: state.message || 'Connexion reussie. Redirection en cours...',
+      });
+      window.location.assign(nextPath);
+      return;
+    }
+
+    if (state.status === 'error') {
+      const message = state.message || 'Echec de la connexion. Veuillez verifier vos identifiants.';
+      setErrorMessage(message);
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: message,
+      });
+    }
+  }, [state.status, state.message, nextPath, toast]);
+
   const onSubmit = (data: LoginFormData) => {
     setErrorMessage('');
+    const formData = new FormData();
+    formData.append('email', data.email);
+    formData.append('password', data.password);
     startTransition(() => {
-      (async () => {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-
-        if (error) {
-          const message = error.message || 'Echec de la connexion. Veuillez verifier vos identifiants.';
-          setErrorMessage(message);
-          toast({
-            variant: 'destructive',
-            title: 'Erreur',
-            description: message,
-          });
-          return;
-        }
-
-        toast({
-          title: 'Succes',
-          description: 'Connexion reussie. Redirection en cours...',
-        });
-
-        window.location.assign(nextPath);
-      })();
+      formAction(formData);
     });
   };
 

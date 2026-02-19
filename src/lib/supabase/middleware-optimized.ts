@@ -160,9 +160,12 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Protect /review route (User must be logged in to write a review)
-  if (!user && request.nextUrl.pathname.startsWith('/review')) {
-    return NextResponse.redirect(new URL('/login?next=/review', request.url));
+  // Protect review creation routes (user must be logged in to write a review)
+  const isGeneralReviewRoute = request.nextUrl.pathname.startsWith('/review');
+  const isBusinessReviewRoute = /^\/businesses\/[^/]+\/review\/?$/.test(request.nextUrl.pathname);
+  if (!user && (isGeneralReviewRoute || isBusinessReviewRoute)) {
+    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }
 
   // Detect Supabase auth cookies to mitigate middleware false negatives.

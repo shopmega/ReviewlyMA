@@ -11,6 +11,7 @@ import {
 } from '@/lib/types';
 import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
     handleAuthenticationError,
     handleValidationError,
@@ -152,6 +153,7 @@ export async function proSignup(
     prevState: AuthFormState,
     formData: FormData
 ): Promise<AuthFormState> {
+    let createdUserId: string | null = null;
 
     const entries = Object.fromEntries(formData.entries());
         const validatedFields = proSignupSchema.safeParse(entries);
@@ -164,6 +166,18 @@ export async function proSignup(
         }
 
     const { email, password, fullName, jobTitle, businessName } = validatedFields.data;
+
+    const cleanupOrphanedAuthUser = async (userId: string, source: string) => {
+        try {
+            const adminClient = await createAdminClient();
+            const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
+            if (deleteError) {
+                logError('pro_signup_cleanup_failed', deleteError, { email, userId, source });
+            }
+        } catch (cleanupError) {
+            logError('pro_signup_cleanup_unexpected', cleanupError, { email, userId, source });
+        }
+    };
 
     // Rate limiting
     const { isLimited, retryAfterSeconds } = checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
@@ -202,6 +216,7 @@ export async function proSignup(
                 'Erreur lors de la création du compte.'
             ) as AuthFormState;
         }
+        createdUserId = authData.user.id;
 
         // STEP 2: Call atomic stored procedure (TRANSACTIONAL)
         // This ensures business, profile, and claim are all created or all rollback
@@ -218,6 +233,7 @@ export async function proSignup(
 
         if (procError || !procResult || procResult.length === 0) {
             logError('pro_signup_procedure', procError, { email, userId: authData.user.id });
+            await cleanupOrphanedAuthUser(authData.user.id, 'procedure_error');
             
             return createErrorResponse(
                 ErrorCode.SERVER_ERROR,
@@ -228,6 +244,7 @@ export async function proSignup(
         const result = procResult[0];
         if (!result.success || !result.business_id || !result.claim_id) {
             logError('pro_signup_result', new Error('Invalid procedure result'), { result });
+            await cleanupOrphanedAuthUser(authData.user.id, 'invalid_result');
             return createErrorResponse(
                 ErrorCode.SERVER_ERROR,
                 'Erreur lors de la création de votre compte. Veuillez réessayer.'
@@ -239,6 +256,9 @@ export async function proSignup(
         ) as AuthFormState;
     } catch (error) {
         logError('pro_signup_unexpected', error, { email });
+        if (createdUserId) {
+            await cleanupOrphanedAuthUser(createdUserId, 'unexpected_error');
+        }
         return createErrorResponse(
             ErrorCode.SERVER_ERROR,
             'Une erreur est survenue lors de l\'inscription pro.'

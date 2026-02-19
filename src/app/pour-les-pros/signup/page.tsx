@@ -58,10 +58,10 @@ export default function ProSignupPage() {
     if (!loading && state.status === 'success') {
       toast({ 
         title: 'Succès', 
-        description: state.message || 'Compte pro créé avec succès! Redirection vers la revendication...' 
+        description: state.message || 'Compte pro créé avec succès! Redirection en cours...' 
       });
       setTimeout(() => {
-        router.push('/claim/new');
+        router.push('/dashboard/pending');
       }, 1000);
     } else if (!loading && state.status === 'error') {
       if (state.errors) {
@@ -223,3 +223,4 @@ export default function ProSignupPage() {
     </div>
   );
 }
+
