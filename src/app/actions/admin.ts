@@ -1393,13 +1393,26 @@ export async function updateSiteSettings(settings: any): Promise<AdminActionResu
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    const payload = { ...settings, id: 'main', updated_at: new Date().toISOString() };
 
-    const { error } = await serviceClient
+    const { error: updateError, data: updatedRows } = await serviceClient
       .from('site_settings')
-      .upsert({ ...settings, updated_at: new Date().toISOString() });
+      .update(payload)
+      .eq('id', 'main')
+      .select('id');
 
-    if (error) {
-      return { status: 'error', message: `Erreur: ${error.message}` };
+    if (updateError) {
+      return { status: 'error', message: `Erreur: ${updateError.message}` };
+    }
+
+    if (!updatedRows || updatedRows.length === 0) {
+      const { error: insertError } = await serviceClient
+        .from('site_settings')
+        .insert(payload);
+
+      if (insertError) {
+        return { status: 'error', message: `Erreur: ${insertError.message}` };
+      }
     }
 
     // Invalidate site settings cache

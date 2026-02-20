@@ -12,9 +12,11 @@ vi.mock('@/lib/supabase/admin', () => ({
     from: vi.fn((table) => {
       if (table === 'site_settings') {
         return {
-          upsert: vi.fn(() => Promise.resolve({ error: null })),
+          insert: vi.fn(() => Promise.resolve({ error: null })),
           update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null }))
+            eq: vi.fn(() => ({
+              select: vi.fn(() => Promise.resolve({ data: [{ id: 'main' }], error: null }))
+            }))
           }))
         };
       }
@@ -89,8 +91,13 @@ describe('Admin Settings Operations', () => {
       const mockAdminClient = (await import('@/lib/supabase/admin')).createAdminClient;
       vi.mocked(mockAdminClient).mockImplementationOnce(() => ({
         from: vi.fn(() => ({
-          upsert: vi.fn(() => Promise.resolve({ 
-            error: { message: 'Database connection failed' } 
+          update: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              select: vi.fn(() => Promise.resolve({
+                data: null,
+                error: { message: 'Database connection failed' }
+              }))
+            }))
           }))
         }))
       } as any));

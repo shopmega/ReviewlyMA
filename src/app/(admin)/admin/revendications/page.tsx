@@ -13,6 +13,7 @@ import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { updateClaimStatus } from "@/app/actions/claim-admin-resilient";
 import { bulkUpdateClaims } from "@/app/actions/admin-bulk";
+import { updateSiteSettings } from "@/app/actions/admin";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -122,14 +123,10 @@ export default function ClaimsPage() {
 
     setIsSavingSettings(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('site_settings')
-        .update({ verification_methods: methods })
-        .eq('id', 'main');
+      const result = await updateSiteSettings({ verification_methods: methods });
 
-      if (error) {
-        toast({ title: 'Erreur', description: 'Erreur lors de la sauvegarde.', variant: 'destructive' });
+      if (result.status !== 'success') {
+        toast({ title: 'Erreur', description: result.message || 'Erreur lors de la sauvegarde.', variant: 'destructive' });
         return;
       }
 

@@ -1,4 +1,4 @@
-﻿-- Baseline schema for Avis-prod (Supabase reset / squash migration)
+-- Baseline schema for Avis-prod (Supabase reset / squash migration)
 -- Apply to a fresh project after resetting Supabase.
 
 begin;
@@ -38,16 +38,22 @@ $$;
 
 create or replace function public.is_admin_user(p_uid uuid)
 returns boolean
-language sql
+language plpgsql
 security definer
 set search_path = public
 as $$
-  select exists (
+begin
+  if to_regclass('public.profiles') is null then
+    return false;
+  end if;
+
+  return exists (
     select 1
     from public.profiles
     where id = p_uid
       and role = 'admin'
   );
+end;
 $$;
 
 revoke all on function public.is_admin_user(uuid) from public;
