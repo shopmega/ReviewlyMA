@@ -1,522 +1,182 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
   getFilteredBusinesses,
-  getBusinesses,
-  getAllCategories,
-  getBusinessReviews,
   getBusinessById,
+  getBusinessReviews,
+  getBusinessHours,
+  getAllCategories,
   getFeaturedBusinesses,
-  getBusinessHours
 } from '../data/businesses';
+import { getPublicClient } from '../data/client';
+import { mapBusinessFromDB, mapCollectionFromDB } from '../data/mappers';
 
-// Mock the Supabase client
-vi.mock('../supabase/client', () => ({
-  createClient: vi.fn(() => ({
-    supabaseUrl: 'test-url',
-    supabaseKey: 'test-key',
-    realtime: {
-      channel: vi.fn()
-    },
-    storage: {
-      from: vi.fn()
-    },
-    from: vi.fn((table: string) => {
-      if (table === 'businesses') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  range: vi.fn(() => Promise.resolve({ 
-                    data: [
-                      { id: '1', name: 'Featured Business 1', is_featured: true },
-                      { id: '2', name: 'Featured Business 2', is_featured: true }
-                    ], 
-                    error: null, 
-                    count: 2 
-                  }))
-                }))
-              }))
-            })),
-            ilike: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-                }))
-              }))
-            })),
-            in: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-                }))
-              }))
-            })),
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-              }))
-            })),
-            limit: vi.fn(() => ({
-              range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-            })),
-            range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 })),
-            single: vi.fn(() => Promise.resolve({ 
-              data: { id: 'biz1', name: 'Test Business' }, 
-              error: null 
-            }))
-          }))
-        };
-      }
-      if (table === 'categories') {
-        return {
-          select: vi.fn(() => ({
-            order: vi.fn(() => Promise.resolve({ 
-              data: [
-                { id: 'cat1', name: 'Restaurant', slug: 'restaurant' },
-                { id: 'cat2', name: 'Hotel', slug: 'hotel' }
-              ], 
-              error: null 
-            }))
-          }))
-        };
-      }
-      if (table === 'reviews') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => Promise.resolve({ 
-                  data: [
-                    { id: 1, rating: 5, comment: 'Great place!' },
-                    { id: 2, rating: 4, comment: 'Good service' }
-                  ], 
-                  error: null 
-                }))
-              }))
-            }))
-          }))
-        };
-      }
-      if (table === 'saved_businesses') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          }))
-        };
-      }
-      return {
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-            limit: vi.fn(() => ({
-              range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-            })),
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-              }))
-            })),
-          })),
-          neq: vi.fn(() => ({
-            delete: vi.fn(() => Promise.resolve({ error: null }))
-          })),
-          in: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-              }))
-            }))
-          })),
-          order: vi.fn(() => ({
-            limit: vi.fn(() => ({
-              range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-            }))
-          })),
-          limit: vi.fn(() => ({
-            range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 }))
-          })),
-          range: vi.fn(() => Promise.resolve({ data: [], error: null, count: 0 })),
-          upsert: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          delete: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null }))
-          })),
-        })),
-        insert: vi.fn(() => Promise.resolve({ data: [], error: null })),
-      };
-    }),
-    auth: {
-      getUser: vi.fn(() => Promise.resolve({ 
-        data: { 
-          user: { 
-            id: 'admin-user-id',
-            email: 'th3mazze@gmail.com'
-          } 
-        }, 
-        error: null 
-      })),
-      signInWithPassword: vi.fn(() => Promise.resolve({ 
-        data: { 
-          user: { 
-            id: 'admin-user-id',
-            email: 'th3mazze@gmail.com'
-          } 
-        }, 
-        error: null 
-      })),
-      signOut: vi.fn(() => Promise.resolve({ error: null })),
-      onAuthStateChange: vi.fn(() => [vi.fn(), vi.fn()]),
-    },
-  }))
+vi.mock('../data/client', () => ({
+  getPublicClient: vi.fn(),
 }));
+
+vi.mock('../data/mappers', () => ({
+  mapBusinessFromDB: vi.fn((row: any) => ({ id: row.id, name: row.name })),
+  mapCollectionFromDB: vi.fn((row: any) => row),
+}));
+
+function createThenableQuery(result: any) {
+  const query: any = {
+    or: vi.fn(() => query),
+    eq: vi.fn(() => query),
+    gte: vi.fn(() => query),
+    contains: vi.fn(() => query),
+    range: vi.fn(() => query),
+    order: vi.fn(() => query),
+    then: (resolve: any, reject: any) => Promise.resolve(result).then(resolve, reject),
+  };
+  return query;
+}
 
 describe('Data Fetching Functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  it('getFilteredBusinesses should return mapped paginated result', async () => {
+    const query = createThenableQuery({
+      data: [{ id: 'b1', name: 'Business 1' }],
+      error: null,
+      count: 1,
+    });
+
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => query),
+      })),
+    } as any);
+
+    const result = await getFilteredBusinesses({ page: 1, limit: 12 });
+
+    expect(result.businesses).toEqual([{ id: 'b1', name: 'Business 1' }]);
+    expect(result.totalCount).toBe(1);
+    expect(result.page).toBe(1);
+    expect(result.totalPages).toBe(1);
   });
 
-  describe('getFilteredBusinesses', () => {
-    it('should fetch businesses with filters', async () => {
-      const filters = {
-        category: 'Restaurant',
-        city: 'Paris',
-        page: 1,
-        limit: 10
-      };
-      const mockBusinesses = [
-        { id: '1', name: 'Test Restaurant', category: 'Restaurant', city: 'Paris' }
-      ];
-
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'businesses') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    order: vi.fn(() => ({
-                      limit: vi.fn(() => ({
-                        range: vi.fn(() => Promise.resolve({ 
-                          data: mockBusinesses, 
-                          error: null, 
-                          count: 1 
-                        }))
-                      }))
-                    }))
-                  }))
-                }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getFilteredBusinesses(filters);
-
-      expect(result).toEqual({
-        businesses: mockBusinesses,
-        totalCount: 1,
-        currentPage: 1,
-        totalPages: 1
-      });
+  it('getFilteredBusinesses should return empty payload on query error', async () => {
+    const query = createThenableQuery({
+      data: null,
+      error: { message: 'query failed' },
+      count: 0,
     });
 
-    it('should handle error when fetching businesses', async () => {
-      const filters = { category: 'Restaurant' };
-      
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'businesses') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  order: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      range: vi.fn(() => Promise.resolve({ 
-                        data: null, 
-                        error: { message: 'Database error' }, 
-                        count: 0 
-                      }))
-                    }))
-                  }))
-                }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => query),
+      })),
+    } as any);
 
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    const result = await getFilteredBusinesses({ page: 1, limit: 12 });
 
-      const result = await getFilteredBusinesses(filters);
-
-      expect(result).toEqual({
-        businesses: [],
-        totalCount: 0,
-        currentPage: 1,
-        totalPages: 0
-      });
-    });
+    expect(result.businesses).toEqual([]);
+    expect(result.totalCount).toBe(0);
+    expect(result.totalPages).toBe(0);
   });
 
-  describe('getBusinesses', () => {
-    it('should fetch all businesses', async () => {
-      const mockBusinesses = [
-        { id: '1', name: 'Business 1' },
-        { id: '2', name: 'Business 2' }
-      ];
+  it('getBusinessById should return mapped business', async () => {
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(() => Promise.resolve({ data: { id: 'b1', name: 'Business 1' }, error: null })),
+          })),
+        })),
+      })),
+    } as any);
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'businesses') {
-            return {
-              select: vi.fn(() => ({
-                order: vi.fn(() => Promise.resolve({ data: mockBusinesses, error: null }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
+    const result = await getBusinessById('b1');
 
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getBusinesses();
-
-      expect(result).toEqual(mockBusinesses);
-    });
+    expect(result).toEqual({ id: 'b1', name: 'Business 1' });
+    expect(mapBusinessFromDB).toHaveBeenCalledTimes(1);
   });
 
-  describe('getAllCategories', () => {
-    it('should fetch all categories', async () => {
-      const mockCategories = [
-        { id: 'cat1', name: 'Restaurant', slug: 'restaurant' },
-        { id: 'cat2', name: 'Hotel', slug: 'hotel' }
-      ];
+  it('getBusinessById should return null when row not found', async () => {
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(() => Promise.resolve({ data: null, error: { code: 'PGRST116' } })),
+          })),
+        })),
+      })),
+    } as any);
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'categories') {
-            return {
-              select: vi.fn(() => ({
-                order: vi.fn(() => Promise.resolve({ data: mockCategories, error: null }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getAllCategories();
-
-      expect(result).toEqual(mockCategories);
-    });
+    const result = await getBusinessById('missing');
+    expect(result).toBeNull();
   });
 
-  describe('getBusinessReviews', () => {
-    it('should fetch business reviews', async () => {
-      const businessId = 'biz1';
-      const mockReviews = [
-        { id: 1, rating: 5, comment: 'Great place!' },
-        { id: 2, rating: 4, comment: 'Good service' }
-      ];
+  it('getBusinessReviews should return review rows', async () => {
+    const reviews = [{ id: 1 }, { id: 2 }];
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => Promise.resolve({ data: reviews, error: null })),
+            })),
+          })),
+        })),
+      })),
+    } as any);
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'reviews') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  order: vi.fn(() => ({
-                    limit: vi.fn(() => Promise.resolve({ data: mockReviews, error: null }))
-                  }))
-                }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getBusinessReviews(businessId);
-
-      expect(result).toEqual(mockReviews);
-    });
+    const result = await getBusinessReviews('b1');
+    expect(result).toEqual(reviews);
   });
 
-  describe('getBusinessById', () => {
-    it('should fetch business by id', async () => {
-      const businessId = 'biz1';
-      const mockBusiness = { id: businessId, name: 'Test Business' };
+  it('getBusinessHours should return business hours rows', async () => {
+    const hours = [{ day_of_week: 1, open_time: '09:00' }];
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ data: hours, error: null })),
+        })),
+      })),
+    } as any);
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'businesses') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: mockBusiness, error: null }))
-                }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getBusinessById(businessId);
-
-      expect(result).toEqual(mockBusiness);
-    });
-
-    it('should return null when business not found', async () => {
-      const businessId = 'nonexistent';
-
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'businesses') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: null, error: { code: 'PGRST116' } }))
-                }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getBusinessById(businessId);
-
-      expect(result).toBeNull();
-    });
+    const result = await getBusinessHours('b1');
+    expect(result).toEqual(hours);
   });
 
-  describe('getFeaturedBusinesses', () => {
-    it('should fetch featured businesses', async () => {
-      const mockBusinesses = [
-        { id: '1', name: 'Featured Business 1', is_featured: true },
-        { id: '2', name: 'Featured Business 2', is_featured: true }
-      ];
+  it('getAllCategories should return unique sorted categories', async () => {
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          not: vi.fn(() =>
+            Promise.resolve({
+              data: [{ category: 'Cafe' }, { category: 'Hotel' }, { category: 'Cafe' }],
+              error: null,
+            })
+          ),
+        })),
+      })),
+    } as any);
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'businesses') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  order: vi.fn(() => ({
-                    limit: vi.fn(() => Promise.resolve({ data: mockBusinesses, error: null }))
-                  }))
-                }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getFeaturedBusinesses();
-
-      expect(result).toEqual(mockBusinesses);
-    });
+    const result = await getAllCategories();
+    expect(result).toEqual(['Cafe', 'Hotel']);
   });
 
-  describe('getBusinessHours', () => {
-    it('should fetch business hours', async () => {
-      const businessId = 'biz1';
-      const mockHours = [
-        { day_of_week: 1, open_time: '09:00', close_time: '17:00', is_closed: false },
-        { day_of_week: 2, open_time: '09:00', close_time: '17:00', is_closed: false }
-      ];
-
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'business_hours') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => Promise.resolve({ data: mockHours, error: null }))
-              }))
-            };
-          }
-          return {
-            select: vi.fn(() => ({
-              order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-            }))
-          };
-        })
-      };
-
-      const { createClient } = await import('../supabase/client');
-      vi.mocked(createClient).mockReturnValue(mockSupabase as any);
-
-      const result = await getBusinessHours(businessId);
-
-      expect(result).toEqual(mockHours);
+  it('getFeaturedBusinesses should return the featured business list', async () => {
+    const query = createThenableQuery({
+      data: [{ id: 'f1', name: 'Featured 1' }, { id: 'f2', name: 'Featured 2' }],
+      error: null,
+      count: 2,
     });
+
+    vi.mocked(getPublicClient).mockReturnValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => query),
+      })),
+    } as any);
+
+    const result = await getFeaturedBusinesses();
+    expect(result).toEqual([
+      { id: 'f1', name: 'Featured 1' },
+      { id: 'f2', name: 'Featured 2' },
+    ]);
   });
 });

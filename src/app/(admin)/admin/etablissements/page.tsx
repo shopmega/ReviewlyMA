@@ -290,7 +290,14 @@ export default function BusinessesAdminPage() {
     }
 
     setIsProcessingBulk(true); // Using this as a general loading flag for simplicity here
-    const result = await createBusiness(newBusiness);
+    const result = await createBusiness({
+      name: newBusiness.name,
+      category: newBusiness.category,
+      city: newBusiness.city,
+      address: newBusiness.address,
+      description: newBusiness.description,
+      tier: newBusiness.isPremium ? 'growth' : 'standard',
+    });
 
     if (result.status === 'success') {
       toast({ title: 'Succès', description: 'Établissement ajouté avec succès.' });

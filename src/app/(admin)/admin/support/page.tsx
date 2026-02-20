@@ -72,6 +72,7 @@ export default function AdminSupportPage() {
     const [newStatus, setNewStatus] = useState<SupportTicketStatus>('in_progress');
     const [newPriority, setNewPriority] = useState<SupportTicketPriority>('medium');
     const [updating, setUpdating] = useState(false);
+    const effectiveTotal = stats.total > 0 ? stats.total : tickets.length;
 
     useEffect(() => {
         fetchData();
@@ -207,7 +208,7 @@ export default function AdminSupportPage() {
                     Gestion <span className="text-primary italic">Support</span>
                 </h1>
                 <p className="text-muted-foreground font-medium flex items-center gap-2 mt-2">
-                    <MessageSquare className="h-4 w-4" /> {stats.total} tickets au total
+                    <MessageSquare className="h-4 w-4" /> {effectiveTotal} tickets au total
                 </p>
             </div>
 
@@ -274,7 +275,7 @@ export default function AdminSupportPage() {
                                 Total
                             </Badge>
                         </div>
-                        <p className="text-3xl font-black tabular-nums">{stats.total}</p>
+                        <p className="text-3xl font-black tabular-nums">{effectiveTotal}</p>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
                             Tous les tickets
                         </p>

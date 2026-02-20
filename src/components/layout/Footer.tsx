@@ -48,6 +48,8 @@ export async function Footer({ settings }: { settings?: SiteSettings }) {
               <Link href="/top-rated" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Les Mieux Notés</Link>
               <Link href="/recently-added" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Nouveautés</Link>
               <Link href="/villes" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Explorer par ville</Link>
+              <Link href="/salaires" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Salaires au Maroc</Link>
+              <Link href="/salaires/comparaison" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Comparateur de salaires</Link>
               <Link href="/pour-les-pros" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block font-bold text-primary">Pour les professionnels</Link>
               <Link href="/premium" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Abonnement Premium</Link>
               <Link href="/rules" className="hover:text-primary transition-colors hover:translate-x-1 duration-200 inline-block">Charte de confiance</Link>

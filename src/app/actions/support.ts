@@ -28,6 +28,27 @@ async function getCurrentUserId(): Promise<string | null> {
     return user.id;
 }
 
+async function canAccessAdminSupport(): Promise<boolean> {
+    try {
+        await verifyAdminSession();
+        return true;
+    } catch {
+        // Fallback: direct profile role check for occasional session verification false-negatives.
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return false;
+
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (profileError || !profile) return false;
+        return profile.role === 'admin';
+    }
+}
+
 /**
  * Create a new support ticket (user action)
  */
@@ -146,9 +167,8 @@ export async function getUserSupportTickets(): Promise<SupportTicket[]> {
  */
 export async function getAllSupportTickets(): Promise<SupportTicket[]> {
     try {
-        try {
-            await verifyAdminSession();
-        } catch {
+        const isAdmin = await canAccessAdminSupport();
+        if (!isAdmin) {
             const userId = await getCurrentUserId();
             logError('get_all_support_tickets_unauthorized', new Error('Not admin'), { userId });
             return [];
@@ -312,9 +332,8 @@ export async function getSupportTicketStats(): Promise<{
     unread_admin: number;
 }> {
     try {
-        try {
-            await verifyAdminSession();
-        } catch {
+        const isAdmin = await canAccessAdminSupport();
+        if (!isAdmin) {
             return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0 };
         }
 
@@ -340,6 +359,36 @@ export async function getSupportTicketStats(): Promise<{
     } catch (error) {
         logError('get_support_ticket_stats_unexpected', error);
         return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0 };
+    }
+}
+
+export async function markAllUserSupportTicketsAsRead(): Promise<ActionState> {
+    try {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return createErrorResponse(ErrorCode.AUTHENTICATION_ERROR, 'Non authentifié');
+        }
+
+        const { error } = await supabase
+            .from('support_tickets')
+            .update({ is_read_by_user: true })
+            .eq('user_id', user.id)
+            .eq('is_read_by_user', false);
+
+        if (error) {
+            logError('mark_all_user_support_tickets_read', error, { userId: user.id });
+            return handleDatabaseError(error);
+        }
+
+        revalidatePath('/dashboard');
+        revalidatePath('/dashboard/support');
+
+        return createSuccessResponse('Tickets marqués comme lus');
+    } catch (error) {
+        logError('mark_all_user_support_tickets_read_unexpected', error);
+        return createErrorResponse(ErrorCode.SERVER_ERROR, 'Erreur');
     }
 }
 

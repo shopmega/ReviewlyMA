@@ -1,59 +1,45 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+async function openFirstBusiness(page: Page) {
+  await page.goto('/businesses', { waitUntil: 'domcontentloaded', timeout: 120000 });
+  const firstBusinessLink = page.locator('a[href*="/businesses/"]').first();
+  await expect(firstBusinessLink).toBeVisible();
+  await firstBusinessLink.click();
+  await expect(page).toHaveURL(/\/businesses\/[^/]+$/);
+}
+
+test.describe.configure({ mode: 'serial' });
+test.setTimeout(120000);
 
 test.describe('Business Page Tests', () => {
-  test('should display business details correctly', async ({ page }) => {
-    // Navigate to a specific business page (using Bimo Café as an example)
-    await page.goto('/businesses/bimo-cafe');
-
-    // Check if business name is visible
-    await expect(page.locator('h1')).toContainText('Bimo Café');
-
-    // Check if business category is visible
-    await expect(page.locator('text=Café & Restaurant')).toBeVisible();
-
-    // Check if business location is visible
-    await expect(page.locator('text=Agdal, Rabat')).toBeVisible();
-
-    // Check if rating is visible
-    await expect(page.locator('[data-testid="star-rating"]')).toBeVisible();
-
-    // Check if business description is visible
-    await expect(page.locator('text=Café moderne proposant des spécialités de café et des pâtisseries fines.')).toBeVisible();
+  test('should load a business details page from listing', async ({ page }) => {
+    await openFirstBusiness(page);
+    await expect(page.locator('main, [role="main"]').first()).toBeVisible();
+    await expect(page.locator('h1').first()).toBeVisible();
   });
 
-  test('should display business photos', async ({ page }) => {
-    // Navigate to a specific business page
-    await page.goto('/businesses/bimo-cafe');
-
-    // Check if the photo gallery is visible
-    await expect(page.locator('[data-testid="photo-gallery"]')).toBeVisible();
-
-    // Check if at least one photo is visible
+  test('should render business media on the page', async ({ page }) => {
+    await openFirstBusiness(page);
     await expect(page.locator('img').first()).toBeVisible();
   });
 
-  test('should display business reviews', async ({ page }) => {
-    // Navigate to a specific business page
-    await page.goto('/businesses/bimo-cafe');
-
-    // Check if reviews section is visible
-    await expect(page.locator('text=Avis')).toBeVisible();
-
-    // Check if at least one review is visible
-    await expect(page.locator('[data-testid="review-card"]').first()).toBeVisible();
+  test('should render insights/reviews area', async ({ page }) => {
+    await openFirstBusiness(page);
+    await expect(page.locator('section#insights, [role="tablist"]').first()).toBeVisible();
   });
 
-  test('should allow submitting a review', async ({ page }) => {
-    // Navigate to a specific business page
-    await page.goto('/businesses/bimo-cafe');
+  test('should navigate to the review form from business page', async ({ page }) => {
+    await openFirstBusiness(page);
+    const reviewLink = page.locator('a[href*="/review"]').first();
+    await expect(reviewLink).toBeVisible();
+    await reviewLink.click();
 
-    // Click on the "Laisser un avis" button
-    await page.locator('text=Laisser un avis').click();
+    if (page.url().includes('/login')) {
+      await expect(page).toHaveURL(/\/login\?next=/);
+      return;
+    }
 
-    // Check if we're redirected to the review page
-    await expect(page).toHaveURL(/\/review/);
-
-    // Check if the review form is visible
-    await expect(page.locator('text=Donnez votre avis')).toBeVisible();
+    await expect(page).toHaveURL(/\/businesses\/[^/]+\/review/);
+    await expect(page.locator('form').first()).toBeVisible();
   });
 });

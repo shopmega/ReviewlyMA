@@ -56,7 +56,7 @@ describe('Error Handling', () => {
       const error = { message: 'duplicate key value violates unique constraint' };
       const response = handleDatabaseError(error);
       expect(response.code).toBe(ErrorCode.CONFLICT);
-      expect(response.message).toContain('already exists');
+      expect(response.message.toLowerCase()).toContain('existe');
     });
 
     it('should handle not found errors', () => {
@@ -130,4 +130,3 @@ describe('Error Handling', () => {
     });
   });
 });
-

@@ -36,25 +36,25 @@ describe('Badge Component', () => {
     it('should render with success variant', () => {
       const { container } = render(<Badge variant="success">Success</Badge>);
       const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-emerald-600');
+      expect(badge).toHaveClass('bg-success');
     });
 
     it('should render with warning variant', () => {
       const { container } = render(<Badge variant="warning">Warning</Badge>);
       const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-amber-600');
+      expect(badge).toHaveClass('bg-warning');
     });
 
     it('should render with error variant', () => {
       const { container } = render(<Badge variant="error">Error</Badge>);
       const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-rose-600');
+      expect(badge).toHaveClass('bg-error');
     });
 
     it('should render with info variant', () => {
       const { container } = render(<Badge variant="info">Info</Badge>);
       const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-indigo-600');
+      expect(badge).toHaveClass('bg-info');
     });
   });
 

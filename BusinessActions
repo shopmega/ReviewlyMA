@@ -1,0 +1,80 @@
+[
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/notifications.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/admin-queries.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/auth-helpers.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/cache.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/data-fetching.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/data-helpers.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/email-service.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/error-handling.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/errors.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/logger.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/rate-limiter.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/simple-test.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/types-validation.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/lib/__tests__/utils.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/app/actions/__tests__/admin-crud.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/app/actions/__tests__/admin-settings.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/app/actions/__tests__/business-crud.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/app/actions/__tests__/categories.test.ts"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/ui/__tests__/badge.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/ui/__tests__/button.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/ui/__tests__/card.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/ui/__tests__/dialog.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/ui/__tests__/form.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/ui/__tests__/input.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/shared/__tests__/BusinessActions.test.tsx"
+  },
+  {
+    "file": "C:/Users/Zouhair/Downloads/AVis-prod/src/components/shared/__tests__/VoteButtons.test.tsx"
+  }
+]

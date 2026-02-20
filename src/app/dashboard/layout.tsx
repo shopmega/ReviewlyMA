@@ -40,6 +40,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const menuItems: MenuItem[] = [
     { href: '/dashboard', label: 'Vue d\'ensemble', icon: Home },
+    { href: '/salaires', label: 'Barometre salaires', icon: BarChart3 },
+    { href: '/salaires/comparaison', label: 'Comparateur salaires', icon: PieChart },
     { href: '/dashboard/reviews', label: 'Mes Avis', icon: Star },
     { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
     { href: '/dashboard/premium', label: 'Premium', icon: Zap },

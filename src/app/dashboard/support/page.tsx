@@ -31,6 +31,7 @@ import {
     createSupportTicket,
     getUserSupportTickets,
     markSupportTicketAsRead,
+    markAllUserSupportTicketsAsRead,
     type SupportTicketCategory
 } from '@/app/actions/support';
 import { type SupportTicket } from '@/lib/types';
@@ -74,6 +75,15 @@ export default function SupportPage() {
         try {
             const data = await getUserSupportTickets();
             setTickets(data);
+
+            // If user opened support center, clear unread support alert on dashboard.
+            const unreadCount = (data || []).filter((t) => !t.is_read_by_user).length;
+            if (unreadCount > 0) {
+                const markAllResult = await markAllUserSupportTicketsAsRead();
+                if (markAllResult.status === 'success') {
+                    setTickets((prev) => prev.map((t) => ({ ...t, is_read_by_user: true })));
+                }
+            }
         } catch (error) {
             console.error('Error fetching tickets:', error);
             toast({

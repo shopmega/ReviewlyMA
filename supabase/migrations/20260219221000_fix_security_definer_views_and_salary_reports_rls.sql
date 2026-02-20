@@ -34,6 +34,20 @@ BEGIN
       FROM pg_policies
       WHERE schemaname = 'public'
         AND tablename = 'salary_monthly_reports'
+        AND policyname = 'Public can read published salary monthly reports'
+    ) THEN
+      CREATE POLICY "Public can read published salary monthly reports"
+        ON public.salary_monthly_reports
+        FOR SELECT
+        TO anon, authenticated
+        USING (is_published = true);
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1
+      FROM pg_policies
+      WHERE schemaname = 'public'
+        AND tablename = 'salary_monthly_reports'
         AND policyname = 'Service role can manage salary monthly reports'
     ) THEN
       CREATE POLICY "Service role can manage salary monthly reports"

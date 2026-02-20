@@ -82,8 +82,6 @@ export async function verifyAdminSession() {
     throw new Error('Non autorise: session invalide.');
   }
 
-  const metadataRole = String(user?.app_metadata?.role || '').toLowerCase();
-
   // Primary check: read the current user's profile through auth client (RLS-safe).
   const { data: ownProfile, error: ownProfileError } = await authClient
     .from('profiles')
@@ -94,9 +92,6 @@ export async function verifyAdminSession() {
   if (!ownProfileError && ownProfile) {
     const ownProfileRole = String(ownProfile.role || '').toLowerCase();
     if (ownProfileRole === 'admin') {
-      return user.id;
-    }
-    if (metadataRole === 'admin') {
       return user.id;
     }
     throw new Error(`Non autorise: role '${ownProfile.role}' insuffisant. Acces reserve aux administrateurs.`);
@@ -114,9 +109,6 @@ export async function verifyAdminSession() {
 
     if (profileError) {
       console.error('Admin verification profile error:', profileError);
-      if (metadataRole === 'admin') {
-        return user.id;
-      }
       throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);
     }
     profile = profiles?.[0] || null;
@@ -125,17 +117,11 @@ export async function verifyAdminSession() {
   }
 
   if (!profile) {
-    if (metadataRole === 'admin') {
-      return user.id;
-    }
     throw new Error('Non autorise: profil introuvable. Veuillez vous reconnecter.');
   }
 
   const profileRole = String(profile.role || '').toLowerCase();
   if (profileRole !== 'admin') {
-    if (metadataRole === 'admin') {
-      return user.id;
-    }
     throw new Error(`Non autorise: role '${profile.role}' insuffisant. Acces reserve aux administrateurs.`);
   }
 

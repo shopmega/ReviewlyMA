@@ -183,12 +183,21 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                     .eq('id', 'main')
                     .maybeSingle();
 
-                // Increased timeout to 10 seconds for slow connections
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Connection timeout')), 10000)
-                );
+                // Increased timeout to 10 seconds for slow connections.
+                // Clear the timer in all cases to avoid dangling handles in tests.
+                let timeoutId: ReturnType<typeof setTimeout> | undefined;
+                const timeoutPromise = new Promise((_, reject) => {
+                    timeoutId = setTimeout(() => reject(new Error('Connection timeout')), 10000);
+                });
 
-                const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+                let result: any;
+                try {
+                    result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+                } finally {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                }
                 const { data, error } = result;
 
                 if (error) {

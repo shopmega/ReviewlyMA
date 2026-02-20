@@ -63,8 +63,19 @@ export async function updateSession(request: NextRequest) {
         return supabaseResponse;
     }
 
-    // If auth.getUser failed or no user, stop here
+    const hasSupabaseAuthCookie = request.cookies
+        .getAll()
+        .some((cookie) => cookie.name.includes('-auth-token'));
+
+    // If auth.getUser failed or no user, protect admin routes and stop here.
     if (!user) {
+        if (request.nextUrl.pathname.startsWith('/admin')) {
+            if (hasSupabaseAuthCookie) {
+                return withAdminDebug(supabaseResponse, 'admin_no_user_but_cookie_passthrough');
+            }
+            const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+            return withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login');
+        }
         return supabaseResponse;
     }
 
@@ -100,18 +111,6 @@ export async function updateSession(request: NextRequest) {
     }
 
     // PROTECTED ROUTES LOGIC
-    const hasSupabaseAuthCookie = request.cookies
-        .getAll()
-        .some((cookie) => cookie.name.includes('-auth-token'));
-
-    if (!user && request.nextUrl.pathname.startsWith('/admin')) {
-        if (hasSupabaseAuthCookie) {
-            return withAdminDebug(supabaseResponse, 'admin_no_user_but_cookie_passthrough');
-        }
-        const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-        return withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login');
-    }
-
     // Check role-based access for /admin and /dashboard
     if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/dashboard')) {
         // Fetch user role, business_id

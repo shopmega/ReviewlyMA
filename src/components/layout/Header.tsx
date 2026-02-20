@@ -20,6 +20,7 @@ import { NotificationBell } from './NotificationBell';
 const navLinks = [
   { href: '/', label: 'Accueil', icon: Home },
   { href: '/businesses', label: 'Établissements', icon: Search },
+  { href: '/salaires', label: 'Salaires', icon: Sparkles },
   { href: '/categories', label: 'Catégories', icon: BookOpen },
   { href: '/villes', label: 'Villes', icon: MapPin },
   { href: '/pour-les-pros', label: 'Pour les pros', icon: Briefcase },

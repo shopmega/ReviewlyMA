@@ -54,18 +54,28 @@ vi.mock('next/link', () => ({
 // Mock lucide-react icons
 vi.mock('lucide-react', () => {
   const React = require('react');
-  return {
-    Loader2: () => React.createElement('span', { 'data-testid': 'loader-icon' }, 'Loader'),
-    Share2: () => React.createElement('span', { 'data-testid': 'share-icon' }, 'Share'),
-    Bookmark: () => React.createElement('span', { 'data-testid': 'bookmark-icon' }, 'Bookmark'),
-    ThumbsUp: () => React.createElement('span', { 'data-testid': 'thumbs-up-icon' }, 'ThumbsUp'),
-    ThumbsDown: () => React.createElement('span', { 'data-testid': 'thumbs-down-icon' }, 'ThumbsDown'),
-    MessageCircle: () => React.createElement('span', { 'data-testid': 'message-circle-icon' }, 'MessageCircle'),
-    Facebook: () => React.createElement('span', { 'data-testid': 'facebook-icon' }, 'Facebook'),
-    Twitter: () => React.createElement('span', { 'data-testid': 'twitter-icon' }, 'Twitter'),
-    Pencil: () => React.createElement('span', { 'data-testid': 'pencil-icon' }, 'Pencil'),
-    Phone: () => React.createElement('span', { 'data-testid': 'phone-icon' }, 'Phone'),
-    Globe: () => React.createElement('span', { 'data-testid': 'globe-icon' }, 'Globe'),
-    Mail: () => React.createElement('span', { 'data-testid': 'mail-icon' }, 'Mail'),
+  const testIds: Record<string, string> = {
+    Loader2: 'loader-icon',
+    Share2: 'share-icon',
+    Bookmark: 'bookmark-icon',
+    ThumbsUp: 'thumbs-up-icon',
+    ThumbsDown: 'thumbs-down-icon',
+    MessageCircle: 'message-circle-icon',
+    Facebook: 'facebook-icon',
+    Twitter: 'twitter-icon',
+    Pencil: 'pencil-icon',
+    Phone: 'phone-icon',
+    Globe: 'globe-icon',
+    Mail: 'mail-icon',
   };
+
+  return new Proxy(
+    {},
+    {
+      get(_target, prop: string) {
+        const dataTestId = testIds[prop] || `${String(prop)}-icon`;
+        return () => React.createElement('span', { 'data-testid': dataTestId }, String(prop));
+      },
+    }
+  );
 });

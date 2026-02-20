@@ -1179,6 +1179,7 @@ export async function bulkUpdateBusinesses(
     status?: 'active' | 'suspended';
     is_premium?: boolean;
     featured?: boolean;
+    is_featured?: boolean;
   }
 ): Promise<BulkOperationResult> {
   try {
@@ -1195,9 +1196,15 @@ export async function bulkUpdateBusinesses(
       };
     }
 
+    const { featured, ...rest } = updateData;
+    const normalizedUpdateData = {
+      ...rest,
+      ...(typeof featured === 'boolean' ? { is_featured: featured } : {}),
+    };
+
     const { error, count } = await serviceClient
       .from('businesses')
-      .update(updateData, { count: 'exact' })
+      .update(normalizedUpdateData, { count: 'exact' })
       .in('id', businessIds);
 
     const processed = error ? 0 : Math.min(count ?? businessIds.length, businessIds.length);
@@ -1212,7 +1219,7 @@ export async function bulkUpdateBusinesses(
         action: 'bulk_update_businesses',
         details: {
           business_ids: businessIds,
-          update_data: updateData,
+          update_data: normalizedUpdateData,
           processed,
           failed,
           errors

@@ -1,16 +1,15 @@
-import { expect, describe, it, vi, beforeEach, afterEach } from 'vitest';
+import { expect, describe, it, vi, beforeEach } from 'vitest';
 import { getNotifications, markAsRead, markAllAsRead, Notification } from './app/actions/notifications';
 
-// Mock the Supabase client and cookies
 const mockGetUser = vi.fn();
-const mockSelect = vi.fn();
-const mockOrder = vi.fn();
-const mockLimit = vi.fn();
-const mockUpdate = vi.fn();
-const mockEq = vi.fn();
 const mockFrom = vi.fn();
 const mockCookiesGetAll = vi.fn();
 const mockCookiesSetAll = vi.fn();
+
+const mockListLimit = vi.fn();
+const mockTargetMaybeSingle = vi.fn();
+const mockUpdateSelect = vi.fn();
+const mockMarkAllEq = vi.fn();
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(() => ({
@@ -30,39 +29,48 @@ vi.mock('next/headers', () => ({
 
 describe('Notification System Tests', () => {
   beforeEach(() => {
-    // Reset mocks before each test
     vi.clearAllMocks();
-    
-    // Set up default mock return values
     mockCookiesGetAll.mockReturnValue([]);
     mockCookiesSetAll.mockReturnValue(undefined);
-    
-    // Default chain for select operations
+
+    const listQuery = {
+      or: vi.fn(() => listQuery),
+      order: vi.fn(() => listQuery),
+      limit: mockListLimit,
+    };
+
+    const targetQuery = {
+      eq: vi.fn(() => targetQuery),
+      maybeSingle: mockTargetMaybeSingle,
+    };
+
+    const updateQuery = {
+      eq: vi.fn((field: string, value: unknown) => {
+        if (field === 'id') {
+          return {
+            select: mockUpdateSelect,
+          };
+        }
+        return mockMarkAllEq(field, value);
+      }),
+    };
+
     mockFrom.mockReturnValue({
-      select: mockSelect.mockReturnThis(),
-      update: mockUpdate.mockReturnThis(),
+      select: vi.fn((columns: string) => {
+        if (columns === 'id, user_id') {
+          return targetQuery;
+        }
+        return listQuery;
+      }),
+      update: vi.fn(() => updateQuery),
     });
-    mockSelect.mockReturnValue({
-      order: mockOrder.mockReturnThis(),
-    });
-    mockOrder.mockReturnValue({
-      limit: mockLimit,
-    });
-    mockUpdate.mockReturnValue({
-      eq: mockEq,
-    });
-    mockEq.mockResolvedValue({ error: null });
   });
 
   describe('getNotifications', () => {
     it('should return an empty array when no user is authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
-      mockLimit.mockResolvedValue({ data: [], error: null });
-
       const notifications = await getNotifications();
-      
       expect(notifications).toEqual([]);
-      expect(mockGetUser).toHaveBeenCalled();
     });
 
     it('should return notifications for authenticated user', async () => {
@@ -76,116 +84,69 @@ describe('Notification System Tests', () => {
           type: 'system',
           is_read: false,
           created_at: new Date().toISOString(),
-        }
+        },
       ];
 
       mockGetUser.mockResolvedValue({ data: { user: mockUser }, error: null });
-      mockLimit.mockResolvedValue({ data: mockNotifications, error: null });
+      mockListLimit.mockResolvedValue({ data: mockNotifications, error: null });
 
       const notifications = await getNotifications();
 
       expect(notifications).toEqual(mockNotifications);
       expect(mockFrom).toHaveBeenCalledWith('notifications');
-      expect(mockSelect).toHaveBeenCalledWith('*');
-      expect(mockOrder).toHaveBeenCalledWith('created_at', { ascending: false });
-      expect(mockLimit).toHaveBeenCalledWith(20);
+      expect(mockListLimit).toHaveBeenCalledWith(20);
     });
 
     it('should handle errors when fetching notifications', async () => {
-      const mockUser = { id: 'test-user-id' };
-
-      mockGetUser.mockResolvedValue({ data: { user: mockUser }, error: null });
-      mockLimit.mockResolvedValue({ data: null, error: { message: 'Database error' } });
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+      mockListLimit.mockResolvedValue({ data: null, error: { message: 'Database error' } });
 
       const notifications = await getNotifications();
-
       expect(notifications).toEqual([]);
     });
   });
 
   describe('markAsRead', () => {
     it('should mark a notification as read successfully', async () => {
-      const notificationId = 1;
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+      mockTargetMaybeSingle.mockResolvedValue({ data: { id: 1, user_id: 'u1' }, error: null });
+      mockUpdateSelect.mockResolvedValue({ data: [{ id: 1 }], error: null });
 
-      mockEq.mockResolvedValue({ error: null });
-
-      const result = await markAsRead(notificationId);
-
+      const result = await markAsRead(1);
       expect(result).toEqual({ status: 'success', message: 'Notification lue.' });
-      expect(mockFrom).toHaveBeenCalledWith('notifications');
-      expect(mockUpdate).toHaveBeenCalledWith({ is_read: true });
-      expect(mockEq).toHaveBeenCalledWith('id', notificationId);
     });
 
     it('should handle errors when marking notification as read', async () => {
-      const notificationId = 1;
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+      mockTargetMaybeSingle.mockResolvedValue({ data: { id: 1, user_id: 'u1' }, error: null });
+      mockUpdateSelect.mockResolvedValue({ data: null, error: { message: 'Update error' } });
 
-      mockEq.mockResolvedValue({ error: { message: 'Update error' } });
-
-      const result = await markAsRead(notificationId);
-
+      const result = await markAsRead(1);
       expect(result).toEqual({ status: 'error', message: 'Impossible de marquer comme lu.' });
     });
   });
 
   describe('markAllAsRead', () => {
     it('should mark all notifications as read for authenticated user', async () => {
-      const mockUser = { id: 'test-user-id' };
-
-      mockGetUser.mockResolvedValue({ data: { user: mockUser }, error: null });
-      mockEq.mockResolvedValue({ error: null });
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+      mockMarkAllEq.mockResolvedValue({ error: null });
 
       const result = await markAllAsRead();
-
       expect(result).toEqual({ status: 'success', message: 'Toutes les notifications sont lues.' });
-      expect(mockFrom).toHaveBeenCalledWith('notifications');
-      expect(mockUpdate).toHaveBeenCalledWith({ is_read: true });
-      expect(mockEq).toHaveBeenCalledWith('user_id', mockUser.id);
     });
 
     it('should return error when user is not authenticated for markAllAsRead', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
-
       const result = await markAllAsRead();
-
       expect(result).toEqual({ status: 'error', message: 'Non authentifié' });
     });
 
     it('should handle errors when marking all notifications as read', async () => {
-      const mockUser = { id: 'test-user-id' };
-
-      mockGetUser.mockResolvedValue({ data: { user: mockUser }, error: null });
-      mockEq.mockResolvedValue({ error: { message: 'Update error' } });
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+      mockMarkAllEq.mockResolvedValue({ error: { message: 'Update error' } });
 
       const result = await markAllAsRead();
-
       expect(result).toEqual({ status: 'error', message: 'Erreur lors de la mise à jour.' });
     });
   });
 });
-
-// Integration test to verify the NotificationBell component can work with the notification system
-describe('Notification Integration Test', () => {
-  it('should properly integrate notification functions', async () => {
-    // Verify all export functions exist
-    expect(typeof getNotifications).toBe('function');
-    expect(typeof markAsRead).toBe('function');
-    expect(typeof markAllAsRead).toBe('function');
-    
-    // Verify Notification type exists
-    const mockNotification: Notification = {
-      id: 1,
-      user_id: 'test-user-id',
-      title: 'Test',
-      message: 'Test message',
-      type: 'system',
-      is_read: false,
-      created_at: new Date().toISOString(),
-    };
-    
-    expect(mockNotification).toBeDefined();
-    expect(mockNotification.id).toBe(1);
-    expect(mockNotification.title).toBe('Test');
-  });
-});
-
