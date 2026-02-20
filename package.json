@@ -22,9 +22,13 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:critical": "playwright test -c playwright.critical.config.ts",
+    "test:e2e:prod:critical": "playwright test -c playwright.prod-critical.config.ts",
+    "test:e2e:prod:userpro": "playwright test -c playwright.prod-userpro.config.ts",
     "test:ci:critical": "npm run test:unit:critical && npm run test:e2e:critical",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "validate:prod": "powershell -ExecutionPolicy Bypass -File scripts/run-prod-validation.ps1",
+    "validate:prod:userpro": "powershell -ExecutionPolicy Bypass -File scripts/run-userpro-validation.ps1"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",

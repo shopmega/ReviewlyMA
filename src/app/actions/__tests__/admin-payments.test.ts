@@ -106,6 +106,61 @@ describe('Admin Payment Flows', () => {
     expect(paymentUpdateEq).toHaveBeenCalledWith('id', 'p2');
   });
 
+  it('verifyOfflinePayment should resolve payments by non-UUID id', async () => {
+    const paymentSelectEq = vi.fn((column: string, value: string) => ({
+      single: vi.fn(async () => {
+        if (column === 'id' && value === 'pay_custom_123') {
+          return {
+            data: {
+              id: 'pay_custom_123',
+              status: 'pending',
+              user_id: 'u-123',
+              target_tier: 'gold',
+              business_id: 'b-123',
+              payment_reference: 'REF-123',
+              expires_at: null,
+            },
+            error: null,
+          };
+        }
+        return { data: null, error: { code: 'PGRST116', message: 'No rows found' } };
+      }),
+    }));
+    const paymentUpdateEq = vi.fn(async () => ({ error: null }));
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'premium_payments') {
+          return {
+            select: vi.fn(() => ({
+              eq: paymentSelectEq,
+            })),
+            update: vi.fn(() => ({ eq: paymentUpdateEq })),
+          };
+        }
+        if (table === 'profiles') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(async () => ({ data: null, error: null })),
+              })),
+            })),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn(async () => ({ data: { success: true }, error: null })),
+    };
+
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await verifyOfflinePayment('pay_custom_123');
+
+    expect(result.status).toBe('success');
+    expect(paymentSelectEq).toHaveBeenCalledWith('id', 'pay_custom_123');
+    expect(paymentSelectEq).toHaveBeenCalledTimes(1);
+    expect(paymentUpdateEq).toHaveBeenCalledWith('id', 'pay_custom_123');
+  });
+
   it('rejectOfflinePayment should update status and write audit log', async () => {
     const paymentUpdateEq = vi.fn(async () => ({ error: null }));
     const serviceClient = {

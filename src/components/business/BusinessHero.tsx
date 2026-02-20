@@ -148,7 +148,7 @@ export function BusinessHero({ business }: BusinessHeroProps) {
 
                                 <div className="hidden sm:block w-1 h-1 bg-muted-foreground/30 rounded-full" />
 
-                                <span className="flex items-center gap-1.5 text-muted-foreground">
+                                <span className="hidden sm:flex items-center gap-1.5 text-muted-foreground">
                                     <MapPin className="w-3.5 h-3.5 text-primary" />
                                     {business.city || business.location}
                                 </span>

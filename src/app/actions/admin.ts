@@ -24,6 +24,38 @@ export interface BulkOperationResult {
   errors: string[];
   message: string;
 }
+
+async function getPremiumPaymentByIdentifier(serviceClient: any, rawIdentifier: string) {
+  const identifier = String(rawIdentifier || '').trim();
+  if (!identifier) return { data: null, error: { message: 'empty identifier' } };
+
+  const byId = await serviceClient
+    .from('premium_payments')
+    .select('*')
+    .eq('id', identifier)
+    .single();
+
+  if (!byId.error && byId.data) return byId;
+  const byIdNoRows =
+    byId?.error
+    && (String(byId.error.message || '').toLowerCase().includes('no rows')
+      || String(byId.error.code || '') === 'PGRST116');
+  if (byId.error && !byIdNoRows) return byId;
+
+  const byReference = await serviceClient
+    .from('premium_payments')
+    .select('*')
+    .eq('payment_reference', identifier)
+    .single();
+
+  const isNoRows =
+    byReference?.error
+    && (String(byReference.error.message || '').toLowerCase().includes('no rows')
+      || String(byReference.error.code || '') === 'PGRST116');
+
+  if (isNoRows) return { data: null, error: null };
+  return byReference;
+}
 function slugifyForBusinessId(value: string): string {
   return value
     .toLowerCase()
@@ -703,11 +735,7 @@ export async function verifyOfflinePayment(
     const serviceClient = await createAdminClient();
 
     // Fetch payment details
-    const { data: payment, error: paymentError } = await serviceClient
-      .from('premium_payments')
-      .select('*')
-      .eq('id', paymentId)
-      .single();
+    const { data: payment, error: paymentError } = await getPremiumPaymentByIdentifier(serviceClient, paymentId);
 
     if (paymentError || !payment) {
       return { status: 'error', message: 'Paiement introuvable.' };
@@ -729,7 +757,7 @@ export async function verifyOfflinePayment(
         verified_at: new Date().toISOString(),
         expires_at: expirationDate
       })
-      .eq('id', paymentId);
+      .eq('id', payment.id);
 
     if (updatePaymentError) {
       return { status: 'error', message: `Erreur mise à jour paiement: ${updatePaymentError.message}` };
@@ -849,11 +877,7 @@ export async function rejectOfflinePayment(
     const serviceClient = await createAdminClient();
 
     // Fetch payment details
-    const { data: payment, error: paymentError } = await serviceClient
-      .from('premium_payments')
-      .select('*')
-      .eq('id', paymentId)
-      .single();
+    const { data: payment, error: paymentError } = await getPremiumPaymentByIdentifier(serviceClient, paymentId);
 
     if (paymentError || !payment) {
       return { status: 'error', message: 'Paiement introuvable.' };
@@ -872,7 +896,7 @@ export async function rejectOfflinePayment(
         verified_by: adminId,
         verified_at: new Date().toISOString()
       })
-      .eq('id', paymentId);
+      .eq('id', payment.id);
 
     if (updatePaymentError) {
       return { status: 'error', message: `Erreur mise à jour paiement: ${updatePaymentError.message}` };

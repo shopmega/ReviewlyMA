@@ -199,13 +199,8 @@ export default async function BusinessPage({ params }: PageProps) {
         <div className="flex flex-col lg:flex-row gap-8">
 
           {/* Main Content (Left) */}
-          <div className="lg:w-2/3 space-y-12 order-last lg:order-first">
+          <div className="lg:w-2/3 space-y-8 order-last lg:order-first">
             <AboutSection business={business} />
-            <LazyPhotoGallery photos={business.photos} businessName={business.name} businessId={business.id} />
-
-            {business.updates && business.updates.length > 0 && (
-              <UpdatesSection updates={business.updates} />
-            )}
 
             <BusinessInsightsTabs
               business={business}
@@ -216,6 +211,12 @@ export default async function BusinessPage({ params }: PageProps) {
               salaryDepartments={settings.salary_departments || []}
               salaryIntervals={settings.salary_intervals || []}
             />
+
+            <LazyPhotoGallery photos={business.photos} businessName={business.name} businessId={business.id} />
+
+            {business.updates && business.updates.length > 0 && (
+              <UpdatesSection updates={business.updates} />
+            )}
 
             {settings.enable_competitor_ads && (
               <CompetitorAds
