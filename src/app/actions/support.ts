@@ -252,11 +252,12 @@ export async function updateSupportTicket(
             status,
             admin_user_id: user.id,
             is_read_by_admin: true,
-            is_read_by_user: false
         };
 
         if (adminResponse) {
             updateData.admin_response = adminResponse;
+            // Only mark unread for user when there is an actual new admin response.
+            updateData.is_read_by_user = false;
         }
 
         if (priority) {
@@ -371,7 +372,8 @@ export async function markAllUserSupportTicketsAsRead(): Promise<ActionState> {
             return createErrorResponse(ErrorCode.AUTHENTICATION_ERROR, 'Non authentifié');
         }
 
-        const { error } = await supabase
+        const serviceClient = await createServiceClient();
+        const { error } = await serviceClient
             .from('support_tickets')
             .update({ is_read_by_user: true })
             .eq('user_id', user.id)
@@ -408,9 +410,10 @@ export async function markSupportTicketAsRead(
         }
 
         const updateData: any = {};
-        let updateClient = supabase;
+        let updateClient: any = supabase;
         if (role === 'user') {
             updateData.is_read_by_user = true;
+            updateClient = await createServiceClient();
         } else {
             try {
                 await verifyAdminSession();
@@ -421,10 +424,16 @@ export async function markSupportTicketAsRead(
             updateClient = await createServiceClient();
         }
 
-        const { error } = await updateClient
+        let updateQuery = updateClient
             .from('support_tickets')
             .update(updateData)
             .eq('id', ticketId);
+
+        if (role === 'user') {
+            updateQuery = updateQuery.eq('user_id', user.id);
+        }
+
+        const { error } = await updateQuery;
 
         if (error) {
             logError('mark_support_ticket_read', error, { ticketId, role });
@@ -483,12 +492,29 @@ export async function sendSupportMessage(
             updateData.is_read_by_user = true;
         }
 
-        await supabase.from('support_tickets').update(updateData).eq('id', ticketId);
+        const serviceClient = await createServiceClient();
+        let ticketUpdateQuery = serviceClient
+            .from('support_tickets')
+            .update(updateData)
+            .eq('id', ticketId);
+
+        if (!isAdmin) {
+            ticketUpdateQuery = ticketUpdateQuery.eq('user_id', user.id);
+        }
+
+        const { error: ticketUpdateError } = await ticketUpdateQuery;
+        if (ticketUpdateError) {
+            logError('send_support_message_ticket_update', ticketUpdateError, {
+                ticketId,
+                userId: user.id,
+                isAdmin
+            });
+            return handleDatabaseError(ticketUpdateError);
+        }
 
         // Send email notification if admin is sending a message
         if (isAdmin) {
             try {
-                const serviceClient = await createServiceClient();
                 const { data: ticket } = await serviceClient
                     .from('support_tickets')
                     .select('subject, user_id, profiles(full_name, email)')

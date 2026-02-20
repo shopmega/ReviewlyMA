@@ -25,6 +25,24 @@ export interface BulkOperationResult {
   message: string;
 }
 
+function isSchemaCacheMissingColumnError(error: any, columnName: string, tableName?: string) {
+  if (!error) return false;
+
+  const message = String(error.message || '').toLowerCase();
+  const column = columnName.toLowerCase();
+  const table = (tableName || '').toLowerCase();
+
+  const hasSchemaCacheSignal = message.includes('schema cache');
+  const hasColumnSignal =
+    message.includes(`"${column}"`)
+    || message.includes(`'${column}'`)
+    || message.includes(`"${column.replace(/_/g, '-')}"`)
+    || message.includes(`'${column.replace(/_/g, '-')}'`);
+  const hasTableSignal = !table || message.includes(table);
+
+  return hasSchemaCacheSignal && hasColumnSignal && hasTableSignal;
+}
+
 async function getPremiumPaymentByIdentifier(serviceClient: any, rawIdentifier: string) {
   const identifier = String(rawIdentifier || '').trim();
   if (!identifier) return { data: null, error: { message: 'empty identifier' } };
@@ -754,7 +772,11 @@ export async function verifyOfflinePayment(
     // Fetch payment details
     const { data: payment, error: paymentError } = await getPremiumPaymentByIdentifier(serviceClient, paymentId);
 
-    if (paymentError || !payment) {
+    if (paymentError) {
+      return { status: 'error', message: `Erreur lecture paiement: ${paymentError.message}` };
+    }
+
+    if (!payment) {
       return { status: 'error', message: 'Paiement introuvable.' };
     }
 
@@ -766,7 +788,7 @@ export async function verifyOfflinePayment(
     const expirationDate = payment.expires_at || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
 
     // Update payment status and persist effective expiration
-    const { error: updatePaymentError } = await serviceClient
+    let { error: updatePaymentError } = await serviceClient
       .from('premium_payments')
       .update({
         status: 'verified',
@@ -775,6 +797,24 @@ export async function verifyOfflinePayment(
         expires_at: expirationDate
       })
       .eq('id', payment.id);
+
+    if (isSchemaCacheMissingColumnError(updatePaymentError, 'expires_at', 'premium_payments')) {
+      logger.warn('premium_payments.expires_at missing in schema cache, retrying verification update without expires_at', {
+        paymentId: payment.id,
+        rawError: updatePaymentError,
+      });
+
+      const fallbackUpdate = await serviceClient
+        .from('premium_payments')
+        .update({
+          status: 'verified',
+          verified_by: adminId,
+          verified_at: new Date().toISOString(),
+        })
+        .eq('id', payment.id);
+
+      updatePaymentError = fallbackUpdate.error;
+    }
 
     if (updatePaymentError) {
       return { status: 'error', message: `Erreur mise à jour paiement: ${updatePaymentError.message}` };
@@ -896,7 +936,11 @@ export async function rejectOfflinePayment(
     // Fetch payment details
     const { data: payment, error: paymentError } = await getPremiumPaymentByIdentifier(serviceClient, paymentId);
 
-    if (paymentError || !payment) {
+    if (paymentError) {
+      return { status: 'error', message: `Erreur lecture paiement: ${paymentError.message}` };
+    }
+
+    if (!payment) {
       return { status: 'error', message: 'Paiement introuvable.' };
     }
 
@@ -981,24 +1025,44 @@ export async function addManualPayment(data: {
     }
 
     // 2. Create the payment record
-    const { data: payment, error: paymentError } = await serviceClient
+    const paymentInsertPayload: Record<string, any> = {
+      user_id: profile.id,
+      business_id: profile.business_id,
+      payment_reference: data.reference,
+      payment_method: data.method,
+      amount_usd: data.amount,
+      currency: 'MAD',
+      status: 'verified',
+      target_tier: data.tier,
+      notes: data.notes,
+      verified_by: adminId,
+      verified_at: new Date().toISOString(),
+      expires_at: data.expirationDate
+    };
+
+    let { data: payment, error: paymentError } = await serviceClient
       .from('premium_payments')
-      .insert([{
-        user_id: profile.id,
-        business_id: profile.business_id,
-        payment_reference: data.reference,
-        payment_method: data.method,
-        amount_usd: data.amount,
-        currency: 'MAD',
-        status: 'verified',
-        target_tier: data.tier,
-        notes: data.notes,
-        verified_by: adminId,
-        verified_at: new Date().toISOString(),
-        expires_at: data.expirationDate
-      }])
+      .insert([paymentInsertPayload])
       .select()
       .single();
+
+    if (isSchemaCacheMissingColumnError(paymentError, 'expires_at', 'premium_payments')) {
+      logger.warn('premium_payments.expires_at missing in schema cache, retrying manual payment insert without expires_at', {
+        userId: profile.id,
+        reference: data.reference,
+        rawError: paymentError,
+      });
+
+      delete paymentInsertPayload.expires_at;
+      const fallbackInsert = await serviceClient
+        .from('premium_payments')
+        .insert([paymentInsertPayload])
+        .select()
+        .single();
+
+      payment = fallbackInsert.data;
+      paymentError = fallbackInsert.error;
+    }
 
     if (paymentError) {
       return { status: 'error', message: `Erreur création paiement: ${paymentError.message}` };

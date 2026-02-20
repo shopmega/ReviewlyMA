@@ -55,6 +55,13 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
   try {
     const serviceClient = await createAdminClient();
 
+    const { error: serviceAuthError } = await serviceClient.auth.admin.listUsers({ page: 1, perPage: 1 });
+    checks.push({
+      name: 'Service role auth check',
+      status: serviceAuthError ? 'error' : 'ok',
+      message: serviceAuthError ? serviceAuthError.message : 'Service role key can call auth.admin',
+    });
+
     const { data: settings, error: settingsError } = await serviceClient
       .from('site_settings')
       .select('id, adsense_enabled, adsense_client_id, tier_pro_annual_price')
@@ -86,6 +93,34 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
         message: settings && Object.hasOwn(settings, 'adsense_enabled') && Object.hasOwn(settings, 'adsense_client_id') ? 'Present' : 'Missing AdSense columns',
       });
     }
+
+    const { error: paymentExpiresError } = await serviceClient
+      .from('premium_payments')
+      .select('id, expires_at')
+      .limit(1);
+
+    checks.push({
+      name: 'Schema: premium_payments.expires_at',
+      status: paymentExpiresError ? 'error' : 'ok',
+      message: paymentExpiresError ? paymentExpiresError.message : 'Present',
+      details: paymentExpiresError && String(paymentExpiresError.message || '').toLowerCase().includes('schema cache')
+        ? 'Run schema reload and ensure expires_at migration is applied.'
+        : undefined,
+    });
+
+    const { error: typoTableError } = await serviceClient
+      .from('premium_payements')
+      .select('id')
+      .limit(1);
+
+    const typoTableExists = !typoTableError;
+    checks.push({
+      name: 'Schema hygiene: premium_payements typo table',
+      status: typoTableExists ? 'warn' : 'ok',
+      message: typoTableExists
+        ? 'Legacy typo table exists; keep sync migration active or remove safely.'
+        : 'Not present',
+    });
 
   } catch (err: any) {
     checks.push({

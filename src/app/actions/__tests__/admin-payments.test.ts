@@ -161,6 +161,59 @@ describe('Admin Payment Flows', () => {
     expect(paymentUpdateEq).toHaveBeenCalledWith('id', 'pay_custom_123');
   });
 
+  it('verifyOfflinePayment should retry update without expires_at when schema cache is stale', async () => {
+    const paymentUpdateEq = vi
+      .fn()
+      .mockResolvedValueOnce({
+        error: { message: 'Could not find the "expires_at" column of "premium_payments" in the schema cache' },
+      })
+      .mockResolvedValueOnce({ error: null });
+
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'premium_payments') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(async () => ({
+                  data: {
+                    id: 'p-retry',
+                    status: 'pending',
+                    user_id: 'u-retry',
+                    target_tier: 'gold',
+                    business_id: 'b-retry',
+                    payment_reference: 'ref-retry',
+                    expires_at: null,
+                  },
+                  error: null,
+                })),
+              })),
+            })),
+            update: vi.fn(() => ({ eq: paymentUpdateEq })),
+          };
+        }
+        if (table === 'profiles') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(async () => ({ data: null, error: null })),
+              })),
+            })),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn(async () => ({ data: { success: true }, error: null })),
+    };
+
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await verifyOfflinePayment('p-retry');
+
+    expect(result.status).toBe('success');
+    expect(paymentUpdateEq).toHaveBeenCalledTimes(2);
+  });
+
   it('rejectOfflinePayment should update status and write audit log', async () => {
     const paymentUpdateEq = vi.fn(async () => ({ error: null }));
     const serviceClient = {
@@ -260,5 +313,61 @@ describe('Admin Payment Flows', () => {
         targetId: 'pay-2',
       })
     );
+  });
+
+  it('addManualPayment should retry insert without expires_at when schema cache is stale', async () => {
+    const paymentInsertSingle = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Could not find the "expires_at" column of "premium_payments" in the schema cache' },
+      })
+      .mockResolvedValueOnce({
+        data: { id: 'pay-fallback' },
+        error: null,
+      });
+
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(async () => ({
+                  data: { id: 'u-fallback', business_id: 'b-fallback', full_name: 'Fallback User' },
+                  error: null,
+                })),
+              })),
+            })),
+          };
+        }
+        if (table === 'premium_payments') {
+          return {
+            insert: vi.fn(() => ({
+              select: vi.fn(() => ({
+                single: paymentInsertSingle,
+              })),
+            })),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn(async () => ({ data: { success: true }, error: null })),
+    };
+
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await addManualPayment({
+      userEmail: 'fallback@example.com',
+      amount: 500,
+      reference: 'MANUAL-FALLBACK-1',
+      method: 'bank_transfer',
+      expirationDate: '2027-02-20T00:00:00.000Z',
+      tier: 'gold',
+      notes: 'fallback',
+    });
+
+    expect(result.status).toBe('success');
+    expect(paymentInsertSingle).toHaveBeenCalledTimes(2);
   });
 });

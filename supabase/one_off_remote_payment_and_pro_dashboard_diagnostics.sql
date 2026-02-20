@@ -45,8 +45,16 @@ select
 from information_schema.columns
 where table_schema = 'public'
   and table_name = 'premium_payments'
-  and column_name in ('id', 'payment_reference', 'status')
+  and column_name in ('id', 'payment_reference', 'status', 'expires_at')
 order by column_name;
+
+-- A4) Check for typo table and schema cache drift risk.
+select
+  table_name
+from information_schema.tables
+where table_schema = 'public'
+  and table_name in ('premium_payments', 'premium_payements')
+order by table_name;
 
 -- =========================================================
 -- B) PRO DASHBOARD BUSINESS-ID CONSISTENCY

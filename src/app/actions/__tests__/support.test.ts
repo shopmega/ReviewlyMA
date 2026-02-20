@@ -3,6 +3,7 @@ import {
   markAllUserSupportTicketsAsRead,
   markSupportTicketAsRead,
   sendSupportMessage,
+  updateSupportTicket,
 } from '../support';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { verifyAdminSession } from '@/lib/supabase/admin';
@@ -68,11 +69,14 @@ describe('Support Actions', () => {
       auth: {
         getUser: vi.fn(async () => ({ data: { user: { id: 'user-1' } }, error: null })),
       },
+    };
+    const serviceClient = {
       from: vi.fn(() => ({
         update: updateSpy,
       })),
     };
     vi.mocked(createClient).mockResolvedValue(supabase as any);
+    vi.mocked(createServiceClient).mockResolvedValue(serviceClient as any);
 
     const result = await markAllUserSupportTicketsAsRead();
 
@@ -87,7 +91,8 @@ describe('Support Actions', () => {
   it('sendSupportMessage should set unread flags for user sender', async () => {
     vi.mocked(verifyAdminSession).mockRejectedValueOnce(new Error('not admin'));
 
-    const ticketUpdateEqSpy = vi.fn(async () => ({ error: null }));
+    const ticketUpdateEqSecondSpy = vi.fn(async () => ({ error: null }));
+    const ticketUpdateEqFirstSpy = vi.fn(() => ({ eq: ticketUpdateEqSecondSpy }));
     const insertSpy = vi.fn(async () => ({ error: null }));
     const ticketUpdateSpy = vi.fn((payload: any) => {
       expect(payload).toEqual(
@@ -96,7 +101,7 @@ describe('Support Actions', () => {
           is_read_by_user: true,
         })
       );
-      return { eq: ticketUpdateEqSpy };
+      return { eq: ticketUpdateEqFirstSpy };
     });
 
     const supabase = {
@@ -107,6 +112,11 @@ describe('Support Actions', () => {
         if (table === 'support_ticket_messages') {
           return { insert: insertSpy };
         }
+        return {};
+      }),
+    };
+    const serviceClient = {
+      from: vi.fn((table: string) => {
         if (table === 'support_tickets') {
           return { update: ticketUpdateSpy };
         }
@@ -115,6 +125,7 @@ describe('Support Actions', () => {
     };
 
     vi.mocked(createClient).mockResolvedValue(supabase as any);
+    vi.mocked(createServiceClient).mockResolvedValue(serviceClient as any);
 
     const result = await sendSupportMessage('ticket-1', 'hello');
 
@@ -124,7 +135,8 @@ describe('Support Actions', () => {
       sender_id: 'user-1',
       message: 'hello',
     });
-    expect(ticketUpdateEqSpy).toHaveBeenCalledWith('id', 'ticket-1');
+    expect(ticketUpdateEqFirstSpy).toHaveBeenCalledWith('id', 'ticket-1');
+    expect(ticketUpdateEqSecondSpy).toHaveBeenCalledWith('user_id', 'user-1');
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard/support');
     expect(revalidatePath).toHaveBeenCalledWith('/admin/support');
   });
@@ -160,18 +172,24 @@ describe('Support Actions', () => {
     };
 
     const serviceClient = {
-      from: vi.fn(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn(async () => ({
-              data: {
-                subject: 'Billing issue',
-                profiles: { full_name: 'User A', email: 'user@example.com' },
-              },
+      from: vi.fn((table: string) => {
+        if (table === 'support_tickets') {
+          return {
+            update: ticketUpdateSpy,
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(async () => ({
+                  data: {
+                    subject: 'Billing issue',
+                    profiles: { full_name: 'User A', email: 'user@example.com' },
+                  },
+                })),
+              })),
             })),
-          })),
-        })),
-      })),
+          };
+        }
+        return {};
+      }),
     };
 
     vi.mocked(createClient).mockResolvedValue(supabase as any);
@@ -182,6 +200,34 @@ describe('Support Actions', () => {
     expect(result.status).toBe('success');
     expect(sendEmail).toHaveBeenCalledTimes(1);
     expect(ticketUpdateEqSpy).toHaveBeenCalledWith('id', 'ticket-2');
+  });
+
+  it('markSupportTicketAsRead should scope user updates to own ticket', async () => {
+    const serviceEqSecondSpy = vi.fn(async () => ({ error: null }));
+    const serviceEqFirstSpy = vi.fn(() => ({ eq: serviceEqSecondSpy }));
+    const serviceClient = {
+      from: vi.fn(() => ({
+        update: vi.fn((payload: any) => {
+          expect(payload).toEqual({ is_read_by_user: true });
+          return { eq: serviceEqFirstSpy };
+        }),
+      })),
+    };
+
+    const supabase = {
+      auth: {
+        getUser: vi.fn(async () => ({ data: { user: { id: 'user-7' } }, error: null })),
+      },
+    };
+
+    vi.mocked(createClient).mockResolvedValue(supabase as any);
+    vi.mocked(createServiceClient).mockResolvedValue(serviceClient as any);
+
+    const result = await markSupportTicketAsRead('ticket-7', 'user');
+
+    expect(result.status).toBe('success');
+    expect(serviceEqFirstSpy).toHaveBeenCalledWith('id', 'ticket-7');
+    expect(serviceEqSecondSpy).toHaveBeenCalledWith('user_id', 'user-7');
   });
 
   it('markSupportTicketAsRead should use service client for admin role', async () => {
@@ -213,5 +259,44 @@ describe('Support Actions', () => {
 
     expect(result.status).toBe('success');
     expect(serviceUpdateEqSpy).toHaveBeenCalledWith('id', 'ticket-3');
+  });
+
+  it('updateSupportTicket should not mark user unread when no admin response is provided', async () => {
+    vi.mocked(verifyAdminSession).mockResolvedValueOnce('admin-1');
+
+    const updateEqSpy = vi.fn(async () => ({ error: null }));
+    const updateSpy = vi.fn((payload: any) => {
+      expect(payload).toEqual(
+        expect.objectContaining({
+          status: 'closed',
+          admin_user_id: 'admin-1',
+          is_read_by_admin: true,
+        })
+      );
+      expect(payload).not.toHaveProperty('is_read_by_user');
+      return { eq: updateEqSpy };
+    });
+
+    const supabase = {
+      auth: {
+        getUser: vi.fn(async () => ({ data: { user: { id: 'admin-1' } }, error: null })),
+      },
+    };
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'support_tickets') {
+          return { update: updateSpy };
+        }
+        return {};
+      }),
+    };
+
+    vi.mocked(createClient).mockResolvedValue(supabase as any);
+    vi.mocked(createServiceClient).mockResolvedValue(serviceClient as any);
+
+    const result = await updateSupportTicket('ticket-9', 'closed');
+
+    expect(result.status).toBe('success');
+    expect(updateEqSpy).toHaveBeenCalledWith('id', 'ticket-9');
   });
 });
