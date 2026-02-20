@@ -29,32 +29,49 @@ async function getPremiumPaymentByIdentifier(serviceClient: any, rawIdentifier: 
   const identifier = String(rawIdentifier || '').trim();
   if (!identifier) return { data: null, error: { message: 'empty identifier' } };
 
-  const byId = await serviceClient
+  const isUuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier);
+  const isNoRowsError = (error: any) =>
+    !!error && (
+      String(error.message || '').toLowerCase().includes('no rows')
+      || String(error.code || '') === 'PGRST116'
+    );
+  const isInvalidUuidCast = (error: any) =>
+    !!error && (
+      String(error.code || '') === '22P02'
+      || String(error.message || '').toLowerCase().includes('invalid input syntax for type uuid')
+    );
+
+  const lookupById = async () => serviceClient
     .from('premium_payments')
     .select('*')
     .eq('id', identifier)
     .single();
 
-  if (!byId.error && byId.data) return byId;
-  const byIdNoRows =
-    byId?.error
-    && (String(byId.error.message || '').toLowerCase().includes('no rows')
-      || String(byId.error.code || '') === 'PGRST116');
-  if (byId.error && !byIdNoRows) return byId;
-
-  const byReference = await serviceClient
+  const lookupByReference = async () => serviceClient
     .from('premium_payments')
     .select('*')
     .eq('payment_reference', identifier)
     .single();
 
-  const isNoRows =
-    byReference?.error
-    && (String(byReference.error.message || '').toLowerCase().includes('no rows')
-      || String(byReference.error.code || '') === 'PGRST116');
+  const primary = isUuidLike ? await lookupById() : await lookupByReference();
+  if (!primary.error && primary.data) return primary;
 
-  if (isNoRows) return { data: null, error: null };
-  return byReference;
+  if (primary.error && !isNoRowsError(primary.error) && !isInvalidUuidCast(primary.error)) {
+    return primary;
+  }
+
+  const secondary = isUuidLike ? await lookupByReference() : await lookupById();
+  if (!secondary.error && secondary.data) return secondary;
+
+  if (secondary.error && isNoRowsError(secondary.error)) {
+    return { data: null, error: null };
+  }
+
+  if (secondary.error && isInvalidUuidCast(secondary.error)) {
+    return { data: null, error: null };
+  }
+
+  return secondary;
 }
 function slugifyForBusinessId(value: string): string {
   return value

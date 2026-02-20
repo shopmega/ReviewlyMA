@@ -501,6 +501,76 @@ export async function updateBusinessProfile(
 
         if (!updatedBusiness || updatedBusiness.length === 0) {
             logger.server(LogLevel.WARN, '[SERVER] Business update matched no rows', { businessId: businessIdToUpdate });
+
+            // Fallback: resolve a canonical business id from user's managed businesses
+            // to handle stale profile.business_id values.
+            const candidateIds = new Set<string>();
+            if (profile.business_id) candidateIds.add(profile.business_id);
+
+            const [{ data: approvedClaims }, { data: assignments }] = await Promise.all([
+                supabaseService
+                    .from('business_claims')
+                    .select('business_id')
+                    .eq('user_id', user.id)
+                    .eq('status', 'approved'),
+                supabaseService
+                    .from('user_businesses')
+                    .select('business_id')
+                    .eq('user_id', user.id),
+            ]);
+
+            approvedClaims?.forEach((item: { business_id: string | null }) => {
+                if (item.business_id) candidateIds.add(item.business_id);
+            });
+            assignments?.forEach((item: { business_id: string | null }) => {
+                if (item.business_id) candidateIds.add(item.business_id);
+            });
+
+            const fallbackCandidates = Array.from(candidateIds).filter((id) => id !== businessIdToUpdate);
+
+            if (fallbackCandidates.length > 0) {
+                const { data: existingBusinesses } = await supabaseService
+                    .from('businesses')
+                    .select('id')
+                    .in('id', fallbackCandidates);
+
+                const fallbackBusinessId = existingBusinesses?.[0]?.id;
+
+                if (fallbackBusinessId) {
+                    const { error: fallbackError, data: fallbackUpdated } = await supabaseService
+                        .from('businesses')
+                        .update(updateData)
+                        .eq('id', fallbackBusinessId)
+                        .select('id, amenities');
+
+                    if (!fallbackError && fallbackUpdated && fallbackUpdated.length > 0) {
+                        logger.server(LogLevel.INFO, '[SERVER] Business updated using fallback business id', {
+                            requestedBusinessId: businessIdToUpdate,
+                            fallbackBusinessId,
+                        });
+
+                        await notifyBusinessFollowers({
+                            businessId: fallbackBusinessId,
+                            actorUserId: user.id,
+                            title: 'Page entreprise mise a jour',
+                            message: 'Informations de la page mises a jour.',
+                            type: 'business_profile_update',
+                            link: `/businesses/${fallbackBusinessId}`,
+                            dedupeMinutes: 15,
+                        });
+
+                        revalidatePath(`/dashboard/edit-profile`);
+                        revalidatePath(`/businesses/${fallbackBusinessId}`);
+                        revalidatePath(`/dashboard`);
+
+                        return {
+                            status: 'success',
+                            message: 'Profil mis a jour avec succes (identifiant corrige automatiquement).',
+                        };
+                    }
+                }
+            }
+
             return { status: 'error', message: 'Aucun etablissement mis a jour. Verifiez l\'identifiant de la page.' };
         }
 

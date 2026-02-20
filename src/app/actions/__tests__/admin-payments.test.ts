@@ -106,10 +106,10 @@ describe('Admin Payment Flows', () => {
     expect(paymentUpdateEq).toHaveBeenCalledWith('id', 'p2');
   });
 
-  it('verifyOfflinePayment should resolve payments by non-UUID id', async () => {
+  it('verifyOfflinePayment should resolve payments by payment reference when identifier is non-UUID', async () => {
     const paymentSelectEq = vi.fn((column: string, value: string) => ({
       single: vi.fn(async () => {
-        if (column === 'id' && value === 'pay_custom_123') {
+        if (column === 'payment_reference' && value === 'REF-123') {
           return {
             data: {
               id: 'pay_custom_123',
@@ -153,10 +153,10 @@ describe('Admin Payment Flows', () => {
 
     vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
 
-    const result = await verifyOfflinePayment('pay_custom_123');
+    const result = await verifyOfflinePayment('REF-123');
 
     expect(result.status).toBe('success');
-    expect(paymentSelectEq).toHaveBeenCalledWith('id', 'pay_custom_123');
+    expect(paymentSelectEq).toHaveBeenCalledWith('payment_reference', 'REF-123');
     expect(paymentSelectEq).toHaveBeenCalledTimes(1);
     expect(paymentUpdateEq).toHaveBeenCalledWith('id', 'pay_custom_123');
   });
