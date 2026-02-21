@@ -168,21 +168,21 @@ export async function submitClaim(
         if (!claimData.existingBusinessId && !claimData.phone && !claimData.website) {
             return handleValidationError(
                 'Veuillez ajouter au moins un contact professionnel.',
-                { phone: ['Ajoutez un tÃ©lÃ©phone professionnel ou un site web.'] }
+                { phone: ['Ajoutez un téléphone professionnel ou un site web.'] }
             ) as ClaimFormState;
         }
 
         if (claimData.proofMethods.includes('document') && !hasDocumentProof) {
             return handleValidationError(
                 'Veuillez fournir les preuves requises.',
-                { documentFile: ['Un document est requis si cette mÃ©thode est sÃ©lectionnÃ©e.'] }
+                { documentFile: ['Un document est requis si cette méthode est sélectionnée.'] }
             ) as ClaimFormState;
         }
 
         if (claimData.proofMethods.includes('video') && !hasVideoProof) {
             return handleValidationError(
                 'Veuillez fournir les preuves requises.',
-                { videoFile: ['Une vidÃ©o est requise si cette mÃ©thode est sÃ©lectionnÃ©e.'] }
+                { videoFile: ['Une vidéo est requise si cette méthode est sélectionnée.'] }
             ) as ClaimFormState;
         }
 

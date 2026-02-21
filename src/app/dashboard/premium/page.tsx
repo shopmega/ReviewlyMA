@@ -109,7 +109,7 @@ export default function DashboardPremiumPage() {
           payload?.error?.message ||
           payload?.error?.details ||
           payload?.message ||
-          'Soumission Ã©chouÃ©e.';
+          'Soumission échouée.';
         throw new Error(detail);
       }
 

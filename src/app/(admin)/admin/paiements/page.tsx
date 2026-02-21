@@ -681,7 +681,7 @@ export default function PaiementsPage() {
                   disabled={currentPage <= 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  PrÃ©cÃ©dent
+                  Précédent
                 </Button>
                 <Button
                   variant="outline"
