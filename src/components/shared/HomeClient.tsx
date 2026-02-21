@@ -134,9 +134,14 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     const autoplayPlugin = useRef(
         Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
     );
+    const collectionsAutoplayPlugin = useRef(
+        Autoplay({ delay: 5500, stopOnInteraction: true, stopOnMouseEnter: true })
+    );
 
     const [catApi, setCatApi] = useState<CarouselApi>();
     const [catCurrent, setCatCurrent] = useState(0);
+    const [collectionsApi, setCollectionsApi] = useState<CarouselApi>();
+    const [collectionsCurrent, setCollectionsCurrent] = useState(0);
 
     useEffect(() => {
         if (!catApi) return;
@@ -147,6 +152,16 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
             setCatCurrent(catApi.selectedScrollSnap());
         });
     }, [catApi]);
+
+    useEffect(() => {
+        if (!collectionsApi) return;
+
+        setCollectionsCurrent(collectionsApi.selectedScrollSnap());
+
+        collectionsApi.on('select', () => {
+            setCollectionsCurrent(collectionsApi.selectedScrollSnap());
+        });
+    }, [collectionsApi]);
 
 
     const { featuredBusinesses: displayFeaturedBusinesses, reviewCount, businessCount } = useMemo(() => {
@@ -166,8 +181,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     }, [businesses, featuredBusinesses]);
 
     useEffect(() => {
-        const visibleCollections = seasonalCollections.slice(0, 6);
-        visibleCollections.forEach((collection, index) => {
+        seasonalCollections.forEach((collection, index) => {
             if (trackedImpressionsRef.current.has(collection.id)) return;
             trackedImpressionsRef.current.add(collection.id);
             analytics.trackCarouselImpression(collection.id, collection.title, index);
@@ -316,46 +330,74 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Plongez dans nos collections thématiques et trouvez la société parfaite pour votre carrière.</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {seasonalCollections.slice(0, 6).map((collection, index) => {
-                                const link: CollectionLink = isValidCollectionLink(collection.link)
-                                    ? collection.link
-                                    : ({ type: 'custom', href: '/businesses' } as const);
-                                const href = getCollectionHref(link);
-                                return (
-                                    <Link
-                                        href={href}
+                        <Carousel
+                            plugins={[collectionsAutoplayPlugin.current]}
+                            opts={{ align: "start", loop: true }}
+                            className="w-full group"
+                            setApi={setCollectionsApi}
+                        >
+                            <CarouselContent className="-ml-4">
+                                {seasonalCollections.map((collection, index) => {
+                                    const link: CollectionLink = isValidCollectionLink(collection.link)
+                                        ? collection.link
+                                        : ({ type: 'custom', href: '/businesses' } as const);
+                                    const href = getCollectionHref(link);
+                                    return (
+                                        <CarouselItem key={collection.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                                            <Link
+                                                href={href}
+                                                className="group relative overflow-hidden rounded-3xl h-[300px] flex flex-col justify-end p-8 border hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
+                                                onClick={async () => {
+                                                    await analytics.trackCarouselClick(
+                                                        collection.id,
+                                                        collection.title,
+                                                        collection.subtitle,
+                                                        link.type,
+                                                        href,
+                                                        index
+                                                    );
+                                                }}
+                                            >
+                                                <Image
+                                                    src={collection.imageUrl}
+                                                    alt={collection.title}
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
+                                                <div className="relative z-10 space-y-2">
+                                                    <Badge className="border-none mb-2">Collection</Badge>
+                                                    <h3 className="text-2xl font-bold text-white font-headline leading-tight">{collection.title}</h3>
+                                                    <p className="text-white/95 line-clamp-1">{collection.subtitle}</p>
+                                                </div>
+                                            </Link>
+                                        </CarouselItem>
+                                    );
+                                })}
+                            </CarouselContent>
+
+                            <div className="flex justify-center gap-4 mt-8">
+                                <CarouselPrevious className="relative static translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <CarouselNext className="relative static translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+
+                            <div className="flex justify-center gap-1.5 mt-4">
+                                {seasonalCollections.map((collection, index) => (
+                                    <button
                                         key={collection.id}
-                                        className={`group relative overflow-hidden rounded-3xl h-[300px] flex flex-col justify-end p-8 border hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 ${index === 0 ? 'lg:col-span-2' : ''}`}
-                                        onClick={async () => {
-                                            // Track carousel click analytics
-                                            await analytics.trackCarouselClick(
-                                                collection.id,
-                                                collection.title,
-                                                collection.subtitle,
-                                                link.type,
-                                                href,
-                                                index
-                                            );
-                                        }}
-                                    >
-                                        <Image
-                                            src={collection.imageUrl}
-                                            alt={collection.title}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-                                        <div className="relative z-10 space-y-2">
-                                            <Badge className="border-none mb-2">Collection</Badge>
-                                            <h3 className="text-2xl font-bold text-white font-headline leading-tight">{collection.title}</h3>
-                                            <p className="text-white/95 line-clamp-1">{collection.subtitle}</p>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
-                        </div>
+                                        onClick={() => collectionsApi?.scrollTo(index)}
+                                        className={cn(
+                                            "w-2 h-2 rounded-full transition-all duration-300",
+                                            collectionsCurrent === index
+                                                ? "bg-primary w-4"
+                                                : "bg-primary/20 hover:bg-primary/40"
+                                        )}
+                                        aria-label={`Go to collection ${index + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        </Carousel>
                     </section>
                 );
             case 'categories':

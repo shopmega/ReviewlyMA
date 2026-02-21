@@ -265,12 +265,9 @@ export const getSeasonalCollections = async (): Promise<SeasonalCollection[]> =>
 
     const { data, error } = await supabase
         .from('seasonal_collections')
-        .select(`
-      *,
-      businesses (*)
-    `)
+        .select('*')
         .eq('active', true)
-        .order('order_index');
+        .order('created_at', { ascending: false });
 
     if (error || !data) {
         return [];

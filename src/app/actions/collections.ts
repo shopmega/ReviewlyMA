@@ -2,11 +2,41 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { ActionState, CollectionLink, seasonalCollectionSchema } from '@/lib/types';
+import { ActionState, CollectionLink, SeasonalCollectionFormData, seasonalCollectionSchema } from '@/lib/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { CACHE_TAGS } from '@/lib/cache';
 
 export type CollectionFormState = ActionState;
+
+function buildCollectionLinkConfig(
+    data: Pick<SeasonalCollectionFormData, 'linkType' | 'linkTag' | 'linkCategory' | 'linkCity' | 'linkAmenities' | 'linkHref'>
+): CollectionLink {
+    const cityValue = data.linkCity && data.linkCity !== 'null_city' ? data.linkCity : undefined;
+    const categoryValue = data.linkCategory && data.linkCategory !== 'null_category' ? data.linkCategory : undefined;
+
+    switch (data.linkType) {
+        case 'filter': {
+            const amenitiesArray = data.linkAmenities
+                ? data.linkAmenities.split(',').map(a => a.trim()).filter(Boolean)
+                : [];
+            return {
+                type: 'filter',
+                tag: data.linkTag || '',
+                category: categoryValue,
+                city: cityValue,
+                amenities: amenitiesArray.length > 0 ? amenitiesArray : undefined
+            };
+        }
+        case 'category':
+            return { type: 'category', category: categoryValue || '', city: cityValue };
+        case 'city':
+            return { type: 'city', city: cityValue || '' };
+        case 'custom':
+            return { type: 'custom', href: data.linkHref || '' };
+        default:
+            return { type: 'filter', tag: '' };
+    }
+}
 
 async function getSupabaseClient() {
     const cookieStore = await cookies();
@@ -47,34 +77,7 @@ export async function addSeasonalCollection(
 
     const { title, subtitle, imageUrl, imageHint, linkType, linkTag, linkCategory, linkCity, linkAmenities, linkHref } = validatedFields.data;
     const supabase = await getSupabaseClient();
-
-    const cityValue = linkCity && linkCity !== 'null_city' ? linkCity : undefined;
-    const categoryValue = linkCategory && linkCategory !== 'null_category' ? linkCategory : undefined;
-
-    let linkConfig: CollectionLink;
-    switch (linkType) {
-        case 'filter':
-            const amenitiesArray = linkAmenities ? linkAmenities.split(',').map(a => a.trim()).filter(Boolean) : [];
-            linkConfig = {
-                type: 'filter',
-                tag: linkTag || '',
-                category: categoryValue,
-                city: cityValue,
-                amenities: amenitiesArray.length > 0 ? amenitiesArray : undefined
-            };
-            break;
-        case 'category':
-            linkConfig = { type: 'category', category: categoryValue || '', city: cityValue };
-            break;
-        case 'city':
-            linkConfig = { type: 'city', city: cityValue || '' };
-            break;
-        case 'custom':
-            linkConfig = { type: 'custom', href: linkHref || '' };
-            break;
-        default:
-            linkConfig = { type: 'filter', tag: '' };
-    }
+    const linkConfig = buildCollectionLinkConfig({ linkType, linkTag, linkCategory, linkCity, linkAmenities, linkHref });
 
     const { error } = await supabase.from('seasonal_collections').insert({
         title,
@@ -145,34 +148,7 @@ export async function updateSeasonalCollection(
 
     const { title, subtitle, imageUrl, imageHint, linkType, linkTag, linkCategory, linkCity, linkAmenities, linkHref } = validatedFields.data;
     const supabase = await getSupabaseClient();
-
-    const cityValue = linkCity && linkCity !== 'null_city' ? linkCity : undefined;
-    const categoryValue = linkCategory && linkCategory !== 'null_category' ? linkCategory : undefined;
-
-    let linkConfig: CollectionLink;
-    switch (linkType) {
-        case 'filter':
-            const amenitiesArray = linkAmenities ? linkAmenities.split(',').map(a => a.trim()).filter(Boolean) : [];
-            linkConfig = {
-                type: 'filter',
-                tag: linkTag || '',
-                category: categoryValue,
-                city: cityValue,
-                amenities: amenitiesArray.length > 0 ? amenitiesArray : undefined
-            };
-            break;
-        case 'category':
-            linkConfig = { type: 'category', category: categoryValue || '', city: cityValue };
-            break;
-        case 'city':
-            linkConfig = { type: 'city', city: cityValue || '' };
-            break;
-        case 'custom':
-            linkConfig = { type: 'custom', href: linkHref || '' };
-            break;
-        default:
-            linkConfig = { type: 'filter', tag: '' };
-    }
+    const linkConfig = buildCollectionLinkConfig({ linkType, linkTag, linkCategory, linkCity, linkAmenities, linkHref });
 
     const { error } = await supabase
         .from('seasonal_collections')

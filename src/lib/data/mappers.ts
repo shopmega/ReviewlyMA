@@ -103,23 +103,61 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
 };
 
 export const mapCollectionFromDB = (dbItem: any): SeasonalCollection => {
+    const parsedLinkConfig = (() => {
+        if (!dbItem?.link_config) return null;
+        if (typeof dbItem.link_config === 'object') return dbItem.link_config;
+        if (typeof dbItem.link_config === 'string') {
+            try {
+                return JSON.parse(dbItem.link_config);
+            } catch {
+                return null;
+            }
+        }
+        return null;
+    })();
+
+    const linkType = parsedLinkConfig?.type || dbItem.link_type || 'filter';
+    const legacyAmenities = typeof dbItem.link_amenities === 'string'
+        ? dbItem.link_amenities.split(',').map((item: string) => item.trim()).filter(Boolean)
+        : [];
+
+    const link = (() => {
+        if (linkType === 'category') {
+            return {
+                type: 'category',
+                category: parsedLinkConfig?.category || dbItem.link_category || '',
+                city: parsedLinkConfig?.city || dbItem.link_city || undefined
+            } as const;
+        }
+        if (linkType === 'city') {
+            return {
+                type: 'city',
+                city: parsedLinkConfig?.city || dbItem.link_city || ''
+            } as const;
+        }
+        if (linkType === 'custom') {
+            return {
+                type: 'custom',
+                href: parsedLinkConfig?.href || dbItem.link_href || ''
+            } as const;
+        }
+        return {
+            type: 'filter',
+            tag: parsedLinkConfig?.tag || dbItem.link_tag || undefined,
+            category: parsedLinkConfig?.category || dbItem.link_category || undefined,
+            city: parsedLinkConfig?.city || dbItem.link_city || undefined,
+            amenities: Array.isArray(parsedLinkConfig?.amenities)
+                ? parsedLinkConfig.amenities
+                : (legacyAmenities.length > 0 ? legacyAmenities : undefined)
+        } as const;
+    })();
+
     return {
         id: dbItem.id,
         title: normalizeDisplayText(dbItem.title),
         subtitle: normalizeDisplayText(dbItem.subtitle || ''),
-        imageUrl: getStoragePublicUrl(dbItem.image_url, 'collection-images') || dbItem.image_url || '',
+        imageUrl: getStoragePublicUrl(dbItem.image_url, 'carousel-images') || dbItem.image_url || '',
         imageHint: dbItem.image_hint || 'collection image',
-        link: {
-            type: dbItem.link_type as any,
-            ...(dbItem.link_type === 'filter' && {
-                tag: dbItem.link_tag,
-                category: dbItem.link_category,
-                city: dbItem.link_city,
-                amenities: dbItem.link_amenities ? dbItem.link_amenities.split(',') : []
-            }),
-            ...(dbItem.link_type === 'category' && { category: dbItem.link_category, city: dbItem.link_city }),
-            ...(dbItem.link_type === 'city' && { city: dbItem.link_city }),
-            ...(dbItem.link_type === 'custom' && { href: dbItem.link_href })
-        } as any
+        link
     };
 };
