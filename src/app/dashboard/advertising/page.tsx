@@ -485,8 +485,8 @@ const AdvertisingDashboard = () => {
 
               <Card>
                 <CardContent className="p-4 flex items-center">
-                  <div className="rounded-full bg-purple-100 p-3 mr-4">
-                    <BarChart3 className="h-6 w-6 text-purple-600" />
+                  <div className="rounded-full bg-sky-100 p-3 mr-4">
+                    <BarChart3 className="h-6 w-6 text-sky-600" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">CTR</p>

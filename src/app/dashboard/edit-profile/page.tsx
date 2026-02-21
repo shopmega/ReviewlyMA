@@ -318,24 +318,35 @@ export default function EditProfilePage() {
 
     // Extra: Validation rules (e.g. min dimensions for cover)
     if (type === 'cover') {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      await new Promise((resolve) => {
+      const isValidCover = await new Promise<boolean>((resolve) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
         img.onload = () => {
-          if (img.width < 1200 || img.height < 400) {
+          const valid = img.width >= 1200 && img.height >= 400;
+          if (!valid) {
             toast({
               title: 'Image trop petite',
               description: 'La photo de couverture doit faire au moins 1200x400 pixels.',
               variant: 'destructive',
             });
-            resolve(false);
-          } else {
-            resolve(true);
           }
+          URL.revokeObjectURL(objectUrl);
+          resolve(valid);
         };
-      }).then(isValid => {
-        if (!isValid) return;
+
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(false);
+        };
+
+        img.src = objectUrl;
       });
+
+      if (!isValidCover) {
+        e.target.value = '';
+        return;
+      }
     }
 
     setIsUploading(type);
@@ -352,21 +363,19 @@ export default function EditProfilePage() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('business-images')
-        .getPublicUrl(filePath);
-
       if (type === 'logo') {
-        setLogoUrl(publicUrl);
-        await updateBusinessImagesAction(businessId, { logo_url: filePath });
+        const result = await updateBusinessImagesAction(businessId, { logo_url: filePath });
+        if (result.status !== 'success') throw new Error(result.message);
+        setLogoUrl(filePath);
       } else if (type === 'cover') {
-        setCoverUrl(publicUrl);
-        await updateBusinessImagesAction(businessId, { cover_url: filePath });
+        const result = await updateBusinessImagesAction(businessId, { cover_url: filePath });
+        if (result.status !== 'success') throw new Error(result.message);
+        setCoverUrl(filePath);
       } else if (type === 'gallery') {
         const newGallery = [...galleryUrls, filePath];
+        const result = await updateBusinessImagesAction(businessId, { gallery_urls: newGallery });
+        if (result.status !== 'success') throw new Error(result.message);
         setGalleryUrls(newGallery);
-        await updateBusinessImagesAction(businessId, { gallery_urls: newGallery });
       }
 
       toast({
@@ -382,24 +391,27 @@ export default function EditProfilePage() {
       });
     } finally {
       setIsUploading(null);
+      e.target.value = '';
     }
   };
 
   const handleRemoveImage = async (type: 'logo' | 'cover' | 'gallery', url?: string) => {
     if (!businessId) return;
 
-    const supabase = createClient();
     try {
       if (type === 'logo') {
+        const result = await updateBusinessImagesAction(businessId, { logo_url: null });
+        if (result.status !== 'success') throw new Error(result.message);
         setLogoUrl(null);
-        await updateBusinessImagesAction(businessId, { logo_url: null });
       } else if (type === 'cover') {
+        const result = await updateBusinessImagesAction(businessId, { cover_url: null });
+        if (result.status !== 'success') throw new Error(result.message);
         setCoverUrl(null);
-        await updateBusinessImagesAction(businessId, { cover_url: null });
       } else if (type === 'gallery' && url) {
         const newGallery = galleryUrls.filter(u => u !== url);
+        const result = await updateBusinessImagesAction(businessId, { gallery_urls: newGallery });
+        if (result.status !== 'success') throw new Error(result.message);
         setGalleryUrls(newGallery);
-        await updateBusinessImagesAction(businessId, { gallery_urls: newGallery });
       }
 
       toast({
@@ -410,7 +422,7 @@ export default function EditProfilePage() {
       console.error('Error removing image:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer l\'image.',
+        description: error.message || 'Impossible de supprimer l\'image.',
         variant: 'destructive',
       });
     }

@@ -339,7 +339,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <div className="grid gap-3">
                       <Button asChild className="w-full h-12 rounded-xl text-sm font-bold shadow-xl shadow-primary/20 group overflow-hidden relative" onClick={() => setMobileMenuOpen(false)}>
                         <Link href="/review">
-                          <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-600 to-primary group-hover:scale-110 transition-transform duration-500 opacity-90" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary via-blue-600 to-sky-600 group-hover:scale-110 transition-transform duration-500 opacity-90" />
                           <span className="relative flex items-center justify-center gap-2">
                             <Pencil className="h-4 w-4" />
                             Donner mon avis
@@ -378,7 +378,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 border border-border/50 shadow-sm hover:ring-2 hover:ring-primary/20 transition-all">
                     <Avatar className="h-full w-full">
                       <AvatarImage src={profile?.avatar_url || undefined} alt="User" />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white font-bold">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-blue-700 text-white font-bold">
                         {profile?.full_name?.substring(0, 1).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -395,7 +395,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-bold text-foreground leading-none">{profile?.full_name || 'Utilisateur'}</p>
                         {profile?.tier === 'gold' && (
-                          <Badge variant="default" className="h-4 px-1.5 text-[9px] font-bold bg-gradient-to-r from-primary to-purple-600 border-none">GOLD</Badge>
+                          <Badge variant="default" className="h-4 px-1.5 text-[9px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 border-none">GOLD</Badge>
                         )}
                         {profile?.tier === 'growth' && (
                           <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold border-none">GROWTH</Badge>
@@ -454,7 +454,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                 <Button variant="ghost" asChild className="rounded-full px-5 hover:bg-secondary/50 font-medium">
                   <Link href="/login">Connexion</Link>
                 </Button>
-                <Button asChild className="rounded-full shadow-lg shadow-primary/25 px-6 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 border-0 transition-all hover:scale-105 active:scale-95 duration-300">
+                <Button asChild className="rounded-full shadow-lg shadow-primary/25 px-6 bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 border-0 transition-all hover:scale-105 active:scale-95 duration-300">
                   <Link href="/signup">S'inscrire</Link>
                 </Button>
               </div>

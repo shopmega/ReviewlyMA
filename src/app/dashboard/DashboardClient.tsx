@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -159,7 +159,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Vérification de sécurité...</p>
+                    <p className="text-muted-foreground">VÃ©rification de sÃ©curitÃ©...</p>
                 </div>
             </div>
         );
@@ -177,9 +177,9 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     <div className="mx-auto w-20 h-20 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
                         <AlertCircle className="w-10 h-10" />
                     </div>
-                    <h1 className="text-3xl font-bold font-headline">Accès Restreint</h1>
+                    <h1 className="text-3xl font-bold font-headline">AccÃ¨s Restreint</h1>
                     <p className="text-muted-foreground text-lg">
-                        {error || "Nous n'avons pas trouvé votre entreprise associée."}
+                        {error || "Nous n'avons pas trouvÃ© votre entreprise associÃ©e."}
                     </p>
                     <Button asChild size="lg" className="rounded-full font-bold px-8">
                         <Link href="/pour-les-pros">Revendiquer mon entreprise</Link>
@@ -191,16 +191,16 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
 
     const statCards = [
         {
-            name: 'Abonnés',
+            name: 'AbonnÃ©s',
             value: stats.followers.toString(),
             icon: Heart,
             color: 'text-rose-600',
             bg: 'bg-rose-50',
-            trend: stats.followers > 0 ? 'Fidélisation active' : 'À développer',
+            trend: stats.followers > 0 ? 'FidÃ©lisation active' : 'Ã€ dÃ©velopper',
             trendColor: 'text-rose-600'
         },
         {
-            name: 'Avis reçus',
+            name: 'Avis reÃ§us',
             value: stats.totalReviews.toString(),
             icon: Star,
             color: 'text-blue-600',
@@ -214,7 +214,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             icon: TrendingUp,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
-            trend: stats.averageRating >= 4 ? 'Excellente' : 'À améliorer',
+            trend: stats.averageRating >= 4 ? 'Excellente' : 'Ã€ amÃ©liorer',
             trendColor: 'text-emerald-600'
         },
         {
@@ -227,7 +227,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             trendColor: 'text-slate-500'
         },
         {
-            name: 'Leads générés',
+            name: 'Leads gÃ©nÃ©rÃ©s',
             value: stats.leads.toString(),
             icon: Users,
             color: 'text-blue-600',
@@ -242,16 +242,16 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
 
             {/* Unread Support Alert */}
             {stats.unreadTickets > 0 && (
-                <Card className="border-blue-200 bg-blue-50 shadow-sm rounded-2xl overflow-hidden">
+                <Card className="border-primary/20 bg-primary/5 shadow-sm rounded-2xl overflow-hidden">
                     <CardHeader className="flex flex-row items-center gap-4 py-4">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 animate-bounce">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                             <MessageSquare className="h-5 w-5" />
                         </div>
                         <div className="flex-1">
-                            <CardTitle className="text-lg font-bold text-blue-900">Nouvelle réponse du support</CardTitle>
-                            <p className="text-sm text-blue-700">Vous avez {stats.unreadTickets} message(s) non lu(s) de notre équipe d'assistance.</p>
+                            <CardTitle className="text-lg font-bold text-foreground">Nouvelle rÃ©ponse du support</CardTitle>
+                            <p className="text-sm text-muted-foreground">Vous avez {stats.unreadTickets} message(s) non lu(s) de notre Ã©quipe d'assistance.</p>
                         </div>
-                        <Button asChild className="rounded-xl bg-blue-600 hover:bg-blue-700 font-bold">
+                        <Button asChild className="rounded-xl font-bold">
                             <Link href="/dashboard/support">Consulter</Link>
                         </Button>
                     </CardHeader>
@@ -274,7 +274,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="start" className="w-64 rounded-xl shadow-xl border-slate-200">
                                         <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">
-                                            Mes Établissements
+                                            Mes Ã‰tablissements
                                         </div>
                                         {otherBusinesses.map((b) => (
                                             <DropdownMenuItem
@@ -307,7 +307,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     </div>
                     <p className="text-slate-500 text-base font-medium">
                         {profile?.tier && isPaidTier(profile.tier)
-                            ? `Propulsé par Avis ${profile.tier.toUpperCase()} • Votre entreprise se démarque.`
+                            ? `PropulsÃ© par Avis ${profile.tier.toUpperCase()} â€¢ Votre entreprise se dÃ©marque.`
                             : "Voici les performances de votre entreprise aujourd'hui."}
                     </p>
                 </div>
@@ -319,7 +319,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         >
                             <Link href="/dashboard/premium">
                                 <Sparkles className="w-4 h-4 mr-2" />
-                                Découvrir Premium
+                                DÃ©couvrir Premium
                             </Link>
                         </Button>
                     )}
@@ -412,9 +412,9 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 {/* Reviews Section */}
                 <Card className="lg:col-span-2 border-slate-200 bg-white shadow-sm rounded-2xl">
                     <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50">
-                        <CardTitle className="font-headline text-xl text-slate-900">Derniers Avis Employés</CardTitle>
+                        <CardTitle className="font-headline text-xl text-slate-900">Derniers Avis EmployÃ©s</CardTitle>
                         <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 font-bold rounded-lg" asChild>
-                            <Link href="/dashboard/reviews">Gérer les avis</Link>
+                            <Link href="/dashboard/reviews">GÃ©rer les avis</Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -424,7 +424,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                     <Star className="w-10 h-10 text-slate-200" />
                                 </div>
                                 <p className="font-bold text-slate-900">Aucun avis pour l'instant</p>
-                                <p className="text-sm mt-1">Encouragez vos employés à partager leur expérience.</p>
+                                <p className="text-sm mt-1">Encouragez vos employÃ©s Ã  partager leur expÃ©rience.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -453,7 +453,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                                     </h4>
                                                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
                                                 </div>
-                                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-bold rounded-full">VÉRIFIÉ</Badge>
+                                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-bold rounded-full">VÃ‰RIFIÃ‰</Badge>
                                             </div>
                                             <div className="py-1">
                                                 <StarRating rating={review.rating} size={14} readOnly />
@@ -464,7 +464,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                             <div className="pt-3 flex justify-end">
                                                 <Button size="sm" variant="outline" className="text-blue-600 hover:text-white hover:bg-blue-600 h-9 px-4 rounded-xl text-xs font-bold border-blue-100" asChild>
                                                     <Link href="/dashboard/reviews">
-                                                        Répondre <ArrowRight className="ml-1.5 w-3 h-3" />
+                                                        RÃ©pondre <ArrowRight className="ml-1.5 w-3 h-3" />
                                                     </Link>
                                                 </Button>
                                             </div>
@@ -478,17 +478,17 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
 
                 {/* Side Info & Actions */}
                 <div className="space-y-8">
-                    <Card className="border-blue-200 bg-blue-50/20 overflow-hidden relative group rounded-2xl">
+                    <Card className="border-primary/20 bg-primary/5/20 overflow-hidden relative group rounded-2xl">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-blue-900 text-lg font-bold flex items-center gap-2 font-headline">
-                                <Sparkles className="w-5 h-5 text-blue-600" /> Booster vos résultats
+                                <Sparkles className="w-5 h-5 text-blue-600" /> Booster vos rÃ©sultats
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <p className="text-sm text-blue-900/70 leading-relaxed font-medium">
                                 {profile?.tier === 'growth'
-                                    ? <>Passez au niveau <span className="font-bold text-blue-700">Business GOLD</span> pour débloquer :</>
-                                    : <>Passez au niveau supérieur avec <span className="font-bold text-blue-700">GOLD</span> :</>
+                                    ? <>Passez au niveau <span className="font-bold text-blue-700">Business GOLD</span> pour dÃ©bloquer :</>
+                                    : <>Passez au niveau supÃ©rieur avec <span className="font-bold text-blue-700">GOLD</span> :</>
                                 }
                             </p>
                             <ul className="text-xs space-y-3 text-blue-950 font-semibold">
@@ -496,10 +496,10 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                     <ShieldCheck className="w-4 h-4 text-blue-600" /> Badge de confiance GOLD
                                 </li>
                                 <li className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-blue-100/50 shadow-sm">
-                                    <MessageSquare className="w-4 h-4 text-blue-600" /> Communication avec les employés
+                                    <MessageSquare className="w-4 h-4 text-blue-600" /> Communication avec les employÃ©s
                                 </li>
                                 <li className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-blue-100/50 shadow-sm">
-                                    <Star className="w-4 h-4 text-blue-600" /> Meilleure visibilité pour attirer les talents
+                                    <Star className="w-4 h-4 text-blue-600" /> Meilleure visibilitÃ© pour attirer les talents
                                 </li>
                             </ul>
                             {!profile?.tier || profile.tier !== 'gold' ? (
@@ -508,7 +508,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                     className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 shadow-xl shadow-blue-600/20"
                                 >
                                     <Link href="/dashboard/premium">
-                                        {profile?.tier === 'growth' ? "Passer GOLD" : "Découvrir Avis Premium"}
+                                        {profile?.tier === 'growth' ? "Passer GOLD" : "DÃ©couvrir Avis Premium"}
                                     </Link>
                                 </Button>
                             ) : (
@@ -529,7 +529,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         <CardContent className="grid gap-3">
                             <Button variant="secondary" className="w-full justify-start h-12 bg-white/10 text-white font-bold hover:bg-white/20 border-white/10" asChild>
                                 <Link href="/dashboard/reviews">
-                                    <MessageSquare className="mr-3 w-4 h-4 text-blue-400" /> Répondre aux avis
+                                    <MessageSquare className="mr-3 w-4 h-4 text-blue-400" /> RÃ©pondre aux avis
                                 </Link>
                             </Button>
                             <Button variant="secondary" className="w-full justify-start h-12 bg-white/10 text-white font-bold hover:bg-white/20 border-white/10" asChild>
@@ -539,7 +539,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                             </Button>
                             <Button variant="secondary" className="w-full justify-start h-12 bg-white/10 text-white font-bold hover:bg-white/20 border-white/10" asChild>
                                 <Link href="/dashboard/edit-profile">
-                                    <Eye className="mr-3 w-4 h-4 text-blue-400" /> Éditer mon profil
+                                    <Eye className="mr-3 w-4 h-4 text-blue-400" /> Ã‰diter mon profil
                                 </Link>
                             </Button>
                         </CardContent>
@@ -550,3 +550,4 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
         </div>
     );
 }
+

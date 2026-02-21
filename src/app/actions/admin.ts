@@ -91,6 +91,35 @@ async function getPremiumPaymentByIdentifier(serviceClient: any, rawIdentifier: 
 
   return secondary;
 }
+
+async function notifyUserPaymentStatus(
+  serviceClient: any,
+  userId: string,
+  payload: { title: string; message: string; type: string; link?: string }
+) {
+  try {
+    const notificationsTable = serviceClient.from('notifications');
+    if (!notificationsTable || typeof notificationsTable.insert !== 'function') {
+      return;
+    }
+
+    const { error } = await notificationsTable.insert({
+      user_id: userId,
+      title: payload.title,
+      message: payload.message,
+      type: payload.type,
+      link: payload.link ?? '/dashboard/premium',
+      is_read: false,
+    });
+
+    if (error) {
+      logger.warn('Failed to create payment status notification', { userId, error });
+    }
+  } catch (error) {
+    logger.warn('Unexpected error while creating payment status notification', { userId, error });
+  }
+}
+
 function slugifyForBusinessId(value: string): string {
   return value
     .toLowerCase()
@@ -856,6 +885,13 @@ export async function verifyOfflinePayment(
       logger.warn('Failed to send premium activation email', { error: emailError, paymentId });
     }
 
+    await notifyUserPaymentStatus(serviceClient, payment.user_id, {
+      title: 'Paiement valide',
+      message: `Votre paiement ${payment.payment_reference || ''} a ete valide. Votre abonnement ${targetTier.toUpperCase()} est actif.`,
+      type: 'payment_verified',
+      link: '/dashboard/premium',
+    });
+
     // Log the audit
     try {
       await logAuditAction({
@@ -987,6 +1023,15 @@ export async function rejectOfflinePayment(
       logger.warn('Failed to send premium rejection email', { error: emailError, paymentId });
     }
 
+    await notifyUserPaymentStatus(serviceClient, payment.user_id, {
+      title: 'Paiement rejete',
+      message: reason
+        ? `Votre paiement ${payment.payment_reference || ''} a ete rejete: ${reason}`
+        : `Votre paiement ${payment.payment_reference || ''} a ete rejete.`,
+      type: 'payment_rejected',
+      link: '/dashboard/premium',
+    });
+
     return {
       status: 'success',
       message: 'Paiement rejeté avec succès.'
@@ -1108,6 +1153,13 @@ export async function addManualPayment(data: {
     } catch (e) {
       logger.warn('Failed to send activation email for manual payment', { userId: profile.id });
     }
+
+    await notifyUserPaymentStatus(serviceClient, profile.id, {
+      title: 'Abonnement active',
+      message: `Votre abonnement ${data.tier.toUpperCase()} a ete active par un administrateur.`,
+      type: 'payment_verified',
+      link: '/dashboard/premium',
+    });
 
     revalidatePath('/admin/paiements');
 

@@ -63,10 +63,10 @@ export function NotificationBell() {
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative text-gray-600 hover:text-gray-900">
+                <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white animate-pulse" />
+                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive ring-2 ring-background animate-pulse" />
                     )}
                     <span className="sr-only">Notifications</span>
                 </Button>
@@ -77,7 +77,7 @@ export function NotificationBell() {
                         <div className="flex items-center justify-between">
                             <p className="text-sm font-medium leading-none">Notifications</p>
                             {unreadCount > 0 && (
-                                <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-blue-600" onClick={handleMarkAllRead}>
+                                <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary" onClick={handleMarkAllRead}>
                                     Tout marquer comme lu
                                 </Button>
                             )}
@@ -98,15 +98,15 @@ export function NotificationBell() {
                             <DropdownMenuItem
                                 key={n.id}
                                 className={cn(
-                                    "flex flex-col items-start p-4 cursor-pointer focus:bg-slate-50",
-                                    !n.is_read && n.user_id !== null && "bg-blue-50/50"
+                                    "flex flex-col items-start p-4 cursor-pointer focus:bg-accent",
+                                    !n.is_read && n.user_id !== null && "bg-accent/40"
                                 )}
                                 onClick={() => handleNotificationClick(n)}
                             >
                                 <div className="flex w-full justify-between items-start gap-2">
                                     <div className="font-medium text-sm leading-tight mb-1">
                                         {n.title}
-                                        {!n.is_read && n.user_id !== null && <span className="ml-2 inline-block w-1.5 h-1.5 bg-blue-500 rounded-full align-middle" />}
+                                        {!n.is_read && n.user_id !== null && <span className="ml-2 inline-block w-1.5 h-1.5 bg-primary rounded-full align-middle" />}
                                     </div>
                                     <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
                                         {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}

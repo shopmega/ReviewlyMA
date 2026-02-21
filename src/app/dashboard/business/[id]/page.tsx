@@ -203,10 +203,10 @@ export default function BusinessDashboardPage() {
       name: 'Leads générés',
       value: stats.leads.toString(),
       icon: Users,
-      color: 'text-purple-500',
-      bg: 'bg-purple-500/10',
+      color: 'text-cyan-600',
+      bg: 'bg-cyan-500/10',
       trend: 'Clics & Contacts',
-      trendColor: 'text-purple-600'
+      trendColor: 'text-cyan-700'
     },
   ];
 

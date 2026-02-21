@@ -83,6 +83,10 @@ export default async function BusinessPage({ params }: PageProps) {
     ])
     : [{ count: 0, medianMonthly: null, minMonthly: null, maxMonthly: null, currency: 'MAD', roleBreakdown: [] }, []];
 
+  const hasAboutContent =
+    !!business.description?.trim()
+    || (Array.isArray(business.amenities) && business.amenities.length > 0);
+
   // JSON-LD Structured Data
   const siteUrl = getServerSiteUrl();
   const jsonLd = {
@@ -200,8 +204,6 @@ export default async function BusinessPage({ params }: PageProps) {
 
           {/* Main Content (Left) */}
           <div className="lg:w-2/3 space-y-8 order-last lg:order-first">
-            <AboutSection business={business} />
-
             <BusinessInsightsTabs
               business={business}
               enableSalaries={settings.enable_salaries}
@@ -211,6 +213,8 @@ export default async function BusinessPage({ params }: PageProps) {
               salaryDepartments={settings.salary_departments || []}
               salaryIntervals={settings.salary_intervals || []}
             />
+
+            {hasAboutContent && <AboutSection business={business} />}
 
             <LazyPhotoGallery photos={business.photos} businessName={business.name} businessId={business.id} />
 

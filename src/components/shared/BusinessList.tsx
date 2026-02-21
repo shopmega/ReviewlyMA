@@ -526,7 +526,7 @@ export function BusinessList({
                     onClick={() => setMobileFiltersOpen(false)}
                     className="w-full h-12 rounded-xl text-sm font-bold shadow-xl shadow-primary/20 relative group overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-700 group-hover:scale-110 transition-transform duration-500" />
                     <span className="relative flex items-center justify-center gap-2">
                       Voir {totalCount} établissement{totalCount > 1 ? 's' : ''}
                       <ChevronRight className="w-4 h-4" />

@@ -61,11 +61,11 @@ export function BusinessLogo({
     const colors = [
       'from-blue-500 to-blue-600 text-white',
       'from-emerald-500 to-emerald-600 text-white',
-      'from-violet-500 to-violet-600 text-white',
+      'from-sky-500 to-sky-600 text-white',
       'from-amber-500 to-amber-600 text-white',
       'from-rose-500 to-rose-600 text-white',
       'from-cyan-500 to-cyan-600 text-white',
-      'from-fuchsia-500 to-fuchsia-600 text-white',
+      'from-teal-500 to-teal-600 text-white',
       'from-indigo-500 to-indigo-600 text-white',
     ];
 

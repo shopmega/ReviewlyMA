@@ -24,6 +24,7 @@ import { getSiteSettings } from '@/lib/data';
 import { getMaxBusinessesForTier } from '@/lib/tier-utils';
 import { getSiteName } from '@/lib/site-config';
 import { notifyAdmins } from '@/lib/notifications';
+import { sanitizeBusinessGalleryUrls, sanitizeBusinessMediaPath } from '@/lib/business-media';
 
 export type ClaimFormState = ActionState & { claimId?: string };
 
@@ -698,7 +699,10 @@ async function uploadBusinessImages(supabaseService: any, businessId: string, lo
     if (logoFile) {
         try {
             if (typeof logoFile === 'string') {
-                businessImages.logo_url = logoFile;
+                const sanitizedLogoPath = sanitizeBusinessMediaPath(logoFile);
+                if (sanitizedLogoPath) {
+                    businessImages.logo_url = sanitizedLogoPath;
+                }
             } else {
                 const logoBuffer = await logoFile.arrayBuffer();
                 const fileExt = logoFile.name.split('.').pop() || 'png';
@@ -720,7 +724,10 @@ async function uploadBusinessImages(supabaseService: any, businessId: string, lo
     if (coverFile) {
         try {
             if (typeof coverFile === 'string') {
-                businessImages.cover_url = coverFile;
+                const sanitizedCoverPath = sanitizeBusinessMediaPath(coverFile);
+                if (sanitizedCoverPath) {
+                    businessImages.cover_url = sanitizedCoverPath;
+                }
             } else {
                 const coverBuffer = await coverFile.arrayBuffer();
                 const fileExt = coverFile.name.split('.').pop() || 'png';
@@ -745,7 +752,10 @@ async function uploadBusinessImages(supabaseService: any, businessId: string, lo
             const file = galleryFiles[i];
             try {
                 if (typeof file === 'string') {
-                    galleryUrls.push(file);
+                    const sanitizedGalleryPath = sanitizeBusinessMediaPath(file);
+                    if (sanitizedGalleryPath) {
+                        galleryUrls.push(sanitizedGalleryPath);
+                    }
                 } else {
                     const galleryBuffer = await file.arrayBuffer();
                     const fileExt = file.name.split('.').pop() || 'png';
@@ -763,8 +773,9 @@ async function uploadBusinessImages(supabaseService: any, businessId: string, lo
                 console.error(`Error handling gallery image ${i}:`, error);
             }
         }
-        if (galleryUrls.length > 0) {
-            businessImages.gallery_urls = galleryUrls;
+        const sanitizedGalleryUrls = sanitizeBusinessGalleryUrls(galleryUrls);
+        if (sanitizedGalleryUrls.length > 0) {
+            businessImages.gallery_urls = sanitizedGalleryUrls;
         }
     }
 

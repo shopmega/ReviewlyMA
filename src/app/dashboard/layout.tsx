@@ -60,6 +60,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     menuItems.push({ href: '/dashboard/companies', label: 'Mes Etablissements', icon: Store });
   }
 
+  const isMenuItemActive = (href: string) => {
+    if (href === '/dashboard') return pathname === '/dashboard';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   useEffect(() => {
     async function checkProSync() {
       // Only run sync if user has access (auth guard handles this)
@@ -113,7 +118,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href}
+                  isActive={isMenuItemActive(item.href)}
                   tooltip={item.label}
                   className="data-[active=true]:bg-accent/10 data-[active=true]:text-accent hover:bg-secondary/50 transition-colors"
                 >

@@ -248,7 +248,7 @@ function SupportContentInner() {
 
         <Card className="md:col-span-1">
           <CardHeader className="text-center">
-            <FileText className="h-8 w-8 mx-auto text-purple-500" />
+            <FileText className="h-8 w-8 mx-auto text-sky-500" />
             <CardTitle className="text-lg mt-2">FAQ</CardTitle>
           </CardHeader>
           <CardContent>

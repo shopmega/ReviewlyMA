@@ -168,7 +168,7 @@ export default function AnalyticsPage() {
     { name: 'Total avis', value: stats.totalReviews.toString(), icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
     { name: 'Note moyenne', value: stats.averageRating.toFixed(1), icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
     { name: 'Vues du profil', value: stats.views.toString(), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { name: 'Conversion Leads', value: stats.leads.toString(), icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Conversion Leads', value: stats.leads.toString(), icon: Users, color: 'text-cyan-600', bg: 'bg-cyan-500/10' },
   ];
 
   return (

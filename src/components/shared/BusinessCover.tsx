@@ -14,6 +14,7 @@ interface BusinessCoverProps {
     height?: number;
     priority?: boolean;
     sizes?: string;
+    fallbackToGallery?: boolean;
 }
 
 export function BusinessCover({
@@ -24,7 +25,8 @@ export function BusinessCover({
     width,
     height,
     priority = false,
-    sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+    sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+    fallbackToGallery = true
 }: BusinessCoverProps) {
     const [imageError, setImageError] = useState(false);
 
@@ -34,11 +36,11 @@ export function BusinessCover({
     }, [business.cover_url, business.photos]);
 
     // Determine the best available image
-    const coverUrl = !imageError && business.cover_url && isValidImageUrl(business.cover_url)
+    const hasCover = !imageError && business.cover_url && isValidImageUrl(business.cover_url);
+    const hasGalleryFallback = !imageError && fallbackToGallery && business.photos && business.photos.length > 0 && isValidImageUrl(business.photos[0].imageUrl);
+    const coverUrl = hasCover
         ? business.cover_url
-        : (!imageError && business.photos && business.photos.length > 0 && isValidImageUrl(business.photos[0].imageUrl)
-            ? business.photos[0].imageUrl
-            : null);
+        : (hasGalleryFallback ? business.photos[0].imageUrl : null);
 
     if (coverUrl) {
         if (fill) {

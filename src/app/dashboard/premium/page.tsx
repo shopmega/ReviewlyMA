@@ -229,9 +229,9 @@ export default function DashboardPremiumPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200 bg-purple-50/30 dark:bg-purple-950/10">
+        <Card className="border-sky-200 bg-sky-50/40 dark:bg-sky-950/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-purple-600 dark:text-purple-500 uppercase flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-sky-700 dark:text-sky-400 uppercase flex items-center gap-2">
               <Zap className="w-4 h-4" /> Prix
             </CardTitle>
           </CardHeader>
@@ -447,9 +447,9 @@ export default function DashboardPremiumPage() {
               )}
 
               {siteSettings?.payment_methods_enabled?.includes('stripe') && (
-                <div className="p-4 rounded-xl bg-purple-50 border border-purple-200">
+                <div className="p-4 rounded-xl bg-sky-50 border border-sky-200">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-purple-800">Paiement Stripe</span>
+                    <span className="font-medium text-sky-800">Paiement Stripe</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     Bientôt disponible. Contactez le support pour plus d'informations.

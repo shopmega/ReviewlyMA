@@ -8,6 +8,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { logger, LogLevel } from '@/lib/logger';
 import { notifyAdmins } from '@/lib/notifications';
 import { isPaidTier } from '@/lib/tier-utils';
+import { sanitizeBusinessGalleryUrls, sanitizeBusinessMediaPath } from '@/lib/business-media';
 
 export async function suggestBusiness(formData: FormData): Promise<ActionState> {
     const cookieStore = await cookies();
@@ -103,6 +104,16 @@ async function verifyBusinessOwnership(supabase: any, userId: string, businessId
         .maybeSingle();
 
     if (claim) return { authorized: true, profile };
+
+    // 5. Check explicit business assignments
+    const { data: assignment } = await supabase
+        .from('user_businesses')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('business_id', businessId)
+        .maybeSingle();
+
+    if (assignment) return { authorized: true, profile };
 
     return { authorized: false, profile };
 }
@@ -316,7 +327,7 @@ export async function submitUpdate(
         // Verify user has permission to update this business
         const { authorized, profile } = await verifyBusinessOwnership(supabase, user.id, businessId);
 
-        if (!authorized || !profile || (profile.role !== 'pro' && profile.role !== 'growth' && profile.role !== 'admin')) {
+        if (!authorized || !profile) {
             return { status: 'error', message: 'Permissions insuffisantes' };
         }
 
@@ -439,13 +450,6 @@ export async function updateBusinessProfile(
         }
 
         logger.server(LogLevel.DEBUG, '[DEBUG] User profile details', { businessId: profile.business_id, role: profile.role });
-
-        // Check if user has pro/growth role or is admin
-        if (profile.role !== 'pro' && profile.role !== 'growth' && profile.role !== 'admin') {
-            logger.server(LogLevel.WARN, '[SERVER] User does not have required role', { role: profile.role });
-            return { status: 'error', message: 'Accès réservé aux comptes professionnels' };
-        }
-
         logger.server(LogLevel.INFO, '[SERVER] User has permission to edit this business');
 
         // 1. Extract and Validate data using the schema
@@ -631,7 +635,7 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
         // Verify user has permission to update this business
         const { authorized, profile } = await verifyBusinessOwnership(supabase, user.id, businessId);
 
-        if (!authorized || !profile || (profile.role !== 'pro' && profile.role !== 'growth' && profile.role !== 'admin')) {
+        if (!authorized || !profile) {
             return { status: 'error', message: 'Permissions insuffisantes' };
         }
 
@@ -639,13 +643,13 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
         const updateData: any = {};
 
         if ('logo_url' in imageData) {
-            updateData.logo_url = imageData.logo_url;
+            updateData.logo_url = sanitizeBusinessMediaPath(imageData.logo_url);
         }
         if ('cover_url' in imageData) {
-            updateData.cover_url = imageData.cover_url;
+            updateData.cover_url = sanitizeBusinessMediaPath(imageData.cover_url);
         }
         if ('gallery_urls' in imageData) {
-            updateData.gallery_urls = imageData.gallery_urls;
+            updateData.gallery_urls = sanitizeBusinessGalleryUrls(imageData.gallery_urls);
         }
 
         const supabaseService = await createServiceClient();
@@ -709,7 +713,7 @@ export async function saveBusinessHours(hours: any[], businessId: string): Promi
         // Verify user has permission to update this business
         const { authorized, profile } = await verifyBusinessOwnership(supabase, user.id, businessId);
 
-        if (!authorized || !profile || (profile.role !== 'pro' && profile.role !== 'growth' && profile.role !== 'admin')) {
+        if (!authorized || !profile) {
             return { status: 'error', message: 'Permissions insuffisantes' };
         }
 
@@ -784,3 +788,4 @@ export async function getBusinessHours(businessId: string): Promise<any[]> {
         return [];
     }
 }
+

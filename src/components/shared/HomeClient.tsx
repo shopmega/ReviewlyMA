@@ -261,7 +261,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             window.location.href = `/businesses?${params.toString()}`;
                                         }}
                                         size="lg"
-                                        className="w-full md:w-auto h-12 md:h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"
+                                        className="w-full md:w-auto h-12 md:h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"
                                     >
                                         Rechercher
                                     </Button>
