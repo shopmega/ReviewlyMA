@@ -187,6 +187,7 @@ export async function submitReview(
       });
     }
 
+    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
     revalidatePath(`/businesses/${businessId}`);
     return createSuccessResponse(
       reviewStatus === 'published'
@@ -265,6 +266,7 @@ export async function reportReview(
       link: '/admin/avis-signalements',
     });
 
+    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
     return createSuccessResponse('Signalement envoyé avec succès. Merci de votre contribution.') as ActionState;
   } catch (error) {
     logError('reportReview_unexpected', error);
@@ -315,7 +317,8 @@ export async function updateReview(
     }
 
     // Rate limiting for updates
-    const { isLimited, retryAfterSeconds } = checkRateLimit(`update-${user.id}`, RATE_LIMIT_CONFIG.review);
+    const rateLimitKey = `update-${user.id}`;
+    const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
     if (isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
@@ -399,6 +402,7 @@ export async function updateReview(
       return handleDatabaseError(updateError) as ReviewFormState;
     }
 
+    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
     revalidatePath(`/businesses/${review.business_id}`);
     return createSuccessResponse(
       'Votre avis a été mis à jour avec succès et est en attente de modération.'
@@ -430,7 +434,8 @@ export async function deleteReview(
     }
 
     // Rate limiting for deletions
-    const { isLimited, retryAfterSeconds } = checkRateLimit(`delete-${user.id}`, RATE_LIMIT_CONFIG.review);
+    const rateLimitKey = `delete-${user.id}`;
+    const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
     if (isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
@@ -484,6 +489,7 @@ export async function deleteReview(
       return handleDatabaseError(deleteError) as ReviewFormState;
     }
 
+    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
     revalidatePath(`/businesses/${review.business_id}`);
     return createSuccessResponse(
       'Votre avis a été supprimé avec succès.'

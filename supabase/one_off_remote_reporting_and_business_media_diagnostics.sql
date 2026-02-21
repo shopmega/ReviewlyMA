@@ -270,3 +270,67 @@ where (logo_url like '/placeholders/%' or logo_url = '/placeholder-logo.png')
    )
 order by created_at desc
 limit 50;
+
+-- =========================================================
+-- C) REVIEWS OWNER-REPLY VISIBILITY + VOTE HEALTH
+-- =========================================================
+
+-- C1) Reviews table fields used by owner replies + voting
+select
+  column_name,
+  data_type
+from information_schema.columns
+where table_schema = 'public'
+  and table_name = 'reviews'
+  and column_name in ('owner_reply', 'owner_reply_date', 'likes', 'dislikes')
+order by column_name;
+
+-- C2) Reviews policies relevant to owner visibility / reply updates
+select
+  schemaname,
+  tablename,
+  policyname,
+  roles,
+  cmd,
+  qual,
+  with_check
+from pg_policies
+where schemaname = 'public'
+  and tablename = 'reviews'
+  and (
+    policyname ilike '%owner%'
+    or policyname ilike '%business owners%'
+    or policyname ilike '%reviews%'
+  )
+order by policyname;
+
+-- C3) Businesses with replies present (proves replies are persisted + selectable)
+select
+  business_id,
+  count(*)::bigint as total_reviews,
+  count(*) filter (where owner_reply is not null and btrim(owner_reply) <> '')::bigint as replied_reviews
+from public.reviews
+group by business_id
+having count(*) filter (where owner_reply is not null and btrim(owner_reply) <> '') > 0
+order by replied_reviews desc, business_id
+limit 50;
+
+-- C4) Review votes table + trigger presence
+select
+  schemaname,
+  tablename,
+  rowsecurity
+from pg_tables
+where schemaname = 'public'
+  and tablename = 'review_votes';
+
+select
+  tgname as trigger_name,
+  tgenabled as trigger_enabled
+from pg_trigger t
+join pg_class c on c.oid = t.tgrelid
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relname = 'review_votes'
+  and not t.tgisinternal
+order by tgname;

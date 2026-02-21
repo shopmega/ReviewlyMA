@@ -40,11 +40,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
   useEffect(() => {
     async function checkOwnership() {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id);
-      console.log('Business ID:', business.id);
-
       if (!user) {
-        console.log('No user logged in');
         return;
       }
 
@@ -55,8 +51,6 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
         .eq('id', user.id)
         .single();
 
-      console.log('User profile:', profile);
-
       // Check via claims
       const { data: claim } = await supabase
         .from('business_claims')
@@ -66,10 +60,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
         .eq('status', 'approved')
         .single();
 
-      console.log('Business claim:', claim);
-
       const isOwnerCheck = (profile?.business_id === business.id && profile?.role === 'pro') || !!claim;
-      console.log('Is owner?', isOwnerCheck);
       setIsOwner(isOwnerCheck);
     }
     checkOwnership();
@@ -80,24 +71,21 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
     async function checkReviewOwnership() {
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+        setIsReviewOwner({});
+        return;
+      }
 
       const ownershipMap: Record<number, boolean> = {};
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      const isAdmin = profile?.role === 'admin';
 
       for (const review of reviews) {
-        // Check if user owns this review (or is admin)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-
-        const isAdmin = profile?.role === 'admin';
-        // Optimized: Check ownership via ID first (works for anonymous), fallback to name (legacy/guest)
-        const isOwner = (review.userId && review.userId === user.id) ||
-          (review.author === user.user_metadata?.full_name);
-
-        ownershipMap[review.id] = isAdmin || !!isOwner;
+        ownershipMap[review.id] = isAdmin || review.userId === user.id;
       }
 
       setIsReviewOwner(ownershipMap);

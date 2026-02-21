@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from '@/components/ui/label';
@@ -35,44 +35,56 @@ export function EditReviewModal({ review, isOpen, onClose, onUpdate }: EditRevie
   };
 
   const [state, formAction] = useActionState(updateReviewWithId, initialState);
+  const lastHandledStatus = useRef<ReviewFormState['status']>('idle');
 
-  // Handle form submission success
-  if (state.status === 'success') {
-    toast({
-      title: "Avis mis à jour",
-      description: state.message,
-    });
-    
-    // Update the review in parent component
-    const updatedReview: Review = {
-      ...review,
-      title: state.data?.title || review.title,
-      text: state.data?.text || review.text,
-      rating: rating,
-      subRatings: {
-        workLifeBalance: subRatingWorkLifeBalance,
-        management: subRatingManagement,
-        careerGrowth: subRatingCareerGrowth,
-        culture: subRatingCulture,
-      },
-    };
-    
-    onUpdate(updatedReview);
-    onClose();
-    
-    // Reset state
-    state.status = 'idle';
-  }
+  useEffect(() => {
+    if (state.status === lastHandledStatus.current) return;
+    lastHandledStatus.current = state.status;
 
-  // Handle form submission error
-  if (state.status === 'error') {
-    toast({
-      variant: "destructive",
-      title: "Erreur",
-      description: state.message,
-    });
-    state.status = 'idle';
-  }
+    if (state.status === 'success') {
+      toast({
+        title: 'Avis mis à jour',
+        description: state.message,
+      });
+
+      const updatedReview: Review = {
+        ...review,
+        title: state.data?.title || review.title,
+        text: state.data?.text || review.text,
+        rating,
+        subRatings: {
+          workLifeBalance: subRatingWorkLifeBalance,
+          management: subRatingManagement,
+          careerGrowth: subRatingCareerGrowth,
+          culture: subRatingCulture,
+        },
+      };
+
+      onUpdate(updatedReview);
+      onClose();
+    }
+
+    if (state.status === 'error') {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: state.message,
+      });
+    }
+  }, [
+    state.status,
+    state.message,
+    state.data,
+    toast,
+    review,
+    rating,
+    subRatingWorkLifeBalance,
+    subRatingManagement,
+    subRatingCareerGrowth,
+    subRatingCulture,
+    onUpdate,
+    onClose,
+  ]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -27,30 +27,30 @@ export function DeleteReviewDialog({ review, isOpen, onClose, onDelete }: Delete
   };
 
   const [state, formAction] = useActionState(deleteReviewWithId, initialState);
+  const lastHandledStatus = useRef<ReviewFormState['status']>('idle');
 
-  // Handle form submission success
-  if (state.status === 'success') {
-    toast({
-      title: "Avis supprimé",
-      description: state.message,
-    });
-    
-    onDelete(review.id);
-    onClose();
-    
-    // Reset state
-    state.status = 'idle';
-  }
+  useEffect(() => {
+    if (state.status === lastHandledStatus.current) return;
+    lastHandledStatus.current = state.status;
 
-  // Handle form submission error
-  if (state.status === 'error') {
-    toast({
-      variant: "destructive",
-      title: "Erreur",
-      description: state.message,
-    });
-    state.status = 'idle';
-  }
+    if (state.status === 'success') {
+      toast({
+        title: 'Avis supprimé',
+        description: state.message,
+      });
+
+      onDelete(review.id);
+      onClose();
+    }
+
+    if (state.status === 'error') {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: state.message,
+      });
+    }
+  }, [state.status, state.message, toast, onDelete, review.id, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

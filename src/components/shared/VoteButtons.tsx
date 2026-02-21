@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
 
 type VoteButtonsProps = {
   reviewId: number;
@@ -24,16 +23,31 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
   const { toast } = useToast();
   const supabase = createClient();
 
+  const refreshVoteCounts = async () => {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('likes, dislikes')
+      .eq('id', reviewId)
+      .single();
+
+    if (!error && data) {
+      setVotes(prev => ({
+        ...prev,
+        likes: data.likes ?? 0,
+        dislikes: data.dislikes ?? 0,
+      }));
+    }
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
-      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
         setUserId(user.id);
 
         // Fetch user's existing vote safely
-        const { data: voteData, error: voteError } = await supabase
+        const { data: voteData } = await supabase
           .from('review_votes')
           .select('vote_type')
           .eq('review_id', reviewId)
@@ -72,17 +86,18 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
           .delete()
           .match({ review_id: reviewId, user_id: userId });
 
-        if (!error) {
-          setVotes(prev => ({
-            ...prev,
-            likes: prev.likes - 1,
-            userVote: null,
-          }));
+        if (error) {
+          toast({
+            title: 'Erreur',
+            description: "Impossible d'enlever votre vote.",
+            variant: 'destructive',
+          });
+        } else {
+          setVotes(prev => ({ ...prev, userVote: null }));
+          await refreshVoteCounts();
         }
       } else {
         // Optimistic UI: If user previously disliked, remove the dislike and add like
-        const prevVote = votes.userVote;
-
         const { error } = await supabase
           .from('review_votes')
           .upsert({
@@ -91,12 +106,15 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
             vote_type: 'like',
           }, { onConflict: 'review_id,user_id' });
 
-        if (!error) {
-          setVotes(prev => ({
-            likes: prev.likes + 1,
-            dislikes: prevVote === 'dislike' ? prev.dislikes - 1 : prev.dislikes,
-            userVote: 'like',
-          }));
+        if (error) {
+          toast({
+            title: 'Erreur',
+            description: "Impossible d'enregistrer votre vote.",
+            variant: 'destructive',
+          });
+        } else {
+          setVotes(prev => ({ ...prev, userVote: 'like' }));
+          await refreshVoteCounts();
         }
       }
     } finally {
@@ -125,17 +143,18 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
           .delete()
           .match({ review_id: reviewId, user_id: userId });
 
-        if (!error) {
-          setVotes(prev => ({
-            ...prev,
-            dislikes: prev.dislikes - 1,
-            userVote: null,
-          }));
+        if (error) {
+          toast({
+            title: 'Erreur',
+            description: "Impossible d'enlever votre vote.",
+            variant: 'destructive',
+          });
+        } else {
+          setVotes(prev => ({ ...prev, userVote: null }));
+          await refreshVoteCounts();
         }
       } else {
         // Optimistic UI: If user previously liked, remove the like and add dislike
-        const prevVote = votes.userVote;
-
         const { error } = await supabase
           .from('review_votes')
           .upsert({
@@ -144,12 +163,15 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
             vote_type: 'dislike',
           }, { onConflict: 'review_id,user_id' });
 
-        if (!error) {
-          setVotes(prev => ({
-            likes: prevVote === 'like' ? prev.likes - 1 : prev.likes,
-            dislikes: prev.dislikes + 1,
-            userVote: 'dislike',
-          }));
+        if (error) {
+          toast({
+            title: 'Erreur',
+            description: "Impossible d'enregistrer votre vote.",
+            variant: 'destructive',
+          });
+        } else {
+          setVotes(prev => ({ ...prev, userVote: 'dislike' }));
+          await refreshVoteCounts();
         }
       }
     } finally {
