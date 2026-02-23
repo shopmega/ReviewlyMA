@@ -62,6 +62,10 @@
     "exploreByCity": "Explore by",
     "topNational": "View National Top",
     "latestFinds": "Latest discoveries",
+    "browseByCategory": "Browse by category",
+    "collections": {
+      "subtitle": "Dive into our themed collections and find the perfect company for your career."
+    },
     "hero": {
       "badge": "Immediate value for your career decisions",
       "titleLine1": "Discover and compare companies in Morocco",

@@ -62,6 +62,10 @@
     "exploreByCity": "Explorer par",
     "topNational": "Voir le Top National",
     "latestFinds": "Dernieres decouvertes",
+    "browseByCategory": "Parcourir par categorie",
+    "collections": {
+      "subtitle": "Plongez dans nos collections thematiques et trouvez la societe parfaite pour votre carriere."
+    },
     "hero": {
       "badge": "Valeur immediate pour vos decisions de carriere",
       "titleLine1": "Decouvrez et comparez les entreprises au Maroc",

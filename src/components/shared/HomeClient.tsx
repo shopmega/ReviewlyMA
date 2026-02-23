@@ -477,7 +477,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                     <section key="collections" className="py-24 container mx-auto px-4">
                         <div className="text-center mb-16 space-y-4">
                             <h2 className="text-3xl md:text-5xl font-bold font-headline">{t('home.exploreBySector', 'Explorez par')} <span className="text-primary">{t('home.sector', 'Secteur')}</span></h2>
-                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Plongez dans nos collections thématiques et trouvez la société parfaite pour votre carrière.</p>
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('home.collections.subtitle', 'Plongez dans nos collections thematiques et trouvez la societe parfaite pour votre carriere.')}</p>
                         </div>
 
                         <Carousel
@@ -556,7 +556,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         <div className="container mx-auto px-4">
                             <div className="flex justify-between items-end mb-12">
                                 <div>
-                                    <h2 className="text-3xl md:text-4xl font-bold font-headline mb-2">Parcourir par Catégorie</h2>
+                                    <h2 className="text-3xl md:text-4xl font-bold font-headline mb-2">{t('home.browseByCategory', 'Parcourir par categorie')}</h2>
                                     <p className="text-muted-foreground">{t('home.sectorSection.subtitle', 'Trouvez rapidement les meilleures societes par secteur.')}</p>
                                 </div>
                             </div>
