@@ -125,12 +125,24 @@ export async function submitSalary(
     }
   }
 
+  const { data: businessRow, error: businessError } = await supabase
+    .from('businesses')
+    .select('city')
+    .eq('id', payload.businessId)
+    .maybeSingle();
+
+  if (businessError) {
+    logError('submit_salary_business_city_lookup', businessError, { businessId: payload.businessId, userId: user.id });
+  }
+
+  const normalizedBusinessCity = businessRow?.city?.trim() || null;
+
   const row = {
     business_id: payload.businessId,
     user_id: user.id,
     job_title: payload.jobTitle,
     salary: payload.salary,
-    location: payload.location || null,
+    location: normalizedBusinessCity,
     pay_period: payload.payPeriod,
     currency: 'MAD',
     employment_type: payload.employmentType,

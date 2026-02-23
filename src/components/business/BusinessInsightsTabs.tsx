@@ -46,6 +46,7 @@ export function BusinessInsightsTabs({
           <TabsContent value="salaries" className="mt-0">
             <SalarySection
               businessId={business.id}
+              businessCity={business.city}
               stats={salaryStats}
               salaries={salaryEntries}
               roles={salaryRoles}

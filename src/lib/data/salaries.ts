@@ -9,6 +9,7 @@ import type {
   SalaryStats,
 } from '@/lib/types';
 import { getPublicClient } from './client';
+import { createServiceClient } from '@/lib/supabase/server';
 
 function toMonthlySalary(value: number, payPeriod: 'monthly' | 'yearly'): number {
   return payPeriod === 'yearly' ? value / 12 : value;
@@ -22,6 +23,19 @@ function median(values: number[]): number | null {
     return (sorted[middle - 1] + sorted[middle]) / 2;
   }
   return sorted[middle];
+}
+
+async function getSalaryAnalyticsClient() {
+  try {
+    return await createServiceClient();
+  } catch {
+    // Fallback keeps local/dev usable even when service key is not configured.
+    return getPublicClient();
+  }
+}
+
+function logSalaryAnalyticsError(context: string, error: unknown) {
+  console.error(`[salary-analytics] ${context}`, error);
 }
 
 export async function getPublishedSalariesByBusiness(
@@ -129,28 +143,34 @@ export async function getSalaryStatsByBusiness(businessId: string): Promise<Sala
 export async function getSalaryCompanyMetricsByBusiness(
   businessId: string
 ): Promise<SalaryCompanyMetrics | null> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   const { data, error } = await supabase
     .from('salary_company_metrics')
     .select('*')
     .eq('business_id', businessId)
     .maybeSingle();
 
-  if (error || !data) return null;
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getSalaryCompanyMetricsByBusiness', error);
+    return null;
+  }
   return data as SalaryCompanyMetrics;
 }
 
 export async function getSalaryCompanyMetricsList(
   limit = 200
 ): Promise<SalaryCompanyMetrics[]> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   const { data, error } = await supabase
     .from('salary_company_metrics')
     .select('*')
     .order('submission_count', { ascending: false })
     .limit(limit);
 
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getSalaryCompanyMetricsList', error);
+    return [];
+  }
   return data as SalaryCompanyMetrics[];
 }
 
@@ -161,7 +181,7 @@ export async function getSalaryCitySectorMetrics(
     limit?: number;
   }
 ): Promise<SalaryCitySectorMetrics[]> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   let query = supabase
     .from('salary_city_sector_metrics')
     .select('*')
@@ -180,14 +200,17 @@ export async function getSalaryCitySectorMetrics(
   }
 
   const { data, error } = await query;
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getSalaryCitySectorMetrics', error);
+    return [];
+  }
   return data as SalaryCitySectorMetrics[];
 }
 
 export async function getSalaryCityMetrics(
   citySlug?: string
 ): Promise<SalaryCityMetrics[]> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   let query = supabase
     .from('salary_city_metrics')
     .select('*')
@@ -198,7 +221,10 @@ export async function getSalaryCityMetrics(
   }
 
   const { data, error } = await query;
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getSalaryCityMetrics', error);
+    return [];
+  }
   return data as SalaryCityMetrics[];
 }
 
@@ -209,7 +235,7 @@ export async function getSalaryRoleCityMetrics(
     limit?: number;
   }
 ): Promise<SalaryRoleCityMetrics[]> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   let query = supabase
     .from('salary_role_city_metrics')
     .select('*')
@@ -228,7 +254,10 @@ export async function getSalaryRoleCityMetrics(
   }
 
   const { data, error } = await query;
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getSalaryRoleCityMetrics', error);
+    return [];
+  }
   return data as SalaryRoleCityMetrics[];
 }
 
@@ -236,7 +265,7 @@ export async function getSalaryRoleCityMetric(
   jobTitle: string,
   citySlug: string
 ): Promise<SalaryRoleCityMetrics | null> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   const { data, error } = await supabase
     .from('salary_role_city_metrics')
     .select('*')
@@ -244,34 +273,43 @@ export async function getSalaryRoleCityMetric(
     .eq('city_slug', citySlug)
     .maybeSingle();
 
-  if (error || !data) return null;
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getSalaryRoleCityMetric', error);
+    return null;
+  }
   return data as SalaryRoleCityMetrics;
 }
 
 export async function getTopSalaryRoleCityPairs(
   limit = 50
 ): Promise<SalaryRoleCityMetrics[]> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   const { data, error } = await supabase
     .from('salary_role_city_metrics')
     .select('*')
     .order('submission_count', { ascending: false })
     .limit(limit);
 
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getTopSalaryRoleCityPairs', error);
+    return [];
+  }
   return data as SalaryRoleCityMetrics[];
 }
 
 export async function getTopSalarySectorCityPairs(
   limit = 50
 ): Promise<SalaryCitySectorMetrics[]> {
-  const supabase = getPublicClient();
+  const supabase = await getSalaryAnalyticsClient();
   const { data, error } = await supabase
     .from('salary_city_sector_metrics')
     .select('*')
     .order('submission_count', { ascending: false })
     .limit(limit);
 
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getTopSalarySectorCityPairs', error);
+    return [];
+  }
   return data as SalaryCitySectorMetrics[];
 }

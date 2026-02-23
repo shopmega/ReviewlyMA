@@ -16,6 +16,7 @@ import { Lock, LogIn, Sparkles } from 'lucide-react';
 
 type SalarySectionProps = {
   businessId: string;
+  businessCity?: string;
   stats: SalaryStats;
   salaries: SalaryEntry[];
   roles?: string[];
@@ -30,6 +31,7 @@ function formatMoneyMAD(value: number | null): string {
 
 export function SalarySection({
   businessId,
+  businessCity,
   stats,
   salaries,
   roles = [],
@@ -216,6 +218,7 @@ export function SalarySection({
           {authStatus === 'authenticated' && isFormOpen && (
             <form ref={formRef} action={formAction} className="space-y-4">
               <input type="hidden" name="businessId" value={businessId} />
+              <input type="hidden" name="location" value={businessCity || ''} />
               <input type="hidden" name="isCurrent" value="true" />
 
               <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-4">
@@ -283,7 +286,7 @@ export function SalarySection({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-1">
                     <Label htmlFor="seniorityLevel">Seniority (optionnel)</Label>
                     <select id="seniorityLevel" name="seniorityLevel" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="">
@@ -303,10 +306,6 @@ export function SalarySection({
                       <option value="hybride">Hybride</option>
                       <option value="teletravail">Teletravail</option>
                     </select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="location">Ville / localisation (optionnel)</Label>
-                    <Input id="location" name="location" placeholder="Ex: Casablanca" />
                   </div>
                 </div>
 
