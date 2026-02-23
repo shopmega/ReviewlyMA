@@ -175,7 +175,11 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   });
 
   if (!parsed.success) {
-    return { status: 'error', message: 'Veuillez verifier votre demande.' };
+    return {
+      status: 'error',
+      message: 'Veuillez verifier votre demande.',
+      errors: parsed.error.flatten().fieldErrors as ActionState['errors'],
+    };
   }
 
   const { data: offer, error: offerError } = await supabase

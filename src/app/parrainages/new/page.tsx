@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { OfferCreateForm } from './OfferCreateForm';
 import { getReferralEligibility } from '@/app/actions/referrals';
 import { getCachedBusinesses } from '@/lib/cache';
+import { CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,12 +27,15 @@ export default async function NewParrainagePage() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-bold font-headline">Publier une offre de parrainage</h1>
-        <p className="text-muted-foreground">
-          Partagez une opportunite de referral dans votre entreprise pour aider d&apos;autres candidats.
-        </p>
-      </div>
+      <section className="rounded-3xl border border-border/60 bg-gradient-to-br from-sky-50 via-background to-emerald-50 p-6 md:p-8">
+        <div className="space-y-3">
+          <Badge variant="outline" className="w-fit">Publication</Badge>
+          <h1 className="text-3xl md:text-4xl font-bold font-headline">Publier une offre de parrainage</h1>
+          <p className="text-muted-foreground max-w-3xl">
+            Reliez votre offre a une fiche entreprise, decrivez le poste et recevez des demandes de candidats depuis la page de l&apos;offre.
+          </p>
+        </div>
+      </section>
 
       <Card className="rounded-2xl border-border/60">
         <CardHeader>
@@ -61,7 +65,32 @@ export default async function NewParrainagePage() {
         </CardContent>
       </Card>
 
-      {eligible && <OfferCreateForm businessOptions={businessOptions} />}
+      {eligible && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <OfferCreateForm businessOptions={businessOptions} />
+          </div>
+          <Card className="rounded-2xl border-border/60">
+            <CardHeader>
+              <CardTitle className="text-base">Bonnes pratiques</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p className="inline-flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                Mentionnez clairement le role, les prerequis et le mode de travail.
+              </p>
+              <p className="inline-flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                Fixez une date d&apos;expiration pour eviter les candidatures hors delai.
+              </p>
+              <p className="inline-flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                Les candidats vous envoient un message introductif et, si souhaite, un lien CV.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

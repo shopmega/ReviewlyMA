@@ -15,6 +15,8 @@ const initialState: ActionState = { status: 'idle', message: '' };
 export function RequestReferralForm({ offerId }: { offerId: string }) {
   const [state, formAction] = useActionState(requestReferral, initialState);
   const { toast } = useToast();
+  const fieldErrors = (state.errors || {}) as Record<string, string[] | undefined>;
+  const fieldError = (name: string) => fieldErrors[name]?.[0];
 
   useEffect(() => {
     if (state.status === 'success') {
@@ -43,11 +45,16 @@ export function RequestReferralForm({ offerId }: { offerId: string }) {
               className="min-h-[120px]"
               placeholder="Presentez votre profil, experience et motivation..."
             />
+            {fieldError('message') && <p className="text-xs text-destructive">{fieldError('message')}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="cvUrl">Lien CV (optionnel)</Label>
             <Input id="cvUrl" name="cvUrl" placeholder="https://..." />
+            {fieldError('cvUrl') && <p className="text-xs text-destructive">{fieldError('cvUrl')}</p>}
           </div>
+          <p className="text-xs text-muted-foreground">
+            Votre demande sera visible uniquement par l&apos;auteur de l&apos;offre.
+          </p>
           <Button type="submit" className="rounded-xl">Envoyer ma demande</Button>
         </form>
       </CardContent>

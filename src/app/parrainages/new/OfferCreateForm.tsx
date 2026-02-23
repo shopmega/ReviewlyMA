@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useMemo, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createReferralOffer } from '@/app/actions/referrals';
 import type { ActionState } from '@/lib/types';
@@ -10,10 +10,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Building2, Loader2, Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const initialState: ActionState = { status: 'idle', message: '' };
 
 type BusinessOption = {
+  id: string;
+  name: string;
+  city: string;
+};
+
+type SearchResult = {
   id: string;
   name: string;
   city: string;
@@ -24,13 +33,108 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
   const { toast } = useToast();
   const router = useRouter();
   const [selectedBusinessId, setSelectedBusinessId] = useState('');
+  const [companyQuery, setCompanyQuery] = useState('');
   const [manualCompanyName, setManualCompanyName] = useState('');
   const [manualCity, setManualCity] = useState('');
+  const [selectedBusiness, setSelectedBusiness] = useState<SearchResult | null>(null);
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const searchBoxRef = useRef<HTMLDivElement>(null);
 
-  const selectedBusiness = useMemo(
-    () => businessOptions.find((b) => b.id === selectedBusinessId) || null,
-    [businessOptions, selectedBusinessId]
-  );
+  useEffect(() => {
+    const onDocumentClick = (event: MouseEvent) => {
+      if (!searchBoxRef.current) return;
+      if (!searchBoxRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocumentClick);
+    return () => document.removeEventListener('mousedown', onDocumentClick);
+  }, []);
+
+  useEffect(() => {
+    if (selectedBusiness) {
+      setCompanyQuery(selectedBusiness.name);
+    }
+  }, [selectedBusiness]);
+
+  useEffect(() => {
+    const query = companyQuery.trim();
+    if (selectedBusiness && query === selectedBusiness.name) {
+      setSuggestions([]);
+      return;
+    }
+    if (query.length < 2) {
+      setSuggestions([]);
+      setSearchError('');
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      setSearchError('');
+      try {
+        const response = await fetch(`/api/businesses/search?q=${encodeURIComponent(query)}&limit=8`, {
+          signal: controller.signal,
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          setSearchError('Recherche indisponible. Continuez en saisie manuelle.');
+          setSuggestions([]);
+          return;
+        }
+        const next = Array.isArray(body?.results)
+          ? body.results
+              .filter((item: any) => item?.id && item?.name)
+              .map((item: any) => ({
+                id: String(item.id),
+                name: String(item.name),
+                city: item.city ? String(item.city) : '',
+              }))
+          : [];
+        setSuggestions(next);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          setSearchError('Recherche indisponible. Continuez en saisie manuelle.');
+          setSuggestions([]);
+        }
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [companyQuery, selectedBusiness]);
+
+  const clearBusinessSelection = () => {
+    setSelectedBusinessId('');
+    setSelectedBusiness(null);
+    setCompanyQuery('');
+    setSuggestions([]);
+    setSearchOpen(false);
+  };
+
+  const handleSelectBusiness = (business: SearchResult) => {
+    setSelectedBusinessId(business.id);
+    setSelectedBusiness(business);
+    setCompanyQuery(business.name);
+    setSuggestions([]);
+    setSearchOpen(false);
+  };
+
+  useEffect(() => {
+    if (!selectedBusinessId || selectedBusiness?.id === selectedBusinessId) return;
+    const fallback = businessOptions.find((item) => item.id === selectedBusinessId);
+    if (fallback) {
+      setSelectedBusiness({ id: fallback.id, name: fallback.name, city: fallback.city });
+    }
+  }, [businessOptions, selectedBusiness, selectedBusinessId]);
 
   useEffect(() => {
     if (state.status === 'success') {
@@ -54,22 +158,86 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
     <Card className="rounded-2xl">
       <CardContent className="pt-6">
         <form action={formAction} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="businessId">Entreprise (selection recommandee)</Label>
-            <select
-              id="businessId"
-              name="businessId"
-              value={selectedBusinessId}
-              onChange={(e) => setSelectedBusinessId(e.target.value)}
-              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-            >
-              <option value="">Autre entreprise (saisie manuelle)</option>
-              {businessOptions.map((business) => (
-                <option key={business.id} value={business.id}>
-                  {business.name}{business.city ? ` - ${business.city}` : ''}
-                </option>
-              ))}
-            </select>
+          <div className="space-y-2" ref={searchBoxRef}>
+            <Label htmlFor="businessSearch">Entreprise (recommandee)</Label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="businessSearch"
+                value={companyQuery}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setCompanyQuery(next);
+                  if (selectedBusiness && next.trim() !== selectedBusiness.name) {
+                    setSelectedBusinessId('');
+                    setSelectedBusiness(null);
+                  }
+                  setSearchOpen(next.trim().length >= 2);
+                }}
+                onFocus={() => {
+                  if (companyQuery.trim().length >= 2) setSearchOpen(true);
+                }}
+                placeholder="Rechercher votre entreprise..."
+                className="pl-10 pr-10"
+                autoComplete="off"
+              />
+              {(isSearching || !!companyQuery) && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                  {isSearching ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={clearBusinessSelection}
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+                      aria-label="Effacer la recherche d entreprise"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+              {searchOpen && (
+                <div className="absolute left-0 right-0 z-20 mt-2 rounded-xl border bg-background p-1 shadow-xl">
+                  {suggestions.length > 0 ? (
+                    <div className="max-h-72 overflow-y-auto py-1">
+                      {suggestions.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handleSelectBusiness(item)}
+                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-muted"
+                        >
+                          <div className="rounded-md bg-muted p-1.5">
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold">{item.name}</p>
+                            <p className="truncate text-xs text-muted-foreground">{item.city || 'Maroc'}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="px-3 py-2 text-xs text-muted-foreground">
+                      {isSearching ? 'Recherche en cours...' : 'Aucune entreprise trouvee. Continuez en saisie manuelle.'}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+            <input type="hidden" name="businessId" value={selectedBusinessId} />
+            {selectedBusiness && (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                Fiche liee: {selectedBusiness.name}{selectedBusiness.city ? ` (${selectedBusiness.city})` : ''}
+              </div>
+            )}
+            {!selectedBusiness && (
+              <p className="text-xs text-muted-foreground">
+                Vous pouvez publier avec une saisie manuelle si votre entreprise n&apos;apparait pas.
+              </p>
+            )}
+            {searchError && <p className="text-xs text-destructive">{searchError}</p>}
             {fieldError('businessId') && <p className="text-xs text-destructive">{fieldError('businessId')}</p>}
           </div>
 
@@ -172,6 +340,15 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
               <Label htmlFor="expiresAt">Expiration (optionnel)</Label>
               <Input id="expiresAt" name="expiresAt" type="datetime-local" />
               {fieldError('expiresAt') && <p className="text-xs text-destructive">{fieldError('expiresAt')}</p>}
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-muted/40 p-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <Badge variant="outline" className={cn(selectedBusiness ? 'border-emerald-300 text-emerald-700' : '')}>
+                {selectedBusiness ? 'Entreprise verifiee' : 'Entreprise manuelle'}
+              </Badge>
+              <span>Les candidats vous contacteront depuis la page de l&apos;offre.</span>
             </div>
           </div>
 
