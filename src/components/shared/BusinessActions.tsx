@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { getSiteSettings } from '@/lib/data';
-import { Bookmark, Pencil, Share2, Phone, Globe, Mail, Facebook, Twitter, MessageCircle } from 'lucide-react';
+import { Bookmark, Pencil, Share2, Phone, Globe, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import copy from 'copy-to-clipboard';
 import { trackBusinessEvent } from '@/app/actions/analytics';
 import { ContactDialog } from './ContactDialog';
 import { toggleBookmark, getIsBookmarked } from '@/app/actions/user';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type BusinessActionsProps = {
   businessId: string;
@@ -21,7 +22,8 @@ type BusinessActionsProps = {
 
 export function BusinessActions({ businessId, businessName, phone, website }: BusinessActionsProps) {
   const { toast } = useToast();
-  const [siteName, setSiteName] = useState('Platform'); // Default fallback
+  const { t, tf } = useI18n();
+  const [siteName, setSiteName] = useState('Platform');
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loadingBookmark, setLoadingBookmark] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
@@ -32,7 +34,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
       try {
         const [settings, bookmarked] = await Promise.all([
           getSiteSettings(),
-          getIsBookmarked(businessId)
+          getIsBookmarked(businessId),
         ]);
         setSiteName(settings.site_name || 'Platform');
         setIsBookmarked(bookmarked);
@@ -50,7 +52,10 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
 
   const shareVia = (platform: 'facebook' | 'twitter' | 'whatsapp' | 'copy') => {
     const url = window.location.href;
-    const text = `Découvrez ${businessName} sur ${siteName}`;
+    const text = tf('businessActions.shareText', 'Decouvrez {businessName} sur {siteName}', {
+      businessName,
+      siteName,
+    });
 
     let shareUrl = '';
     if (platform === 'facebook') {
@@ -58,10 +63,13 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
     } else if (platform === 'twitter') {
       shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     } else if (platform === 'whatsapp') {
-      shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+      shareUrl = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
     } else if (platform === 'copy') {
       copy(url);
-      toast({ title: 'Lien copié !', description: "L'URL a été copiée dans votre presse-papiers." });
+      toast({
+        title: t('businessActions.copyTitle', 'Lien copie !'),
+        description: t('businessActions.copyDesc', "L'URL a ete copiee dans votre presse-papiers."),
+      });
       return;
     }
 
@@ -77,22 +85,24 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
         const isNowBookmarked = result.data?.isBookmarked ?? false;
         setIsBookmarked(isNowBookmarked);
         toast({
-          title: isNowBookmarked ? 'Enregistré !' : 'Retiré',
+          title: isNowBookmarked
+            ? t('businessActions.savedTitle', 'Enregistre !')
+            : t('businessActions.removedTitle', 'Retire'),
           description: isNowBookmarked
-            ? "L'entreprise a été ajoutée à vos favoris."
-            : "L'entreprise a été retirée de vos favoris."
+            ? t('businessActions.savedDesc', "L'entreprise a ete ajoutee a vos favoris.")
+            : t('businessActions.removedDesc', "L'entreprise a ete retiree de vos favoris."),
         });
       } else {
         toast({
-          title: 'Erreur',
+          title: t('common.error', 'Erreur'),
           description: result.message,
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: 'Erreur',
-        description: "Une erreur est survenue lors de l'enregistrement.",
+        title: t('common.error', 'Erreur'),
+        description: t('businessActions.saveError', "Une erreur est survenue lors de l'enregistrement."),
         variant: 'destructive',
       });
     } finally {
@@ -121,7 +131,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
           <Button asChild size="lg" className="w-full flex-1">
             <Link href={`/businesses/${businessId}/review`}>
               <Pencil className="mr-2 h-4 w-4" />
-              Écrire un avis
+              {t('businessActions.writeReview', 'Ecrire un avis')}
             </Link>
           </Button>
         </div>
@@ -132,13 +142,13 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
           {phone && (
             <Button variant="default" className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleCall}>
               <Phone className="mr-2 h-4 w-4" />
-              Appeler
+              {t('businessActions.call', 'Appeler')}
             </Button>
           )}
           {website && (
             <Button variant="outline" className="w-full bg-card/80 backdrop-blur-sm" onClick={handleWebsite}>
               <Globe className="mr-2 h-4 w-4" />
-              Site web
+              {t('businessActions.website', 'Site web')}
             </Button>
           )}
         </div>
@@ -147,11 +157,11 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 relative">
         <Button
           variant="outline"
-          className={cn("w-full bg-card/80 backdrop-blur-sm", showShareOptions && "bg-accent")}
+          className={cn('w-full bg-card/80 backdrop-blur-sm', showShareOptions && 'bg-accent')}
           onClick={handleShare}
         >
           <Share2 className="mr-2 h-4 w-4" />
-          Partager
+          {t('businessActions.share', 'Partager')}
         </Button>
         <ContactDialog businessId={businessId} businessName={businessName} />
 
@@ -167,7 +177,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
               <Button size="icon" variant="ghost" onClick={() => shareVia('twitter')} className="text-sky-500 hover:bg-sky-50">
                 <Twitter className="h-5 w-5" />
               </Button>
-              <Button size="icon" variant="ghost" onClick={() => shareVia('copy')} title="Copier le lien">
+              <Button size="icon" variant="ghost" onClick={() => shareVia('copy')} title={t('businessActions.copyLink', 'Copier le lien')}>
                 <Share2 className="h-5 w-5" />
               </Button>
             </div>
@@ -176,12 +186,14 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
       </div>
       <Button
         variant="outline"
-        className={cn("w-full bg-card/80 backdrop-blur-sm transition-colors", isBookmarked && "text-primary border-primary bg-primary/5")}
+        className={cn('w-full bg-card/80 backdrop-blur-sm transition-colors', isBookmarked && 'text-primary border-primary bg-primary/5')}
         onClick={handleSave}
         disabled={loadingBookmark}
       >
-        <Bookmark className={cn("mr-2 h-4 w-4", isBookmarked && "fill-current")} />
-        {isBookmarked ? 'Enregistré' : 'Enregistrer'}
+        <Bookmark className={cn('mr-2 h-4 w-4', isBookmarked && 'fill-current')} />
+        {isBookmarked
+          ? t('businessActions.saved', 'Enregistre')
+          : t('businessActions.save', 'Enregistrer')}
       </Button>
     </div>
   );

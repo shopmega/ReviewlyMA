@@ -340,6 +340,187 @@
       "salarySimulator": "Salary simulator",
       "documentTemplates": "Document templates",
       "poweredBy": "Powered by"
+    },
+    "tabs": {
+      "reviews": "Reviews",
+      "salaries": "Salaries"
+    },
+    "similar": {
+      "title": "Similar businesses in {city}"
     }
+  },
+  "about": {
+    "title": "About {siteName}",
+    "p1": "{siteName} is the reference platform for company reviews in Morocco. Our mission is to bring transparency and help consumers and professionals understand each other better.",
+    "p2": "We believe sharing authentic experiences is essential to improve the quality of services and products in the Moroccan market."
+  },
+  "cities": {
+    "hero": {
+      "badge": "Geographic guide",
+      "title1": "Explore Morocco",
+      "title2": "City by City",
+      "subtitle": "Find top-rated places and community reviews for each district."
+    },
+    "popularTitle": "Popular cities",
+    "topNational": "National top",
+    "cityDistricts": "Discover {count} key districts",
+    "seeAllCity": "See all in {city}",
+    "cta": {
+      "title": "Can't find your city?",
+      "subtitle": "Help us grow by suggesting new businesses in your region.",
+      "suggest": "Suggest a place",
+      "contact": "Contact us"
+    }
+  },
+  "sponsored": {
+    "badge": "Sponsored ads",
+    "subtitle": "Results sponsored by companies",
+    "tag": "Sponsored",
+    "open": "Open",
+    "closed": "Closed"
+  },
+  "updates": {
+    "title": "Updates"
+  },
+  "referrals": {
+    "list": {
+      "badge": "Referral marketplace",
+      "title": "Job referrals",
+      "subtitle": "Employees share internal referral opportunities. Browse active offers and send a request in minutes.",
+      "publish": "Publish an offer",
+      "empty": "No active offers at the moment.",
+      "slots": "Available spots",
+      "viewOffer": "View offer"
+    },
+    "new": {
+      "badge": "Publish",
+      "title": "Publish a referral offer",
+      "subtitle": "Link your offer to a company profile, describe the role, and receive candidate requests from the offer page.",
+      "conditionsTitle": "Publishing requirements",
+      "emailVerified": "Email verified",
+      "emailNotVerified": "Email not verified",
+      "reviewOk": "Published review: OK",
+      "reviewRequired": "Published review: required",
+      "salaryOk": "Published salary: OK",
+      "salaryRequired": "Published salary: required",
+      "eligibilityHint": "You must verify your email and publish at least one review or salary before publishing an offer.",
+      "publishReview": "Publish a review",
+      "shareSalary": "Share a salary",
+      "bestPractices": "Best practices",
+      "tip1": "Clearly state the role, prerequisites and work mode.",
+      "tip2": "Set an expiration date to avoid outdated applications.",
+      "tip3": "Candidates send an intro message and optionally a CV link."
+    },
+    "form": {
+      "businessRecommended": "Company (recommended)",
+      "searchBusiness": "Search your company...",
+      "clearSearch": "Clear company search",
+      "countryFallback": "Morocco",
+      "searching": "Searching...",
+      "noBusinessFound": "No company found. Continue with manual input.",
+      "linkedSheet": "Linked profile",
+      "manualFallback": "You can publish with manual input if your company doesn't appear.",
+      "company": "Company",
+      "companySynced": "Name synced from the company profile.",
+      "jobTitle": "Role",
+      "city": "City",
+      "contract": "Contract",
+      "select": "Select",
+      "mode": "Mode",
+      "level": "Level",
+      "offerDescription": "Offer description",
+      "descriptionPlaceholder": "Explain the context, team, and what you expect from the candidate.",
+      "requirementsOptional": "Requirements (optional)",
+      "slots": "Number of spots",
+      "expiresAt": "Expiration (optional)",
+      "companyVerified": "Verified company",
+      "companyManual": "Manual company",
+      "footerHint": "Candidates will contact you from the offer page.",
+      "submit": "Publish my offer"
+    },
+    "detail": {
+      "back": "Back to offers",
+      "publishedOn": "Published on",
+      "slots": "Spots",
+      "expiresOn": "Expires on",
+      "description": "Description",
+      "requirements": "Requirements",
+      "loginPrompt": "Log in to request a referral.",
+      "goToLogin": "Go to login",
+      "ownerNote": "You are the owner of this offer. Incoming requests are visible in your user area."
+    },
+    "request": {
+      "title": "Request a referral",
+      "message": "Your message",
+      "messagePlaceholder": "Introduce your profile, experience and motivation...",
+      "cvUrl": "CV link (optional)",
+      "privacyNote": "Your request is only visible to the offer author.",
+      "submit": "Send my request"
+    }
+  },
+  "businessActions": {
+    "shareText": "Discover {businessName} on {siteName}",
+    "copyTitle": "Link copied!",
+    "copyDesc": "The URL was copied to your clipboard.",
+    "savedTitle": "Saved!",
+    "removedTitle": "Removed",
+    "savedDesc": "The company was added to your bookmarks.",
+    "removedDesc": "The company was removed from your bookmarks.",
+    "saveError": "An error occurred while saving.",
+    "writeReview": "Write a review",
+    "call": "Call",
+    "website": "Website",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "saved": "Saved",
+    "save": "Save"
+  },
+  "businessReport": {
+    "reasonRequired": "Please select a reason.",
+    "sentTitle": "Report sent",
+    "trigger": "Report this place",
+    "title": "Report {businessName}",
+    "description": "Issue with this business? Tell us so we can verify it.",
+    "problemLabel": "What is the problem?",
+    "selectReason": "Select a reason",
+    "detailsLabel": "Details (optional)",
+    "detailsPlaceholder": "Be as precise as possible to help us...",
+    "submit": "Send report",
+    "reason": {
+      "closed": "Permanently closed",
+      "duplicate": "Duplicate listing",
+      "incorrect": "Incorrect information",
+      "offensive": "Offensive content",
+      "scam": "Scam or fraud",
+      "other": "Other issue"
+    }
+  },
+  "contact": {
+    "trigger": "Contact",
+    "title": "Contact {businessName}",
+    "description": "Send a direct message to this company. They will reply by email.",
+    "name": "Your name",
+    "namePlaceholder": "First Last",
+    "email": "Your email",
+    "message": "Message",
+    "messagePlaceholder": "How can we help you?",
+    "sending": "Sending...",
+    "submit": "Send message",
+    "sentTitle": "Message sent!",
+    "sentDesc": "Your message was sent successfully to {businessName}."
+  },
+  "contactBusiness": {
+    "trigger": "Send message",
+    "title": "Contact {businessName}",
+    "description": "Ask a question or request information directly from the company.",
+    "asUser": "As",
+    "nameOptional": "Your name (optional)",
+    "namePlaceholder": "Ex: John Doe",
+    "emailOptional": "Your email (optional)",
+    "message": "Message",
+    "messagePlaceholder": "Write your message here...",
+    "submit": "Send message",
+    "sentTitle": "Message sent!",
+    "sentDesc": "The company has received your message."
   }
 }

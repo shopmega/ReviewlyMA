@@ -9,53 +9,55 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 const initialState: ActionState = { status: 'idle', message: '' };
 
 export function RequestReferralForm({ offerId }: { offerId: string }) {
   const [state, formAction] = useActionState(requestReferral, initialState);
   const { toast } = useToast();
+  const { t } = useI18n();
   const fieldErrors = (state.errors || {}) as Record<string, string[] | undefined>;
   const fieldError = (name: string) => fieldErrors[name]?.[0];
 
   useEffect(() => {
     if (state.status === 'success') {
-      toast({ title: 'Succes', description: state.message });
+      toast({ title: t('common.success', 'Succes'), description: state.message });
       return;
     }
     if (state.status === 'error') {
-      toast({ title: 'Erreur', description: state.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: state.message, variant: 'destructive' });
     }
-  }, [state, toast]);
+  }, [state, toast, t]);
 
   return (
     <Card className="rounded-2xl">
       <CardHeader>
-        <CardTitle>Demander un parrainage</CardTitle>
+        <CardTitle>{t('referrals.request.title', 'Demander un parrainage')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="offerId" value={offerId} />
           <div className="space-y-2">
-            <Label htmlFor="message">Votre message</Label>
+            <Label htmlFor="message">{t('referrals.request.message', 'Votre message')}</Label>
             <Textarea
               id="message"
               name="message"
               required
               className="min-h-[120px]"
-              placeholder="Presentez votre profil, experience et motivation..."
+              placeholder={t('referrals.request.messagePlaceholder', 'Presentez votre profil, experience et motivation...')}
             />
             {fieldError('message') && <p className="text-xs text-destructive">{fieldError('message')}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="cvUrl">Lien CV (optionnel)</Label>
+            <Label htmlFor="cvUrl">{t('referrals.request.cvUrl', 'Lien CV (optionnel)')}</Label>
             <Input id="cvUrl" name="cvUrl" placeholder="https://..." />
             {fieldError('cvUrl') && <p className="text-xs text-destructive">{fieldError('cvUrl')}</p>}
           </div>
           <p className="text-xs text-muted-foreground">
-            Votre demande sera visible uniquement par l&apos;auteur de l&apos;offre.
+            {t('referrals.request.privacyNote', "Votre demande sera visible uniquement par l'auteur de l'offre.")}
           </p>
-          <Button type="submit" className="rounded-xl">Envoyer ma demande</Button>
+          <Button type="submit" className="rounded-xl">{t('referrals.request.submit', 'Envoyer ma demande')}</Button>
         </form>
       </CardContent>
     </Card>

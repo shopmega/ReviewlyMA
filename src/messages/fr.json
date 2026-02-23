@@ -340,6 +340,187 @@
       "salarySimulator": "Simulateur de salaire",
       "documentTemplates": "Modeles de documents",
       "poweredBy": "Propulse par"
+    },
+    "tabs": {
+      "reviews": "Avis",
+      "salaries": "Salaires"
+    },
+    "similar": {
+      "title": "Etablissements similaires a {city}"
     }
+  },
+  "about": {
+    "title": "A propos de {siteName}",
+    "p1": "{siteName} est la plateforme de reference pour les avis sur les entreprises au Maroc. Notre mission est d'apporter de la transparence et d'aider les consommateurs et les professionnels a mieux se comprendre.",
+    "p2": "Nous croyons que le partage d'experiences authentiques est essentiel pour ameliorer la qualite des services et produits proposes sur le marche marocain."
+  },
+  "cities": {
+    "hero": {
+      "badge": "Guide geographique",
+      "title1": "Explorez le Maroc",
+      "title2": "Ville par Ville",
+      "subtitle": "Retrouvez les adresses les mieux notees et les avis de la communaute pour chaque quartier."
+    },
+    "popularTitle": "Villes populaires",
+    "topNational": "Top national",
+    "cityDistricts": "Decouvrez {count} quartiers principaux",
+    "seeAllCity": "Tout voir a {city}",
+    "cta": {
+      "title": "Vous ne trouvez pas votre ville ?",
+      "subtitle": "Aidez-nous a grandir en suggerant de nouveaux etablissements dans votre region.",
+      "suggest": "Suggerer un lieu",
+      "contact": "Nous contacter"
+    }
+  },
+  "sponsored": {
+    "badge": "Annonces sponsorisees",
+    "subtitle": "Resultats sponsorises par les entreprises",
+    "tag": "Sponsorise",
+    "open": "Ouvert",
+    "closed": "Ferme"
+  },
+  "updates": {
+    "title": "Actualites"
+  },
+  "referrals": {
+    "list": {
+      "badge": "Referral marketplace",
+      "title": "Parrainages emploi",
+      "subtitle": "Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.",
+      "publish": "Publier une offre",
+      "empty": "Aucune offre active pour le moment.",
+      "slots": "Places disponibles",
+      "viewOffer": "Voir l'offre"
+    },
+    "new": {
+      "badge": "Publication",
+      "title": "Publier une offre de parrainage",
+      "subtitle": "Reliez votre offre a une fiche entreprise, decrivez le poste et recevez des demandes de candidats depuis la page de l'offre.",
+      "conditionsTitle": "Conditions de publication",
+      "emailVerified": "Email verifie",
+      "emailNotVerified": "Email non verifie",
+      "reviewOk": "Avis publie: OK",
+      "reviewRequired": "Avis publie: requis",
+      "salaryOk": "Salaire publie: OK",
+      "salaryRequired": "Salaire publie: requis",
+      "eligibilityHint": "Vous devez verifier votre email et publier au moins un avis ou un salaire avant de publier une offre.",
+      "publishReview": "Publier un avis",
+      "shareSalary": "Partager un salaire",
+      "bestPractices": "Bonnes pratiques",
+      "tip1": "Mentionnez clairement le role, les prerequis et le mode de travail.",
+      "tip2": "Fixez une date d'expiration pour eviter les candidatures hors delai.",
+      "tip3": "Les candidats vous envoient un message introductif et, si souhaite, un lien CV."
+    },
+    "form": {
+      "businessRecommended": "Entreprise (recommandee)",
+      "searchBusiness": "Rechercher votre entreprise...",
+      "clearSearch": "Effacer la recherche d'entreprise",
+      "countryFallback": "Maroc",
+      "searching": "Recherche en cours...",
+      "noBusinessFound": "Aucune entreprise trouvee. Continuez en saisie manuelle.",
+      "linkedSheet": "Fiche liee",
+      "manualFallback": "Vous pouvez publier avec une saisie manuelle si votre entreprise n'apparait pas.",
+      "company": "Entreprise",
+      "companySynced": "Nom synchronise depuis la fiche entreprise.",
+      "jobTitle": "Poste",
+      "city": "Ville",
+      "contract": "Contrat",
+      "select": "Selectionner",
+      "mode": "Mode",
+      "level": "Niveau",
+      "offerDescription": "Description de l'offre",
+      "descriptionPlaceholder": "Expliquez le contexte, l'equipe, et ce que vous attendez du candidat.",
+      "requirementsOptional": "Exigences (optionnel)",
+      "slots": "Nombre de places",
+      "expiresAt": "Expiration (optionnel)",
+      "companyVerified": "Entreprise verifiee",
+      "companyManual": "Entreprise manuelle",
+      "footerHint": "Les candidats vous contacteront depuis la page de l'offre.",
+      "submit": "Publier mon offre"
+    },
+    "detail": {
+      "back": "Retour aux offres",
+      "publishedOn": "Publie le",
+      "slots": "Places",
+      "expiresOn": "Expire le",
+      "description": "Description",
+      "requirements": "Exigences",
+      "loginPrompt": "Connectez-vous pour demander un parrainage.",
+      "goToLogin": "Aller a la connexion",
+      "ownerNote": "Vous etes le proprietaire de cette offre. Les demandes recues seront visibles dans votre espace utilisateur."
+    },
+    "request": {
+      "title": "Demander un parrainage",
+      "message": "Votre message",
+      "messagePlaceholder": "Presentez votre profil, experience et motivation...",
+      "cvUrl": "Lien CV (optionnel)",
+      "privacyNote": "Votre demande sera visible uniquement par l'auteur de l'offre.",
+      "submit": "Envoyer ma demande"
+    }
+  },
+  "businessActions": {
+    "shareText": "Decouvrez {businessName} sur {siteName}",
+    "copyTitle": "Lien copie !",
+    "copyDesc": "L'URL a ete copiee dans votre presse-papiers.",
+    "savedTitle": "Enregistre !",
+    "removedTitle": "Retire",
+    "savedDesc": "L'entreprise a ete ajoutee a vos favoris.",
+    "removedDesc": "L'entreprise a ete retiree de vos favoris.",
+    "saveError": "Une erreur est survenue lors de l'enregistrement.",
+    "writeReview": "Ecrire un avis",
+    "call": "Appeler",
+    "website": "Site web",
+    "share": "Partager",
+    "copyLink": "Copier le lien",
+    "saved": "Enregistre",
+    "save": "Enregistrer"
+  },
+  "businessReport": {
+    "reasonRequired": "Veuillez selectionner une raison.",
+    "sentTitle": "Signalement envoye",
+    "trigger": "Signaler ce lieu",
+    "title": "Signaler {businessName}",
+    "description": "Un probleme avec cette entreprise ? Dites-le nous pour que nous puissions verifier.",
+    "problemLabel": "Quel est le probleme ?",
+    "selectReason": "Selectionnez une raison",
+    "detailsLabel": "Precision (optionnel)",
+    "detailsPlaceholder": "Soyez le plus precis possible pour nous aider...",
+    "submit": "Envoyer le rapport",
+    "reason": {
+      "closed": "Lieu definitivement ferme",
+      "duplicate": "C'est un doublon",
+      "incorrect": "Informations incorrectes",
+      "offensive": "Contenu offensant",
+      "scam": "Arnaque ou fraude",
+      "other": "Autre probleme"
+    }
+  },
+  "contact": {
+    "trigger": "Contacter",
+    "title": "Contacter {businessName}",
+    "description": "Envoyez un message direct a cette entreprise. Ils vous repondront par email.",
+    "name": "Votre nom",
+    "namePlaceholder": "Prenom Nom",
+    "email": "Votre email",
+    "message": "Message",
+    "messagePlaceholder": "Comment pouvons-nous vous aider ?",
+    "sending": "Envoi en cours...",
+    "submit": "Envoyer le message",
+    "sentTitle": "Message envoye !",
+    "sentDesc": "Votre message a ete envoye avec succes a {businessName}."
+  },
+  "contactBusiness": {
+    "trigger": "Envoyer un message",
+    "title": "Contacter {businessName}",
+    "description": "Posez une question ou demandez une information directement a l'entreprise.",
+    "asUser": "En tant que",
+    "nameOptional": "Votre nom (optionnel)",
+    "namePlaceholder": "Ex: Jean Dupont",
+    "emailOptional": "Votre email (optionnel)",
+    "message": "Message",
+    "messagePlaceholder": "Ecrivez votre message ici...",
+    "submit": "Envoyer le message",
+    "sentTitle": "Message envoye !",
+    "sentDesc": "L'entreprise a bien recu votre message."
   }
 }

@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReviewsSection } from '@/components/business/ReviewsSection';
 import { SalarySection } from '@/components/business/SalarySection';
 import type { Business, SalaryEntry, SalaryStats } from '@/lib/types';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type BusinessInsightsTabsProps = {
   business: Business;
@@ -24,16 +25,18 @@ export function BusinessInsightsTabs({
   salaryDepartments = [],
   salaryIntervals = [],
 }: BusinessInsightsTabsProps) {
+  const { t } = useI18n();
+
   return (
     <section className="space-y-4" id="insights">
       <Tabs defaultValue="reviews" className="space-y-6">
         <TabsList className="h-12 rounded-xl bg-muted/50 p-1">
           <TabsTrigger value="reviews" className="rounded-lg px-5 font-semibold">
-            Avis
+            {t('business.tabs.reviews', 'Avis')}
           </TabsTrigger>
           {enableSalaries && (
             <TabsTrigger value="salaries" className="rounded-lg px-5 font-semibold">
-              Salaires
+              {t('business.tabs.salaries', 'Salaires')}
             </TabsTrigger>
           )}
         </TabsList>

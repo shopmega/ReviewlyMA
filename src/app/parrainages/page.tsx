@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Clock3, MapPin, Users } from 'lucide-react';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type ReferralOffer = {
   id: string;
@@ -71,6 +72,7 @@ const formatSeniority = (value: string | null) => {
 };
 
 export default async function ParrainagesPage() {
+  const { t, locale } = await getServerTranslator();
   const supabase = await createClient();
   const { data: offers } = await supabase
     .from('job_referral_offers')
@@ -86,14 +88,14 @@ export default async function ParrainagesPage() {
       <section className="rounded-3xl border border-border/60 bg-gradient-to-br from-emerald-50 via-background to-sky-50 p-6 md:p-8">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="space-y-3">
-            <Badge variant="outline" className="w-fit">Referral marketplace</Badge>
-            <h1 className="text-3xl md:text-4xl font-bold font-headline">Parrainages emploi</h1>
+            <Badge variant="outline" className="w-fit">{t('referrals.list.badge', 'Referral marketplace')}</Badge>
+            <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('referrals.list.title', 'Parrainages emploi')}</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.
+              {t('referrals.list.subtitle', 'Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.')}
             </p>
           </div>
           <Button asChild className="rounded-xl">
-            <Link href="/parrainages/new">Publier une offre</Link>
+            <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
           </Button>
         </div>
       </section>
@@ -101,7 +103,7 @@ export default async function ParrainagesPage() {
       {items.length === 0 ? (
         <Card className="rounded-2xl">
           <CardContent className="py-12 text-center text-muted-foreground">
-            Aucune offre active pour le moment.
+            {t('referrals.list.empty', 'Aucune offre active pour le moment.')}
           </CardContent>
         </Card>
       ) : (
@@ -113,7 +115,7 @@ export default async function ParrainagesPage() {
                   <Badge variant="outline">{offer.company_name}</Badge>
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock3 className="h-3.5 w-3.5" />
-                    {new Date(offer.created_at).toLocaleDateString('fr-MA')}
+                    {new Date(offer.created_at).toLocaleDateString(locale)}
                   </span>
                 </div>
                 <CardTitle className="text-xl">{offer.job_title}</CardTitle>
@@ -127,11 +129,11 @@ export default async function ParrainagesPage() {
                 </div>
                 <p className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  Places disponibles: {offer.slots}
+                  {t('referrals.list.slots', 'Places disponibles')}: {offer.slots}
                 </p>
                 <Button asChild variant="outline" className="w-full rounded-xl">
                   <Link href={`/parrainages/${offer.id}`} className="inline-flex items-center justify-center gap-2">
-                    Voir l&apos;offre
+                    {t('referrals.list.viewOffer', "Voir l'offre")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

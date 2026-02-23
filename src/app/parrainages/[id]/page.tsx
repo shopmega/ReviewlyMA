@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { RequestReferralForm } from './RequestReferralForm';
 import { Clock3, MapPin, Users } from 'lucide-react';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type OfferRecord = {
   id: string;
@@ -77,6 +78,7 @@ const formatSeniority = (value: string | null) => {
 };
 
 export default async function ParrainageDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t, locale } = await getServerTranslator();
   const { id } = await params;
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -99,7 +101,7 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <div className="space-y-3">
-        <Link href="/parrainages" className="text-sm text-primary hover:underline">Retour aux offres</Link>
+        <Link href="/parrainages" className="text-sm text-primary hover:underline">{t('referrals.detail.back', 'Retour aux offres')}</Link>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{offer.company_name}</Badge>
           {offer.city && <Badge variant="secondary" className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{offer.city}</Badge>}
@@ -111,13 +113,13 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Clock3 className="h-4 w-4" />
-            Publie le {new Date(offer.created_at).toLocaleDateString('fr-MA')}
+            {t('referrals.detail.publishedOn', 'Publie le')} {new Date(offer.created_at).toLocaleDateString(locale)}
           </span>
           <span className="inline-flex items-center gap-1">
             <Users className="h-4 w-4" />
-            Places: {offer.slots}
+            {t('referrals.detail.slots', 'Places')}: {offer.slots}
           </span>
-          {offer.expires_at ? <span>Expire le {new Date(offer.expires_at).toLocaleDateString('fr-MA')}</span> : null}
+          {offer.expires_at ? <span>{t('referrals.detail.expiresOn', 'Expire le')} {new Date(offer.expires_at).toLocaleDateString(locale)}</span> : null}
         </p>
       </div>
 
@@ -125,12 +127,12 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
         <Card className="rounded-2xl lg:col-span-2">
           <CardContent className="pt-6 space-y-5">
             <div>
-              <h2 className="font-semibold mb-2">Description</h2>
+              <h2 className="font-semibold mb-2">{t('referrals.detail.description', 'Description')}</h2>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{offer.description}</p>
             </div>
             {offer.requirements && (
               <div>
-                <h2 className="font-semibold mb-2">Exigences</h2>
+                <h2 className="font-semibold mb-2">{t('referrals.detail.requirements', 'Exigences')}</h2>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{offer.requirements}</p>
               </div>
             )}
@@ -141,9 +143,9 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
           {!currentUserId && (
             <Card className="rounded-2xl">
               <CardContent className="pt-6 text-sm text-muted-foreground">
-                Connectez-vous pour demander un parrainage.
+                {t('referrals.detail.loginPrompt', 'Connectez-vous pour demander un parrainage.')}
                 <div className="mt-3">
-                  <Link href={`/login?next=/parrainages/${offer.id}`} className="text-primary hover:underline">Aller a la connexion</Link>
+                  <Link href={`/login?next=/parrainages/${offer.id}`} className="text-primary hover:underline">{t('referrals.detail.goToLogin', 'Aller a la connexion')}</Link>
                 </div>
               </CardContent>
             </Card>
@@ -152,7 +154,7 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
           {isOwner && (
             <Card className="rounded-2xl">
               <CardContent className="pt-6 text-sm text-muted-foreground">
-                Vous etes le proprietaire de cette offre. Les demandes recues seront visibles dans votre espace utilisateur.
+                {t('referrals.detail.ownerNote', 'Vous etes le proprietaire de cette offre. Les demandes recues seront visibles dans votre espace utilisateur.')}
               </CardContent>
             </Card>
           )}
