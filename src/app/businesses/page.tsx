@@ -2,10 +2,10 @@ import { BusinessList } from '@/components/shared/BusinessList';
 import { getFilteredBusinesses, getAllCategories, getAllBenefits } from '@/lib/data';
 import { Suspense } from 'react';
 
-
 import { Metadata } from 'next';
-import { getCityFromSlug, slugify } from '@/lib/utils';
+import { slugify } from '@/lib/utils';
 import { getCategoryByName } from '@/app/actions/categories';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const resolvedParams = await searchParams;
@@ -33,15 +33,16 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return {
     alternates: {
       canonical,
-    }
+    },
   };
 }
 
 export default async function BusinessesPage({
-  searchParams
+  searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const { t } = await getServerTranslator();
   const resolvedSearchParams = await searchParams;
   const page = typeof resolvedSearchParams.page === 'string' ? parseInt(resolvedSearchParams.page) : 1;
   const search = typeof resolvedSearchParams.search === 'string' ? resolvedSearchParams.search : undefined;
@@ -52,12 +53,10 @@ export default async function BusinessesPage({
   const quartier = typeof resolvedSearchParams.quartier === 'string' ? resolvedSearchParams.quartier : undefined;
   const rating = typeof resolvedSearchParams.rating === 'string' ? parseFloat(resolvedSearchParams.rating) : undefined;
   const companySize = typeof resolvedSearchParams.companySize === 'string' ? resolvedSearchParams.companySize : undefined;
-  const sort = typeof resolvedSearchParams.sort === 'string' ? resolvedSearchParams.sort as any : undefined;
+  const sort = typeof resolvedSearchParams.sort === 'string' ? (resolvedSearchParams.sort as any) : undefined;
   const amenitiesParam = typeof resolvedSearchParams.amenities === 'string' ? resolvedSearchParams.amenities : undefined;
   const benefitsParam = typeof resolvedSearchParams.benefits === 'string' ? resolvedSearchParams.benefits : undefined;
-  const amenities = amenitiesParam
-    ? amenitiesParam.split(',')
-    : (benefitsParam ? benefitsParam.split(',') : undefined);
+  const amenities = amenitiesParam ? amenitiesParam.split(',') : benefitsParam ? benefitsParam.split(',') : undefined;
   const tag = typeof resolvedSearchParams.tag === 'string' ? resolvedSearchParams.tag : undefined;
   const featured = resolvedSearchParams.featured === 'true';
 
@@ -77,14 +76,13 @@ export default async function BusinessesPage({
       tag,
       featured,
       limit: 9,
-      minimal: true
+      minimal: true,
     }),
     getAllCategories(),
     getAllBenefits(),
-    category ? import('@/lib/data').then(m => m.getSubcategoriesByCategory(category)) : Promise.resolve([])
+    category ? import('@/lib/data').then((m) => m.getSubcategoriesByCategory(category)) : Promise.resolve([]),
   ]);
 
-  // Log search for analytics if search query exists
   if (search) {
     const { logSearch } = await import('@/app/actions/search');
     logSearch(search, city, result.totalCount);
@@ -94,13 +92,15 @@ export default async function BusinessesPage({
     <div className="container mx-auto px-4 md:px-6 py-12">
       <div className="mb-8 space-y-4">
         <h1 className="text-4xl font-bold font-headline">
-          {featured ? 'Établissements à la Une' : 'Tous les établissements'}
+          {featured ? t('listingPage.featuredTitle', 'Etablissements a la une') : t('listingPage.allTitle', 'Tous les etablissements')}
         </h1>
         <p className="text-slate-600 text-lg">
-          {featured ? 'Découvrez notre sélection d\'entreprises premium et recommandées.' : 'Parcourez et filtrez des milliers d\'établissements pour trouver celui qui vous convient.'}
+          {featured
+            ? t('listingPage.featuredSubtitle', "Decouvrez notre selection d'entreprises premium et recommandees.")
+            : t('listingPage.allSubtitle', "Parcourez et filtrez des milliers d'etablissements pour trouver celui qui vous convient.")}
         </p>
       </div>
-      <Suspense fallback={<div>Chargement...</div>}>
+      <Suspense fallback={<div>{t('common.loading', 'Chargement...')}</div>}>
         <BusinessList
           initialBusinesses={result.businesses}
           totalCount={result.totalCount}

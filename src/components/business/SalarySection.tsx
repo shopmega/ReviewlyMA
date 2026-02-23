@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { Lock, LogIn, Sparkles } from 'lucide-react';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type SalarySectionProps = {
   businessId: string;
@@ -38,6 +39,7 @@ export function SalarySection({
   departments = [],
   intervals = [],
 }: SalarySectionProps) {
+  const { t, tf } = useI18n();
   const [state, formAction] = useActionState(submitSalary, { status: 'idle', message: '' });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
@@ -49,16 +51,16 @@ export function SalarySection({
 
   useEffect(() => {
     if (state.status === 'success') {
-      toast({ title: 'Succes', description: state.message });
+      toast({ title: t('common.success', 'Succes'), description: state.message });
       formRef.current?.reset();
       setIsFormOpen(false);
       router.refresh();
       return;
     }
     if (state.status === 'error' && state.message) {
-      toast({ title: 'Erreur', description: state.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: state.message, variant: 'destructive' });
     }
-  }, [state.status, state.message, toast, router]);
+  }, [state.status, state.message, toast, router, t]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -104,33 +106,33 @@ export function SalarySection({
     <section id="salaries" className="space-y-6">
       <Card className="border border-border/50">
         <CardHeader>
-          <CardTitle>Salaires</CardTitle>
+          <CardTitle>{t('business.salary.title', 'Salaires')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {stats.count > 0 ? (
             <>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Mediane mensuelle</p>
+                  <p className="text-xs text-muted-foreground">{t('business.salary.medianMonthly', 'Mediane mensuelle')}</p>
                   <p className="font-bold">{formatMoneyMAD(stats.medianMonthly)}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Minimum mensuel</p>
+                  <p className="text-xs text-muted-foreground">{t('business.salary.minMonthly', 'Minimum mensuel')}</p>
                   <p className="font-bold">{formatMoneyMAD(stats.minMonthly)}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Maximum mensuel</p>
+                  <p className="text-xs text-muted-foreground">{t('business.salary.maxMonthly', 'Maximum mensuel')}</p>
                   <p className="font-bold">{formatMoneyMAD(stats.maxMonthly)}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Echantillon</p>
-                  <p className="font-bold">{stats.count} entrees</p>
+                  <p className="text-xs text-muted-foreground">{t('business.salary.sample', 'Echantillon')}</p>
+                  <p className="font-bold">{tf('business.salary.entriesCount', '{count} entrees', { count: stats.count })}</p>
                 </div>
               </div>
 
               {stats.roleBreakdown.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold">Top postes</p>
+                  <p className="text-sm font-semibold">{t('business.salary.topRoles', 'Top postes')}</p>
                   <div className="space-y-2">
                     {stats.roleBreakdown.map((row) => (
                       <div key={row.jobTitle} className="flex items-center justify-between rounded-lg border p-2 text-sm">
@@ -146,17 +148,17 @@ export function SalarySection({
 
               {salaries.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold">Dernieres entrees publiees</p>
+                  <p className="text-sm font-semibold">{t('business.salary.latestEntries', 'Dernieres entrees publiees')}</p>
                   <div className="space-y-2">
                     {salaries.map((row) => (
                       <div key={row.id} className="rounded-lg border p-3">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-medium">{row.job_title}</p>
-                          <Badge variant="outline">{row.pay_period === 'yearly' ? 'Annuel' : 'Mensuel'}</Badge>
+                          <Badge variant="outline">{row.pay_period === 'yearly' ? t('business.salary.yearly', 'Annuel') : t('business.salary.monthly', 'Mensuel')}</Badge>
                         </div>
                         <p className="mt-1 text-sm font-semibold">{formatMoneyMAD(row.salary)}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {row.location || 'Localisation non precisee'} · {new Date(row.created_at).toLocaleDateString('fr-MA')}
+                          {row.location || t('business.salary.locationUnknown', 'Localisation non precisee')} · {new Date(row.created_at).toLocaleDateString('fr-MA')}
                         </p>
                       </div>
                     ))}
@@ -165,7 +167,7 @@ export function SalarySection({
               )}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">Aucune donnee salaire publiee pour le moment.</p>
+            <p className="text-sm text-muted-foreground">{t('business.salary.empty', 'Aucune donnee salaire publiee pour le moment.')}</p>
           )}
         </CardContent>
       </Card>
@@ -176,13 +178,13 @@ export function SalarySection({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Partager un salaire (anonyme)
+                {t('business.salary.shareTitle', 'Partager un salaire (anonyme)')}
               </CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground">Moderation activee avant publication.</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t('business.salary.shareModeration', 'Moderation activee avant publication.')}</p>
             </div>
             {authStatus === 'authenticated' && (
               <Button type="button" variant="outline" onClick={() => setIsFormOpen((prev) => !prev)}>
-                {isFormOpen ? 'Masquer' : 'Ajouter'}
+                {isFormOpen ? t('common.hide', 'Masquer') : t('common.add', 'Ajouter')}
               </Button>
             )}
           </div>
@@ -202,15 +204,15 @@ export function SalarySection({
                   <Lock className="h-4 w-4 text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold">Connectez-vous pour publier un salaire</p>
+                  <p className="text-sm font-semibold">{t('business.salary.loginRequired', 'Connectez-vous pour publier un salaire')}</p>
                   <p className="text-sm text-muted-foreground">
-                    La soumission reste reservee aux utilisateurs connectes pour limiter le spam et garder des donnees de qualite.
+                    {t('business.salary.loginRequiredDesc', 'La soumission reste reservee aux utilisateurs connectes pour limiter le spam et garder des donnees de qualite.')}
                   </p>
                   <div className="pt-1">
                     <Button asChild>
                       <Link href={loginHref} className="inline-flex items-center gap-2">
                         <LogIn className="h-4 w-4" />
-                        Se connecter et publier
+                        {t('business.salary.loginAndShare', 'Se connecter et publier')}
                       </Link>
                     </Button>
                   </div>
@@ -219,11 +221,7 @@ export function SalarySection({
             </div>
           )}
 
-          {authStatus === 'authenticated' && !isFormOpen && (
-            <p className="text-sm text-muted-foreground">
-              Cliquez sur <strong>Ajouter</strong> pour soumettre votre salaire.
-            </p>
-          )}
+          {authStatus === 'authenticated' && !isFormOpen && <p className="text-sm text-muted-foreground">{t('business.salary.clickAdd', 'Cliquez sur Ajouter pour soumettre votre salaire.')}</p>}
 
           {authStatus === 'authenticated' && isFormOpen && (
             <form ref={formRef} action={formAction} className="space-y-4">
@@ -232,13 +230,13 @@ export function SalarySection({
               <input type="hidden" name="isCurrent" value="true" />
 
               <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-4">
-                <h4 className="text-sm font-semibold">Informations principales</h4>
+                <h4 className="text-sm font-semibold">{t('business.salary.mainInfo', 'Informations principales')}</h4>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label htmlFor="jobTitle">Poste</Label>
+                    <Label htmlFor="jobTitle">{t('business.salary.jobTitle', 'Poste')}</Label>
                     {roles.length > 0 ? (
                       <select id="jobTitle" name="jobTitle" className="h-10 w-full rounded-md border bg-background px-3 text-sm" required>
-                        <option value="">Selectionner un poste</option>
+                        <option value="">{t('business.salary.selectRole', 'Selectionner un poste')}</option>
                         {roles.map((role) => (
                           <option key={role} value={role}>
                             {role}
@@ -246,15 +244,15 @@ export function SalarySection({
                         ))}
                       </select>
                     ) : (
-                      <Input id="jobTitle" name="jobTitle" placeholder="Ex: Developpeur Full Stack" required />
+                      <Input id="jobTitle" name="jobTitle" placeholder={t('business.salary.jobTitlePlaceholder', 'Ex: Developpeur Full Stack')} required />
                     )}
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="salary">Salaire</Label>
+                    <Label htmlFor="salary">{t('business.salary.salary', 'Salaire')}</Label>
                     <Input id="salary" name="salary" type="number" min="500" step="1" required />
                     {intervals.length > 0 && (
                       <p className="text-[11px] text-muted-foreground">
-                        Intervalles autorises: {intervals.map((item) => item.label).join(' | ')}
+                        {t('business.salary.allowedIntervals', 'Intervalles autorises')}: {intervals.map((item) => item.label).join(' | ')}
                       </p>
                     )}
                   </div>
@@ -262,68 +260,58 @@ export function SalarySection({
               </div>
 
               <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-4">
-                <h4 className="text-sm font-semibold">Contexte du poste</h4>
+                <h4 className="text-sm font-semibold">{t('business.salary.context', 'Contexte du poste')}</h4>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                   <div className="space-y-1">
-                    <Label htmlFor="payPeriod">Periode</Label>
-                    <select
-                      id="payPeriod"
-                      name="payPeriod"
-                      className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-                      defaultValue="monthly"
-                    >
-                      <option value="monthly">Mensuel</option>
-                      <option value="yearly">Annuel</option>
+                    <Label htmlFor="payPeriod">{t('business.salary.period', 'Periode')}</Label>
+                    <select id="payPeriod" name="payPeriod" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="monthly">
+                      <option value="monthly">{t('business.salary.monthly', 'Mensuel')}</option>
+                      <option value="yearly">{t('business.salary.yearly', 'Annuel')}</option>
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="employmentType">Type de contrat</Label>
-                    <select
-                      id="employmentType"
-                      name="employmentType"
-                      className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-                      defaultValue="full_time"
-                    >
-                      <option value="full_time">Temps plein</option>
-                      <option value="part_time">Temps partiel</option>
-                      <option value="contract">Contrat</option>
-                      <option value="intern">Stage</option>
+                    <Label htmlFor="employmentType">{t('business.salary.contractType', 'Type de contrat')}</Label>
+                    <select id="employmentType" name="employmentType" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="full_time">
+                      <option value="full_time">{t('business.salary.fullTime', 'Temps plein')}</option>
+                      <option value="part_time">{t('business.salary.partTime', 'Temps partiel')}</option>
+                      <option value="contract">{t('business.salary.contract', 'Contrat')}</option>
+                      <option value="intern">{t('business.salary.internship', 'Stage')}</option>
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="yearsExperience">Annees d'experience</Label>
+                    <Label htmlFor="yearsExperience">{t('business.salary.yearsExperience', "Annees d'experience")}</Label>
                     <Input id="yearsExperience" name="yearsExperience" type="number" min="0" max="60" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label htmlFor="seniorityLevel">Seniority (optionnel)</Label>
+                    <Label htmlFor="seniorityLevel">{t('business.salary.seniority', 'Seniority (optionnel)')}</Label>
                     <select id="seniorityLevel" name="seniorityLevel" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="">
-                      <option value="">Auto</option>
-                      <option value="junior">Junior</option>
-                      <option value="confirme">Confirme</option>
-                      <option value="senior">Senior</option>
-                      <option value="expert">Expert</option>
-                      <option value="manager">Manager</option>
+                      <option value="">{t('business.salary.auto', 'Auto')}</option>
+                      <option value="junior">{t('business.salary.junior', 'Junior')}</option>
+                      <option value="confirme">{t('business.salary.confirmed', 'Confirme')}</option>
+                      <option value="senior">{t('business.salary.senior', 'Senior')}</option>
+                      <option value="expert">{t('business.salary.expert', 'Expert')}</option>
+                      <option value="manager">{t('business.salary.manager', 'Manager')}</option>
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="workModel">Mode de travail (optionnel)</Label>
+                    <Label htmlFor="workModel">{t('business.salary.workModel', 'Mode de travail (optionnel)')}</Label>
                     <select id="workModel" name="workModel" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="">
-                      <option value="">Non precise</option>
-                      <option value="presentiel">Presentiel</option>
-                      <option value="hybride">Hybride</option>
-                      <option value="teletravail">Teletravail</option>
+                      <option value="">{t('business.salary.notSpecified', 'Non precise')}</option>
+                      <option value="presentiel">{t('business.salary.onSite', 'Presentiel')}</option>
+                      <option value="hybride">{t('business.salary.hybrid', 'Hybride')}</option>
+                      <option value="teletravail">{t('business.salary.remote', 'Teletravail')}</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="department">Departement (optionnel)</Label>
+                  <Label htmlFor="department">{t('business.salary.department', 'Departement (optionnel)')}</Label>
                   {departments.length > 0 ? (
                     <select id="department" name="department" className="h-10 w-full rounded-md border bg-background px-3 text-sm" defaultValue="">
-                      <option value="">Selectionner un departement</option>
+                      <option value="">{t('business.salary.selectDepartment', 'Selectionner un departement')}</option>
                       {departments.map((department) => (
                         <option key={department} value={department}>
                           {department}
@@ -331,37 +319,37 @@ export function SalarySection({
                       ))}
                     </select>
                   ) : (
-                    <Input id="department" name="department" placeholder="Ex: Engineering" />
+                    <Input id="department" name="department" placeholder={t('business.salary.departmentPlaceholder', 'Ex: Engineering')} />
                   )}
                 </div>
               </div>
 
               <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-3">
-                <h4 className="text-sm font-semibold">Bonus (optionnel)</h4>
+                <h4 className="text-sm font-semibold">{t('business.salary.bonusOptional', 'Bonus (optionnel)')}</h4>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="bonusPrime" value="true" className="h-4 w-4" />
-                    Prime
+                    {t('business.salary.bonusPrime', 'Prime')}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="bonusTreiziemeMois" value="true" className="h-4 w-4" />
-                    13e mois
+                    {t('business.salary.bonus13Month', '13e mois')}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="bonusCommission" value="true" className="h-4 w-4" />
-                    Commission
+                    {t('business.salary.bonusCommission', 'Commission')}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="bonusAnnuel" value="true" className="h-4 w-4" />
-                    Bonus annuel
+                    {t('business.salary.bonusAnnual', 'Bonus annuel')}
                   </label>
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                Votre soumission est anonyme et passera par moderation avant publication.
-              </p>
-              <Button type="submit" className="w-full sm:w-auto">Soumettre un salaire</Button>
+              <p className="text-xs text-muted-foreground">{t('business.salary.anonymousNotice', 'Votre soumission est anonyme et passera par moderation avant publication.')}</p>
+              <Button type="submit" className="w-full sm:w-auto">
+                {t('business.salary.submit', 'Soumettre un salaire')}
+              </Button>
             </form>
           )}
         </CardContent>

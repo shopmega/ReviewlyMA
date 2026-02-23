@@ -9,6 +9,7 @@ type I18nContextValue = {
   locale: AppLocale;
   locales: readonly AppLocale[];
   t: (key: string, fallback?: string) => string;
+  tf: (key: string, fallback: string, vars: Record<string, string | number>) => string;
   setLocale: (locale: AppLocale) => void;
 };
 
@@ -22,6 +23,12 @@ function getMessage(messages: AppMessages, key: string): string | undefined {
     value = (value as Record<string, unknown>)[part];
   }
   return typeof value === 'string' ? value : undefined;
+}
+
+function interpolate(template: string, vars: Record<string, string | number>): string {
+  return Object.entries(vars).reduce((acc, [name, value]) => {
+    return acc.replaceAll(`{${name}}`, String(value));
+  }, template);
 }
 
 export function I18nProvider({
@@ -56,6 +63,8 @@ export function I18nProvider({
       locales: APP_LOCALES,
       setLocale,
       t: (key: string, fallback?: string) => getMessage(messages, key) ?? fallback ?? key,
+      tf: (key: string, fallback: string, vars: Record<string, string | number>) =>
+        interpolate(getMessage(messages, key) ?? fallback, vars),
     }),
     [locale, messages, setLocale]
   );

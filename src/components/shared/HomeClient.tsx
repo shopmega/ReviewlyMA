@@ -25,6 +25,7 @@ import { cn, slugify } from '@/lib/utils';
 import { useEffect } from 'react';
 import { analytics } from '@/lib/analytics';
 import { AdSlot } from '@/components/shared/AdSlot';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 const IconMap: Record<string, LucideIcon> = {
     Landmark, Headphones, ShoppingBag, GraduationCap, Zap, Hotel,
@@ -68,15 +69,6 @@ const defaultCategories = [
     { name: 'Éducation', icon: GraduationCap, slug: 'education-formation' },
 ];
 
-const salaryRangeOptions = [
-    { value: 'all', label: 'Tous les salaires' },
-    { value: '0-4000', label: 'Moins de 4 000 MAD' },
-    { value: '4000-8000', label: '4 000 - 8 000 MAD' },
-    { value: '8000-15000', label: '8 000 - 15 000 MAD' },
-    { value: '15000+', label: '15 000+ MAD' },
-];
-
-
 const getCollectionHref = (link: CollectionLink) => {
     const params = new URLSearchParams();
     switch (link.type) {
@@ -114,6 +106,7 @@ const isValidCollectionLink = (link: any): link is CollectionLink => {
 };
 
 export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [], metrics }: HomeClientProps) {
+    const { locale, t, tf } = useI18n();
     // Use initialBusinesses from server as default, no need for complex loading state if desired
     const businesses = initialBusinesses;
 
@@ -133,11 +126,21 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         { label: `Banques à ${ALL_CITIES[1] || 'Marrakech'}`, href: `/businesses?category=Finance&city=${ALL_CITIES[1] || 'Marrakech'}` },
     ];
 
-    const [searchCity, setSearchCity] = useState('Toutes les villes');
+    const [searchCity, setSearchCity] = useState('all');
     const [searchSector, setSearchSector] = useState('all');
     const [salaryRange, setSalaryRange] = useState('all');
     const [homeQuery, setHomeQuery] = useState('');
-    const normalizedSearchCity = searchCity === 'Toutes les villes' ? '' : searchCity;
+    const salaryRangeOptions = useMemo(
+        () => [
+            { value: 'all', label: t('home.salaryRanges.all', 'Tous les salaires') },
+            { value: '0-4000', label: t('home.salaryRanges.under4k', 'Moins de 4 000 MAD') },
+            { value: '4000-8000', label: t('home.salaryRanges.4to8k', '4 000 - 8 000 MAD') },
+            { value: '8000-15000', label: t('home.salaryRanges.8to15k', '8 000 - 15 000 MAD') },
+            { value: '15000+', label: t('home.salaryRanges.over15k', '15 000+ MAD') },
+        ],
+        [t]
+    );
+    const normalizedSearchCity = searchCity === 'all' ? '' : searchCity;
     const normalizedSearchSector = searchSector === 'all' ? '' : searchSector;
     const trackedImpressionsRef = useRef<Set<string>>(new Set());
 
@@ -239,8 +242,8 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
 
     const stats = [
-        { name: 'Établissements', value: (metrics?.businessCount ?? businessCount).toLocaleString('fr-MA'), icon: Building },
-        { name: 'Avis employés', value: (metrics?.reviewCount ?? reviewCount).toLocaleString('fr-MA'), icon: Star },
+        { name: t('home.stats.businesses', 'Etablissements'), value: (metrics?.businessCount ?? businessCount).toLocaleString(locale), icon: Building },
+        { name: t('home.stats.reviews', 'Avis employes'), value: (metrics?.reviewCount ?? reviewCount).toLocaleString(locale), icon: Star },
     ];
 
     const renderSection = (id: string) => {
@@ -262,18 +265,18 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         <div className="relative z-10 container mx-auto px-4 flex flex-col items-center gap-6 md:gap-8">
                             <div className="space-y-5 md:space-y-6 max-w-4xl animate-fade-in-up">
                                 <Badge variant="outline" className="px-5 py-2 border-primary/20 text-primary bg-primary/5 backdrop-blur-md rounded-full transition-all hover:bg-primary/10 hover:border-primary/40 shadow-sm">
-                                    Valeur immediate pour vos decisions de carriere
+                                    {t('home.hero.badge', 'Valeur immediate pour vos decisions de carriere')}
                                 </Badge>
 
                                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline text-foreground leading-[1.08] tracking-tight drop-shadow-sm">
-                                    Decouvrez et comparez les entreprises au Maroc
+                                    {t('home.hero.titleLine1', 'Decouvrez et comparez les entreprises au Maroc')}
                                     <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-sky-600">
-                                        avis reels, salaires et guides ville/salaire.
+                                        {t('home.hero.titleLine2', 'avis reels, salaires et guides ville/salaire.')}
                                     </span>
                                 </h1>
 
                                 <p className="text-lg md:text-xl text-muted-foreground font-body max-w-2xl mx-auto leading-relaxed">
-                                    Trouvez des informations verifiees sur les entreprises, meme avant vos entretiens.
+                                    {t('home.hero.subtitle', 'Trouvez des informations verifiees sur les entreprises, meme avant vos entretiens.')}
                                 </p>
                             </div>
 
@@ -283,7 +286,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     <div className="flex-1 w-full relative z-10">
                                         <SearchAutocomplete
                                             city={searchCity}
-                                            placeholder="Entreprise, poste ou mot-cle..."
+                                            placeholder={t('home.hero.searchPlaceholder', 'Entreprise, poste ou mot-cle...')}
                                             className="w-full"
                                             inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base md:text-lg h-11 md:h-12 px-4 shadow-none focus-visible:ring-0"
                                             showIcon={false}
@@ -301,17 +304,17 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         size="lg"
                                         className="w-full md:w-auto h-11 md:h-12 px-6 md:px-7 rounded-xl bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"
                                     >
-                                        Rechercher une entreprise
+                                        {t('home.hero.searchCta', 'Rechercher une entreprise')}
                                     </Button>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
                                     <Select value={searchCity} onValueChange={setSearchCity}>
                                         <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/60">
-                                            <SelectValue placeholder="Ville" />
+                                            <SelectValue placeholder={t('home.filters.city', 'Ville')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Toutes les villes">Toutes les villes</SelectItem>
+                                            <SelectItem value="all">{t('home.filters.allCities', 'Toutes les villes')}</SelectItem>
                                             {ALL_CITIES.map(city => (
                                                 <SelectItem key={city} value={city}>{city}</SelectItem>
                                             ))}
@@ -320,10 +323,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                                     <Select value={searchSector} onValueChange={setSearchSector}>
                                         <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/60">
-                                            <SelectValue placeholder="Secteur" />
+                                            <SelectValue placeholder={t('home.filters.sector', 'Secteur')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">Tous les secteurs</SelectItem>
+                                            <SelectItem value="all">{t('home.filters.allSectors', 'Tous les secteurs')}</SelectItem>
                                             {commerceCategories.slice(0, 12).map((category) => (
                                                 <SelectItem key={category.slug} value={category.name}>
                                                     {category.name}
@@ -334,7 +337,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                                     <Select value={salaryRange} onValueChange={setSalaryRange}>
                                         <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/60">
-                                            <SelectValue placeholder="Salaire" />
+                                            <SelectValue placeholder={t('home.filters.salary', 'Salaire')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {salaryRangeOptions.map((option) => (
@@ -353,12 +356,12 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         className="rounded-xl h-11 px-6 font-bold"
                                     >
                                         <MapPin className="mr-2 h-4 w-4" />
-                                        Rechercher une entreprise
+                                        {t('home.hero.searchCta', 'Rechercher une entreprise')}
                                     </Button>
                                     <Button asChild size="lg" variant="outline" className="rounded-xl h-11 px-6 font-bold border-primary/30 text-primary hover:bg-primary/5">
                                         <Link href="/review">
                                             <Star className="mr-2 h-4 w-4" />
-                                            Ecrire un avis
+                                            {t('home.hero.writeReview', 'Ecrire un avis')}
                                         </Link>
                                     </Button>
                                 </div>
@@ -366,7 +369,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                             {/* Popular Tags */}
                             <div className="flex flex-wrap justify-center items-center gap-2 md:gap-3 animate-fade-in-up [animation-delay:400ms] mt-2 md:mt-3 px-4">
-                                <span className="text-muted-foreground text-xs md:text-sm font-semibold uppercase tracking-wider">Populaire:</span>
+                                <span className="text-muted-foreground text-xs md:text-sm font-semibold uppercase tracking-wider">{t('home.popular', 'Populaire:')}</span>
                                 {popularSearches.map((search: { label: string; href: string }) => (
                                     <Link
                                         key={search.href}
@@ -385,11 +388,11 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                     <section key="recently-added" className="py-14 container mx-auto px-4">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
                             <div>
-                                <h2 className="text-2xl md:text-3xl font-bold font-headline">Entreprises recemment ajoutees</h2>
+                                <h2 className="text-2xl md:text-3xl font-bold font-headline">{t('home.recent.title', 'Entreprises recemment ajoutees')}</h2>
                                 <p className="text-muted-foreground">Des nouvelles fiches a explorer des maintenant.</p>
                             </div>
                             <Button asChild variant="outline" className="rounded-full">
-                                <Link href="/recently-added">Voir tout</Link>
+                                <Link href="/recently-added">{t('home.seeAll', 'Voir tout')}</Link>
                             </Button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -403,7 +406,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return (completeProfileBusinesses.length > 0 || recentBusinesses.length > 0) ? (
                     <section key="trust-signals" className="py-14 container mx-auto px-4">
                         <div className="text-center mb-8 space-y-2">
-                            <h2 className="text-2xl md:text-3xl font-bold font-headline">Top entreprises avec profil complet</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold font-headline">{t('home.completeProfiles.title', 'Top entreprises avec profil complet')}</h2>
                             <p className="text-muted-foreground">Fiches avec informations utiles: horaires, adresse, site web et photos.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -434,7 +437,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             </div>
                                             <Button asChild variant="ghost" className="w-full justify-between">
                                                 <Link href={`/businesses/${business.id}`}>
-                                                    Voir la fiche complete
+                                                    {t('home.completeProfiles.viewProfile', 'Voir la fiche complete')}
                                                     <ArrowRight className="h-4 w-4" />
                                                 </Link>
                                             </Button>
@@ -473,7 +476,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return (
                     <section key="collections" className="py-24 container mx-auto px-4">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-3xl md:text-5xl font-bold font-headline">Explorez par <span className="text-primary">Secteur</span></h2>
+                            <h2 className="text-3xl md:text-5xl font-bold font-headline">{t('home.exploreBySector', 'Explorez par')} <span className="text-primary">{t('home.sector', 'Secteur')}</span></h2>
                             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Plongez dans nos collections thématiques et trouvez la société parfaite pour votre carrière.</p>
                         </div>
 
@@ -554,7 +557,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                             <div className="flex justify-between items-end mb-12">
                                 <div>
                                     <h2 className="text-3xl md:text-4xl font-bold font-headline mb-2">Parcourir par Catégorie</h2>
-                                    <p className="text-muted-foreground">Trouvez rapidement les meilleures sociétés par secteur.</p>
+                                    <p className="text-muted-foreground">{t('home.sectorSection.subtitle', 'Trouvez rapidement les meilleures societes par secteur.')}</p>
                                 </div>
                             </div>
 
@@ -618,8 +621,8 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return (
                     <section key="cities" className="py-24 container mx-auto px-4 border-t">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-3xl md:text-5xl font-bold font-headline">Explorer par <span className="text-primary">Ville</span></h2>
-                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Découvrez les adresses les mieux notées dans les plus grandes villes du pays.</p>
+                            <h2 className="text-3xl md:text-5xl font-bold font-headline">{t('home.exploreByCity', 'Explorer par')} <span className="text-primary">{t('home.city', 'Ville')}</span></h2>
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('home.citySection.subtitle', 'Decouvrez les adresses les mieux notees dans les plus grandes villes du pays.')}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -645,7 +648,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     </div>
                                     <Button variant="ghost" className="w-full rounded-xl text-primary font-bold hover:bg-primary hover:text-white transition-all group/btn" asChild>
                                         <Link href={`/businesses?city=${city}`}>
-                                            Explorer {city}
+                                            {tf('home.citySection.exploreCity', 'Explorer {city}', { city })}
                                             <ChevronRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                                         </Link>
                                     </Button>
@@ -655,10 +658,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                         <div className="mt-16 flex flex-wrap justify-center gap-4">
                             <Button asChild variant="outline" className="rounded-full h-12 px-8 border-primary/20 text-primary hover:bg-primary/5">
-                                <Link href="/top-rated">Voir le Top National</Link>
+                                <Link href="/top-rated">{t('home.topNational', 'Voir le Top National')}</Link>
                             </Button>
                             <Button asChild variant="outline" className="rounded-full h-12 px-8 border-primary/20 text-primary hover:bg-primary/5">
-                                <Link href="/recently-added">Dernières découvertes</Link>
+                                <Link href="/recently-added">{t('home.latestFinds', 'Dernieres decouvertes')}</Link>
                             </Button>
                         </div>
                     </section>
@@ -668,37 +671,37 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                     <section key="featured-guides" className="py-20 bg-secondary/20">
                         <div className="container mx-auto px-4">
                             <div className="text-center mb-10 space-y-2">
-                                <h2 className="text-3xl md:text-4xl font-bold font-headline">Guides a la une</h2>
-                                <p className="text-muted-foreground">Des ressources pratiques pour orienter votre recherche.</p>
+                                <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('home.guides.title', 'Guides a la une')}</h2>
+                                <p className="text-muted-foreground">{t('home.guides.subtitle', 'Des ressources pratiques pour orienter votre recherche.')}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                 <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
                                     <CardContent className="p-6 space-y-3">
-                                        <Badge variant="outline">Guides par ville</Badge>
-                                        <h3 className="font-bold text-lg">Comparez les villes avant de candidater</h3>
-                                        <p className="text-sm text-muted-foreground">Explorez les entreprises par ville et reperez rapidement les meilleurs bassins d'emploi.</p>
+                                        <Badge variant="outline">{t('home.guides.cityBadge', 'Guides par ville')}</Badge>
+                                        <h3 className="font-bold text-lg">{t('home.guides.cityTitle', 'Comparez les villes avant de candidater')}</h3>
+                                        <p className="text-sm text-muted-foreground">{t('home.guides.cityDesc', "Explorez les entreprises par ville et reperez rapidement les meilleurs bassins d'emploi.")}</p>
                                         <Button asChild variant="ghost" className="px-0">
-                                            <Link href="/villes">Voir les guides ville <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                            <Link href="/villes">{t('home.guides.cityCta', 'Voir les guides ville')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
                                         </Button>
                                     </CardContent>
                                 </Card>
                                 <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
                                     <CardContent className="p-6 space-y-3">
-                                        <Badge variant="outline">Salaire par secteur</Badge>
-                                        <h3 className="font-bold text-lg">Situez votre remuneration</h3>
-                                        <p className="text-sm text-muted-foreground">Consultez les reperes salariaux par metier, ville et secteur pour negocier avec confiance.</p>
+                                        <Badge variant="outline">{t('home.guides.salaryBadge', 'Salaire par secteur')}</Badge>
+                                        <h3 className="font-bold text-lg">{t('home.guides.salaryTitle', 'Situez votre remuneration')}</h3>
+                                        <p className="text-sm text-muted-foreground">{t('home.guides.salaryDesc', 'Consultez les reperes salariaux par metier, ville et secteur pour negocier avec confiance.')}</p>
                                         <Button asChild variant="ghost" className="px-0">
-                                            <Link href="/salaires">Voir les guides salaire <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                            <Link href="/salaires">{t('home.guides.salaryCta', 'Voir les guides salaire')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
                                         </Button>
                                     </CardContent>
                                 </Card>
                                 <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
                                     <CardContent className="p-6 space-y-3">
-                                        <Badge variant="outline">Avant entretien</Badge>
-                                        <h3 className="font-bold text-lg">Pourquoi consulter les avis avant un entretien</h3>
-                                        <p className="text-sm text-muted-foreground">Comprenez la culture, la gestion et les attentes terrain avant de vous engager.</p>
+                                        <Badge variant="outline">{t('home.guides.interviewBadge', 'Avant entretien')}</Badge>
+                                        <h3 className="font-bold text-lg">{t('home.guides.interviewTitle', 'Pourquoi consulter les avis avant un entretien')}</h3>
+                                        <p className="text-sm text-muted-foreground">{t('home.guides.interviewDesc', 'Comprenez la culture, la gestion et les attentes terrain avant de vous engager.')}</p>
                                         <Button asChild variant="ghost" className="px-0">
-                                            <Link href="/about">Lire le guide <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                            <Link href="/about">{t('home.guides.interviewCta', 'Lire le guide')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
                                         </Button>
                                     </CardContent>
                                 </Card>
@@ -710,18 +713,18 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return (
                     <section key="how-it-works" className="py-16 container mx-auto px-4">
                         <div className="text-center mb-10">
-                            <h2 className="text-3xl md:text-4xl font-bold font-headline">Comment ca marche</h2>
-                            <p className="text-muted-foreground mt-2">Parcours simple: chercher, comparer, contribuer.</p>
+                            <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('home.howItWorks.title', 'Comment ca marche')}</h2>
+                            <p className="text-muted-foreground mt-2">{t('home.howItWorks.subtitle', 'Parcours simple: chercher, comparer, contribuer.')}</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                             {[
-                                { step: '1', title: 'Cherchez une entreprise', desc: 'Utilisez les filtres ville, secteur et salaire pour aller droit au but.', icon: Search },
-                                { step: '2', title: 'Comparez fiches et salaires', desc: 'Analysez les profils complets et les indicateurs salariaux disponibles.', icon: Sparkles },
-                                { step: '3', title: 'Postez votre avis', desc: 'Partagez un retour anonyme pour aider la communaute.', icon: Star },
+                                { step: '1', title: t('home.howItWorks.step1Title', 'Cherchez une entreprise'), desc: t('home.howItWorks.step1Desc', 'Utilisez les filtres ville, secteur et salaire pour aller droit au but.'), icon: Search },
+                                { step: '2', title: t('home.howItWorks.step2Title', 'Comparez fiches et salaires'), desc: t('home.howItWorks.step2Desc', 'Analysez les profils complets et les indicateurs salariaux disponibles.'), icon: Sparkles },
+                                { step: '3', title: t('home.howItWorks.step3Title', 'Postez votre avis'), desc: t('home.howItWorks.step3Desc', 'Partagez un retour anonyme pour aider la communaute.'), icon: Star },
                             ].map((item) => (
                                 <Card key={item.step} className="rounded-2xl border-border/60">
                                     <CardContent className="p-6 space-y-3">
-                                        <Badge variant="secondary">Etape {item.step}</Badge>
+                                        <Badge variant="secondary">{tf('home.howItWorks.stepBadge', 'Etape {step}', { step: item.step })}</Badge>
                                         <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                                             <item.icon className="h-5 w-5" />
                                         </div>
@@ -733,10 +736,10 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                             <Button asChild className="rounded-xl">
-                                <Link href="/businesses">Commencer la recherche</Link>
+                                <Link href="/businesses">{t('home.howItWorks.searchCta', 'Commencer la recherche')}</Link>
                             </Button>
                             <Button asChild variant="outline" className="rounded-xl">
-                                <Link href="/review">Publier un avis</Link>
+                                <Link href="/review">{t('home.howItWorks.reviewCta', 'Publier un avis')}</Link>
                             </Button>
                         </div>
                     </section>
@@ -745,9 +748,9 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return displayFeaturedBusinesses.length > 0 ? (
                     <section key="featured" className="py-24 container mx-auto px-4">
                         <div className="flex justify-between items-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold font-headline">À la Une</h2>
+                            <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('home.featured.title', 'A la une')}</h2>
                             <Button asChild variant="outline" className="hidden md:flex rounded-full">
-                                <Link href="/businesses?featured=true">Tout voir <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                <Link href="/businesses?featured=true">{t('home.seeAll', 'Voir tout')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
                             </Button>
                         </div>
                         <Carousel
@@ -772,7 +775,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </Carousel>
                         <div className="mt-8 md:hidden text-center">
                             <Button asChild variant="outline" className="w-full rounded-full">
-                                <Link href="/businesses?featured=true">Tout voir <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                <Link href="/businesses?featured=true">{t('home.seeAll', 'Voir tout')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
                             </Button>
                         </div>
                     </section>
@@ -784,22 +787,22 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                             <div className="flex flex-col lg:flex-row items-center gap-16">
                                 <div className="flex-1 space-y-8 text-center lg:text-left">
                                     <Badge variant="outline" className="px-4 py-1.5 border-indigo-200 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-full font-bold uppercase tracking-wider text-[10px]">
-                                        Outils & Droits du Travail
+                                        {t('home.resources.badge', 'Outils & droits du travail')}
                                     </Badge>
                                     <h2 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
-                                        Tout pour réussir votre <br />
-                                        <span className="text-primary">carrière au Maroc</span>
+                                        {t('home.resources.titleLine1', 'Tout pour reussir votre')} <br />
+                                        <span className="text-primary">{t('home.resources.titleLine2', 'carriere au Maroc')}</span>
                                     </h2>
                                     <p className="text-xl text-muted-foreground leading-relaxed">
-                                        En partenariat avec <span className="font-bold text-foreground">{siteSettings?.partner_app_name || "MOR RH"}</span>, nous mettons à votre disposition des outils gratuits pour mieux gérer votre vie professionnelle.
+                                        {t('home.resources.subtitlePrefix', 'En partenariat avec')} <span className="font-bold text-foreground">{siteSettings?.partner_app_name || "MOR RH"}</span>, {t('home.resources.subtitleSuffix', 'nous mettons a votre disposition des outils gratuits pour mieux gerer votre vie professionnelle.')}
                                     </p>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         {[
-                                            { title: 'Simulateur de Salaire', desc: 'Calculez votre brut en net', icon: Activity },
-                                            { title: 'Calcul d\'indemnités', desc: 'Estimez vos droits de départ', icon: Zap },
-                                            { title: 'Modèles de lettres', desc: 'Démission, réclammation...', icon: Briefcase },
-                                            { title: 'Droit du travail', desc: 'Articles et guides experts', icon: GraduationCap },
+                                            { title: t('home.resources.tool1Title', 'Simulateur de salaire'), desc: t('home.resources.tool1Desc', 'Calculez votre brut en net'), icon: Activity },
+                                            { title: t('home.resources.tool2Title', "Calcul d'indemnites"), desc: t('home.resources.tool2Desc', 'Estimez vos droits de depart'), icon: Zap },
+                                            { title: t('home.resources.tool3Title', 'Modeles de lettres'), desc: t('home.resources.tool3Desc', 'Demission, reclamation...'), icon: Briefcase },
+                                            { title: t('home.resources.tool4Title', 'Droit du travail'), desc: t('home.resources.tool4Desc', 'Articles et guides experts'), icon: GraduationCap },
                                         ].map((tool, idx) => (
                                             <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm hover:shadow-md transition-shadow">
                                                 <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600">
@@ -816,7 +819,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     <div className="pt-4">
                                         <Button asChild size="lg" className="rounded-2xl h-14 px-8 font-bold shadow-lg shadow-primary/20 group">
                                             <a href={siteSettings?.partner_app_url || "https://monrh.vercel.app/"} target="_blank" rel="noopener noreferrer">
-                                                Découvrir tous les outils
+                                                {t('home.resources.cta', 'Decouvrir tous les outils')}
                                                 <ExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                             </a>
                                         </Button>
@@ -849,7 +852,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             <Star className="w-5 h-5 fill-current" />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-1">Populaire</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-1">{t('home.popular', 'Populaire')}</p>
                                             <p className="text-sm font-bold leading-none">Simulateur CNSS 2024</p>
                                         </div>
                                     </div>

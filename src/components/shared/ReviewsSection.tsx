@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Business, Review } from '@/lib/types';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 interface ReviewsSectionProps {
   business: Business;
@@ -34,6 +35,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const { toast } = useToast();
+  const { t } = useI18n();
   const supabase = createClient();
 
   // Check if current user is the business owner
@@ -129,14 +131,14 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
 
     if (error) {
       toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer la réponse.",
+        title: t('business.reviews.errorTitle', 'Erreur'),
+        description: t('business.reviews.replyError', "Impossible d'envoyer la reponse."),
         variant: "destructive"
       });
     } else {
       toast({
-        title: "Réponse envoyée!",
-        description: "Votre réponse est maintenant visible."
+        title: t('business.reviews.replySentTitle', 'Reponse envoyee'),
+        description: t('business.reviews.replySentDesc', 'Votre reponse est maintenant visible.')
       });
       // Update local state
       setReviews(prev => prev.map(r =>
@@ -184,21 +186,21 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
   return (
     <section id="reviews">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 border-b border-border/50 pb-4 gap-4">
-        <h2 className="text-2xl font-bold font-headline text-foreground uppercase tracking-tight">Avis & Expérience employés</h2>
+        <h2 className="text-2xl font-bold font-headline text-foreground uppercase tracking-tight">{t('business.reviews.title', 'Avis & Experience employes')}</h2>
 
         {/* Sorting Controls */}
         {hasReviews && (
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Trier par:</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('business.reviews.sortBy', 'Trier par:')}</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'rating' | 'helpful')}
               className="text-sm border border-input rounded-lg px-3 py-1.5 bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-primary"
             >
-              <option value="newest">Plus récents</option>
-              <option value="oldest">Plus anciens</option>
-              <option value="rating">Meilleures notes</option>
-              <option value="helpful">Plus utiles</option>
+              <option value="newest">{t('business.reviews.sortNewest', 'Plus recents')}</option>
+              <option value="oldest">{t('business.reviews.sortOldest', 'Plus anciens')}</option>
+              <option value="rating">{t('business.reviews.sortBest', 'Meilleures notes')}</option>
+              <option value="helpful">{t('business.reviews.sortHelpful', 'Plus utiles')}</option>
             </select>
           </div>
         )}
@@ -216,7 +218,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
                   <div>
                     <p className="font-bold text-foreground font-headline">
                       {review.isAnonymous ? (
-                        'Utilisateur Anonyme'
+                        t('business.reviews.anonymousUser', 'Utilisateur anonyme')
                       ) : review.userId ? (
                         <Link href={`/users/${review.userId}`} className="hover:text-primary transition-colors">
                           {review.author}
@@ -240,7 +242,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
                 {review.ownerReply && (
                   <div className="mt-6 pl-6 border-l-4 border-primary/30 py-4 bg-primary/5 rounded-r-xl">
                     <p className="text-xs font-bold text-primary mb-2 flex items-center gap-2 uppercase tracking-wider">
-                      <ShieldCheck className="w-4 h-4" /> Réponse officielle
+                      <ShieldCheck className="w-4 h-4" /> {t('business.reviews.officialReply', 'Reponse officielle')}
                     </p>
                     <p className="text-sm text-foreground/80 italic leading-relaxed">{review.ownerReply.text}</p>
                   </div>
@@ -261,7 +263,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
                         className="rounded-xl border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/50"
                       >
                         <MessageSquare className="mr-2 h-4 w-4" />
-                        Répondre
+                        {t('business.reviews.replyAction', 'Repondre')}
                       </Button>
                     )}
                     {isReviewOwner[review.id] && (
@@ -292,20 +294,20 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
                   <div className="mt-6 p-6 bg-secondary/30 rounded-2xl border border-primary/20 space-y-4">
                     <Label className="font-bold flex items-center gap-2 text-primary uppercase tracking-widest text-xs">
                       <MessageSquare className="w-4 h-4" />
-                      VOTRE RÉPONSE PROFESSIONNELLE
+                      {t('business.reviews.professionalReplyLabel', 'Votre reponse professionnelle')}
                     </Label>
                     <Textarea
-                      placeholder="Remerciez l'auteur pour son avis et apportez des précisions si nécessaire..."
+                      placeholder={t('business.reviews.replyPlaceholder', "Remerciez l'auteur et apportez des precisions si necessaire...")}
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       className="bg-background min-h-[120px] border-border focus-visible:ring-primary rounded-xl"
                     />
                     <div className="flex justify-end gap-3">
                       <Button variant="ghost" size="sm" onClick={() => setReplyingTo(null)} className="rounded-xl">
-                        Annuler
+                        {t('common.cancel', 'Annuler')}
                       </Button>
                       <Button size="sm" onClick={() => handleReplySubmit(review.id)} className="rounded-xl bg-primary hover:bg-primary/90 px-6">
-                        Publier la réponse
+                        {t('business.reviews.publishReply', 'Publier la reponse')}
                       </Button>
                     </div>
                   </div>
@@ -319,10 +321,10 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
           <div className="h-16 w-16 bg-background rounded-full flex items-center justify-center shadow-sm mx-auto mb-6 border border-border">
             <MessageSquare className="w-8 h-8 text-muted-foreground/50" />
           </div>
-          <h3 className="text-xl font-headline font-bold text-foreground">Aucun avis pour le moment</h3>
-          <p className="text-muted-foreground mb-8 max-w-xs mx-auto">Soyez le premier à partager votre expérience avec cette société !</p>
+          <h3 className="text-xl font-headline font-bold text-foreground">{t('business.reviews.emptyTitle', 'Aucun avis pour le moment')}</h3>
+          <p className="text-muted-foreground mb-8 max-w-xs mx-auto">{t('business.reviews.emptyDesc', 'Soyez le premier a partager votre experience avec cette societe.')}</p>
           <Button variant="default" className="rounded-xl px-8" asChild>
-            <Link href={`/businesses/${business.id}/review`}>Donner mon avis</Link>
+            <Link href={`/businesses/${business.id}/review`}>{t('business.reviews.giveReview', 'Donner mon avis')}</Link>
           </Button>
         </div>
       )}
