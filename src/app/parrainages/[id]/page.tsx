@@ -155,6 +155,11 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
             <Card className="rounded-2xl">
               <CardContent className="pt-6 text-sm text-muted-foreground">
                 {t('referrals.detail.ownerNote', 'Vous etes le proprietaire de cette offre. Les demandes recues seront visibles dans votre espace utilisateur.')}
+                <div className="mt-3">
+                  <Link href="/parrainages/mes-offres" className="text-primary hover:underline">
+                    {t('referrals.detail.ownerCta', 'Gerer mes offres et demandes')}
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           )}

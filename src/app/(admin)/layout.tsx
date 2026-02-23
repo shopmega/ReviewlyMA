@@ -14,14 +14,12 @@ import {
   Home,
   BarChart3,
   ChevronLeft,
-  Menu,
   Settings,
   CreditCard,
   FileText,
   ShieldCheck,
-  Zap,
   LayoutGrid,
-  Megaphone,
+  BriefcaseBusiness,
   MessageSquare,
   UserPlus,
   Stethoscope,
@@ -29,7 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 
@@ -58,6 +56,7 @@ const menuGroups = [
     items: [
       { href: '/admin/avis', label: 'Tous les avis', icon: Star },
       { href: '/admin/salaires', label: 'Salaires', icon: DollarSign },
+      { href: '/admin/parrainages', label: 'Parrainages', icon: BriefcaseBusiness },
       { href: '/admin/avis-signalements', label: 'Signalements avis', icon: Flag },
       { href: '/admin/contenu', label: 'Médias signalés', icon: FileImage },
     ]
@@ -189,3 +188,4 @@ export default function AdminLayout({
     </div>
   );
 }
+

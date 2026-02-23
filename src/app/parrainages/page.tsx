@@ -74,6 +74,8 @@ const formatSeniority = (value: string | null) => {
 export default async function ParrainagesPage() {
   const { t, locale } = await getServerTranslator();
   const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const currentUserId = auth.user?.id ?? null;
   const { data: offers } = await supabase
     .from('job_referral_offers')
     .select('id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at')
@@ -94,9 +96,21 @@ export default async function ParrainagesPage() {
               {t('referrals.list.subtitle', 'Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.')}
             </p>
           </div>
-          <Button asChild className="rounded-xl">
-            <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {currentUserId ? (
+              <>
+                <Button asChild variant="outline" className="rounded-xl">
+                  <Link href="/parrainages/mes-offres">{t('referrals.list.myOffers', 'Mes offres')}</Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-xl">
+                  <Link href="/parrainages/mes-demandes">{t('referrals.list.myRequests', 'Mes demandes')}</Link>
+                </Button>
+              </>
+            ) : null}
+            <Button asChild className="rounded-xl">
+              <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
+            </Button>
+          </div>
         </div>
       </section>
 

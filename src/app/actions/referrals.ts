@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import type { ActionState } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
 
 const CONTRACT_TYPES = ['cdi', 'cdd', 'stage', 'freelance', 'alternance', 'autre'] as const;
 const WORK_MODES = ['onsite', 'hybrid', 'remote'] as const;
@@ -46,6 +47,26 @@ const requestReferralSchema = z.object({
   offerId: z.string().uuid(),
   message: z.string().min(10),
   cvUrl: z.string().url().optional().or(z.literal('')),
+});
+
+const updateOfferStatusSchema = z.object({
+  offerId: z.string().uuid(),
+  status: z.enum(['active', 'paused', 'closed']),
+});
+
+const updateRequestStatusSchema = z.object({
+  requestId: z.string().uuid(),
+  status: z.enum(['in_review', 'referred', 'interview', 'hired', 'rejected', 'withdrawn']),
+});
+
+const adminUpdateOfferSchema = z.object({
+  offerId: z.string().uuid(),
+  status: z.enum(['active', 'paused', 'closed', 'rejected']),
+});
+
+const adminUpdateRequestSchema = z.object({
+  requestId: z.string().uuid(),
+  status: z.enum(['pending', 'in_review', 'referred', 'interview', 'hired', 'rejected', 'withdrawn']),
 });
 
 export type ReferralEligibility = {
@@ -214,4 +235,180 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   revalidatePath('/parrainages');
   revalidatePath(`/parrainages/${parsed.data.offerId}`);
   return { status: 'success', message: 'Votre demande de parrainage a ete envoyee.' };
+}
+
+export async function updateMyReferralOfferStatus(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = updateOfferStatusSchema.safeParse({
+    offerId: String(formData.get('offerId') || ''),
+    status: String(formData.get('status') || ''),
+  });
+
+  if (!parsed.success) {
+    return { status: 'error', message: 'Donnees invalides.' };
+  }
+
+  const { data, error } = await supabase
+    .from('job_referral_offers')
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.offerId)
+    .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    return { status: 'error', message: "Impossible de mettre a jour le statut de l'offre." };
+  }
+  if (!data) {
+    return { status: 'error', message: 'Offre introuvable ou acces refuse.' };
+  }
+
+  revalidatePath('/parrainages');
+  revalidatePath('/parrainages/mes-offres');
+  revalidatePath(`/parrainages/${parsed.data.offerId}`);
+  return { status: 'success', message: 'Statut de l offre mis a jour.' };
+}
+
+export async function updateReferralRequestStatus(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = updateRequestStatusSchema.safeParse({
+    requestId: String(formData.get('requestId') || ''),
+    status: String(formData.get('status') || ''),
+  });
+
+  if (!parsed.success) {
+    return { status: 'error', message: 'Donnees invalides.' };
+  }
+
+  const { data: request, error: requestError } = await supabase
+    .from('job_referral_requests')
+    .select('id, offer_id, candidate_user_id')
+    .eq('id', parsed.data.requestId)
+    .single();
+
+  if (requestError || !request) {
+    return { status: 'error', message: 'Demande introuvable.' };
+  }
+
+  const { data: offer } = await supabase
+    .from('job_referral_offers')
+    .select('id, user_id')
+    .eq('id', request.offer_id)
+    .single();
+
+  const isOwner = offer?.user_id === user.id;
+  const isCandidate = request.candidate_user_id === user.id;
+
+  if (!isOwner && !isCandidate) {
+    return { status: 'error', message: 'Non autorise.' };
+  }
+
+  if (isCandidate && parsed.data.status !== 'withdrawn') {
+    return { status: 'error', message: 'Un candidat ne peut que retirer sa demande.' };
+  }
+
+  if (isOwner && parsed.data.status === 'withdrawn') {
+    return { status: 'error', message: 'Le retrait doit etre fait par le candidat.' };
+  }
+
+  const { error } = await supabase
+    .from('job_referral_requests')
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.requestId);
+
+  if (error) {
+    return { status: 'error', message: 'Impossible de mettre a jour la demande.' };
+  }
+
+  revalidatePath('/parrainages/mes-offres');
+  revalidatePath('/parrainages/mes-demandes');
+  revalidatePath(`/parrainages/${request.offer_id}`);
+  return { status: 'success', message: 'Statut de la demande mis a jour.' };
+}
+
+export async function adminUpdateReferralOfferStatus(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await verifyAdminSession();
+  } catch (_error) {
+    return { status: 'error', message: 'Acces admin requis.' };
+  }
+
+  const parsed = adminUpdateOfferSchema.safeParse({
+    offerId: String(formData.get('offerId') || ''),
+    status: String(formData.get('status') || ''),
+  });
+
+  if (!parsed.success) {
+    return { status: 'error', message: 'Donnees invalides.' };
+  }
+
+  const admin = await createAdminClient();
+  const { error } = await admin
+    .from('job_referral_offers')
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.offerId);
+
+  if (error) {
+    return { status: 'error', message: 'Mise a jour admin impossible.' };
+  }
+
+  revalidatePath('/admin/parrainages');
+  revalidatePath('/parrainages');
+  revalidatePath(`/parrainages/${parsed.data.offerId}`);
+  return { status: 'success', message: 'Statut offre mis a jour par admin.' };
+}
+
+export async function adminUpdateReferralRequestStatus(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await verifyAdminSession();
+  } catch (_error) {
+    return { status: 'error', message: 'Acces admin requis.' };
+  }
+
+  const parsed = adminUpdateRequestSchema.safeParse({
+    requestId: String(formData.get('requestId') || ''),
+    status: String(formData.get('status') || ''),
+  });
+
+  if (!parsed.success) {
+    return { status: 'error', message: 'Donnees invalides.' };
+  }
+
+  const admin = await createAdminClient();
+  const { data: request, error: requestError } = await admin
+    .from('job_referral_requests')
+    .select('id, offer_id')
+    .eq('id', parsed.data.requestId)
+    .maybeSingle();
+
+  if (requestError || !request) {
+    return { status: 'error', message: 'Demande introuvable.' };
+  }
+
+  const { error } = await admin
+    .from('job_referral_requests')
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.requestId);
+
+  if (error) {
+    return { status: 'error', message: 'Mise a jour admin impossible.' };
+  }
+
+  revalidatePath('/admin/parrainages');
+  revalidatePath('/parrainages/mes-offres');
+  revalidatePath('/parrainages/mes-demandes');
+  revalidatePath(`/parrainages/${request.offer_id}`);
+  return { status: 'success', message: 'Statut demande mis a jour par admin.' };
 }
