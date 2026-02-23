@@ -62,11 +62,11 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
   }
   const roleCatalog = Array.from(roleCatalogMap.entries()).map(([slug, label]) => ({ slug, label }));
 
-  const companyAId = sp.companyA || companyMetrics[0]?.business_id || '';
-  const companyBId = sp.companyB || companyMetrics[1]?.business_id || companyMetrics[0]?.business_id || '';
-  const roleSlug = sp.role || roleCatalog[0]?.slug || '';
-  const cityASlug = sp.cityA || cityMetrics[0]?.city_slug || '';
-  const cityBSlug = sp.cityB || cityMetrics[1]?.city_slug || cityMetrics[0]?.city_slug || '';
+  const companyAId = sp.companyA || '';
+  const companyBId = sp.companyB || '';
+  const roleSlug = sp.role || '';
+  const cityASlug = sp.cityA || '';
+  const cityBSlug = sp.cityB || '';
 
   const companyA = companyMetrics.find((c) => c.business_id === companyAId) || null;
   const companyB = companyMetrics.find((c) => c.business_id === companyBId) || null;
@@ -100,17 +100,25 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
         <CardContent className="space-y-4">
           <form method="get" className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <select name="companyA" defaultValue={companyAId} className="h-11 rounded-md border bg-background px-3 text-sm">
+              <option value="">Selectionner entreprise A</option>
               {companyMetrics.map((c) => (
                 <option key={`a-${c.business_id}`} value={c.business_id}>{c.business_name}</option>
               ))}
             </select>
             <select name="companyB" defaultValue={companyBId} className="h-11 rounded-md border bg-background px-3 text-sm">
+              <option value="">Selectionner entreprise B</option>
               {companyMetrics.map((c) => (
                 <option key={`b-${c.business_id}`} value={c.business_id}>{c.business_name}</option>
               ))}
             </select>
             <Button type="submit">Comparer</Button>
           </form>
+
+          {(!companyAId || !companyBId) && (
+            <p className="text-sm text-muted-foreground rounded-xl border border-dashed p-4">
+              Selectionnez deux entreprises puis cliquez sur "Comparer".
+            </p>
+          )}
 
           {companyA && companyB && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -149,22 +157,31 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
         <CardContent className="space-y-4">
           <form method="get" className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <select name="role" defaultValue={roleSlug} className="h-11 rounded-md border bg-background px-3 text-sm">
+              <option value="">Selectionner un role</option>
               {roleCatalog.map((r) => (
                 <option key={r.slug} value={r.slug}>{r.label}</option>
               ))}
             </select>
             <select name="cityA" defaultValue={cityASlug} className="h-11 rounded-md border bg-background px-3 text-sm">
+              <option value="">Selectionner ville A</option>
               {cityMetrics.map((c) => (
                 <option key={`ca-${c.city_slug}`} value={c.city_slug}>{c.city}</option>
               ))}
             </select>
             <select name="cityB" defaultValue={cityBSlug} className="h-11 rounded-md border bg-background px-3 text-sm">
+              <option value="">Selectionner ville B</option>
               {cityMetrics.map((c) => (
                 <option key={`cb-${c.city_slug}`} value={c.city_slug}>{c.city}</option>
               ))}
             </select>
             <Button type="submit">Comparer</Button>
           </form>
+
+          {(!roleSlug || !cityASlug || !cityBSlug) && (
+            <p className="text-sm text-muted-foreground rounded-xl border border-dashed p-4">
+              Selectionnez un role et deux villes pour lancer la comparaison.
+            </p>
+          )}
 
           {selectedRole && roleCityA && roleCityB && cityA && cityB && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

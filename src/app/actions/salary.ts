@@ -216,6 +216,14 @@ export async function moderateSalary(
       return handleDatabaseError(error) as ActionState;
     }
 
+    if (status === 'published') {
+      // Keep salary comparison analytics fresh right after moderation.
+      const { error: refreshError } = await service.rpc('refresh_salary_analytics_materialized_views');
+      if (refreshError) {
+        logError('moderate_salary_refresh_analytics', refreshError, { salaryId, businessId: salary.business_id });
+      }
+    }
+
     revalidatePath(`/businesses/${salary.business_id}`);
     return createSuccessResponse('Statut salaire mis à jour.') as ActionState;
   } catch (error) {
