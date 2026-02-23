@@ -5,18 +5,41 @@ import { revalidatePath } from 'next/cache';
 import type { ActionState } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 
+const CONTRACT_TYPES = ['cdi', 'cdd', 'stage', 'freelance', 'alternance', 'autre'] as const;
+const WORK_MODES = ['onsite', 'hybrid', 'remote'] as const;
+const SENIORITY_LEVELS = ['junior', 'confirme', 'senior', 'lead', 'manager', 'autre'] as const;
+
 const createOfferSchema = z.object({
-  businessId: z.string().optional(),
-  companyName: z.string().min(2),
-  jobTitle: z.string().min(2),
-  city: z.string().optional(),
-  contractType: z.string().optional(),
-  workMode: z.string().optional(),
-  seniority: z.string().optional(),
-  description: z.string().min(20),
-  requirements: z.string().optional(),
-  slots: z.coerce.number().int().min(1).max(20).default(1),
-  expiresAt: z.string().optional(),
+  businessId: z.string().trim().min(1).optional(),
+  companyName: z.string().trim().min(2).max(120),
+  jobTitle: z.string().trim().min(2).max(120),
+  city: z.string().trim().max(80).optional(),
+  contractType: z.enum(CONTRACT_TYPES).optional(),
+  workMode: z.enum(WORK_MODES).optional(),
+  seniority: z.enum(SENIORITY_LEVELS).optional(),
+  description: z.string().trim().min(40).max(3000),
+  requirements: z.string().trim().max(2000).optional(),
+  slots: z.coerce.number().int().min(1).max(10).default(1),
+  expiresAt: z.string().trim().optional(),
+}).superRefine((value, ctx) => {
+  if (!value.expiresAt) return;
+  const date = new Date(value.expiresAt);
+  if (Number.isNaN(date.getTime())) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expiresAt'],
+      message: 'Date d expiration invalide.',
+    });
+    return;
+  }
+  const min = Date.now() + 30 * 60 * 1000;
+  if (date.getTime() < min) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expiresAt'],
+      message: "L expiration doit etre dans le futur.",
+    });
+  }
 });
 
 const requestReferralSchema = z.object({
@@ -68,7 +91,11 @@ export async function createReferralOffer(_prev: ActionState, formData: FormData
 
   const parsed = createOfferSchema.safeParse(raw);
   if (!parsed.success) {
-    return { status: 'error', message: 'Veuillez verifier les champs du formulaire.' };
+    return {
+      status: 'error',
+      message: 'Veuillez verifier les champs du formulaire.',
+      errors: parsed.error.flatten().fieldErrors as ActionState['errors'],
+    };
   }
 
   const eligibility = await getReferralEligibility();
@@ -80,14 +107,38 @@ export async function createReferralOffer(_prev: ActionState, formData: FormData
   }
 
   const payload = parsed.data;
+  let resolvedCompanyName = payload.companyName;
+  let resolvedCity = payload.city || null;
+  let resolvedBusinessId = payload.businessId || null;
+
+  if (payload.businessId) {
+    const { data: business, error: businessError } = await supabase
+      .from('businesses')
+      .select('id, name, city, status')
+      .eq('id', payload.businessId)
+      .single();
+
+    if (businessError || !business || business.status === 'deleted') {
+      return {
+        status: 'error',
+        message: 'Entreprise invalide. Selectionnez une entreprise existante.',
+        errors: { businessId: ['Entreprise invalide.'] },
+      };
+    }
+
+    resolvedBusinessId = business.id;
+    resolvedCompanyName = business.name;
+    resolvedCity = business.city || resolvedCity;
+  }
+
   const { data, error } = await supabase
     .from('job_referral_offers')
     .insert({
       user_id: user.id,
-      business_id: payload.businessId || null,
-      company_name: payload.companyName,
+      business_id: resolvedBusinessId,
+      company_name: resolvedCompanyName,
       job_title: payload.jobTitle,
-      city: payload.city || null,
+      city: resolvedCity,
       contract_type: payload.contractType || null,
       work_mode: payload.workMode || null,
       seniority: payload.seniority || null,

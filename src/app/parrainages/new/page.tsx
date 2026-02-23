@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { OfferCreateForm } from './OfferCreateForm';
 import { getReferralEligibility } from '@/app/actions/referrals';
+import { getCachedBusinesses } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,10 @@ export default async function NewParrainagePage() {
 
   const eligibility = await getReferralEligibility();
   const eligible = !!eligibility?.is_eligible;
+  const businessesResult = eligible ? await getCachedBusinesses({ limit: 200, minimal: true }) : { businesses: [] };
+  const businessOptions = (businessesResult.businesses || [])
+    .filter((b: any) => b?.id && b?.name)
+    .map((b: any) => ({ id: String(b.id), name: String(b.name), city: b.city ? String(b.city) : '' }));
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -56,7 +61,7 @@ export default async function NewParrainagePage() {
         </CardContent>
       </Card>
 
-      {eligible && <OfferCreateForm />}
+      {eligible && <OfferCreateForm businessOptions={businessOptions} />}
     </div>
   );
 }
