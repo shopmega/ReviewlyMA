@@ -120,7 +120,7 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
 
       <section className="flex gap-3">
         <Button asChild>
-          <Link href="/businesses">Partager votre salaire</Link>
+          <Link href="/salaires/partager">Partager votre salaire</Link>
         </Button>
         <Button variant="outline" asChild>
           <Link href="/salaires">Voir plus d'analyses</Link>

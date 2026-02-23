@@ -34,7 +34,7 @@ export default async function SalariesIndexPage() {
               <Link href="/salaires/comparaison">Comparer les salaires</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/businesses">Partager votre salaire</Link>
+              <Link href="/salaires/partager">Partager votre salaire</Link>
             </Button>
           </div>
         </div>
@@ -114,7 +114,7 @@ export default async function SalariesIndexPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild>
-            <Link href="/businesses">Partager votre salaire</Link>
+            <Link href="/salaires/partager">Partager votre salaire</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/salaires/comparaison">Outil de comparaison</Link>

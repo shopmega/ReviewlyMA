@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { submitSalary } from '@/app/actions/salary';
 import type { SalaryEntry, SalaryStats } from '@/lib/types';
@@ -43,6 +43,7 @@ export function SalarySection({
   const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -87,6 +88,15 @@ export function SalarySection({
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+    const wantsShareFromQuery = searchParams.get('shareSalary') === '1';
+    const wantsShareFromHash = typeof window !== 'undefined' && window.location.hash === '#salaries';
+    if (wantsShareFromQuery || wantsShareFromHash) {
+      setIsFormOpen(true);
+    }
+  }, [authStatus, searchParams]);
 
   const loginHref = `/login?next=${encodeURIComponent(pathname || `/businesses/${businessId}`)}`;
 

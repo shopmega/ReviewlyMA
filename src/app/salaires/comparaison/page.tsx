@@ -230,7 +230,7 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
           <p className="text-sm text-muted-foreground">Partagez votre salaire pour debloquer des analyses encore plus fines.</p>
         </div>
         <Button asChild>
-          <Link href="/businesses">Partager votre salaire</Link>
+          <Link href="/salaires/partager">Partager votre salaire</Link>
         </Button>
       </section>
     </div>

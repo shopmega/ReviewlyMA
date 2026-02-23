@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/categories',
         '/villes',
         '/salaires',
+        '/salaires/partager',
         '/salaires/comparaison',
         '/about',
         '/contact',
