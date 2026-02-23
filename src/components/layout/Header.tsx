@@ -16,20 +16,22 @@ import { createClient } from '@/lib/supabase/client';
 import { getSiteSettings, SiteSettings } from '@/lib/data';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { NotificationBell } from './NotificationBell';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 const navLinks = [
-  { href: '/', label: 'Accueil', icon: Home },
-  { href: '/businesses', label: 'Établissements', icon: Search },
-  { href: '/salaires', label: 'Salaires', icon: Sparkles },
-  { href: '/categories', label: 'Catégories', icon: BookOpen },
-  { href: '/villes', label: 'Villes', icon: MapPin },
-  { href: '/pour-les-pros', label: 'Pour les pros', icon: Briefcase },
+  { href: '/', labelKey: 'home', fallback: 'Accueil', icon: Home },
+  { href: '/businesses', labelKey: 'businesses', fallback: 'Etablissements', icon: Search },
+  { href: '/salaires', labelKey: 'salaries', fallback: 'Salaires', icon: Sparkles },
+  { href: '/categories', labelKey: 'categories', fallback: 'Categories', icon: BookOpen },
+  { href: '/villes', labelKey: 'cities', fallback: 'Villes', icon: MapPin },
+  { href: '/pour-les-pros', labelKey: 'forPros', fallback: 'Pour les pros', icon: Briefcase },
 ];
 
 export function Header({ settings }: { settings: SiteSettings }) {
   const pathname = usePathname();
   const router = useRouter();
   const { currentBusiness, isMultiBusiness, isLoading: businessLoading } = useBusiness();
+  const { locale, locales, setLocale, t } = useI18n();
 
   // Handle scroll effect for transparent header on home
   const [isScrolled, setIsScrolled] = useState(false);
@@ -121,6 +123,18 @@ export function Header({ settings }: { settings: SiteSettings }) {
           </Link>
           <div className="flex flex-1 items-center justify-end space-x-4">
             <NotificationBell />
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as any)}
+              className="h-9 rounded-md border bg-background px-2 text-xs font-semibold"
+              aria-label="Language"
+            >
+              {locales.map((localeOption) => (
+                <option key={localeOption} value={localeOption}>
+                  {localeOption.toUpperCase()}
+                </option>
+              ))}
+            </select>
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -161,20 +175,20 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <DropdownMenuItem asChild className="rounded-lg text-destructive focus:text-destructive focus:bg-destructive/10">
                     <Link href="/admin" className="flex items-center">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Administration</span>
+                      <span>{t('nav.admin', 'Administration')}</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild className="rounded-lg mt-1">
                   <Link href="/profile" className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Mon Profil</span>
+                    <span>{t('nav.profile', 'Mon profil')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="rounded-lg text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Déconnexion
+                  {t('nav.logout', 'Deconnexion')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -225,7 +239,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/10'
                 )}
               >
-                {link.label}
+                {t(`nav.${link.labelKey}`, link.fallback)}
               </Link>
             ))}
           </nav>
@@ -237,13 +251,25 @@ export function Header({ settings }: { settings: SiteSettings }) {
             <Button asChild variant="outline" className="rounded-full border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all font-medium">
               <Link href="/review">
                 <Pencil className="mr-2 h-4 w-4" />
-                Écrire un avis
+                {t('nav.writeReview', 'Ecrire un avis')}
               </Link>
             </Button>
           </div>
 
           <div className="flex items-center gap-2">
             {user && <NotificationBell />}
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as any)}
+              className="hidden md:block h-9 rounded-md border bg-background px-2 text-xs font-semibold"
+              aria-label="Language"
+            >
+              {locales.map((localeOption) => (
+                <option key={localeOption} value={localeOption}>
+                  {localeOption.toUpperCase()}
+                </option>
+              ))}
+            </select>
             <ThemeToggle />
 
             {/* Mobile menu trigger */}
@@ -255,7 +281,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
               </SheetTrigger>
               <SheetContent side="right" className="w-[310px] sm:w-[350px] border-l border-white/10 glass p-0 overflow-hidden">
                 <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
-                <SheetDescription className="sr-only">Accédez aux différentes sections du site depuis ce menu mobile.</SheetDescription>
+                <SheetDescription className="sr-only">Accedez aux differentes sections du site depuis ce menu mobile.</SheetDescription>
 
                 <div className="flex flex-col h-full bg-background/95 backdrop-blur-xl">
                   {/* Drawer Header */}
@@ -294,7 +320,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   {/* Navigation Links */}
                   <div className="flex-1 overflow-y-auto pt-4 pb-6 px-4 custom-scrollbar">
                     <nav className="flex flex-col gap-1.5">
-                      <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-2">Navigation</p>
+                      <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-2">{t('nav.navigation', 'Navigation')}</p>
                       {navLinks.map((link) => {
                         const Icon = link.icon;
                         const isActive = pathname === link.href;
@@ -317,7 +343,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                               )}>
                                 <Icon className="w-4.5 h-4.5" />
                               </div>
-                              <span>{link.label}</span>
+                              <span>{t(`nav.${link.labelKey}`, link.fallback)}</span>
                             </div>
                             <ChevronRight className={cn("w-4 h-4 opacity-50 transition-transform group-hover:translate-x-1", isActive && "opacity-100")} />
                           </Link>
@@ -326,10 +352,10 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     </nav>
 
                     <div className="mt-8 space-y-4 px-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Plus</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">{t('nav.more', 'Plus')}</p>
                       <Link href="/about" className="flex items-center gap-3 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors py-1">
                         <Info className="w-4 h-4" />
-                        À propos
+                        {t('nav.about', 'A propos')}
                       </Link>
                     </div>
                   </div>
@@ -342,7 +368,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                           <div className="absolute inset-0 bg-gradient-to-r from-primary via-blue-600 to-sky-600 group-hover:scale-110 transition-transform duration-500 opacity-90" />
                           <span className="relative flex items-center justify-center gap-2">
                             <Pencil className="h-4 w-4" />
-                            Donner mon avis
+                            {t('nav.giveReview', 'Donner mon avis')}
                           </span>
                         </Link>
                       </Button>
@@ -350,10 +376,10 @@ export function Header({ settings }: { settings: SiteSettings }) {
                       {!user ? (
                         <div className="grid grid-cols-2 gap-3">
                           <Button variant="outline" asChild className="h-11 rounded-xl border-border/50 font-bold text-xs" onClick={() => setMobileMenuOpen(false)}>
-                            <Link href="/login">Connexion</Link>
+                            <Link href="/login">{t('nav.login', 'Connexion')}</Link>
                           </Button>
                           <Button variant="secondary" asChild className="h-11 rounded-xl font-bold text-xs bg-white text-black hover:bg-slate-100 shadow-sm" onClick={() => setMobileMenuOpen(false)}>
-                            <Link href="/signup">S'inscrire</Link>
+                            <Link href="/signup">{t('nav.signup', "S'inscrire")}</Link>
                           </Button>
                         </div>
                       ) : (
@@ -363,7 +389,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                           window.location.reload();
                         }}>
                           <LogOut className="h-4 w-4 mr-2" />
-                          Déconnexion
+                          {t('nav.logout', 'Deconnexion')}
                         </Button>
                       )}
                     </div>
@@ -384,7 +410,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     </Avatar>
                     {isPaidTier(profile?.tier) && (
                       <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] text-white ring-2 ring-background shadow-sm">
-                        ★
+                        *
                       </span>
                     )}
                   </Button>
@@ -421,7 +447,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-destructive/10 focus:text-destructive cursor-pointer">
                       <Link href="/admin" className="flex items-center py-2.5 px-3">
                         <LayoutDashboard className="mr-3 h-4 w-4" />
-                        <span className="font-medium">Administration</span>
+                        <span className="font-medium">{t('nav.admin', 'Administration')}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -429,14 +455,14 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-accent focus:text-foreground cursor-pointer">
                     <Link href="/profile" className="flex items-center py-2.5 px-3">
                       <User className="mr-3 h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">Mon Profil</span>
+                      <span className="font-medium">{t('nav.profile', 'Mon profil')}</span>
                     </Link>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-accent focus:text-foreground cursor-pointer">
                     <Link href="/suggest" className="flex items-center py-2.5 px-3">
                       <Store className="mr-3 h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">Suggérer un lieu</span>
+                      <span className="font-medium">{t('nav.suggestPlace', 'Suggérer un lieu')}</span>
                     </Link>
                   </DropdownMenuItem>
 
@@ -444,7 +470,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <DropdownMenuItem onClick={handleLogout} className="rounded-xl my-1 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
                     <div className="flex items-center py-2 px-3">
                       <LogOut className="mr-3 h-4 w-4" />
-                      <span className="font-medium">Déconnexion</span>
+                      <span className="font-medium">{t('nav.logout', 'Deconnexion')}</span>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -452,10 +478,10 @@ export function Header({ settings }: { settings: SiteSettings }) {
             ) : (
               <div className="hidden md:flex items-center gap-2">
                 <Button variant="ghost" asChild className="rounded-full px-5 hover:bg-secondary/50 font-medium">
-                  <Link href="/login">Connexion</Link>
+                  <Link href="/login">{t('nav.login', 'Connexion')}</Link>
                 </Button>
                 <Button asChild className="rounded-full shadow-lg shadow-primary/25 px-6 bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 border-0 transition-all hover:scale-105 active:scale-95 duration-300">
-                  <Link href="/signup">S'inscrire</Link>
+                  <Link href="/signup">{t('nav.signup', "S'inscrire")}</Link>
                 </Button>
               </div>
             )}

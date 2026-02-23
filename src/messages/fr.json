@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "businesses": "Etablissements",
+    "salaries": "Salaires",
+    "categories": "Categories",
+    "cities": "Villes",
+    "forPros": "Pour les pros",
+    "about": "A propos",
+    "writeReview": "Ecrire un avis",
+    "giveReview": "Donner mon avis",
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "logout": "Deconnexion",
+    "profile": "Mon profil",
+    "admin": "Administration",
+    "suggestPlace": "Suggérer un lieu",
+    "navigation": "Navigation",
+    "more": "Plus"
+  }
+}

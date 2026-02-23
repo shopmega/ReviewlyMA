@@ -13,6 +13,9 @@ import { Inter, Outfit } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
 import { AdSense } from '@/components/shared/AdSense';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { I18nProvider } from '@/components/providers/i18n-provider';
+import { getI18nState } from '@/lib/i18n/server';
+import { isRtlLocale } from '@/lib/i18n/config';
 // Import RSC error handler to suppress Next.js 15 errors
 import '@/lib/rsc-error-handler';
 
@@ -77,9 +80,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getCachedSiteSettings();
+  const { locale, messages } = await getI18nState();
 
   return (
-    <html lang="fr" className={cn("h-full", inter.variable, outfit.variable)} suppressHydrationWarning>
+    <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", inter.variable, outfit.variable)} suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col')}>
         <ErrorBoundary>
           <ThemeProvider
@@ -88,16 +92,18 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <BusinessProvider>
-              <Header settings={settings} />
-              <main className="flex-grow">{children}</main>
-              <ConditionalFooter>
-                <Footer settings={settings} />
-              </ConditionalFooter>
-              <Toaster />
-              <AnalyticsConfig />
-              <AdSense />
-            </BusinessProvider>
+            <I18nProvider locale={locale} messages={messages}>
+              <BusinessProvider>
+                <Header settings={settings} />
+                <main className="flex-grow">{children}</main>
+                <ConditionalFooter>
+                  <Footer settings={settings} />
+                </ConditionalFooter>
+                <Toaster />
+                <AnalyticsConfig />
+                <AdSense />
+              </BusinessProvider>
+            </I18nProvider>
           </ThemeProvider>
         </ErrorBoundary>
       </body>
