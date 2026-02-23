@@ -1,6 +1,5 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
     Card,
@@ -10,8 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Star, TrendingUp, AlertCircle, MessageSquare, ArrowRight, Zap, Sparkles, ShieldCheck, Users, Heart, ChevronDown, Building2, Loader2, BarChart3, Crown } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Eye, Star, TrendingUp, AlertCircle, MessageSquare, ArrowRight, Zap, Sparkles, ShieldCheck, Users, Heart, ChevronDown, Building2, BarChart3, Crown } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,8 +19,6 @@ import {
 import { StarRating } from '@/components/shared/StarRating';
 import { cn } from '@/lib/utils';
 import { getAuthorDisplayName, getAuthorInitials } from '@/lib/utils/anonymous-reviews';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
 import { type Profile } from '@/lib/types';
 import { isPaidTier } from '@/lib/tier-utils';
 
@@ -88,87 +84,9 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ stats, profile, error, otherBusinesses = [] }: DashboardClientProps) {
-    const router = useRouter();
-    const [isVerified, setIsVerified] = useState(false);
-    const [isValidating, setIsValidating] = useState(true);
-
-    // Client-side authentication verification
-    useEffect(() => {
-        async function verifyAccess() {
-            try {
-                const supabase = createClient();
-                const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-                if (authError || !user) {
-                    console.error('DashboardClient: No authenticated user found');
-                    router.push('/login');
-                    return;
-                }
-
-                // Verify that the user has legitimate access to this data
-                if (!stats || !profile) {
-                    console.error('DashboardClient: No valid data provided');
-                    return;
-                }
-
-                // Additional verification: ensure user has access to the business data
-                if (stats.business?.id) {
-                    const [{ data: userBusinesses }, { data: approvedClaims }] = await Promise.all([
-                        supabase
-                            .from('user_businesses')
-                            .select('business_id')
-                            .eq('user_id', user.id),
-                        supabase
-                            .from('business_claims')
-                            .select('business_id')
-                            .eq('user_id', user.id)
-                            .eq('status', 'approved')
-                    ]);
-
-                    const hasBusinessAccess =
-                        userBusinesses?.some((ub) => ub.business_id === stats.business.id) ||
-                        approvedClaims?.some((claim) => claim.business_id === stats.business.id) ||
-                        profile?.business_id === stats.business.id;
-
-                    if (!hasBusinessAccess) {
-                        console.error('DashboardClient: User does not have access to this business data');
-                        router.push('/dashboard');
-                        return;
-                    }
-                }
-
-                setIsVerified(true);
-            } catch (error) {
-                console.error('DashboardClient: Verification error:', error);
-                router.push('/login');
-            } finally {
-                setIsValidating(false);
-            }
-        }
-
-        verifyAccess();
-    }, [stats, profile, router]);
-
     const handleBusinessSwitch = (businessId: string) => {
         window.location.href = `/dashboard?id=${businessId}`;
     };
-
-    // Show loading state during verification
-    if (isValidating) {
-        return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Vérification de sécurité...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Don't render if verification failed
-    if (!isVerified) {
-        return null; // Redirect will happen in useEffect
-    }
 
     if (error || !stats) {
         return (

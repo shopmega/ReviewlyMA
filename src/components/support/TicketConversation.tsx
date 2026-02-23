@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendSupportMessage, getSupportTicketMessages } from '@/app/actions/support';
 import { type SupportMessage } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -21,25 +21,66 @@ export function TicketConversation({ ticketId, currentUserRole }: TicketConversa
     const [sending, setSending] = useState(false);
     const { toast } = useToast();
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isFetchingRef = useRef(false);
+
+    const fetchMessages = useCallback(async () => {
+        if (isFetchingRef.current) return;
+        isFetchingRef.current = true;
+        try {
+            const data = await getSupportTicketMessages(ticketId);
+            setMessages(data);
+            setLoading(false);
+        } catch {
+            setLoading(false);
+        } finally {
+            isFetchingRef.current = false;
+        }
+    }, [ticketId]);
 
     useEffect(() => {
-        fetchMessages();
-        // Poll every 10 seconds for new messages
-        const interval = setInterval(fetchMessages, 10000);
-        return () => clearInterval(interval);
-    }, [ticketId]);
+        let intervalId: ReturnType<typeof setInterval> | null = null;
+
+        const startPolling = () => {
+            if (intervalId) return;
+            intervalId = setInterval(() => {
+                if (!document.hidden) {
+                    void fetchMessages();
+                }
+            }, 30000);
+        };
+
+        const stopPolling = () => {
+            if (!intervalId) return;
+            clearInterval(intervalId);
+            intervalId = null;
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                stopPolling();
+                return;
+            }
+            void fetchMessages();
+            startPolling();
+        };
+
+        void fetchMessages();
+        if (!document.hidden) {
+            startPolling();
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            stopPolling();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [fetchMessages]);
 
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
-
-    const fetchMessages = async () => {
-        const data = await getSupportTicketMessages(ticketId);
-        setMessages(data);
-        setLoading(false);
-    };
 
     const handleSendMessage = async () => {
         if (!newMessage.trim()) return;

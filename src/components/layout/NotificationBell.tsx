@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,20 +22,57 @@ export function NotificationBell() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
+    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const isFetchingRef = useRef(false);
 
     const fetchNotifications = async () => {
-        const data = await getNotifications();
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.is_read && n.user_id !== null).length);
+        if (isFetchingRef.current) return;
+        isFetchingRef.current = true;
+        try {
+            const data = await getNotifications();
+            setNotifications(data);
+            setUnreadCount(data.filter(n => !n.is_read && n.user_id !== null).length);
+        } finally {
+            isFetchingRef.current = false;
+        }
     };
 
-    // Initial fetch and poller
+    // Initial fetch and poller (paused when tab is hidden)
     useEffect(() => {
-        fetchNotifications();
+        const startPolling = () => {
+            if (pollingIntervalRef.current) return;
+            pollingIntervalRef.current = setInterval(() => {
+                if (!document.hidden) {
+                    void fetchNotifications();
+                }
+            }, 60000);
+        };
 
-        // Poll every 60 seconds
-        const interval = setInterval(fetchNotifications, 60000);
-        return () => clearInterval(interval);
+        const stopPolling = () => {
+            if (!pollingIntervalRef.current) return;
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                stopPolling();
+                return;
+            }
+            void fetchNotifications();
+            startPolling();
+        };
+
+        void fetchNotifications();
+        if (!document.hidden) {
+            startPolling();
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            stopPolling();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
     const handleNotificationClick = async (n: Notification) => {

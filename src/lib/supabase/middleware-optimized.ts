@@ -39,9 +39,41 @@ if (typeof setInterval !== 'undefined') {
 }
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isDashboardRoute = pathname.startsWith('/dashboard');
+  const isGeneralReviewRoute = pathname.startsWith('/review');
+  const isBusinessReviewRoute = /^\/businesses\/[^/]+\/review\/?$/.test(pathname);
+  const routeRequiresAuth =
+    isAdminRoute ||
+    isDashboardRoute ||
+    isGeneralReviewRoute ||
+    isBusinessReviewRoute;
+
   let supabaseResponse = NextResponse.next({
     request,
   });
+
+  const withAdminDebug = (response: NextResponse, reason: string) => {
+    if (isAdminRoute) {
+      response.headers.set('x-admin-debug', reason);
+    }
+    return response;
+  };
+
+  // Fast path skip: avoid Supabase setup for static/API paths.
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.includes('.') ||
+    pathname.startsWith('/api')
+  ) {
+    return withAdminDebug(supabaseResponse, 'skip_static_or_api');
+  }
+
+  // Skip middleware for maintenance page itself
+  if (pathname === '/maintenance') {
+    return withAdminDebug(supabaseResponse, 'skip_maintenance_page');
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,7 +84,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -65,53 +97,8 @@ export async function updateSession(request: NextRequest) {
       },
     }
   );
-  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
-  const withAdminDebug = (response: NextResponse, reason: string) => {
-    if (isAdminRoute) {
-      response.headers.set('x-admin-debug', reason);
-    }
-    return response;
-  };
 
-  // Do not run Supabase code on static assets
-  if (
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname.includes('.') ||
-    request.nextUrl.pathname.startsWith('/api')
-  ) {
-    return withAdminDebug(supabaseResponse, 'skip_static_or_api');
-  }
-
-  // Skip middleware for maintenance page itself
-  if (request.nextUrl.pathname === '/maintenance') {
-    return withAdminDebug(supabaseResponse, 'skip_maintenance_page');
-  }
-
-  // 1. Refresh session if expired with timeout resilience
-  let user = null;
-  try {
-    const { data, error: userError } = await supabase.auth.getUser();
-    if (!userError && data?.user) {
-      user = data.user;
-    }
-  } catch (e) {
-    // Log error but don't break the request
-    // continue with session fallback below
-  }
-
-  // Fallback for occasional getUser() false negatives in middleware.
-  if (!user) {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (!error && data?.session?.user) {
-        user = data.session.user;
-      }
-    } catch (e) {
-      // ignore and handle via route-specific logic below
-    }
-  }
-
-  // 2. Check maintenance mode with caching
+  // 1. Check maintenance mode with caching.
   const maintenanceCacheKey = 'maintenance_mode';
   let maintenanceMode = getCached<boolean>(maintenanceCacheKey);
 
@@ -126,6 +113,34 @@ export async function updateSession(request: NextRequest) {
       setCache(maintenanceCacheKey, maintenanceMode, 5 * 60 * 1000); // Cache for 5 minutes
     } catch (e) {
       maintenanceMode = false; // Default to false on error
+    }
+  }
+
+  // Public pages do not need auth checks when maintenance mode is off.
+  if (!maintenanceMode && !routeRequiresAuth) {
+    return withAdminDebug(supabaseResponse, 'public_passthrough_no_auth');
+  }
+
+  // 2. Refresh session only when route policy requires auth or maintenance gate is active.
+  let user = null;
+  try {
+    const { data, error: userError } = await supabase.auth.getUser();
+    if (!userError && data?.user) {
+      user = data.user;
+    }
+  } catch {
+    // ignore and continue with session fallback below
+  }
+
+  // Fallback for occasional getUser() false negatives in middleware.
+  if (!user) {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (!error && data?.session?.user) {
+        user = data.session.user;
+      }
+    } catch {
+      // ignore and handle via route-specific logic below
     }
   }
 
@@ -161,8 +176,6 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Protect review creation routes (user must be logged in to write a review)
-  const isGeneralReviewRoute = request.nextUrl.pathname.startsWith('/review');
-  const isBusinessReviewRoute = /^\/businesses\/[^/]+\/review\/?$/.test(request.nextUrl.pathname);
   if (!user && (isGeneralReviewRoute || isBusinessReviewRoute)) {
     const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
@@ -174,7 +187,7 @@ export async function updateSession(request: NextRequest) {
     .some((cookie) => cookie.name.includes('-auth-token'));
 
   // Protect /admin route (must be authenticated before role checks).
-  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+  if (!user && isAdminRoute) {
     // If auth cookies exist, let server-side admin guard do the final check.
     // This avoids redirect loops caused by occasional middleware auth misses.
     if (hasSupabaseAuthCookie) {
@@ -184,6 +197,14 @@ export async function updateSession(request: NextRequest) {
     return withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login');
   }
 
+  if (!user && isDashboardRoute) {
+    if (hasSupabaseAuthCookie) {
+      return withAdminDebug(supabaseResponse, 'dashboard_no_user_but_cookie_passthrough');
+    }
+    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+  }
+
   // If unauthenticated and not in maintenance mode, stop here and allow public access
   if (!user) {
     return withAdminDebug(supabaseResponse, 'public_no_user_passthrough');
@@ -191,7 +212,7 @@ export async function updateSession(request: NextRequest) {
 
   // PROTECTED ROUTES LOGIC
   // Check role-based access for /admin and /dashboard
-  if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/dashboard')) {
+  if (isAdminRoute || isDashboardRoute) {
     // Fetch user role, business_id with caching
     const profileCacheKey = `profile_${user.id}`;
     let roleData = getCached<{ role: string; business_id: string | null }>(profileCacheKey);
@@ -210,7 +231,7 @@ export async function updateSession(request: NextRequest) {
         }
       } catch (e) {
         // Let server-side admin verification decide for admin routes.
-        if (request.nextUrl.pathname.startsWith('/admin')) {
+        if (isAdminRoute) {
           return withAdminDebug(supabaseResponse, 'admin_profile_query_exception_passthrough');
         }
         return supabaseResponse;
@@ -219,14 +240,14 @@ export async function updateSession(request: NextRequest) {
 
     if (!roleData) {
       // Let server-side admin verification decide for admin routes.
-      if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (isAdminRoute) {
         return withAdminDebug(supabaseResponse, 'admin_roledata_missing_passthrough');
       }
       return supabaseResponse;
     }
 
     // Admin route protection
-    if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (isAdminRoute) {
       if (roleData?.role !== 'admin') {
         return withAdminDebug(NextResponse.redirect(new URL('/dashboard', request.url)), 'admin_role_not_admin_redirect_dashboard');
       }
@@ -234,10 +255,10 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Dashboard route protection (pro user)
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    if (isDashboardRoute) {
       // Skip pro check for status and subscription pages
-      if (request.nextUrl.pathname === '/dashboard/pending' ||
-        request.nextUrl.pathname === '/dashboard/premium') {
+      if (pathname === '/dashboard/pending' ||
+        pathname === '/dashboard/premium') {
         return supabaseResponse;
       }
 
