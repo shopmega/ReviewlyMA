@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     ArrowRight, Building, Utensils, Search, Star, Users, Car, MapPin,
     Sparkles, Activity, Wrench, ShoppingBag, Palmtree, Bed, ChevronRight,
@@ -69,6 +68,14 @@ const defaultCategories = [
     { name: 'Éducation', icon: GraduationCap, slug: 'education-formation' },
 ];
 
+const salaryRangeOptions = [
+    { value: 'all', label: 'Tous les salaires' },
+    { value: '0-4000', label: 'Moins de 4 000 MAD' },
+    { value: '4000-8000', label: '4 000 - 8 000 MAD' },
+    { value: '8000-15000', label: '8 000 - 15 000 MAD' },
+    { value: '15000+', label: '15 000+ MAD' },
+];
+
 
 const getCollectionHref = (link: CollectionLink) => {
     const params = new URLSearchParams();
@@ -127,8 +134,11 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     ];
 
     const [searchCity, setSearchCity] = useState('Toutes les villes');
+    const [searchSector, setSearchSector] = useState('all');
+    const [salaryRange, setSalaryRange] = useState('all');
     const [homeQuery, setHomeQuery] = useState('');
     const normalizedSearchCity = searchCity === 'Toutes les villes' ? '' : searchCity;
+    const normalizedSearchSector = searchSector === 'all' ? '' : searchSector;
     const trackedImpressionsRef = useRef<Set<string>>(new Set());
 
     const autoplayPlugin = useRef(
@@ -164,10 +174,47 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
     }, [collectionsApi]);
 
 
-    const { featuredBusinesses: displayFeaturedBusinesses, reviewCount, businessCount } = useMemo(() => {
+    const buildSearchUrl = useCallback((query: string) => {
+        const params = new URLSearchParams();
+        const normalizedQuery = query.trim();
+        if (normalizedQuery) params.set('search', normalizedQuery);
+        if (normalizedSearchCity) params.set('city', normalizedSearchCity);
+        if (normalizedSearchSector) params.set('category', normalizedSearchSector);
+        if (salaryRange !== 'all') params.set('salary_range', salaryRange);
+        const queryString = params.toString();
+        return queryString ? `/businesses?${queryString}` : '/businesses';
+    }, [normalizedSearchCity, normalizedSearchSector, salaryRange]);
+
+    const { featuredBusinesses: displayFeaturedBusinesses, reviewCount, businessCount, recentBusinesses, completeProfileBusinesses } = useMemo(() => {
         const featured = featuredBusinesses.length > 0
             ? featuredBusinesses
             : businesses.filter(b => b.isFeatured).slice(0, 6);
+
+        const recent = [...businesses]
+            .sort((a, b) => {
+                const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return bTime - aTime;
+            })
+            .slice(0, 6);
+
+        const completeProfiles = [...businesses]
+            .map((business) => {
+                const hasHours = Array.isArray(business.hours) && business.hours.length > 0;
+                const hasAddress = Boolean((business.address || business.location || '').trim());
+                const hasWebsite = Boolean((business.website || '').trim());
+                const hasPhotos =
+                    Boolean(business.logo_url) ||
+                    (Array.isArray(business.gallery_urls) && business.gallery_urls.length > 0) ||
+                    (Array.isArray(business.photos) && business.photos.length > 0);
+
+                const completeness = [hasHours, hasAddress, hasWebsite, hasPhotos].filter(Boolean).length;
+                return { business, completeness };
+            })
+            .filter((item) => item.completeness >= 3)
+            .sort((a, b) => b.completeness - a.completeness)
+            .slice(0, 6)
+            .map((item) => item.business);
 
         return {
             featuredBusinesses: featured,
@@ -177,6 +224,8 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 return acc + (typedReviewCount || fallbackReviewCount);
             }, 0),
             businessCount: businesses.length,
+            recentBusinesses: recent,
+            completeProfileBusinesses: completeProfiles,
         };
     }, [businesses, featuredBusinesses]);
 
@@ -198,7 +247,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         switch (id) {
             case 'hero':
                 return (
-                    <section key="hero" className="relative w-full min-h-[85vh] flex flex-col items-center justify-center text-center overflow-hidden bg-background">
+                    <section key="hero" className="relative w-full min-h-[60vh] md:min-h-[68vh] py-14 md:py-16 flex flex-col items-center justify-center text-center overflow-hidden bg-background">
                         {/* Premium Background Elements */}
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
                             {/* Gradient Orbs */}
@@ -210,80 +259,113 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
 
                         {/* Hero Content */}
-                        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center gap-10">
-                            <div className="space-y-8 max-w-5xl animate-fade-in-up">
+                        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center gap-6 md:gap-8">
+                            <div className="space-y-5 md:space-y-6 max-w-4xl animate-fade-in-up">
                                 <Badge variant="outline" className="px-5 py-2 border-primary/20 text-primary bg-primary/5 backdrop-blur-md rounded-full transition-all hover:bg-primary/10 hover:border-primary/40 shadow-sm">
-                                    ✨ La référence des avis professionnels au Maroc
+                                    Valeur immediate pour vos decisions de carriere
                                 </Badge>
 
-                                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-headline text-foreground leading-[1.05] tracking-tight drop-shadow-sm">
-                                    Découvrez votre <br className="hidden md:block" />
-                                    <span className="relative inline-block mt-2">
-                                        <span className="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-sky-500 blur-2xl opacity-20 transform translate-y-4"></span>
-                                        <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-sky-600 selection:text-white">Next Opportunity</span>
+                                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline text-foreground leading-[1.08] tracking-tight drop-shadow-sm">
+                                    Decouvrez et comparez les entreprises au Maroc
+                                    <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-sky-600">
+                                        avis reels, salaires et guides ville/salaire.
                                     </span>
                                 </h1>
 
-                                <p className="text-xl md:text-2xl text-muted-foreground font-body max-w-3xl mx-auto leading-relaxed">
-                                    Explorez des milliers d'entreprises, consultez les salaires et lisez des avis authentiques pour prendre les meilleures décisions de carrière.
+                                <p className="text-lg md:text-xl text-muted-foreground font-body max-w-2xl mx-auto leading-relaxed">
+                                    Trouvez des informations verifiees sur les entreprises, meme avant vos entretiens.
                                 </p>
                             </div>
 
-                            {/* Premium Search Bar */}
-                            <div className="w-full max-w-4xl animate-fade-in-up [animation-delay:200ms]">
-                                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-2 p-3 md:p-2 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl hover:shadow-primary/5 transition-all duration-500 ring-1 ring-black/5 dark:ring-white/5">
+                            {/* Search + Filters */}
+                            <div className="w-full max-w-3xl animate-fade-in-up [animation-delay:200ms]">
+                                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-2 p-2.5 md:p-2 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl hover:shadow-primary/5 transition-all duration-500 ring-1 ring-black/5 dark:ring-white/5">
                                     <div className="flex-1 w-full relative z-10">
                                         <SearchAutocomplete
                                             city={searchCity}
-                                            placeholder="Entreprise, poste ou mot-clé..."
+                                            placeholder="Entreprise, poste ou mot-cle..."
                                             className="w-full"
-                                            inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base md:text-lg h-12 md:h-14 px-4 shadow-none focus-visible:ring-0"
+                                            inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base md:text-lg h-11 md:h-12 px-4 shadow-none focus-visible:ring-0"
                                             showIcon={false}
                                             onQueryChange={setHomeQuery}
                                             onSearch={(q) => {
-                                                const params = new URLSearchParams();
-                                                params.set('search', q);
-                                                if (normalizedSearchCity) params.set('city', normalizedSearchCity);
-                                                window.location.href = `/businesses?${params.toString()}`;
+                                                window.location.href = buildSearchUrl(q);
                                             }}
                                         />
                                     </div>
 
-                                    <div className="hidden md:block w-px h-10 bg-border/50 mx-2" />
-
-                                    <div className="w-full md:w-64 flex items-center h-12 md:h-14 px-2 bg-transparent rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/5">
-                                        <MapPin className="h-5 w-5 text-primary ml-2 mr-2 shrink-0" />
-                                        <input type="hidden" name="city" value={searchCity} />
-                                        <Select value={searchCity} onValueChange={setSearchCity}>
-                                            <SelectTrigger className="w-full bg-transparent border-none text-foreground text-base md:text-lg shadow-none focus:ring-0 px-0 h-full">
-                                                <SelectValue placeholder="Toutes les villes" />
-                                            </SelectTrigger>
-                                            <SelectContent className="glass border-white/10">
-                                                <SelectItem value="Toutes les villes" className="cursor-pointer focus:bg-primary/10 transition-colors font-medium">Toutes les villes</SelectItem>
-                                                {ALL_CITIES.map(city => (
-                                                    <SelectItem key={city} value={city} className="cursor-pointer focus:bg-primary/10 transition-colors">{city}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
                                     <Button
                                         onClick={() => {
-                                            const params = new URLSearchParams();
-                                            params.set('search', homeQuery);
-                                            if (normalizedSearchCity) params.set('city', normalizedSearchCity);
-                                            window.location.href = `/businesses?${params.toString()}`;
+                                            window.location.href = buildSearchUrl(homeQuery);
                                         }}
                                         size="lg"
-                                        className="w-full md:w-auto h-12 md:h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"
+                                        className="w-full md:w-auto h-11 md:h-12 px-6 md:px-7 rounded-xl bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"
                                     >
-                                        Rechercher
+                                        Rechercher une entreprise
+                                    </Button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
+                                    <Select value={searchCity} onValueChange={setSearchCity}>
+                                        <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/60">
+                                            <SelectValue placeholder="Ville" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Toutes les villes">Toutes les villes</SelectItem>
+                                            {ALL_CITIES.map(city => (
+                                                <SelectItem key={city} value={city}>{city}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    <Select value={searchSector} onValueChange={setSearchSector}>
+                                        <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/60">
+                                            <SelectValue placeholder="Secteur" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Tous les secteurs</SelectItem>
+                                            {commerceCategories.slice(0, 12).map((category) => (
+                                                <SelectItem key={category.slug} value={category.name}>
+                                                    {category.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    <Select value={salaryRange} onValueChange={setSalaryRange}>
+                                        <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/60">
+                                            <SelectValue placeholder="Salaire" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {salaryRangeOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-3 mt-4 justify-center">
+                                    <Button
+                                        size="lg"
+                                        onClick={() => { window.location.href = buildSearchUrl(homeQuery); }}
+                                        className="rounded-xl h-11 px-6 font-bold"
+                                    >
+                                        <MapPin className="mr-2 h-4 w-4" />
+                                        Rechercher une entreprise
+                                    </Button>
+                                    <Button asChild size="lg" variant="outline" className="rounded-xl h-11 px-6 font-bold border-primary/30 text-primary hover:bg-primary/5">
+                                        <Link href="/review">
+                                            <Star className="mr-2 h-4 w-4" />
+                                            Ecrire un avis
+                                        </Link>
                                     </Button>
                                 </div>
                             </div>
 
                             {/* Popular Tags */}
-                            <div className="flex flex-wrap justify-center items-center gap-2 md:gap-3 animate-fade-in-up [animation-delay:400ms] mt-4 px-4">
+                            <div className="flex flex-wrap justify-center items-center gap-2 md:gap-3 animate-fade-in-up [animation-delay:400ms] mt-2 md:mt-3 px-4">
                                 <span className="text-muted-foreground text-xs md:text-sm font-semibold uppercase tracking-wider">Populaire:</span>
                                 {popularSearches.map((search: { label: string; href: string }) => (
                                     <Link
@@ -298,6 +380,71 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                     </section>
                 );
+            case 'recently-added':
+                return recentBusinesses.length > 0 ? (
+                    <section key="recently-added" className="py-14 container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-bold font-headline">Entreprises recemment ajoutees</h2>
+                                <p className="text-muted-foreground">Des nouvelles fiches a explorer des maintenant.</p>
+                            </div>
+                            <Button asChild variant="outline" className="rounded-full">
+                                <Link href="/recently-added">Voir tout</Link>
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {recentBusinesses.slice(0, 6).map((business) => (
+                                <BusinessCard key={business.id} business={business} />
+                            ))}
+                        </div>
+                    </section>
+                ) : null;
+            case 'trust-signals':
+                return (completeProfileBusinesses.length > 0 || recentBusinesses.length > 0) ? (
+                    <section key="trust-signals" className="py-14 container mx-auto px-4">
+                        <div className="text-center mb-8 space-y-2">
+                            <h2 className="text-2xl md:text-3xl font-bold font-headline">Top entreprises avec profil complet</h2>
+                            <p className="text-muted-foreground">Fiches avec informations utiles: horaires, adresse, site web et photos.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {(completeProfileBusinesses.length > 0 ? completeProfileBusinesses : recentBusinesses).slice(0, 6).map((business) => {
+                                const hasHours = Array.isArray(business.hours) && business.hours.length > 0;
+                                const hasAddress = Boolean((business.address || business.location || '').trim());
+                                const hasWebsite = Boolean((business.website || '').trim());
+                                const hasPhotos =
+                                    Boolean(business.logo_url) ||
+                                    (Array.isArray(business.gallery_urls) && business.gallery_urls.length > 0) ||
+                                    (Array.isArray(business.photos) && business.photos.length > 0);
+
+                                return (
+                                    <Card key={business.id} className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                        <CardContent className="p-5 space-y-4">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <h3 className="font-bold text-lg leading-tight">{business.name}</h3>
+                                                    <p className="text-xs text-muted-foreground">{business.city || business.location || 'Maroc'}</p>
+                                                </div>
+                                                <Building className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {hasHours && <Badge variant="secondary">Horaires</Badge>}
+                                                {hasAddress && <Badge variant="secondary">Adresse</Badge>}
+                                                {hasWebsite && <Badge variant="secondary">Site web</Badge>}
+                                                {hasPhotos && <Badge variant="secondary">Photos</Badge>}
+                                            </div>
+                                            <Button asChild variant="ghost" className="w-full justify-between">
+                                                <Link href={`/businesses/${business.id}`}>
+                                                    Voir la fiche complete
+                                                    <ArrowRight className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </section>
+                ) : null;
             case 'stats':
                 return (
                     <section key="stats" className="container mx-auto px-4 mt-8 md:-mt-16 relative z-20">
@@ -516,6 +663,84 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                     </section>
                 );
+            case 'featured-guides':
+                return (
+                    <section key="featured-guides" className="py-20 bg-secondary/20">
+                        <div className="container mx-auto px-4">
+                            <div className="text-center mb-10 space-y-2">
+                                <h2 className="text-3xl md:text-4xl font-bold font-headline">Guides a la une</h2>
+                                <p className="text-muted-foreground">Des ressources pratiques pour orienter votre recherche.</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                    <CardContent className="p-6 space-y-3">
+                                        <Badge variant="outline">Guides par ville</Badge>
+                                        <h3 className="font-bold text-lg">Comparez les villes avant de candidater</h3>
+                                        <p className="text-sm text-muted-foreground">Explorez les entreprises par ville et reperez rapidement les meilleurs bassins d'emploi.</p>
+                                        <Button asChild variant="ghost" className="px-0">
+                                            <Link href="/villes">Voir les guides ville <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                                <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                    <CardContent className="p-6 space-y-3">
+                                        <Badge variant="outline">Salaire par secteur</Badge>
+                                        <h3 className="font-bold text-lg">Situez votre remuneration</h3>
+                                        <p className="text-sm text-muted-foreground">Consultez les reperes salariaux par metier, ville et secteur pour negocier avec confiance.</p>
+                                        <Button asChild variant="ghost" className="px-0">
+                                            <Link href="/salaires">Voir les guides salaire <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                                <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                    <CardContent className="p-6 space-y-3">
+                                        <Badge variant="outline">Avant entretien</Badge>
+                                        <h3 className="font-bold text-lg">Pourquoi consulter les avis avant un entretien</h3>
+                                        <p className="text-sm text-muted-foreground">Comprenez la culture, la gestion et les attentes terrain avant de vous engager.</p>
+                                        <Button asChild variant="ghost" className="px-0">
+                                            <Link href="/about">Lire le guide <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    </section>
+                );
+            case 'how-it-works':
+                return (
+                    <section key="how-it-works" className="py-16 container mx-auto px-4">
+                        <div className="text-center mb-10">
+                            <h2 className="text-3xl md:text-4xl font-bold font-headline">Comment ca marche</h2>
+                            <p className="text-muted-foreground mt-2">Parcours simple: chercher, comparer, contribuer.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            {[
+                                { step: '1', title: 'Cherchez une entreprise', desc: 'Utilisez les filtres ville, secteur et salaire pour aller droit au but.', icon: Search },
+                                { step: '2', title: 'Comparez fiches et salaires', desc: 'Analysez les profils complets et les indicateurs salariaux disponibles.', icon: Sparkles },
+                                { step: '3', title: 'Postez votre avis', desc: 'Partagez un retour anonyme pour aider la communaute.', icon: Star },
+                            ].map((item) => (
+                                <Card key={item.step} className="rounded-2xl border-border/60">
+                                    <CardContent className="p-6 space-y-3">
+                                        <Badge variant="secondary">Etape {item.step}</Badge>
+                                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                            <item.icon className="h-5 w-5" />
+                                        </div>
+                                        <h3 className="font-bold text-lg">{item.title}</h3>
+                                        <p className="text-sm text-muted-foreground">{item.desc}</p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                            <Button asChild className="rounded-xl">
+                                <Link href="/businesses">Commencer la recherche</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="rounded-xl">
+                                <Link href="/review">Publier un avis</Link>
+                            </Button>
+                        </div>
+                    </section>
+                );
             case 'featured':
                 return displayFeaturedBusinesses.length > 0 ? (
                     <section key="featured" className="py-24 container mx-auto px-4">
@@ -638,16 +863,37 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         }
     };
 
-    const sectionOrder = siteSettings?.home_sections_config || [
+    const defaultSectionOrder = [
         { id: 'hero', visible: true },
+        { id: 'recently-added', visible: true },
+        { id: 'trust-signals', visible: true },
         { id: 'stats', visible: true },
         { id: 'ad-banner-top', visible: true },
         { id: 'collections', visible: true },
         { id: 'categories', visible: true },
         { id: 'cities', visible: true },
+        { id: 'featured-guides', visible: true },
+        { id: 'how-it-works', visible: true },
         { id: 'resources', visible: true },
         { id: 'featured', visible: true },
     ];
+
+    const configuredSections = Array.isArray(siteSettings?.home_sections_config)
+        ? [...siteSettings.home_sections_config]
+        : [];
+
+    const configuredById = new Map(
+        configuredSections
+            .filter((section: any) => section && typeof section.id === 'string')
+            .map((section: any) => [section.id, section])
+    );
+
+    const sectionOrder = configuredSections.length > 0
+        ? [
+            ...defaultSectionOrder.map((defaultSection) => configuredById.get(defaultSection.id) ?? defaultSection),
+            ...configuredSections.filter((section: any) => !defaultSectionOrder.some((defaultSection) => defaultSection.id === section?.id)),
+        ]
+        : defaultSectionOrder;
 
     return (
         <div className="flex flex-col w-full min-h-screen">
@@ -658,3 +904,4 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         </div>
     );
 }
+
