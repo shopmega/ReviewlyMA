@@ -41,16 +41,11 @@ export default async function MyReferralOffersPage() {
     .order('created_at', { ascending: false });
 
   const items = (offers || []) as Offer[];
-  const offerIds = items.map((o) => o.id);
 
   let requests: Request[] = [];
   let requestsLoadError = '';
-  if (offerIds.length > 0) {
-    const { data, error } = await supabase
-      .from('job_referral_requests')
-      .select('id, offer_id, candidate_user_id, message, status, created_at, cv_url')
-      .in('offer_id', offerIds)
-      .order('created_at', { ascending: false });
+  if (items.length > 0) {
+    const { data, error } = await supabase.rpc('get_my_referral_offer_requests');
     if (error) {
       requestsLoadError = 'Impossible de charger les demandes recues pour le moment.';
     } else {
