@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { updateMyReferralOfferStatus, updateReferralRequestStatus } from '@/app/actions/referrals';
+import { updateMyReferralOfferStatusForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,7 +92,7 @@ export default async function MyReferralOffersPage() {
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-2">
                     {['active', 'paused', 'closed'].map((status) => (
-                      <form key={status} action={updateMyReferralOfferStatus}>
+                      <form key={status} action={updateMyReferralOfferStatusForm}>
                         <input type="hidden" name="offerId" value={offer.id} />
                         <input type="hidden" name="status" value={status} />
                         <Button type="submit" size="sm" variant={offer.status === status ? 'default' : 'outline'}>
@@ -125,7 +125,7 @@ export default async function MyReferralOffersPage() {
                           ) : null}
                           <div className="flex flex-wrap gap-2">
                             {['in_review', 'referred', 'interview', 'hired', 'rejected'].map((status) => (
-                              <form key={status} action={updateReferralRequestStatus}>
+                              <form key={status} action={updateReferralRequestStatusForm}>
                                 <input type="hidden" name="requestId" value={request.id} />
                                 <input type="hidden" name="status" value={status} />
                                 <Button type="submit" size="sm" variant={request.status === status ? 'default' : 'outline'}>

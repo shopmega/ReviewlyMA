@@ -2,7 +2,7 @@ import { verifyAdminSession, createAdminClient } from '@/lib/supabase/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { adminUpdateReferralOfferStatus, adminUpdateReferralRequestStatus } from '@/app/actions/referrals';
+import { adminUpdateReferralOfferStatusForm, adminUpdateReferralRequestStatusForm } from '@/app/actions/referrals';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +28,21 @@ type AdminRequest = {
     company_name: string;
     job_title: string;
   } | null;
+};
+
+type AdminRequestRow = Omit<AdminRequest, 'offer'> & {
+  offer:
+    | {
+        id: string;
+        company_name: string;
+        job_title: string;
+      }
+    | {
+        id: string;
+        company_name: string;
+        job_title: string;
+      }[]
+    | null;
 };
 
 export default async function AdminReferralOffersPage() {
@@ -59,7 +74,10 @@ export default async function AdminReferralOffersPage() {
     .limit(250);
 
   const items = (offers || []) as AdminOffer[];
-  const requestItems = (requests || []) as AdminRequest[];
+  const requestItems = ((requests || []) as AdminRequestRow[]).map((request) => ({
+    ...request,
+    offer: Array.isArray(request.offer) ? (request.offer[0] ?? null) : request.offer,
+  }));
 
   return (
     <div className="space-y-6">
@@ -90,7 +108,7 @@ export default async function AdminReferralOffersPage() {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {['active', 'paused', 'closed', 'rejected'].map((status) => (
-                    <form key={status} action={adminUpdateReferralOfferStatus}>
+                    <form key={status} action={adminUpdateReferralOfferStatusForm}>
                       <input type="hidden" name="offerId" value={offer.id} />
                       <input type="hidden" name="status" value={status} />
                       <Button type="submit" size="sm" variant={offer.status === status ? 'default' : 'outline'}>
@@ -142,7 +160,7 @@ export default async function AdminReferralOffersPage() {
                 ) : null}
                 <div className="flex flex-wrap gap-2">
                   {['pending', 'in_review', 'referred', 'interview', 'hired', 'rejected', 'withdrawn'].map((status) => (
-                    <form key={status} action={adminUpdateReferralRequestStatus}>
+                    <form key={status} action={adminUpdateReferralRequestStatusForm}>
                       <input type="hidden" name="requestId" value={request.id} />
                       <input type="hidden" name="status" value={status} />
                       <Button type="submit" size="sm" variant={request.status === status ? 'default' : 'outline'}>

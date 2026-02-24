@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { updateReferralRequestStatus } from '@/app/actions/referrals';
+import { updateReferralRequestStatusForm } from '@/app/actions/referrals';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +21,23 @@ type MyRequest = {
     job_title: string;
     status: string;
   } | null;
+};
+
+type MyRequestRow = Omit<MyRequest, 'offer'> & {
+  offer:
+    | {
+        id: string;
+        company_name: string;
+        job_title: string;
+        status: string;
+      }
+    | {
+        id: string;
+        company_name: string;
+        job_title: string;
+        status: string;
+      }[]
+    | null;
 };
 
 export default async function MyReferralRequestsPage() {
@@ -49,7 +66,10 @@ export default async function MyReferralRequestsPage() {
     .eq('candidate_user_id', auth.user.id)
     .order('created_at', { ascending: false });
 
-  const requests = (data || []) as MyRequest[];
+  const requests = ((data || []) as MyRequestRow[]).map((request) => ({
+    ...request,
+    offer: Array.isArray(request.offer) ? (request.offer[0] ?? null) : request.offer,
+  }));
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
@@ -96,7 +116,7 @@ export default async function MyReferralRequestsPage() {
                     </Button>
                   ) : null}
                   {!['withdrawn', 'hired', 'rejected'].includes(request.status) && (
-                    <form action={updateReferralRequestStatus}>
+                    <form action={updateReferralRequestStatusForm}>
                       <input type="hidden" name="requestId" value={request.id} />
                       <input type="hidden" name="status" value="withdrawn" />
                       <Button type="submit" size="sm" variant="destructive">

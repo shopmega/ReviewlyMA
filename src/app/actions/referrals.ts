@@ -77,6 +77,8 @@ export type ReferralEligibility = {
   reason: string;
 };
 
+const DEFAULT_ACTION_STATE: ActionState = { status: 'idle', message: '' };
+
 export async function getReferralEligibility(): Promise<ReferralEligibility | null> {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -411,4 +413,20 @@ export async function adminUpdateReferralRequestStatus(_prev: ActionState, formD
   revalidatePath('/parrainages/mes-demandes');
   revalidatePath(`/parrainages/${request.offer_id}`);
   return { status: 'success', message: 'Statut demande mis a jour par admin.' };
+}
+
+export async function updateMyReferralOfferStatusForm(formData: FormData): Promise<void> {
+  await updateMyReferralOfferStatus(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function updateReferralRequestStatusForm(formData: FormData): Promise<void> {
+  await updateReferralRequestStatus(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function adminUpdateReferralOfferStatusForm(formData: FormData): Promise<void> {
+  await adminUpdateReferralOfferStatus(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function adminUpdateReferralRequestStatusForm(formData: FormData): Promise<void> {
+  await adminUpdateReferralRequestStatus(DEFAULT_ACTION_STATE, formData);
 }
