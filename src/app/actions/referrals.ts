@@ -47,6 +47,7 @@ const requestReferralSchema = z.object({
   offerId: z.string().uuid(),
   message: z.string().min(10),
   cvUrl: z.string().url().optional().or(z.literal('')),
+  linkedinUrl: z.string().url().optional().or(z.literal('')),
 });
 
 const updateOfferStatusSchema = z.object({
@@ -67,6 +68,11 @@ const adminUpdateOfferSchema = z.object({
 const adminUpdateRequestSchema = z.object({
   requestId: z.string().uuid(),
   status: z.enum(['pending', 'in_review', 'referred', 'interview', 'hired', 'rejected', 'withdrawn']),
+});
+
+const sendReferralMessageSchema = z.object({
+  requestId: z.string().uuid(),
+  message: z.string().trim().min(2).max(2000),
 });
 
 export type ReferralEligibility = {
@@ -195,6 +201,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
     offerId: String(formData.get('offerId') || ''),
     message: String(formData.get('message') || '').trim(),
     cvUrl: String(formData.get('cvUrl') || '').trim(),
+    linkedinUrl: String(formData.get('linkedinUrl') || '').trim(),
   });
 
   if (!parsed.success) {
@@ -224,6 +231,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
     candidate_user_id: user.id,
     message: parsed.data.message,
     cv_url: parsed.data.cvUrl || null,
+    linkedin_url: parsed.data.linkedinUrl || null,
     status: 'pending',
   });
 
@@ -415,6 +423,64 @@ export async function adminUpdateReferralRequestStatus(_prev: ActionState, formD
   return { status: 'success', message: 'Statut demande mis a jour par admin.' };
 }
 
+export async function sendReferralMessage(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = sendReferralMessageSchema.safeParse({
+    requestId: String(formData.get('requestId') || ''),
+    message: String(formData.get('message') || '').trim(),
+  });
+
+  if (!parsed.success) {
+    return {
+      status: 'error',
+      message: 'Message invalide.',
+      errors: parsed.error.flatten().fieldErrors as ActionState['errors'],
+    };
+  }
+
+  const { data: request, error: requestError } = await supabase
+    .from('job_referral_requests')
+    .select('id, offer_id, candidate_user_id')
+    .eq('id', parsed.data.requestId)
+    .maybeSingle();
+
+  if (requestError || !request) {
+    return { status: 'error', message: 'Demande introuvable.' };
+  }
+
+  const { data: offer } = await supabase
+    .from('job_referral_offers')
+    .select('id, user_id')
+    .eq('id', request.offer_id)
+    .maybeSingle();
+
+  const isCandidate = request.candidate_user_id === user.id;
+  const isOwner = offer?.user_id === user.id;
+  if (!isCandidate && !isOwner) {
+    return { status: 'error', message: 'Non autorise.' };
+  }
+
+  const { error } = await supabase.from('job_referral_messages').insert({
+    request_id: request.id,
+    sender_user_id: user.id,
+    message: parsed.data.message,
+  });
+
+  if (error) {
+    return { status: 'error', message: "Impossible d'envoyer le message." };
+  }
+
+  revalidatePath('/parrainages/mes-offres');
+  revalidatePath('/parrainages/mes-demandes');
+  return { status: 'success', message: 'Message envoye.' };
+}
+
 export async function updateMyReferralOfferStatusForm(formData: FormData): Promise<void> {
   await updateMyReferralOfferStatus(DEFAULT_ACTION_STATE, formData);
 }
@@ -429,4 +495,8 @@ export async function adminUpdateReferralOfferStatusForm(formData: FormData): Pr
 
 export async function adminUpdateReferralRequestStatusForm(formData: FormData): Promise<void> {
   await adminUpdateReferralRequestStatus(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function sendReferralMessageForm(formData: FormData): Promise<void> {
+  await sendReferralMessage(DEFAULT_ACTION_STATE, formData);
 }

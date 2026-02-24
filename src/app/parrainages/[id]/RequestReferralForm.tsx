@@ -54,6 +54,11 @@ export function RequestReferralForm({ offerId }: { offerId: string }) {
             <Input id="cvUrl" name="cvUrl" placeholder="https://..." />
             {fieldError('cvUrl') && <p className="text-xs text-destructive">{fieldError('cvUrl')}</p>}
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="linkedinUrl">LinkedIn (optionnel)</Label>
+            <Input id="linkedinUrl" name="linkedinUrl" placeholder="https://www.linkedin.com/in/..." />
+            {fieldError('linkedinUrl') && <p className="text-xs text-destructive">{fieldError('linkedinUrl')}</p>}
+          </div>
           <p className="text-xs text-muted-foreground">
             {t('referrals.request.privacyNote', "Votre demande sera visible uniquement par l'auteur de l'offre.")}
           </p>

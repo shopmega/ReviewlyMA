@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { updateReferralRequestStatusForm } from '@/app/actions/referrals';
+import { sendReferralMessageForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +21,14 @@ type MyRequest = {
     job_title: string;
     status: string;
   } | null;
+};
+
+type ReferralMessage = {
+  id: string;
+  request_id: string;
+  sender_user_id: string;
+  message: string;
+  created_at: string;
 };
 
 type MyRequestRow = Omit<MyRequest, 'offer'> & {
@@ -70,6 +78,17 @@ export default async function MyReferralRequestsPage() {
     ...request,
     offer: Array.isArray(request.offer) ? (request.offer[0] ?? null) : request.offer,
   }));
+
+  let messages: ReferralMessage[] = [];
+  if (requests.length > 0) {
+    const requestIds = requests.map((r) => r.id);
+    const { data: messageData } = await supabase
+      .from('job_referral_messages')
+      .select('id, request_id, sender_user_id, message, created_at')
+      .in('request_id', requestIds)
+      .order('created_at', { ascending: true });
+    messages = (messageData || []) as ReferralMessage[];
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
@@ -124,6 +143,44 @@ export default async function MyReferralRequestsPage() {
                       </Button>
                     </form>
                   )}
+                </div>
+
+                <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Conversation</p>
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {messages.filter((m) => m.request_id === request.id).length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Aucun message pour le moment.</p>
+                    ) : (
+                      messages
+                        .filter((m) => m.request_id === request.id)
+                        .map((m) => {
+                          const isMe = m.sender_user_id === auth.user.id;
+                          return (
+                            <div key={m.id} className={`rounded-md px-3 py-2 text-sm ${isMe ? 'bg-primary/10 ml-6' : 'bg-background mr-6 border'}`}>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {isMe ? 'Vous' : 'Recruteur'} - {new Date(m.created_at).toLocaleDateString('fr-MA')}
+                              </p>
+                              <p className="whitespace-pre-wrap">{m.message}</p>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                  {!['withdrawn', 'hired', 'rejected'].includes(request.status) ? (
+                    <form action={sendReferralMessageForm} className="space-y-2">
+                      <input type="hidden" name="requestId" value={request.id} />
+                      <textarea
+                        name="message"
+                        required
+                        minLength={2}
+                        className="min-h-[72px] w-full rounded-md border bg-background px-3 py-2 text-sm"
+                        placeholder="Envoyer un message au recruteur..."
+                      />
+                      <div className="flex justify-end">
+                        <Button type="submit" size="sm">Envoyer</Button>
+                      </div>
+                    </form>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
