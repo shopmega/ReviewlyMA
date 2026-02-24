@@ -19,6 +19,8 @@ import {
   Heart,
   Settings as SettingsIcon,
   ShieldCheck,
+  BriefcaseBusiness,
+  SendHorizontal,
   Mail,
   User as UserIcon,
   Calendar,
@@ -78,7 +80,7 @@ type UserReview = {
   owner_reply_date: string | null;
 };
 
-type ProfileTab = 'reviews' | 'saved' | 'settings' | 'security';
+type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'settings' | 'security';
 
 function ProfileSkeleton() {
   return (
@@ -111,6 +113,7 @@ export default function ProfilePage() {
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'helpful' | 'rating'>('newest');
   const [activeTab, setActiveTab] = useState<ProfileTab>('reviews');
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([]);
+  const [referralStats, setReferralStats] = useState({ offers: 0, requests: 0 });
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
@@ -225,6 +228,26 @@ export default function ProfilePage() {
         setSavedBusinesses(saved.slice(0, SAVED_BUSINESSES_PREVIEW_LIMIT));
       } catch (e) {
         console.error('Failed to fetch saved businesses', e);
+      }
+
+      try {
+        const [{ count: offersCount }, { count: requestsCount }] = await Promise.all([
+          supabase
+            .from('job_referral_offers')
+            .select('id', { head: true, count: 'exact' })
+            .eq('user_id', user.id),
+          supabase
+            .from('job_referral_requests')
+            .select('id', { head: true, count: 'exact' })
+            .eq('candidate_user_id', user.id),
+        ]);
+
+        setReferralStats({
+          offers: offersCount || 0,
+          requests: requestsCount || 0,
+        });
+      } catch (e) {
+        console.error('Failed to fetch referral stats', e);
       }
 
       setLoading(false);
@@ -421,6 +444,10 @@ export default function ProfilePage() {
                   <Heart className="w-4 h-4" />
                   Favoris
                 </TabsTrigger>
+                <TabsTrigger value="referrals" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
+                  <BriefcaseBusiness className="w-4 h-4" />
+                  Parrainage
+                </TabsTrigger>
                 <TabsTrigger value="settings" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Edit className="w-4 h-4" />
                   Profil
@@ -575,6 +602,57 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            {/* TAB: REFERRALS */}
+            <TabsContent value="referrals" className="space-y-6">
+              <Card className="border-none shadow-xl bg-card/60 backdrop-blur-sm">
+                <CardHeader className="border-b border-border/50 p-8">
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <BriefcaseBusiness className="w-6 h-6 text-primary" />
+                    Mon parrainage
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Gere vos offres publiees et suivez vos demandes de parrainage.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <Card className="bg-background/70 border-border/60">
+                      <CardContent className="p-6">
+                        <p className="text-sm text-muted-foreground mb-2">Offres publiees</p>
+                        <p className="text-3xl font-black">{referralStats.offers}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-background/70 border-border/60">
+                      <CardContent className="p-6">
+                        <p className="text-sm text-muted-foreground mb-2">Demandes envoyees</p>
+                        <p className="text-3xl font-black">{referralStats.requests}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <Button asChild className="rounded-full">
+                      <Link href="/parrainages/mes-offres">
+                        <BriefcaseBusiness className="mr-2 h-4 w-4" />
+                        Mes offres de parrainage
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="rounded-full">
+                      <Link href="/parrainages/mes-demandes">
+                        <SendHorizontal className="mr-2 h-4 w-4" />
+                        Mes demandes de parrainage
+                      </Link>
+                    </Button>
+                    <Button asChild variant="ghost" className="rounded-full">
+                      <Link href="/parrainages/new">
+                        Publier une nouvelle offre
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* TAB: SETTINGS */}

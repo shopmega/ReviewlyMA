@@ -186,18 +186,6 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <span>{t('nav.profile', 'Mon profil')}</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="rounded-lg">
-                  <Link href="/parrainages/mes-offres" className="flex items-center">
-                    <Briefcase className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>{t('nav.myReferralOffers', 'Mes offres de parrainage')}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="rounded-lg">
-                  <Link href="/parrainages/mes-demandes" className="flex items-center">
-                    <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>{t('nav.myReferralRequests', 'Mes demandes de parrainage')}</span>
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="rounded-lg text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -469,20 +457,6 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <Link href="/profile" className="flex items-center py-2.5 px-3">
                       <User className="mr-3 h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">{t('nav.profile', 'Mon profil')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-accent focus:text-foreground cursor-pointer">
-                    <Link href="/parrainages/mes-offres" className="flex items-center py-2.5 px-3">
-                      <Briefcase className="mr-3 h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{t('nav.myReferralOffers', 'Mes offres de parrainage')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-accent focus:text-foreground cursor-pointer">
-                    <Link href="/parrainages/mes-demandes" className="flex items-center py-2.5 px-3">
-                      <Users className="mr-3 h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{t('nav.myReferralRequests', 'Mes demandes de parrainage')}</span>
                     </Link>
                   </DropdownMenuItem>
 
