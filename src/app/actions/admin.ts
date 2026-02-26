@@ -1734,6 +1734,246 @@ export async function generateSalaryMonthlyReport(
   }
 }
 
+export type SalaryLeaderboardRow = {
+  businessId: string;
+  businessName: string;
+  city: string;
+  category: string;
+  metricValue: number;
+  avgMonthlySalary: number;
+  medianMonthlySalary: number;
+  p90MonthlySalary: number;
+  submissionCount: number;
+};
+
+type SalaryCustomReportsData = {
+  callCenterCasablanca: SalaryLeaderboardRow[];
+  trainees: SalaryLeaderboardRow[];
+  generatedAt: string;
+};
+
+type SalaryReportMetric = 'avg' | 'median' | 'p90';
+
+export type SalaryReportBuilderInput = {
+  city?: string;
+  category?: string;
+  jobTitleKeyword?: string;
+  employmentType?: 'all' | 'full_time' | 'part_time' | 'contract' | 'intern';
+  minSamples?: number;
+  limit?: number;
+  metric?: SalaryReportMetric;
+};
+
+export type SalaryReportBuilderData = {
+  filters: Required<SalaryReportBuilderInput>;
+  generatedAt: string;
+  rows: SalaryLeaderboardRow[];
+};
+
+function normalizeText(value: unknown): string {
+  return String(value || '').trim().toLowerCase();
+}
+
+function looksLikeCallCenterRole(jobTitle: string, category: string): boolean {
+  const text = `${jobTitle} ${category}`;
+  return (
+    text.includes('call center')
+    || text.includes('call-center')
+    || text.includes("centre d'appel")
+    || text.includes('centre appel')
+    || text.includes('teleconseiller')
+    || text.includes('telesales')
+  );
+}
+
+function percentile(values: number[], p: number): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = (sorted.length - 1) * p;
+  const lower = Math.floor(idx);
+  const upper = Math.ceil(idx);
+  if (lower === upper) return sorted[lower];
+  const weight = idx - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+}
+
+function median(values: number[]): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+function aggregateLeaderboard(
+  rows: Array<{
+    business_id: string | null;
+    salary_monthly_normalized: number | null;
+    businesses: { name?: string | null; city?: string | null; category?: string | null } | null;
+  }>,
+  metric: SalaryReportMetric = 'avg',
+  minSamples = 5,
+  limit = 10
+): SalaryLeaderboardRow[] {
+  const map = new Map<string, { name: string; city: string; category: string; values: number[] }>();
+
+  for (const row of rows) {
+    const businessId = row.business_id || '';
+    const salary = Number(row.salary_monthly_normalized || 0);
+    if (!businessId || !Number.isFinite(salary) || salary <= 0) continue;
+
+    const businessName = String(row.businesses?.name || businessId);
+    const city = String(row.businesses?.city || 'Non defini');
+    const category = String(row.businesses?.category || 'Non defini');
+    const current = map.get(businessId);
+    if (!current) {
+      map.set(businessId, { name: businessName, city, category, values: [salary] });
+    } else {
+      current.values.push(salary);
+      map.set(businessId, current);
+    }
+  }
+
+  return Array.from(map.entries())
+    .map(([businessId, value]) => {
+      const avg = value.values.reduce((sum, v) => sum + v, 0) / value.values.length;
+      const med = median(value.values);
+      const p90 = percentile(value.values, 0.9);
+      const metricValue = metric === 'median' ? med : metric === 'p90' ? p90 : avg;
+
+      return {
+        businessId,
+        businessName: value.name,
+        city: value.city,
+        category: value.category,
+        metricValue: Number(metricValue.toFixed(2)),
+        avgMonthlySalary: Number(avg.toFixed(2)),
+        medianMonthlySalary: Number(med.toFixed(2)),
+        p90MonthlySalary: Number(p90.toFixed(2)),
+        submissionCount: value.values.length,
+      };
+    })
+    .filter((item) => item.submissionCount >= minSamples)
+    .sort((a, b) => b.metricValue - a.metricValue || b.submissionCount - a.submissionCount)
+    .slice(0, limit);
+}
+
+export async function getSalaryReportBuilder(
+  input?: SalaryReportBuilderInput
+): Promise<AdminActionResult> {
+  try {
+    await verifyAdminSession();
+    const serviceClient = await createAdminClient();
+
+    const filters: Required<SalaryReportBuilderInput> = {
+      city: String(input?.city || '').trim(),
+      category: String(input?.category || '').trim(),
+      jobTitleKeyword: String(input?.jobTitleKeyword || '').trim(),
+      employmentType: (input?.employmentType || 'all') as Required<SalaryReportBuilderInput>['employmentType'],
+      minSamples: Math.max(1, Math.min(Number(input?.minSamples || 5), 100)),
+      limit: Math.max(1, Math.min(Number(input?.limit || 10), 50)),
+      metric: (input?.metric || 'avg') as SalaryReportMetric,
+    };
+
+    const { data, error } = await serviceClient
+      .from('salaries')
+      .select(`
+        business_id,
+        salary_monthly_normalized,
+        employment_type,
+        job_title,
+        status,
+        businesses!inner(name, city, category)
+      `)
+      .eq('status', 'published')
+      .not('salary_monthly_normalized', 'is', null)
+      .gt('salary_monthly_normalized', 0)
+      .limit(20000);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    const rows = (data || []) as Array<{
+      business_id: string | null;
+      salary_monthly_normalized: number | null;
+      employment_type?: string | null;
+      job_title?: string | null;
+      status?: string | null;
+      businesses: { name?: string | null; city?: string | null; category?: string | null } | null;
+    }>;
+
+    const filteredRows = rows.filter((row) => {
+      const city = normalizeText(row.businesses?.city);
+      const category = normalizeText(row.businesses?.category);
+      const jobTitle = normalizeText(row.job_title);
+      const employmentType = normalizeText(row.employment_type);
+
+      if (filters.city && city !== normalizeText(filters.city)) return false;
+      if (filters.category && !category.includes(normalizeText(filters.category))) return false;
+      if (filters.jobTitleKeyword && !jobTitle.includes(normalizeText(filters.jobTitleKeyword))) return false;
+      if (filters.employmentType !== 'all' && employmentType !== normalizeText(filters.employmentType)) return false;
+      return true;
+    });
+
+    const result: SalaryReportBuilderData = {
+      filters,
+      generatedAt: new Date().toISOString(),
+      rows: aggregateLeaderboard(filteredRows, filters.metric, filters.minSamples, filters.limit),
+    };
+
+    return {
+      status: 'success',
+      message: 'Rapport salaires genere.',
+      data: result,
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
+/**
+ * Presets kept for quick business questions.
+ */
+export async function getSalaryCustomReports(): Promise<AdminActionResult> {
+  try {
+    const [callCenterRes, traineeRes] = await Promise.all([
+      getSalaryReportBuilder({
+        city: 'Casablanca',
+        category: 'call center',
+        metric: 'avg',
+        minSamples: 5,
+        limit: 10,
+      }),
+      getSalaryReportBuilder({
+        employmentType: 'intern',
+        metric: 'avg',
+        minSamples: 5,
+        limit: 10,
+      }),
+    ]);
+
+    if (callCenterRes.status !== 'success') return callCenterRes;
+    if (traineeRes.status !== 'success') return traineeRes;
+
+    const callCenterData = callCenterRes.data as SalaryReportBuilderData;
+    const traineeData = traineeRes.data as SalaryReportBuilderData;
+
+    const result: SalaryCustomReportsData = {
+      callCenterCasablanca: callCenterData.rows,
+      trainees: traineeData.rows,
+      generatedAt: new Date().toISOString(),
+    };
+
+    return {
+      status: 'success',
+      message: 'Rapports salaires personnalises generes.',
+      data: result,
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
 /**
  * Delete a user completely (admin only)
  * This handles all related data and foreign key constraints properly

@@ -7,7 +7,12 @@ import { useEffect, useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { generateSalaryMonthlyReport } from '@/app/actions/admin';
+import {
+  generateSalaryMonthlyReport,
+  getSalaryReportBuilder,
+  type SalaryReportBuilderInput,
+  type SalaryReportBuilderData,
+} from '@/app/actions/admin';
 import { useToast } from '@/hooks/use-toast';
 
 type MonthlyData = {
@@ -48,6 +53,17 @@ export default function StatisticsPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
+  const [customReports, setCustomReports] = useState<SalaryReportBuilderData | null>(null);
+  const [customReportsLoading, setCustomReportsLoading] = useState(false);
+  const [reportFilters, setReportFilters] = useState<Required<SalaryReportBuilderInput>>({
+    city: '',
+    category: '',
+    jobTitleKeyword: '',
+    employmentType: 'all',
+    metric: 'avg',
+    minSamples: 5,
+    limit: 10,
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -227,6 +243,22 @@ export default function StatisticsPage() {
     },
   ];
 
+  const fetchCustomSalaryReports = (preset?: Partial<SalaryReportBuilderInput>) => {
+    const nextFilters = { ...reportFilters, ...(preset || {}) };
+    setReportFilters(nextFilters);
+    setCustomReportsLoading(true);
+    startTransition(async () => {
+      const result = await getSalaryReportBuilder(nextFilters);
+      if (result.status === 'success') {
+        setCustomReports((result.data || null) as SalaryReportBuilderData | null);
+        toast({ title: 'Succes', description: result.message });
+      } else {
+        toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      }
+      setCustomReportsLoading(false);
+    });
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -279,6 +311,128 @@ export default function StatisticsPage() {
             {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Generer et publier
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Report Builder salaires</CardTitle>
+          <CardDescription>
+            Configurez vos filtres (ville, categorie, poste, contrat), la metrique et le seuil d echantillon pour generer un classement.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <input
+              value={reportFilters.city}
+              onChange={(e) => setReportFilters((prev) => ({ ...prev, city: e.target.value }))}
+              placeholder="Ville (ex: Casablanca)"
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            />
+            <input
+              value={reportFilters.category}
+              onChange={(e) => setReportFilters((prev) => ({ ...prev, category: e.target.value }))}
+              placeholder="Categorie (ex: call center, it...)"
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            />
+            <input
+              value={reportFilters.jobTitleKeyword}
+              onChange={(e) => setReportFilters((prev) => ({ ...prev, jobTitleKeyword: e.target.value }))}
+              placeholder="Mot-cle poste (ex: stagiaire, dev...)"
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            />
+            <select
+              value={reportFilters.employmentType}
+              onChange={(e) => setReportFilters((prev) => ({ ...prev, employmentType: e.target.value as Required<SalaryReportBuilderInput>['employmentType'] }))}
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            >
+              <option value="all">Contrat: Tous</option>
+              <option value="full_time">Temps plein</option>
+              <option value="part_time">Temps partiel</option>
+              <option value="contract">Contrat</option>
+              <option value="intern">Stage</option>
+            </select>
+            <select
+              value={reportFilters.metric}
+              onChange={(e) => setReportFilters((prev) => ({ ...prev, metric: e.target.value as Required<SalaryReportBuilderInput>['metric'] }))}
+              className="h-10 rounded-md border bg-background px-3 text-sm"
+            >
+              <option value="avg">Metrique: Moyenne</option>
+              <option value="median">Metrique: Mediane</option>
+              <option value="p90">Metrique: P90</option>
+            </select>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={reportFilters.minSamples}
+                onChange={(e) => setReportFilters((prev) => ({ ...prev, minSamples: Number(e.target.value || 5) }))}
+                placeholder="Min samples"
+                className="h-10 rounded-md border bg-background px-3 text-sm"
+              />
+              <input
+                type="number"
+                min={1}
+                max={50}
+                value={reportFilters.limit}
+                onChange={(e) => setReportFilters((prev) => ({ ...prev, limit: Number(e.target.value || 10) }))}
+                placeholder="Limite"
+                className="h-10 rounded-md border bg-background px-3 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" disabled={customReportsLoading || isPending} onClick={() => fetchCustomSalaryReports()}>
+              {(customReportsLoading || isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Generer rapport
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={customReportsLoading || isPending}
+              onClick={() => fetchCustomSalaryReports({ city: 'Casablanca', category: 'call center', jobTitleKeyword: '', employmentType: 'all', metric: 'avg', minSamples: 5, limit: 10 })}
+            >
+              Preset: Call Center Casablanca
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={customReportsLoading || isPending}
+              onClick={() => fetchCustomSalaryReports({ city: '', category: '', jobTitleKeyword: '', employmentType: 'intern', metric: 'avg', minSamples: 5, limit: 10 })}
+            >
+              Preset: Stagiaires
+            </Button>
+          </div>
+
+          {customReports && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-2">Classement entreprises</h3>
+                {customReports.rows.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucune donnee suffisante pour ces filtres.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {customReports.rows.map((row, idx) => (
+                      <div key={row.businessId} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                        <div>
+                          <p className="font-medium">{idx + 1}. {row.businessName}</p>
+                          <p className="text-xs text-muted-foreground">{row.city} | {row.category} | {row.submissionCount} soumissions</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">{row.metricValue.toLocaleString('fr-MA')} MAD</p>
+                          <p className="text-[11px] text-muted-foreground">avg {row.avgMonthlySalary.toLocaleString('fr-MA')} | med {row.medianMonthlySalary.toLocaleString('fr-MA')} | p90 {row.p90MonthlySalary.toLocaleString('fr-MA')}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Genere le {new Date(customReports.generatedAt).toLocaleString('fr-MA')}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
