@@ -18,7 +18,6 @@ import {
   Sparkles,
   Heart,
   Settings as SettingsIcon,
-  ShieldCheck,
   BriefcaseBusiness,
   SendHorizontal,
   Mail,
@@ -80,7 +79,7 @@ type UserReview = {
   owner_reply_date: string | null;
 };
 
-type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'settings' | 'security';
+type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'account';
 
 function ProfileSkeleton() {
   return (
@@ -106,16 +105,21 @@ function ProfileSkeleton() {
 }
 
 export default function ProfilePage() {
-  const REVIEWS_INITIAL_LIMIT = 20;
-  const SAVED_BUSINESSES_PREVIEW_LIMIT = 12;
+  const REVIEWS_PAGE_SIZE = 20;
+  const SAVED_BUSINESSES_PAGE_SIZE = 12;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);
+  const [reviewsPage, setReviewsPage] = useState(0);
+  const [hasMoreReviews, setHasMoreReviews] = useState(false);
+  const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'helpful' | 'rating'>('newest');
   const [activeTab, setActiveTab] = useState<ProfileTab>('reviews');
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([]);
+  const [savedVisibleCount, setSavedVisibleCount] = useState(SAVED_BUSINESSES_PAGE_SIZE);
   const [referralStats, setReferralStats] = useState({ offers: 0, requests: 0 });
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -138,6 +142,51 @@ export default function ProfilePage() {
         return sorted;
     }
   }, [reviews, sortOption]);
+
+  const visibleSavedBusinesses = useMemo(
+    () => savedBusinesses.slice(0, savedVisibleCount),
+    [savedBusinesses, savedVisibleCount]
+  );
+
+  const mapReviewRow = (r: any): UserReview => ({
+    id: r.id,
+    business_id: r.business_id,
+    business_name: r.businesses?.name || r.business_id,
+    rating: r.rating,
+    title: r.title,
+    content: r.content,
+    date: r.date,
+    likes: r.likes || 0,
+    dislikes: r.dislikes || 0,
+    owner_reply: r.owner_reply,
+    owner_reply_date: r.owner_reply_date,
+  });
+
+  const fetchReviewsPage = async (userId: string, page: number, append: boolean) => {
+    const supabase = createClient();
+    const from = page * REVIEWS_PAGE_SIZE;
+    const to = from + REVIEWS_PAGE_SIZE - 1;
+
+    const { data: reviewsData, error: reviewsError } = await supabase
+      .from('reviews')
+      .select(`
+        id, business_id, rating, title, content, date, likes, dislikes,
+        owner_reply, owner_reply_date, businesses!inner (name)
+      `)
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .range(from, to);
+
+    if (!reviewsError && reviewsData) {
+      const mapped = reviewsData.map(mapReviewRow);
+      setReviews((prev) => (append ? [...prev, ...mapped] : mapped));
+      setReviewsPage(page);
+      setHasMoreReviews(reviewsData.length === REVIEWS_PAGE_SIZE);
+    } else if (!append) {
+      setReviews([]);
+      setHasMoreReviews(false);
+    }
+  };
 
   const initialState: ActionState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(updateUserProfile, initialState);
@@ -169,6 +218,7 @@ export default function ProfilePage() {
       }
 
       setIsAuthenticated(true);
+      setCurrentUserId(user.id);
 
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
@@ -195,37 +245,13 @@ export default function ProfilePage() {
         });
       }
 
-      // Fetch user's reviews with pagination for better performance
-      const { data: reviewsData, error: reviewsError } = await supabase
-        .from('reviews')
-        .select(`
-          id, business_id, rating, title, content, date, likes, dislikes,
-          owner_reply, owner_reply_date, businesses!inner (name)
-        `)
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
-        .limit(REVIEWS_INITIAL_LIMIT);
-
-      if (!reviewsError && reviewsData) {
-        setReviews(reviewsData.map((r: any) => ({
-          id: r.id,
-          business_id: r.business_id,
-          business_name: r.businesses?.name || r.business_id,
-          rating: r.rating,
-          title: r.title,
-          content: r.content,
-          date: r.date,
-          likes: r.likes || 0,
-          dislikes: r.dislikes || 0,
-          owner_reply: r.owner_reply,
-          owner_reply_date: r.owner_reply_date,
-        })));
-      }
+      await fetchReviewsPage(user.id, 0, false);
 
       // Fetch saved businesses with minimal data
       try {
         const saved = await getSavedBusinesses();
-        setSavedBusinesses(saved.slice(0, SAVED_BUSINESSES_PREVIEW_LIMIT));
+        setSavedBusinesses(saved);
+        setSavedVisibleCount(Math.min(SAVED_BUSINESSES_PAGE_SIZE, saved.length));
       } catch (e) {
         console.error('Failed to fetch saved businesses', e);
       }
@@ -324,6 +350,17 @@ export default function ProfilePage() {
         toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
       }
     });
+  };
+
+  const handleLoadMoreReviews = async () => {
+    if (!currentUserId || !hasMoreReviews || loadingMoreReviews) return;
+    setLoadingMoreReviews(true);
+    await fetchReviewsPage(currentUserId, reviewsPage + 1, true);
+    setLoadingMoreReviews(false);
+  };
+
+  const handleLoadMoreSaved = () => {
+    setSavedVisibleCount((prev) => Math.min(prev + SAVED_BUSINESSES_PAGE_SIZE, savedBusinesses.length));
   };
 
   if (loading) return <ProfileSkeleton />;
@@ -432,6 +469,29 @@ export default function ProfilePage() {
             ))}
           </div>
 
+          <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-sky-500/5 shadow-sm mb-10">
+            <CardContent className="p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Prochaine action recommandee</p>
+                <p className="text-lg font-bold">Partagez un nouvel avis pour augmenter votre impact</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild className="rounded-full">
+                  <Link href="/review">
+                    <Star className="mr-2 h-4 w-4" />
+                    Ecrire un avis
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-full">
+                  <Link href="/profile/saved-businesses">
+                    <Heart className="mr-2 h-4 w-4" />
+                    Voir mes favoris
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ProfileTab)} className="space-y-8">
             <div className="flex justify-start overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
@@ -448,13 +508,9 @@ export default function ProfilePage() {
                   <BriefcaseBusiness className="w-4 h-4" />
                   Parrainage
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
+                <TabsTrigger value="account" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Edit className="w-4 h-4" />
-                  Profil
-                </TabsTrigger>
-                <TabsTrigger value="security" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
-                  <ShieldCheck className="w-4 h-4" />
-                  Sécurité
+                  Compte
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -465,9 +521,9 @@ export default function ProfilePage() {
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h3 className="text-xl font-bold">Mes Avis ({sortedReviews.length})</h3>
-                  {sortedReviews.length >= REVIEWS_INITIAL_LIMIT && (
+                  {(hasMoreReviews || reviewsPage > 0) && (
                     <p className="text-xs text-muted-foreground">
-                      Affichage des {REVIEWS_INITIAL_LIMIT} avis les plus recents.
+                      Affichage de {sortedReviews.length} avis charges.
                     </p>
                   )}
                 </div>
@@ -500,6 +556,7 @@ export default function ProfilePage() {
                   </Button>
                 </Card>
               ) : (
+                <>
                 <div className="grid gap-6">
                   {sortedReviews.map((review) => (
                     <Card key={review.id} className="border-none shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
@@ -567,6 +624,26 @@ export default function ProfilePage() {
                     </Card>
                   ))}
                 </div>
+                {hasMoreReviews && (
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={handleLoadMoreReviews}
+                      disabled={loadingMoreReviews}
+                    >
+                      {loadingMoreReviews ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Chargement...
+                        </>
+                      ) : (
+                        'Charger plus d avis'
+                      )}
+                    </Button>
+                  </div>
+                )}
+                </>
               )}
             </TabsContent>
 
@@ -575,7 +652,7 @@ export default function ProfilePage() {
               {savedBusinesses.length > 0 && (
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm text-muted-foreground">
-                    Affichage des {Math.min(savedBusinesses.length, SAVED_BUSINESSES_PREVIEW_LIMIT)} premiers favoris.
+                    Affichage de {savedVisibleCount} favoris sur {savedBusinesses.length}.
                   </p>
                   <Button asChild variant="outline" size="sm" className="rounded-full">
                     <Link href="/profile/saved-businesses">Voir tous mes favoris</Link>
@@ -597,9 +674,16 @@ export default function ProfilePage() {
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {savedBusinesses.map((business) => (
+                  {visibleSavedBusinesses.map((business) => (
                     <BusinessCard key={business.id} business={business} />
                   ))}
+                </div>
+              )}
+              {savedBusinesses.length > savedVisibleCount && (
+                <div className="flex justify-center pt-2">
+                  <Button variant="outline" className="rounded-full" onClick={handleLoadMoreSaved}>
+                    Charger plus de favoris
+                  </Button>
                 </div>
               )}
             </TabsContent>
@@ -655,8 +739,8 @@ export default function ProfilePage() {
               </Card>
             </TabsContent>
 
-            {/* TAB: SETTINGS */}
-            <TabsContent value="settings">
+            {/* TAB: ACCOUNT */}
+            <TabsContent value="account" className="space-y-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <Card className="border-none shadow-xl bg-card/60 backdrop-blur-sm">
@@ -790,10 +874,6 @@ export default function ProfilePage() {
                   </Card>
                 </form>
               </Form>
-            </TabsContent>
-
-            {/* TAB: SECURITY */}
-            <TabsContent value="security" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card className="border-none shadow-xl bg-card/60 backdrop-blur-sm">
                   <CardHeader>
