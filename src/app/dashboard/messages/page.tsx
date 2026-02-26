@@ -75,7 +75,13 @@ export default function MessagesPage() {
       const unreadIds = msgs.filter((m: Message) => !m.read_at && !m.is_from_business).map((m: Message) => m.id);
       if (unreadIds.length > 0) {
         const supabase = createClient();
-        supabase.from('messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds);
+        const now = new Date().toISOString();
+        supabase.from('messages').update({ read_at: now }).in('id', unreadIds);
+        setMessages((prev) => prev.map((message) => (
+          unreadIds.includes(message.id)
+            ? { ...message, read_at: now }
+            : message
+        )));
       }
     }
     setFetching(false);
@@ -86,6 +92,18 @@ export default function MessagesPage() {
       || messages.find((m) => !m.is_from_business)
       || null;
   }, [messages, activeTargetId]);
+  const inboundMessages = useMemo(
+    () => messages.filter((message) => !message.is_from_business),
+    [messages]
+  );
+  const unreadInboundMessages = useMemo(
+    () => inboundMessages.filter((message) => !message.read_at),
+    [inboundMessages]
+  );
+  const outboundMessages = useMemo(
+    () => messages.filter((message) => message.is_from_business),
+    [messages]
+  );
 
   const handleSendReply = async (targetMessage: Message | null) => {
     if (!replyText.trim() || !businessId || !targetMessage) return;
@@ -106,6 +124,11 @@ export default function MessagesPage() {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
     setSending(false);
+  };
+
+  const focusNextUnread = () => {
+    if (unreadInboundMessages.length === 0) return;
+    setActiveTargetId(unreadInboundMessages[0].id);
   };
 
   if (loading) {
@@ -162,6 +185,32 @@ export default function MessagesPage() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col bg-card/30 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden shadow-xl">
+          <div className="border-b border-border/50 bg-background/70 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">Total: {messages.length}</Badge>
+              <Badge variant="outline">Entrants: {inboundMessages.length}</Badge>
+              <Badge variant={unreadInboundMessages.length > 0 ? 'default' : 'outline'}>
+                Non lus: {unreadInboundMessages.length}
+              </Badge>
+              <Badge variant="outline">Reponses envoyees: {outboundMessages.length}</Badge>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={focusNextUnread}
+                disabled={unreadInboundMessages.length === 0}
+              >
+                Aller au prochain non lu
+              </Button>
+              {activeTarget && (
+                <p className="text-xs text-muted-foreground">
+                  Cible actuelle: <span className="font-semibold text-foreground">{activeTarget.sender_name || 'Candidat'}</span>
+                </p>
+              )}
+            </div>
+          </div>
           <ScrollArea className="flex-1 p-6">
             {fetching ? (
               <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-50">
