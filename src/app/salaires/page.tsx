@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { slugify } from '@/lib/utils';
 import { Metadata } from 'next';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { createClient } from '@/lib/supabase/server';
+import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
 
 export const revalidate = 3600;
 
@@ -15,6 +17,12 @@ export const metadata: Metadata = {
 };
 
 export default async function SalariesIndexPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isUnlocked = !!user;
+
   const [roleCityPairs, sectorCityPairs] = await Promise.all([
     getTopSalaryRoleCityPairs(24),
     getTopSalarySectorCityPairs(24),
@@ -54,6 +62,7 @@ export default async function SalariesIndexPage() {
             )}
             {roleCityPairs.map((item) => {
               const roleSlug = slugify(item.job_title);
+              const hasEnoughData = hasSufficientSampleSize(item.submission_count);
               return (
                 <Link
                   key={`${item.job_title}-${item.city_slug}`}
@@ -65,8 +74,16 @@ export default async function SalariesIndexPage() {
                     <p className="text-xs text-muted-foreground">{item.city}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">{item.median_monthly_salary?.toLocaleString('fr-MA') || '-'} MAD</p>
-                    <p className="text-xs text-muted-foreground">{item.submission_count} donnees</p>
+                    <p className="font-bold">
+                      {hasEnoughData
+                        ? (isUnlocked ? `${item.median_monthly_salary?.toLocaleString('fr-MA') || '-'} MAD` : 'Apercu')
+                        : 'Donnees insuffisantes'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {hasEnoughData
+                        ? (isUnlocked ? `${item.submission_count} donnees` : 'Connectez-vous pour details')
+                        : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}
+                    </p>
                   </div>
                 </Link>
               );
@@ -86,24 +103,49 @@ export default async function SalariesIndexPage() {
               </p>
             )}
             {sectorCityPairs.map((item) => (
-              <Link
-                key={`${item.sector_slug}-${item.city_slug}`}
-                href={`/salaires/secteur/${item.sector_slug}/${item.city_slug}`}
-                className="flex items-center justify-between rounded-xl border px-4 py-3 hover:bg-emerald-50 transition-colors"
-              >
-                <div>
-                  <p className="font-semibold">{item.sector_slug}</p>
-                  <p className="text-xs text-muted-foreground">{item.city}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold">{item.median_monthly_salary?.toLocaleString('fr-MA') || '-'} MAD</p>
-                  <p className="text-xs text-muted-foreground">{item.submission_count} donnees</p>
-                </div>
-              </Link>
+              (() => {
+                const hasEnoughData = hasSufficientSampleSize(item.submission_count);
+                return (
+                  <Link
+                    key={`${item.sector_slug}-${item.city_slug}`}
+                    href={`/salaires/secteur/${item.sector_slug}/${item.city_slug}`}
+                    className="flex items-center justify-between rounded-xl border px-4 py-3 hover:bg-emerald-50 transition-colors"
+                  >
+                    <div>
+                      <p className="font-semibold">{item.sector_slug}</p>
+                      <p className="text-xs text-muted-foreground">{item.city}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">
+                        {hasEnoughData
+                          ? (isUnlocked ? `${item.median_monthly_salary?.toLocaleString('fr-MA') || '-'} MAD` : 'Apercu')
+                          : 'Donnees insuffisantes'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {hasEnoughData
+                          ? (isUnlocked ? `${item.submission_count} donnees` : 'Connectez-vous pour details')
+                          : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })()
             ))}
           </CardContent>
         </Card>
       </section>
+
+      {!isUnlocked && (
+        <section className="rounded-2xl border p-5 bg-muted/20">
+          <h2 className="font-bold text-lg mb-1">Mode apercu actif</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Vous voyez un apercu limite. Connectez-vous pour acceder aux valeurs detaillees et a la comparaison avancee.
+          </p>
+          <Button asChild>
+            <Link href="/login?next=/salaires">Se connecter</Link>
+          </Button>
+        </section>
+      )}
 
       <section className="rounded-2xl border p-6 bg-muted/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

@@ -11,7 +11,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Edit, Home, Megaphone, PieChart, Star, CodeXml, MessageSquare, Zap, Store, HelpCircle, BarChart3, Crown } from 'lucide-react';
+import { Edit, Home, Megaphone, PieChart, Star, CodeXml, MessageSquare, Zap, Store, HelpCircle, BarChart3, Crown, Bell } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -49,6 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: BarChart3,
       goldOnly: true
     },
+    { href: '/dashboard/salary-alerts', label: 'Alertes salaires', icon: Bell },
     { href: '/dashboard/updates', label: 'Nouveautes', icon: Megaphone },
     { href: '/dashboard/edit-profile', label: 'Etablissement', icon: Edit },
     { href: '/dashboard/analytics', label: 'Statistiques', icon: PieChart },
