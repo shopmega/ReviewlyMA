@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
     ArrowRight, Building, Utensils, Search, Star, Users, Car, MapPin,
     Sparkles, Activity, Wrench, ShoppingBag, Palmtree, Bed, ChevronRight,
-    Landmark, Headphones, GraduationCap, Zap, Hotel, Home, Factory,
+    Landmark, Headphones, GraduationCap, Zap, Hotel, Home, Factory, ShieldCheck,
     Heart, Briefcase, Laptop, Wifi, Truck, Radio, LucideIcon, ExternalLink
 } from 'lucide-react';
 import { BusinessCard } from '@/components/shared/BusinessCard';
@@ -107,6 +107,7 @@ const isValidCollectionLink = (link: any): link is CollectionLink => {
 
 export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [], metrics }: HomeClientProps) {
     const { locale, t, tf } = useI18n();
+    const ctaExperiment = 'homepage_conversion_cta_v2';
     // Use initialBusinesses from server as default, no need for complex loading state if desired
     const businesses = initialBusinesses;
 
@@ -187,6 +188,20 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         const queryString = params.toString();
         return queryString ? `/businesses?${queryString}` : '/businesses';
     }, [normalizedSearchCity, normalizedSearchSector, salaryRange]);
+    const trackHomeCta = useCallback(
+        (ctaId: string, placement: string, extra: Record<string, any> = {}) => {
+            analytics.trackCtaClick(
+                ctaId,
+                placement,
+                'homepage',
+                'homepage_conversion_funnel',
+                ctaExperiment,
+                undefined,
+                extra
+            );
+        },
+        [ctaExperiment]
+    );
 
     const { featuredBusinesses: displayFeaturedBusinesses, reviewCount, businessCount, recentBusinesses, completeProfileBusinesses } = useMemo(() => {
         const featured = featuredBusinesses.length > 0
@@ -245,6 +260,23 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         { name: t('home.stats.businesses', 'Etablissements'), value: (metrics?.businessCount ?? businessCount).toLocaleString(locale), icon: Building },
         { name: t('home.stats.reviews', 'Avis employes'), value: (metrics?.reviewCount ?? reviewCount).toLocaleString(locale), icon: Star },
     ];
+    const trustSignals = [
+        {
+            label: t('home.trust.businesses', 'Etablissements actifs'),
+            value: (metrics?.businessCount ?? businessCount).toLocaleString(locale),
+            icon: Building,
+        },
+        {
+            label: t('home.trust.reviews', 'Avis publies'),
+            value: (metrics?.reviewCount ?? reviewCount).toLocaleString(locale),
+            icon: Star,
+        },
+        {
+            label: t('home.trust.moderated', 'Moderation'),
+            value: t('home.trust.active', 'Active'),
+            icon: ShieldCheck,
+        },
+    ];
 
     const renderSection = (id: string) => {
         switch (id) {
@@ -280,6 +312,23 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 </p>
                             </div>
 
+                            <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
+                                {trustSignals.map((signal) => (
+                                    <div
+                                        key={signal.label}
+                                        className="flex items-center gap-3 rounded-xl border border-primary/15 bg-white/70 dark:bg-white/5 px-4 py-3 backdrop-blur-sm"
+                                    >
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                            <signal.icon className="h-4 w-4" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm font-bold leading-none">{signal.value}</p>
+                                            <p className="text-[11px] text-muted-foreground mt-1">{signal.label}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
                             {/* Search + Filters */}
                             <div className="w-full max-w-3xl animate-fade-in-up [animation-delay:200ms]">
                                 <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-2 p-2.5 md:p-2 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl hover:shadow-primary/5 transition-all duration-500 ring-1 ring-black/5 dark:ring-white/5">
@@ -292,6 +341,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             showIcon={false}
                                             onQueryChange={setHomeQuery}
                                             onSearch={(q) => {
+                                                trackHomeCta('search_submit', 'hero_search_autocomplete', { source: 'autocomplete_enter' });
                                                 window.location.href = buildSearchUrl(q);
                                             }}
                                         />
@@ -299,6 +349,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                                     <Button
                                         onClick={() => {
+                                            trackHomeCta('search_submit', 'hero_search_button', { source: 'hero_primary_button' });
                                             window.location.href = buildSearchUrl(homeQuery);
                                         }}
                                         size="lg"
@@ -350,18 +401,16 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3 mt-4 justify-center">
-                                    <Button
-                                        size="lg"
-                                        onClick={() => { window.location.href = buildSearchUrl(homeQuery); }}
-                                        className="rounded-xl h-11 px-6 font-bold"
-                                    >
-                                        <MapPin className="mr-2 h-4 w-4" />
-                                        {t('home.hero.searchCta', 'Rechercher une entreprise')}
-                                    </Button>
                                     <Button asChild size="lg" variant="outline" className="rounded-xl h-11 px-6 font-bold border-primary/30 text-primary hover:bg-primary/5">
-                                        <Link href="/review">
+                                        <Link href="/review" onClick={() => trackHomeCta('write_review', 'hero_secondary_cta')}>
                                             <Star className="mr-2 h-4 w-4" />
                                             {t('home.hero.writeReview', 'Ecrire un avis')}
+                                        </Link>
+                                    </Button>
+                                    <Button asChild size="lg" variant="ghost" className="rounded-xl h-11 px-6 font-bold border border-border/70 hover:border-primary/30">
+                                        <Link href="/pour-les-pros" onClick={() => trackHomeCta('claim_listing', 'hero_secondary_cta')}>
+                                            <ShieldCheck className="mr-2 h-4 w-4" />
+                                            {t('home.hero.claimCta', 'Revendiquer une fiche')}
                                         </Link>
                                     </Button>
                                 </div>
@@ -463,6 +512,51 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </section>
+                );
+            case 'claim-business':
+                return (
+                    <section key="claim-business" className="container mx-auto px-4 py-14">
+                        <div className="max-w-5xl mx-auto rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-indigo-500/5 p-6 md:p-8">
+                            <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+                                <div className="flex-1 space-y-3">
+                                    <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5">
+                                        {t('home.claim.badge', 'Espace entreprises')}
+                                    </Badge>
+                                    <h2 className="text-2xl md:text-3xl font-bold font-headline">
+                                        {t('home.claim.title', 'Vous representez une entreprise ?')}
+                                    </h2>
+                                    <p className="text-muted-foreground">
+                                        {t('home.claim.subtitle', 'Revendiquer votre fiche renforce la confiance, vous permet de repondre aux avis et de partager des mises a jour officielles.')}
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                                        <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2">
+                                            <span className="font-semibold">{t('home.claim.benefit1', 'Reponse officielle')}</span>
+                                        </div>
+                                        <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2">
+                                            <span className="font-semibold">{t('home.claim.benefit2', 'Profil verifie')}</span>
+                                        </div>
+                                        <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2">
+                                            <span className="font-semibold">{t('home.claim.benefit3', 'Mises a jour employeur')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:w-[260px]">
+                                    <Button asChild size="lg" className="rounded-xl font-bold">
+                                        <Link href="/claim/new" onClick={() => trackHomeCta('claim_listing', 'claim_business_section_primary')}>
+                                            <ShieldCheck className="mr-2 h-4 w-4" />
+                                            {t('home.claim.start', 'Commencer la revendication')}
+                                        </Link>
+                                    </Button>
+                                    <Button asChild size="lg" variant="outline" className="rounded-xl font-bold border-primary/30 text-primary">
+                                        <Link href="/pour-les-pros" onClick={() => trackHomeCta('pro_offers', 'claim_business_section_secondary')}>
+                                            {t('home.claim.learnMore', 'Voir les offres pro')}
+                                            <ChevronRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 );
@@ -868,17 +962,18 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
     const defaultSectionOrder = [
         { id: 'hero', visible: true },
+        { id: 'stats', visible: true },
+        { id: 'claim-business', visible: true },
         { id: 'recently-added', visible: true },
         { id: 'trust-signals', visible: true },
-        { id: 'stats', visible: true },
-        { id: 'ad-banner-top', visible: true },
         { id: 'collections', visible: true },
         { id: 'categories', visible: true },
         { id: 'cities', visible: true },
         { id: 'featured-guides', visible: true },
         { id: 'how-it-works', visible: true },
-        { id: 'resources', visible: true },
         { id: 'featured', visible: true },
+        { id: 'resources', visible: true },
+        { id: 'ad-banner-top', visible: true },
     ];
 
     const configuredSections = Array.isArray(siteSettings?.home_sections_config)

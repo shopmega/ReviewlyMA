@@ -8,6 +8,7 @@ export type AnalyticsEvent =
   | 'page_view'
   | 'business_view'
   | 'search_performed'
+  | 'cta_click'
   | 'review_submitted'
   | 'business_claimed'
   | 'user_registered'
@@ -195,6 +196,25 @@ class AnalyticsService {
     }, businessId);
   }
 
+  trackCtaClick(
+    ctaId: string,
+    placement: string,
+    context: string,
+    experimentName?: string,
+    variant?: string,
+    businessId?: string,
+    extra?: Record<string, any>
+  ) {
+    this.track('cta_click', {
+      cta_id: ctaId,
+      placement,
+      context,
+      experiment_name: experimentName,
+      variant,
+      ...extra,
+    }, businessId);
+  }
+
   async trackCarouselClick(collectionId: string, collectionTitle: string, collectionSubtitle: string, linkType: string, linkDestination: string, position: number) {
     // Track in main analytics
     this.track('carousel_click', {
@@ -305,6 +325,7 @@ export function useAnalytics() {
     trackPremiumSubscription: analytics.trackPremiumSubscription.bind(analytics),
     trackFilterApplied: analytics.trackFilterApplied.bind(analytics),
     trackBusinessSaved: analytics.trackBusinessSaved.bind(analytics),
+    trackCtaClick: analytics.trackCtaClick.bind(analytics),
     trackPageLoadTime: analytics.trackPageLoadTime.bind(analytics),
     trackUserEngagement: analytics.trackUserEngagement.bind(analytics),
     setUser: analytics.setUser.bind(analytics)

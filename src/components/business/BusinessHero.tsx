@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, ShieldCheck, Sparkles, Zap, Star } from 'lucide-react';
 import { useMemo } from 'react';
 import { isPaidTier } from '@/lib/tier-utils';
-import { cn } from '@/lib/utils';
+import { cn, isValidImageUrl } from '@/lib/utils';
 import { useI18n } from '@/components/providers/i18n-provider';
+import Link from 'next/link';
 
 interface BusinessHeroProps {
   business: Business;
@@ -16,26 +17,33 @@ interface BusinessHeroProps {
 
 export function BusinessHero({ business }: BusinessHeroProps) {
   const { t, tf } = useI18n();
-  const { isOpen, hasHours } = useMemo(() => {
+  const { isOpen, hasHours, hasHeroMedia } = useMemo(() => {
     const daysFr = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
     const todayIndex = new Date().getDay();
     const today = daysFr[todayIndex];
     const todayHours = business.hours?.find((h) => h.day.toLowerCase() === today);
     const hasHoursData = business.hours && business.hours.length > 0;
+    const hasMedia =
+      Boolean(business.cover_url && isValidImageUrl(business.cover_url)) ||
+      Boolean(Array.isArray(business.photos) && business.photos[0]?.imageUrl && isValidImageUrl(business.photos[0].imageUrl));
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const opened = !!todayHours?.isOpen && todayHours.open <= currentTime && todayHours.close > currentTime;
-    return { isOpen: opened, hasHours: hasHoursData };
-  }, [business.hours]);
+    return { isOpen: opened, hasHours: hasHoursData, hasHeroMedia: hasMedia };
+  }, [business.hours, business.cover_url, business.photos]);
+
+  const heroSizeClass = hasHeroMedia
+    ? 'h-[38vh] md:h-[48vh] min-h-[340px] md:min-h-[420px]'
+    : 'h-auto min-h-[240px] md:min-h-[280px] py-8 md:py-10';
 
   return (
-    <div className="relative w-full h-[38vh] md:h-[48vh] min-h-[340px] md:min-h-[420px] flex items-end group shadow-2xl">
+    <div className={cn('relative w-full flex items-end group shadow-2xl', heroSizeClass)}>
       <div className="absolute inset-0 z-0 overflow-hidden">
         <BusinessCover
           business={business}
           alt={business.name}
           fill
-          fallbackToGallery={false}
+          fallbackToGallery
           className="object-cover transition-transform duration-700 group-hover:scale-105"
           priority
         />
@@ -134,7 +142,9 @@ export function BusinessHero({ business }: BusinessHeroProps) {
                     </div>
                     <span className="font-bold text-muted-foreground italic">{t('business.hero.noRating', "Pas encore d'evaluation")}</span>
                     <span className="hidden sm:inline w-1 h-1 bg-muted-foreground/30 rounded-full mx-1" />
-                    <span className="text-primary font-bold hover:underline cursor-pointer">{t('business.hero.firstReview', 'Soyez le premier a donner votre avis')}</span>
+                    <Link href={`/businesses/${business.id}/review`} className="text-primary font-bold hover:underline">
+                      {t('business.hero.firstReview', 'Soyez le premier a donner votre avis')}
+                    </Link>
                   </div>
                 )}
 

@@ -206,7 +206,7 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <StarRating rating={business.overallRating} readOnly size={18} />
-                                    <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{business.reviews.length} {t('business.sidebar.verifiedReviews', 'AVIS VERIFIES')}</span>
+                                    <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{business.reviews.length} {t('business.sidebar.verifiedReviews', 'avis publies')}</span>
                                 </div>
                             </>
                         ) : (

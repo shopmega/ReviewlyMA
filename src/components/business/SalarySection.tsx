@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { submitSalary } from '@/app/actions/salary';
@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
-import { Lock, LogIn, Sparkles } from 'lucide-react';
+import { Lock, LogIn, Sparkles, ShieldCheck, CalendarClock, TrendingUp } from 'lucide-react';
 import { useI18n } from '@/components/providers/i18n-provider';
 
 type SalarySectionProps = {
@@ -101,6 +101,26 @@ export function SalarySection({
   }, [authStatus, searchParams]);
 
   const loginHref = `/login?next=${encodeURIComponent(pathname || `/businesses/${businessId}`)}`;
+  const salaryConfidence = useMemo(() => {
+    if (stats.count >= 50) return { label: t('business.salary.confidenceHigh', 'Confiance elevee'), score: 100 };
+    if (stats.count >= 20) return { label: t('business.salary.confidenceMedium', 'Confiance moyenne'), score: 72 };
+    if (stats.count >= 5) return { label: t('business.salary.confidenceLow', 'Confiance en construction'), score: 45 };
+    return { label: t('business.salary.confidenceVeryLow', 'Donnees encore limitees'), score: 25 };
+  }, [stats.count, t]);
+  const lastSalaryUpdate = useMemo(() => {
+    if (salaries.length === 0) return t('business.salary.notAvailable', 'Indisponible');
+    const latest = salaries.reduce((acc, row) => {
+      const ts = Date.parse(row.created_at);
+      if (Number.isNaN(ts)) return acc;
+      return ts > acc ? ts : acc;
+    }, 0);
+    if (!latest) return t('business.salary.notAvailable', 'Indisponible');
+    return new Date(latest).toLocaleDateString('fr-MA', { day: '2-digit', month: 'short', year: 'numeric' });
+  }, [salaries, t]);
+  const spread = useMemo(() => {
+    if (stats.minMonthly === null || stats.maxMonthly === null) return null;
+    return Math.max(0, stats.maxMonthly - stats.minMonthly);
+  }, [stats.maxMonthly, stats.minMonthly]);
 
   return (
     <section id="salaries" className="space-y-6">
@@ -109,6 +129,37 @@ export function SalarySection({
           <CardTitle>{t('business.salary.title', 'Salaires')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-lg border border-border/70 bg-background/70 p-3 space-y-2">
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                {t('business.salary.qualitySignal', 'Signal qualite')}
+              </p>
+              <p className="text-sm font-bold">{salaryConfidence.label}</p>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${salaryConfidence.score}%` }} />
+              </div>
+            </div>
+            <div className="rounded-lg border border-border/70 bg-background/70 p-3">
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                {t('business.salary.lastUpdate', 'Derniere publication')}
+              </p>
+              <p className="mt-1 text-sm font-bold">{lastSalaryUpdate}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{t('business.salary.moderationNote', 'Chaque entree est moderee avant publication.')}</p>
+            </div>
+            <div className="rounded-lg border border-border/70 bg-background/70 p-3">
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                {t('business.salary.rangeSignal', 'Amplitude observee')}
+              </p>
+              <p className="mt-1 text-sm font-bold">
+                {spread === null ? '-' : formatMoneyMAD(spread)}
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{t('business.salary.rangeNote', 'Entre minimum et maximum publies.')}</p>
+            </div>
+          </div>
+
           {stats.count > 0 ? (
             <>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
