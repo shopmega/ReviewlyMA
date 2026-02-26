@@ -14,9 +14,12 @@ import { Metadata } from 'next';
 import { Business } from '@/lib/types';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
+import { applyBusinessQaPreview, parseQaPreviewMode, type QaPreviewMode } from '@/lib/qa-preview';
+import { AdminQaPreviewToggle } from '@/components/business/AdminQaPreviewToggle';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -65,8 +68,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function BusinessPage({ params }: PageProps) {
+export default async function BusinessPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const requestedQaPreviewRaw = resolvedSearchParams.qa_preview;
+  const requestedQaPreview = parseQaPreviewMode(
+    Array.isArray(requestedQaPreviewRaw) ? requestedQaPreviewRaw[0] : requestedQaPreviewRaw
+  );
 
   // 1. Fetch Data
   const business = await getBusinessById(slug);
@@ -83,35 +91,56 @@ export default async function BusinessPage({ params }: PageProps) {
     ])
     : [{ count: 0, medianMonthly: null, minMonthly: null, maxMonthly: null, currency: 'MAD', roleBreakdown: [] }, []];
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let userRole: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    userRole = profile?.role ?? null;
+  }
+  const isAdmin = userRole === 'admin';
+  const qaPreviewMode: QaPreviewMode = isAdmin ? requestedQaPreview : 'real';
+  const previewed = isAdmin
+    ? applyBusinessQaPreview(business, salaryStats, salaryEntries, qaPreviewMode)
+    : { business, salaryStats, salaryEntries };
+  const displayedBusiness = previewed.business;
+  const displayedSalaryStats = previewed.salaryStats;
+  const displayedSalaryEntries = previewed.salaryEntries;
+
   const hasAboutContent =
-    !!business.description?.trim()
-    || (Array.isArray(business.amenities) && business.amenities.length > 0);
+    !!displayedBusiness.description?.trim()
+    || (Array.isArray(displayedBusiness.amenities) && displayedBusiness.amenities.length > 0);
 
   // JSON-LD Structured Data
   const siteUrl = getServerSiteUrl();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": business.name,
-    "description": business.description,
-    "image": business.logo?.imageUrl,
-    "telephone": business.phone,
-    "url": `${siteUrl}/businesses/${business.id}`,
+    "name": displayedBusiness.name,
+    "description": displayedBusiness.description,
+    "image": displayedBusiness.logo?.imageUrl,
+    "telephone": displayedBusiness.phone,
+    "url": `${siteUrl}/businesses/${displayedBusiness.id}`,
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": business.city,
-      "addressRegion": business.quartier,
-      "streetAddress": business.location,
+      "addressLocality": displayedBusiness.city,
+      "addressRegion": displayedBusiness.quartier,
+      "streetAddress": displayedBusiness.location,
       "addressCountry": "MA"
     },
-    "aggregateRating": business.overallRating > 0 ? {
+    "aggregateRating": displayedBusiness.overallRating > 0 ? {
       "@type": "AggregateRating",
-      "ratingValue": business.overallRating,
-      "reviewCount": business.reviews?.length || 0,
+      "ratingValue": displayedBusiness.overallRating,
+      "reviewCount": displayedBusiness.reviews?.length || 0,
       "bestRating": "5",
       "worstRating": "1"
     } : undefined,
-    "review": business.reviews?.slice(0, 5).map(r => ({
+    "review": displayedBusiness.reviews?.slice(0, 5).map(r => ({
       "@type": "Review",
       "author": {
         "@type": "Person",
@@ -164,9 +193,6 @@ export default async function BusinessPage({ params }: PageProps) {
   }
 
   // Check if current user is following this business
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
   let isFollowing = false;
   if (user) {
     const { data } = await supabase
@@ -187,15 +213,17 @@ export default async function BusinessPage({ params }: PageProps) {
       />
 
       {/* Analytics Tracking */}
-      <AnalyticsTracker businessId={business.id} />
+      <AnalyticsTracker businessId={displayedBusiness.id} />
+
+      {isAdmin && <AdminQaPreviewToggle mode={qaPreviewMode} />}
 
       {/* Hero Section */}
-      <LazyBusinessHero business={business} />
+      <LazyBusinessHero business={displayedBusiness} />
 
       {/* Dedicated actions section to avoid hero overflow on mobile */}
       <section className="w-full border-b border-border/30 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <BusinessPageActions business={business} isFollowing={isFollowing} />
+          <BusinessPageActions business={displayedBusiness} isFollowing={isFollowing} />
         </div>
       </section>
 
@@ -205,39 +233,39 @@ export default async function BusinessPage({ params }: PageProps) {
           {/* Main Content (Left) */}
           <div className="lg:w-2/3 space-y-8 order-last lg:order-first">
             <BusinessInsightsTabs
-              business={business}
+              business={displayedBusiness}
               enableSalaries={settings.enable_salaries}
-              salaryStats={salaryStats}
-              salaryEntries={salaryEntries}
+              salaryStats={displayedSalaryStats}
+              salaryEntries={displayedSalaryEntries}
               salaryRoles={settings.salary_roles || []}
               salaryDepartments={settings.salary_departments || []}
               salaryIntervals={settings.salary_intervals || []}
             />
 
-            {hasAboutContent && <AboutSection business={business} />}
+            {hasAboutContent && <AboutSection business={displayedBusiness} />}
 
-            <LazyPhotoGallery photos={business.photos} businessName={business.name} businessId={business.id} />
+            <LazyPhotoGallery photos={displayedBusiness.photos} businessName={displayedBusiness.name} businessId={displayedBusiness.id} />
 
-            {business.updates && business.updates.length > 0 && (
-              <UpdatesSection updates={business.updates} />
+            {displayedBusiness.updates && displayedBusiness.updates.length > 0 && (
+              <UpdatesSection updates={displayedBusiness.updates} />
             )}
 
             {settings.enable_competitor_ads && (
               <CompetitorAds
-                businessId={business.id}
+                businessId={displayedBusiness.id}
                 trackingEnabled={settings.enable_competitor_ads_tracking}
               />
             )}
 
             {/* Similar Businesses */}
             <div className="pt-8">
-              <SimilarBusinesses business={business} />
+              <SimilarBusinesses business={displayedBusiness} />
             </div>
           </div>
 
           {/* Sidebar (Right) - Sticky */}
           <aside className="lg:w-1/3 order-first lg:order-last">
-            <BusinessSidebar business={business} settings={settings} />
+            <BusinessSidebar business={displayedBusiness} settings={settings} />
           </aside>
 
         </div>
