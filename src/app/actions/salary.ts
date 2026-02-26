@@ -13,6 +13,7 @@ import {
   ErrorCode,
   logError,
 } from '@/lib/errors';
+import { slugify } from '@/lib/utils';
 
 export type SalaryFormState = ActionState;
 
@@ -194,7 +195,7 @@ export async function moderateSalary(
     const service = await createServiceClient();
     const { data: salary, error: fetchError } = await service
       .from('salaries')
-      .select('business_id')
+      .select('business_id, user_id, job_title, location, sector_slug')
       .eq('id', salaryId)
       .single();
 
@@ -221,6 +222,97 @@ export async function moderateSalary(
       const { error: refreshError } = await service.rpc('refresh_salary_analytics_materialized_views');
       if (refreshError) {
         logError('moderate_salary_refresh_analytics', refreshError, { salaryId, businessId: salary.business_id });
+      }
+
+      // Notify users subscribed to salary updates for this scope.
+      const roleSlug = salary.job_title ? slugify(salary.job_title) : null;
+      const citySlug = salary.location ? slugify(salary.location) : null;
+
+      const [companySubs, roleCitySubs, sectorCitySubs] = await Promise.all([
+        service
+          .from('salary_alert_subscriptions')
+          .select('user_id')
+          .eq('scope', 'company')
+          .eq('business_id', salary.business_id),
+        roleSlug && citySlug
+          ? service
+              .from('salary_alert_subscriptions')
+              .select('user_id')
+              .eq('scope', 'role_city')
+              .eq('role_slug', roleSlug)
+              .eq('city_slug', citySlug)
+          : Promise.resolve({ data: [], error: null }),
+        salary.sector_slug && citySlug
+          ? service
+              .from('salary_alert_subscriptions')
+              .select('user_id')
+              .eq('scope', 'sector_city')
+              .eq('sector_slug', salary.sector_slug)
+              .eq('city_slug', citySlug)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+
+      if (companySubs.error) {
+        logError('moderate_salary_subscribers_company', companySubs.error, { salaryId, businessId: salary.business_id });
+      }
+      if (roleCitySubs.error) {
+        logError('moderate_salary_subscribers_role_city', roleCitySubs.error, { salaryId, roleSlug, citySlug });
+      }
+      if (sectorCitySubs.error) {
+        logError('moderate_salary_subscribers_sector_city', sectorCitySubs.error, { salaryId, sectorSlug: salary.sector_slug, citySlug });
+      }
+
+      const notificationsByUser = new Map<string, { title: string; message: string; link: string }>();
+
+      const companyLink = `/businesses/${salary.business_id}?tab=salaries#salaries`;
+      const roleLink = roleSlug && citySlug ? `/salaires/role/${roleSlug}/${citySlug}` : companyLink;
+      const sectorLink = salary.sector_slug && citySlug ? `/salaires/secteur/${salary.sector_slug}/${citySlug}` : companyLink;
+      const roleName = salary.job_title || 'ce poste';
+      const cityName = salary.location || 'votre ville';
+
+      (companySubs.data || []).forEach((row: any) => {
+        if (!row.user_id) return;
+        notificationsByUser.set(row.user_id, {
+          title: 'Nouvelle publication salaire',
+          message: 'Un nouveau salaire a ete publie pour une entreprise que vous suivez.',
+          link: companyLink,
+        });
+      });
+
+      (roleCitySubs.data || []).forEach((row: any) => {
+        if (!row.user_id) return;
+        notificationsByUser.set(row.user_id, {
+          title: `Mise a jour salaire: ${roleName}`,
+          message: `Nouveau salaire publie pour ${roleName} a ${cityName}.`,
+          link: roleLink,
+        });
+      });
+
+      (sectorCitySubs.data || []).forEach((row: any) => {
+        if (!row.user_id) return;
+        notificationsByUser.set(row.user_id, {
+          title: 'Mise a jour salaire secteur',
+          message: `Nouveau salaire publie dans un secteur suivi a ${cityName}.`,
+          link: sectorLink,
+        });
+      });
+
+      const notificationsPayload = Array.from(notificationsByUser.entries())
+        .filter(([userId]) => userId !== salary.user_id)
+        .map(([userId, payload]) => ({
+          user_id: userId,
+          title: payload.title,
+          message: payload.message,
+          type: 'salary_update',
+          link: payload.link,
+          is_read: false,
+        }));
+
+      if (notificationsPayload.length > 0) {
+        const { error: notifyError } = await service.from('notifications').insert(notificationsPayload);
+        if (notifyError) {
+          logError('moderate_salary_notify_subscribers', notifyError, { salaryId, count: notificationsPayload.length });
+        }
       }
     }
 

@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SearchAutocomplete } from '@/components/shared/SearchAutocomplete';
 import { getCachedBusinesses } from '@/lib/cache';
+import { getSiteSettings } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SalaryQuickSubmitCard } from '@/components/salaries/SalaryQuickSubmitCard';
 
 export const revalidate = 3600;
 
@@ -14,7 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ShareSalaryPage() {
-  const businessesResult = await getCachedBusinesses({ limit: 24, minimal: true });
+  const [businessesResult, settings] = await Promise.all([
+    getCachedBusinesses({ limit: 24, minimal: true }),
+    getSiteSettings(),
+  ]);
   const businesses = businessesResult.businesses || [];
   const latestBusinesses = [...businesses]
     .sort((a, b) => {
@@ -54,6 +59,14 @@ export default async function ShareSalaryPage() {
             </Button>
           </div>
         </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4">
+        <SalaryQuickSubmitCard
+          roles={settings.salary_roles || []}
+          departments={settings.salary_departments || []}
+          intervals={settings.salary_intervals || []}
+        />
       </section>
 
       <section className="space-y-4">

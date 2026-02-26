@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { submitSalary } from '@/app/actions/salary';
+import { getSalaryAlertSubscriptionStatus } from '@/app/actions/salary-alerts';
 import type { SalaryEntry, SalaryStats } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { Lock, LogIn, Sparkles, ShieldCheck, CalendarClock, TrendingUp } from 'lucide-react';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
+import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
 
 type SalarySectionProps = {
   businessId: string;
@@ -43,6 +46,7 @@ export function SalarySection({
   const [state, formAction] = useActionState(submitSalary, { status: 'idle', message: '' });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+  const [isCompanyAlertSubscribed, setIsCompanyAlertSubscribed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -100,6 +104,25 @@ export function SalarySection({
     }
   }, [authStatus, searchParams]);
 
+  useEffect(() => {
+    if (authStatus !== 'authenticated') {
+      setIsCompanyAlertSubscribed(false);
+      return;
+    }
+
+    let mounted = true;
+    const run = async () => {
+      const isSubscribed = await getSalaryAlertSubscriptionStatus('company', { businessId });
+      if (mounted) setIsCompanyAlertSubscribed(isSubscribed);
+    };
+
+    run();
+
+    return () => {
+      mounted = false;
+    };
+  }, [authStatus, businessId]);
+
   const loginHref = `/login?next=${encodeURIComponent(pathname || `/businesses/${businessId}`)}`;
   const salaryConfidence = useMemo(() => {
     if (stats.count >= 50) return { label: t('business.salary.confidenceHigh', 'Confiance elevee'), score: 100 };
@@ -121,6 +144,10 @@ export function SalarySection({
     if (stats.minMonthly === null || stats.maxMonthly === null) return null;
     return Math.max(0, stats.maxMonthly - stats.minMonthly);
   }, [stats.maxMonthly, stats.minMonthly]);
+  const isAuthenticated = authStatus === 'authenticated';
+  const hasEnoughData = hasSufficientSampleSize(stats.count);
+  const canViewDetailedStats = isAuthenticated && hasEnoughData;
+  const previewSalaries = isAuthenticated ? salaries : salaries.slice(0, 2);
 
   return (
     <section id="salaries" className="space-y-6">
@@ -165,15 +192,15 @@ export function SalarySection({
               <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                 <div className="rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{t('business.salary.medianMonthly', 'Mediane mensuelle')}</p>
-                  <p className="font-bold">{formatMoneyMAD(stats.medianMonthly)}</p>
+                  <p className="font-bold">{hasEnoughData ? (isAuthenticated ? formatMoneyMAD(stats.medianMonthly) : t('business.salary.loginToUnlock', 'Connectez-vous')) : t('business.salary.insufficientData', 'Donnees insuffisantes')}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{t('business.salary.minMonthly', 'Minimum mensuel')}</p>
-                  <p className="font-bold">{formatMoneyMAD(stats.minMonthly)}</p>
+                  <p className="font-bold">{canViewDetailedStats ? formatMoneyMAD(stats.minMonthly) : t('business.salary.loginToUnlock', 'Connectez-vous')}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{t('business.salary.maxMonthly', 'Maximum mensuel')}</p>
-                  <p className="font-bold">{formatMoneyMAD(stats.maxMonthly)}</p>
+                  <p className="font-bold">{canViewDetailedStats ? formatMoneyMAD(stats.maxMonthly) : t('business.salary.loginToUnlock', 'Connectez-vous')}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{t('business.salary.sample', 'Echantillon')}</p>
@@ -181,7 +208,7 @@ export function SalarySection({
                 </div>
               </div>
 
-              {stats.roleBreakdown.length > 0 && (
+              {stats.roleBreakdown.length > 0 && hasEnoughData && (
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">{t('business.salary.topRoles', 'Top postes')}</p>
                   <div className="space-y-2">
@@ -189,7 +216,7 @@ export function SalarySection({
                       <div key={row.jobTitle} className="flex items-center justify-between rounded-lg border p-2 text-sm">
                         <span>{row.jobTitle}</span>
                         <span className="font-semibold">
-                          {formatMoneyMAD(row.medianMonthly)} ({row.count})
+                          {canViewDetailedStats ? `${formatMoneyMAD(row.medianMonthly)} (${row.count})` : t('business.salary.loginToUnlock', 'Connectez-vous')}
                         </span>
                       </div>
                     ))}
@@ -201,19 +228,29 @@ export function SalarySection({
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">{t('business.salary.latestEntries', 'Dernieres entrees publiees')}</p>
                   <div className="space-y-2">
-                    {salaries.map((row) => (
+                    {previewSalaries.map((row) => (
                       <div key={row.id} className="rounded-lg border p-3">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-medium">{row.job_title}</p>
                           <Badge variant="outline">{row.pay_period === 'yearly' ? t('business.salary.yearly', 'Annuel') : t('business.salary.monthly', 'Mensuel')}</Badge>
                         </div>
-                        <p className="mt-1 text-sm font-semibold">{formatMoneyMAD(row.salary)}</p>
+                        <p className="mt-1 text-sm font-semibold">{canViewDetailedStats ? formatMoneyMAD(row.salary) : t('business.salary.loginToUnlock', 'Connectez-vous')}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {row.location || t('business.salary.locationUnknown', 'Localisation non precisee')} · {new Date(row.created_at).toLocaleDateString('fr-MA')}
                         </p>
                       </div>
                     ))}
                   </div>
+                  {!canViewDetailedStats && salaries.length > previewSalaries.length && (
+                    <p className="text-xs text-muted-foreground">
+                      {t('business.salary.previewLimited', 'Apercu limite: connectez-vous pour voir toutes les entrees et valeurs detaillees.')}
+                    </p>
+                  )}
+                  {!hasEnoughData && (
+                    <p className="text-xs text-muted-foreground">
+                      {t('business.salary.kAnonymityNotice', `Minimum ${MIN_PUBLIC_SAMPLE_SIZE} soumissions requis pour afficher les details statistiquement sensibles.`)}
+                    </p>
+                  )}
                 </div>
               )}
             </>
@@ -234,9 +271,18 @@ export function SalarySection({
               <p className="mt-1 text-xs text-muted-foreground">{t('business.salary.shareModeration', 'Moderation activee avant publication.')}</p>
             </div>
             {authStatus === 'authenticated' && (
-              <Button type="button" variant="outline" onClick={() => setIsFormOpen((prev) => !prev)}>
-                {isFormOpen ? t('common.hide', 'Masquer') : t('common.add', 'Ajouter')}
-              </Button>
+              <div className="flex items-center gap-2">
+                <SalaryAlertToggleButton
+                  scope="company"
+                  target={{ businessId }}
+                  pathToRevalidate={pathname || `/businesses/${businessId}`}
+                  initialIsSubscribed={isCompanyAlertSubscribed}
+                  className="h-9"
+                />
+                <Button type="button" variant="outline" onClick={() => setIsFormOpen((prev) => !prev)}>
+                  {isFormOpen ? t('common.hide', 'Masquer') : t('common.add', 'Ajouter')}
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
