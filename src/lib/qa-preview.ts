@@ -1,8 +1,13 @@
 import type { Business, Review, SalaryEntry, SalaryStats } from '@/lib/types';
 
 export type QaPreviewMode = 'real' | 'empty' | 'low' | 'medium' | 'high';
+export type QaPreviewState = {
+  reviews: QaPreviewMode;
+  salaries: QaPreviewMode;
+};
 
 const QA_MODES: QaPreviewMode[] = ['real', 'empty', 'low', 'medium', 'high'];
+export const REAL_QA_PREVIEW_STATE: QaPreviewState = { reviews: 'real', salaries: 'real' };
 
 function toIsoDaysAgo(daysAgo: number): string {
   const d = new Date();
@@ -129,114 +134,164 @@ export function parseQaPreviewMode(raw: string | null | undefined): QaPreviewMod
   return (QA_MODES.includes(normalized as QaPreviewMode) ? normalized : 'real') as QaPreviewMode;
 }
 
+export function parseQaPreviewState(input: {
+  previewRaw?: string | null;
+  reviewsRaw?: string | null;
+  salariesRaw?: string | null;
+}): QaPreviewState {
+  const preset = parseQaPreviewMode(input.previewRaw);
+  const reviews = input.reviewsRaw ? parseQaPreviewMode(input.reviewsRaw) : preset;
+  const salaries = input.salariesRaw ? parseQaPreviewMode(input.salariesRaw) : preset;
+  return { reviews, salaries };
+}
+
 export function applyBusinessQaPreview(
   business: Business,
   salaryStats: SalaryStats,
   salaryEntries: SalaryEntry[],
-  mode: QaPreviewMode
+  modeOrState: QaPreviewMode | QaPreviewState
 ): { business: Business; salaryStats: SalaryStats; salaryEntries: SalaryEntry[] } {
-  if (mode === 'real') {
+  const state: QaPreviewState = typeof modeOrState === 'string'
+    ? { reviews: modeOrState, salaries: modeOrState }
+    : modeOrState;
+
+  if (state.reviews === 'real' && state.salaries === 'real') {
     return { business, salaryStats, salaryEntries };
   }
 
-  if (mode === 'empty') {
-    return {
-      business: {
-        ...business,
+  const previewReviews = (() => {
+    if (state.reviews === 'real') {
+      return {
+        reviews: business.reviews,
+        overallRating: business.overallRating,
+      };
+    }
+
+    if (state.reviews === 'empty') {
+      return {
         reviews: [],
         overallRating: 0,
-      },
-      salaryStats: {
-        count: 0,
-        medianMonthly: null,
-        minMonthly: null,
-        maxMonthly: null,
-        currency: 'MAD',
-        roleBreakdown: [],
-      },
-      salaryEntries: [],
-    };
-  }
+      };
+    }
 
-  if (mode === 'low') {
-    const qaReviews = buildReviews(
-      business.id,
-      [
-        { rating: 5, count: 1 },
-        { rating: 4, count: 2 },
-        { rating: 3, count: 2 },
-        { rating: 2, count: 1 },
-        { rating: 1, count: 0 },
-      ],
-      700000
-    );
-    const qaSalaries = buildSalaryEntries(business.id, 6, 5200, ['Agent support', 'Assistant administratif', 'Technicien']);
-    return {
-      business: {
-        ...business,
+    if (state.reviews === 'low') {
+      const qaReviews = buildReviews(
+        business.id,
+        [
+          { rating: 5, count: 1 },
+          { rating: 4, count: 2 },
+          { rating: 3, count: 2 },
+          { rating: 2, count: 1 },
+          { rating: 1, count: 0 },
+        ],
+        700000
+      );
+      return {
         reviews: qaReviews,
         overallRating: computeOverallRating(qaReviews),
-      },
-      salaryStats: salaryStatsFromEntries(qaSalaries),
-      salaryEntries: qaSalaries.slice(0, 6),
-    };
-  }
+      };
+    }
 
-  if (mode === 'medium') {
+    if (state.reviews === 'medium') {
+      const qaReviews = buildReviews(
+        business.id,
+        [
+          { rating: 5, count: 9 },
+          { rating: 4, count: 10 },
+          { rating: 3, count: 4 },
+          { rating: 2, count: 2 },
+          { rating: 1, count: 1 },
+        ],
+        710000
+      );
+      return {
+        reviews: qaReviews,
+        overallRating: computeOverallRating(qaReviews),
+      };
+    }
+
     const qaReviews = buildReviews(
       business.id,
       [
-        { rating: 5, count: 9 },
-        { rating: 4, count: 10 },
-        { rating: 3, count: 4 },
-        { rating: 2, count: 2 },
-        { rating: 1, count: 1 },
+        { rating: 5, count: 48 },
+        { rating: 4, count: 34 },
+        { rating: 3, count: 12 },
+        { rating: 2, count: 4 },
+        { rating: 1, count: 2 },
       ],
-      710000
+      720000
     );
+    return {
+      reviews: qaReviews,
+      overallRating: computeOverallRating(qaReviews),
+    };
+  })();
+
+  const previewSalaries = (() => {
+    if (state.salaries === 'real') {
+      return { salaryStats, salaryEntries };
+    }
+
+    if (state.salaries === 'empty') {
+      return {
+        salaryStats: {
+          count: 0,
+          medianMonthly: null,
+          minMonthly: null,
+          maxMonthly: null,
+          currency: 'MAD',
+          roleBreakdown: [],
+        },
+        salaryEntries: [],
+      };
+    }
+
+    if (state.salaries === 'low') {
+      const qaSalaries = buildSalaryEntries(
+        business.id,
+        6,
+        5200,
+        ['Agent support', 'Assistant administratif', 'Technicien']
+      );
+      return {
+        salaryStats: salaryStatsFromEntries(qaSalaries),
+        salaryEntries: qaSalaries.slice(0, 6),
+      };
+    }
+
+    if (state.salaries === 'medium') {
+      const qaSalaries = buildSalaryEntries(
+        business.id,
+        24,
+        6800,
+        ['Charge de clientele', 'Developpeur', 'Analyste', 'Team lead']
+      );
+      return {
+        salaryStats: salaryStatsFromEntries(qaSalaries),
+        salaryEntries: qaSalaries.slice(0, 10),
+      };
+    }
+
     const qaSalaries = buildSalaryEntries(
       business.id,
-      24,
-      6800,
-      ['Charge de clientele', 'Developpeur', 'Analyste', 'Team lead']
+      72,
+      8200,
+      ['Consultant senior', 'Manager', 'Responsable operationnel', 'Ingenieur data', 'Chef de projet']
     );
+
     return {
-      business: {
-        ...business,
-        reviews: qaReviews,
-        overallRating: computeOverallRating(qaReviews),
-      },
       salaryStats: salaryStatsFromEntries(qaSalaries),
       salaryEntries: qaSalaries.slice(0, 10),
     };
-  }
-
-  const qaReviews = buildReviews(
-    business.id,
-    [
-      { rating: 5, count: 48 },
-      { rating: 4, count: 34 },
-      { rating: 3, count: 12 },
-      { rating: 2, count: 4 },
-      { rating: 1, count: 2 },
-    ],
-    720000
-  );
-  const qaSalaries = buildSalaryEntries(
-    business.id,
-    72,
-    8200,
-    ['Consultant senior', 'Manager', 'Responsable operationnel', 'Ingenieur data', 'Chef de projet']
-  );
+  })();
 
   return {
     business: {
       ...business,
-      reviews: qaReviews,
-      overallRating: computeOverallRating(qaReviews),
+      reviews: previewReviews.reviews,
+      overallRating: previewReviews.overallRating,
     },
-    salaryStats: salaryStatsFromEntries(qaSalaries),
-    salaryEntries: qaSalaries.slice(0, 10),
-  };
+    salaryStats: previewSalaries.salaryStats,
+    salaryEntries: previewSalaries.salaryEntries,
+  }
 }
-

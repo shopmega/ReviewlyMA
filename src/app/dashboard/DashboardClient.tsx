@@ -186,6 +186,8 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             href: '/dashboard/edit-profile',
         },
     ];
+    const pendingChecklistItems = checklistItems.filter((item) => !item.done);
+    const primaryChecklistItem = pendingChecklistItems[0] ?? null;
 
     const statCards = [
         {
@@ -344,6 +346,52 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     </div>
                 </div>
             </div>
+
+            <Card className={cn(
+                "rounded-2xl border shadow-sm",
+                primaryChecklistItem ? "border-amber-200 bg-amber-50/40" : "border-emerald-200 bg-emerald-50/30"
+            )}>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-headline text-slate-900">
+                        {primaryChecklistItem ? 'Prochaine action prioritaire' : 'Priorites sous controle'}
+                    </CardTitle>
+                    <p className="text-sm text-slate-600">
+                        {primaryChecklistItem
+                            ? 'Suivez cette action pour augmenter la confiance et la conversion de votre fiche.'
+                            : `Toutes les actions critiques sont traitees pour les ${timeframe} derniers jours.`}
+                    </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {primaryChecklistItem ? (
+                        <div className="rounded-xl border border-amber-200 bg-white p-4">
+                            <p className="text-sm font-semibold text-slate-900">{primaryChecklistItem.label}</p>
+                            <p className="mt-1 text-xs text-slate-600">{primaryChecklistItem.details}</p>
+                            <Button asChild size="sm" className="mt-3 rounded-lg">
+                                <Link href={primaryChecklistItem.href}>
+                                    {primaryChecklistItem.cta}
+                                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                                </Link>
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="rounded-xl border border-emerald-200 bg-white p-4">
+                            <p className="text-sm font-semibold text-emerald-700">Aucune action bloquante detectee</p>
+                            <p className="mt-1 text-xs text-slate-600">Vous pouvez maintenant concentrer vos efforts sur la croissance.</p>
+                        </div>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                        <Button asChild size="sm" variant="outline" className="rounded-lg">
+                            <Link href="/dashboard/reviews">Repondre aux avis</Link>
+                        </Button>
+                        <Button asChild size="sm" variant="outline" className="rounded-lg">
+                            <Link href="/dashboard/edit-profile">Completer le profil</Link>
+                        </Button>
+                        <Button asChild size="sm" variant="outline" className="rounded-lg">
+                            <Link href={`/businesses/${stats.business.id}`}>Voir la page publique</Link>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Card className="border-slate-200 bg-white shadow-sm rounded-2xl">
                 <CardHeader className="pb-3">

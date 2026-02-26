@@ -14,7 +14,7 @@ import { Metadata } from 'next';
 import { Business } from '@/lib/types';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
-import { applyBusinessQaPreview, parseQaPreviewMode, type QaPreviewMode } from '@/lib/qa-preview';
+import { applyBusinessQaPreview, parseQaPreviewState, REAL_QA_PREVIEW_STATE, type QaPreviewState } from '@/lib/qa-preview';
 import { AdminQaPreviewToggle } from '@/components/business/AdminQaPreviewToggle';
 
 interface PageProps {
@@ -72,9 +72,13 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const requestedQaPreviewRaw = resolvedSearchParams.qa_preview;
-  const requestedQaPreview = parseQaPreviewMode(
-    Array.isArray(requestedQaPreviewRaw) ? requestedQaPreviewRaw[0] : requestedQaPreviewRaw
-  );
+  const requestedQaReviewsRaw = resolvedSearchParams.qa_reviews;
+  const requestedQaSalariesRaw = resolvedSearchParams.qa_salaries;
+  const requestedQaPreviewState = parseQaPreviewState({
+    previewRaw: Array.isArray(requestedQaPreviewRaw) ? requestedQaPreviewRaw[0] : requestedQaPreviewRaw,
+    reviewsRaw: Array.isArray(requestedQaReviewsRaw) ? requestedQaReviewsRaw[0] : requestedQaReviewsRaw,
+    salariesRaw: Array.isArray(requestedQaSalariesRaw) ? requestedQaSalariesRaw[0] : requestedQaSalariesRaw,
+  });
 
   // 1. Fetch Data
   const business = await getBusinessById(slug);
@@ -104,9 +108,9 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
     userRole = profile?.role ?? null;
   }
   const isAdmin = userRole === 'admin';
-  const qaPreviewMode: QaPreviewMode = isAdmin ? requestedQaPreview : 'real';
+  const qaPreviewState: QaPreviewState = isAdmin ? requestedQaPreviewState : REAL_QA_PREVIEW_STATE;
   const previewed = isAdmin
-    ? applyBusinessQaPreview(business, salaryStats, salaryEntries, qaPreviewMode)
+    ? applyBusinessQaPreview(business, salaryStats, salaryEntries, qaPreviewState)
     : { business, salaryStats, salaryEntries };
   const displayedBusiness = previewed.business;
   const displayedSalaryStats = previewed.salaryStats;
@@ -215,7 +219,7 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
       {/* Analytics Tracking */}
       <AnalyticsTracker businessId={displayedBusiness.id} />
 
-      {isAdmin && <AdminQaPreviewToggle mode={qaPreviewMode} />}
+      {isAdmin && <AdminQaPreviewToggle state={qaPreviewState} />}
 
       {/* Hero Section */}
       <LazyBusinessHero business={displayedBusiness} />
