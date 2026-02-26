@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { useBusinessProfile } from "@/hooks/useBusinessProfile";
-import { Lock, Loader2, Sparkles, MessageSquare, User, Send, Clock } from "lucide-react";
+import { Lock, Loader2, Sparkles, MessageSquare, User, Send } from "lucide-react";
 import { getMessages, sendMessage, type Message } from "@/app/actions/messages";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { isPaidTier } from '@/lib/tier-utils';
 import { Input } from "@/components/ui/input";
@@ -21,12 +20,12 @@ export default function MessagesPage() {
   const [isPremium, setIsPremium] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [activeTargetId, setActiveTargetId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     async function checkStatus() {
-      // Use the tier field instead of legacy is_premium
       const currentTier = profile?.tier;
       if (isPaidTier(currentTier)) {
         setIsPremium(true);
@@ -46,6 +45,7 @@ export default function MessagesPage() {
         }
       }
     }
+
     if (!loading) {
       checkStatus();
     }
@@ -59,12 +59,19 @@ export default function MessagesPage() {
 
   async function fetchMessages() {
     if (!businessId) return;
+
     setFetching(true);
     const result = await getMessages(businessId);
     if (result.status === 'success') {
       const msgs = result.data || [];
       setMessages(msgs);
-      // Mark as read if business owner is viewing
+
+      const latestInbound = msgs.find((m: Message) => !m.is_from_business) || null;
+      setActiveTargetId((prev) => {
+        if (prev && msgs.some((m: Message) => m.id === prev && !m.is_from_business)) return prev;
+        return latestInbound?.id || null;
+      });
+
       const unreadIds = msgs.filter((m: Message) => !m.read_at && !m.is_from_business).map((m: Message) => m.id);
       if (unreadIds.length > 0) {
         const supabase = createClient();
@@ -74,22 +81,29 @@ export default function MessagesPage() {
     setFetching(false);
   }
 
-  const handleSendReply = async (originalMessage: Message) => {
-    if (!replyText.trim() || !businessId) return;
+  const activeTarget = useMemo(() => {
+    return messages.find((m) => m.id === activeTargetId && !m.is_from_business)
+      || messages.find((m) => !m.is_from_business)
+      || null;
+  }, [messages, activeTargetId]);
+
+  const handleSendReply = async (targetMessage: Message | null) => {
+    if (!replyText.trim() || !businessId || !targetMessage) return;
+
     setSending(true);
     const result = await sendMessage({
       business_id: businessId,
       content: replyText,
       is_from_business: true,
-      sender_name: profile?.full_name || 'Établissement',
+      sender_name: profile?.full_name || 'Etablissement',
     });
 
     if (result.status === 'success') {
-      toast({ title: "Réponse envoyée" });
+      toast({ title: 'Reponse envoyee' });
       setReplyText('');
       fetchMessages();
     } else {
-      toast({ title: "Erreur", description: result.message, variant: "destructive" });
+      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
     setSending(false);
   };
@@ -112,8 +126,8 @@ export default function MessagesPage() {
           </h1>
           <p className="text-muted-foreground">
             {isPremium
-              ? `Gérez vos conversations en temps réel.`
-              : "La messagerie Premium vous permet de communiquer directement avec les candidats."}
+              ? 'Gerez vos conversations en temps reel.'
+              : 'La messagerie Premium vous permet de communiquer directement avec les candidats.'}
           </p>
         </div>
         {isPremium && (
@@ -131,16 +145,15 @@ export default function MessagesPage() {
             </div>
             <h3 className="text-2xl font-bold mb-2">Messagerie Premium</h3>
             <p className="text-muted-foreground max-w-md mb-6">
-              La messagerie directe est une fonctionnalité exclusive aux membres Premium. Communiquez directement avec les candidats et employés potentiels pour renforcer votre attractivité.
+              La messagerie directe est une fonctionnalite exclusive aux membres Premium. Communiquez directement avec les candidats et employes potentiels pour renforcer votre attractivite.
             </p>
             <Button asChild className="bg-amber-500 hover:bg-amber-600 rounded-full px-8 h-12 text-lg font-semibold shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
-              <Link href="/dashboard/premium">Passer à Premium</Link>
+              <Link href="/dashboard/premium">Passer a Premium</Link>
             </Button>
           </div>
 
-          {/* Blur background content */}
           <div className="w-full max-w-2xl space-y-4 opacity-20 blur-sm pointer-events-none">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] p-4 rounded-2xl ${i % 2 === 0 ? 'bg-primary' : 'bg-muted'}`} />
               </div>
@@ -149,7 +162,6 @@ export default function MessagesPage() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col bg-card/30 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden shadow-xl">
-          {/* Chat Messages Area */}
           <ScrollArea className="flex-1 p-6">
             {fetching ? (
               <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-50">
@@ -162,12 +174,12 @@ export default function MessagesPage() {
                   <MessageSquare className="h-12 w-12 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold">Aucun message</h3>
-                <p className="text-sm max-w-xs mx-auto">Encouragez les candidats à vous contacter via votre page publique.</p>
+                <p className="text-sm max-w-xs mx-auto">Encouragez les candidats a vous contacter via votre page publique.</p>
               </div>
             ) : (
               <div className="space-y-6">
-                {[...messages].reverse().map((msg, index) => {
-                  const isLastInGroup = index === messages.length - 1;
+                {[...messages].reverse().map((msg) => {
+                  const isActiveTarget = !msg.is_from_business && msg.id === activeTarget?.id;
                   return (
                     <div
                       key={msg.id}
@@ -181,26 +193,34 @@ export default function MessagesPage() {
                         )}
                         <div className="space-y-1">
                           {!msg.is_from_business && (
-                            <div className="flex items-center gap-2 ml-2">
+                            <button
+                              type="button"
+                              onClick={() => setActiveTargetId(msg.id)}
+                              className={cn(
+                                'flex items-center gap-2 ml-2 rounded-md px-1 py-0.5 text-left transition-colors',
+                                isActiveTarget ? 'bg-primary/10' : 'hover:bg-muted/50'
+                              )}
+                            >
                               {!msg.read_at && <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
                               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
                                 {msg.sender_name || 'Candidat'}
                               </span>
-                            </div>
+                            </button>
                           )}
                           <div
                             className={cn(
-                              "p-4 rounded-2xl shadow-sm relative",
+                              'p-4 rounded-2xl shadow-sm relative border',
                               msg.is_from_business
-                                ? "bg-primary text-primary-foreground rounded-br-none"
-                                : "bg-white dark:bg-slate-900 border border-border/50 text-foreground rounded-bl-none"
+                                ? 'bg-primary text-primary-foreground rounded-br-none border-primary/20'
+                                : 'bg-white dark:bg-slate-900 text-foreground rounded-bl-none border-border/50',
+                              isActiveTarget && 'ring-2 ring-primary/30'
                             )}
                           >
                             <p className="text-sm leading-relaxed">{msg.content}</p>
                             <div
                               className={cn(
-                                "text-[9px] mt-2 opacity-60 font-medium whitespace-nowrap",
-                                msg.is_from_business ? "text-right" : "text-left"
+                                'text-[9px] mt-2 opacity-60 font-medium whitespace-nowrap',
+                                msg.is_from_business ? 'text-right' : 'text-left'
                               )}
                             >
                               {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
@@ -220,32 +240,32 @@ export default function MessagesPage() {
             )}
           </ScrollArea>
 
-          {/* Quick Reply Area (Simplified for basic interface) */}
           <div className="p-4 bg-background/50 border-t border-border/50 backdrop-blur-md">
             <div className="max-w-4xl mx-auto flex gap-3">
               <Input
-                placeholder="Répondre au dernier message..."
+                placeholder={activeTarget ? `Repondre a ${activeTarget.sender_name || 'ce candidat'}...` : 'Aucun candidat a qui repondre'}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
+                disabled={!activeTarget}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    if (messages.length > 0) handleSendReply(messages[0]);
+                    handleSendReply(activeTarget);
                   }
                 }}
                 className="bg-background/80 border-none h-12 rounded-2xl px-6 focus-visible:ring-1 focus-visible:ring-primary/20 shadow-inner"
               />
               <Button
-                onClick={() => messages.length > 0 && handleSendReply(messages[0])}
-                disabled={sending || !replyText.trim() || messages.length === 0}
+                onClick={() => handleSendReply(activeTarget)}
+                disabled={sending || !replyText.trim() || !activeTarget}
                 className="h-12 w-12 rounded-2xl shrink-0 shadow-lg shadow-primary/20"
               >
                 {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
               </Button>
             </div>
-            {messages.length > 0 && !messages[0].is_from_business && (
+            {activeTarget && (
               <p className="text-[10px] text-center mt-2 text-muted-foreground font-medium">
-                En répondant, vous envoyez un message à <span className="text-primary">{messages[0].sender_name || 'ce candidat'}</span>.
+                Reponse ciblee sur <span className="text-primary">{activeTarget.sender_name || 'ce candidat'}</span>.
               </p>
             )}
           </div>

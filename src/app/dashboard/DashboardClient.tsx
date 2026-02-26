@@ -1,6 +1,8 @@
 ﻿'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
     Card,
     CardContent,
@@ -9,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Star, TrendingUp, AlertCircle, MessageSquare, ArrowRight, Zap, Sparkles, ShieldCheck, Users, Heart, ChevronDown, Building2, BarChart3, Crown } from 'lucide-react';
+import { Eye, Star, TrendingUp, AlertCircle, MessageSquare, ArrowRight, Zap, Sparkles, ShieldCheck, Users, Heart, ChevronDown, Building2, BarChart3, Crown, CircleCheckBig, CircleAlert } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,6 +43,19 @@ export type RecentReview = {
     date: string;
 };
 
+export type DashboardKpiWindow = {
+    views: number;
+    viewsPrev: number;
+    leads: number;
+    leadsPrev: number;
+    newReviews: number;
+    newReviewsPrev: number;
+    newFollowers: number;
+    newFollowersPrev: number;
+    ratingAvg: number | null;
+    ratingAvgPrev: number | null;
+};
+
 const formatCurrency = (value: number | null | undefined) => {
     if (value === null || value === undefined) return 'Non defini';
     return new Intl.NumberFormat('fr-MA', {
@@ -65,6 +80,14 @@ export type DashboardStats = {
     leads: number;
     followers: number;
     unreadTickets: number;
+    kpiByWindow: Record<'7' | '30' | '90', DashboardKpiWindow>;
+    actionChecklist: {
+        pendingReviewReplies: number;
+        profileCompletion: number;
+        missingProfileFields: string[];
+        hasContactChannel: boolean;
+        hasPremiumAccess: boolean;
+    };
     salaryBenchmark?: {
         medianMonthlySalary: number | null;
         minMonthlySalary: number | null;
@@ -84,8 +107,25 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ stats, profile, error, otherBusinesses = [] }: DashboardClientProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [timeframe, setTimeframe] = useState<'7' | '30' | '90'>('30');
+
+    const buildDeltaLabel = (current: number, previous: number) => {
+        if (previous <= 0) {
+            if (current <= 0) return 'stable vs periode precedente';
+            return `+${current} vs periode precedente`;
+        }
+        const diffPercent = ((current - previous) / previous) * 100;
+        const rounded = Math.round(diffPercent);
+        return `${rounded > 0 ? '+' : ''}${rounded}% vs periode precedente`;
+    };
+
     const handleBusinessSwitch = (businessId: string) => {
-        window.location.href = `/dashboard?id=${businessId}`;
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('id', businessId);
+        router.replace(`${pathname}?${params.toString()}`);
     };
 
     if (error || !stats) {
@@ -107,51 +147,91 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
         );
     }
 
+    const selectedWindow = stats.kpiByWindow[timeframe];
+    const ratingValue = selectedWindow.ratingAvg ?? stats.averageRating;
+    const ratingPrevious = selectedWindow.ratingAvgPrev ?? stats.averageRating;
+    const ratingDelta = ratingValue - ratingPrevious;
+    const ratingTrendLabel = `${ratingDelta > 0 ? '+' : ''}${ratingDelta.toFixed(1)} vs periode precedente`;
+    const ratingTrendClass = ratingDelta > 0 ? 'text-emerald-600' : ratingDelta < 0 ? 'text-rose-600' : 'text-slate-500';
+
+    const checklistItems = [
+        {
+            key: 'reviews',
+            label: 'Repondre aux avis en attente',
+            done: stats.actionChecklist.pendingReviewReplies === 0,
+            details: stats.actionChecklist.pendingReviewReplies > 0
+                ? `${stats.actionChecklist.pendingReviewReplies} avis attendent une reponse.`
+                : 'Aucun avis en attente.',
+            cta: stats.actionChecklist.pendingReviewReplies > 0 ? 'Traiter' : 'Voir',
+            href: '/dashboard/reviews',
+        },
+        {
+            key: 'profile',
+            label: 'Completer le profil entreprise',
+            done: stats.actionChecklist.profileCompletion >= 85,
+            details: stats.actionChecklist.profileCompletion >= 85
+                ? `Profil a ${stats.actionChecklist.profileCompletion}%`
+                : `Profil a ${stats.actionChecklist.profileCompletion}%. Champs manquants: ${stats.actionChecklist.missingProfileFields.slice(0, 2).join(', ') || 'a verifier'}.`,
+            cta: 'Mettre a jour',
+            href: '/dashboard/edit-profile',
+        },
+        {
+            key: 'contact',
+            label: 'Activer un canal de contact',
+            done: stats.actionChecklist.hasContactChannel,
+            details: stats.actionChecklist.hasContactChannel
+                ? 'Canal de contact actif.'
+                : 'Ajoutez au moins un telephone, site web ou WhatsApp.',
+            cta: 'Configurer',
+            href: '/dashboard/edit-profile',
+        },
+    ];
+
     const statCards = [
         {
-            name: 'Abonnés',
-            value: stats.followers.toString(),
+            name: 'Nouveaux abonnes',
+            value: selectedWindow.newFollowers.toString(),
             icon: Heart,
             color: 'text-rose-600',
             bg: 'bg-rose-50',
-            trend: stats.followers > 0 ? 'Fidélisation active' : 'À développer',
-            trendColor: 'text-rose-600'
+            trend: buildDeltaLabel(selectedWindow.newFollowers, selectedWindow.newFollowersPrev),
+            trendColor: selectedWindow.newFollowers >= selectedWindow.newFollowersPrev ? 'text-rose-600' : 'text-slate-500',
         },
         {
-            name: 'Avis reçus',
-            value: stats.totalReviews.toString(),
+            name: 'Nouveaux avis',
+            value: selectedWindow.newReviews.toString(),
             icon: Star,
             color: 'text-blue-600',
             bg: 'bg-blue-50',
-            trend: stats.totalReviews > 0 ? '+ Nouveau avis' : 'En attente',
-            trendColor: 'text-blue-600'
+            trend: buildDeltaLabel(selectedWindow.newReviews, selectedWindow.newReviewsPrev),
+            trendColor: selectedWindow.newReviews >= selectedWindow.newReviewsPrev ? 'text-blue-600' : 'text-slate-500',
         },
         {
             name: 'Note moyenne',
-            value: stats.averageRating.toFixed(1),
+            value: ratingValue.toFixed(1),
             icon: TrendingUp,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
-            trend: stats.averageRating >= 4 ? 'Excellente' : 'À améliorer',
-            trendColor: 'text-emerald-600'
+            trend: ratingTrendLabel,
+            trendColor: ratingTrendClass,
         },
         {
-            name: 'Vues de l\'entreprise',
-            value: stats.views.toString(),
+            name: 'Vues profil',
+            value: selectedWindow.views.toString(),
             icon: Eye,
             color: 'text-slate-600',
             bg: 'bg-slate-50',
-            trend: 'Total vues',
-            trendColor: 'text-slate-500'
+            trend: buildDeltaLabel(selectedWindow.views, selectedWindow.viewsPrev),
+            trendColor: selectedWindow.views >= selectedWindow.viewsPrev ? 'text-slate-600' : 'text-slate-500',
         },
         {
-            name: 'Leads générés',
-            value: stats.leads.toString(),
+            name: 'Leads generes',
+            value: selectedWindow.leads.toString(),
             icon: Users,
             color: 'text-blue-600',
             bg: 'bg-blue-50',
-            trend: 'Clics & Contacts',
-            trendColor: 'text-blue-600'
+            trend: buildDeltaLabel(selectedWindow.leads, selectedWindow.leadsPrev),
+            trendColor: selectedWindow.leads >= selectedWindow.leadsPrev ? 'text-blue-600' : 'text-slate-500',
         },
     ];
 
@@ -229,7 +309,22 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                             : "Voici les performances de votre entreprise aujourd'hui."}
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-col items-start gap-3 lg:items-end">
+                    <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                        {(['7', '30', '90'] as Array<'7' | '30' | '90'>).map((windowDays) => (
+                            <Button
+                                key={windowDays}
+                                type="button"
+                                variant={timeframe === windowDays ? 'default' : 'ghost'}
+                                size="sm"
+                                className="h-8 rounded-lg px-3 text-xs font-bold"
+                                onClick={() => setTimeframe(windowDays)}
+                            >
+                                {windowDays}j
+                            </Button>
+                        ))}
+                    </div>
+                    <div className="flex flex-wrap gap-3">
                     {(!profile?.tier || !isPaidTier(profile.tier)) && (
                         <Button
                             asChild
@@ -246,12 +341,52 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                             Voir ma page publique <ArrowRight className="ml-2 w-4 h-4" />
                         </Link>
                     </Button>
+                    </div>
                 </div>
             </div>
 
+            <Card className="border-slate-200 bg-white shadow-sm rounded-2xl">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-headline text-slate-900">Checklist operateur</CardTitle>
+                    <p className="text-sm text-slate-500">Priorites pour les {timeframe} derniers jours.</p>
+                </CardHeader>
+                <CardContent className="grid gap-3 md:grid-cols-3">
+                    {checklistItems.map((item) => (
+                        <div key={item.key} className={cn(
+                            "rounded-xl border p-4",
+                            item.done ? "border-emerald-100 bg-emerald-50/40" : "border-amber-100 bg-amber-50/40"
+                        )}>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    {item.done ? (
+                                        <CircleCheckBig className="h-4 w-4 text-emerald-600" />
+                                    ) : (
+                                        <CircleAlert className="h-4 w-4 text-amber-600" />
+                                    )}
+                                    <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                                </div>
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "rounded-full text-[10px] uppercase tracking-wide",
+                                        item.done ? "border-emerald-200 text-emerald-700" : "border-amber-200 text-amber-700"
+                                    )}
+                                >
+                                    {item.done ? 'ok' : 'action'}
+                                </Badge>
+                            </div>
+                            <p className="mt-2 text-xs text-slate-600">{item.details}</p>
+                            <Button asChild size="sm" variant="outline" className="mt-3 h-8 rounded-lg text-xs font-semibold">
+                                <Link href={item.href}>{item.cta}</Link>
+                            </Button>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+
             {/* Clean Stats Grid */}
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {statCards.map((stat, i) => (
+                {statCards.map((stat) => (
                     <Card key={stat.name} className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden group">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-body">
@@ -371,7 +506,9 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                                     </h4>
                                                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
                                                 </div>
-                                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-bold rounded-full">VÉRIFIÉ</Badge>
+                                                <Badge variant="outline" className="text-[10px] font-bold rounded-full border-slate-200 text-slate-600">
+                                                    {review.is_anonymous ? 'Anonyme' : 'Profil public'}
+                                                </Badge>
                                             </div>
                                             <div className="py-1">
                                                 <StarRating rating={review.rating} size={14} readOnly />
