@@ -16,8 +16,6 @@ import { getServerSiteUrl } from '@/lib/site-config';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
-// Import RSC error handler to suppress Next.js 15 errors
-import '@/lib/rsc-error-handler';
 
 const inter = Inter({
   subsets: ['latin'],

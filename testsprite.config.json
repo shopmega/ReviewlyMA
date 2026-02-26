@@ -1,0 +1,10 @@
+{
+    "targetUrl": "http://localhost:9002",
+    "productSpec": "docs/PRODUCT_SPECIFICATION_DOC.md",
+    "testType": "e2e",
+    "browser": "chromium",
+    "viewport": {
+        "width": 1920,
+        "height": 1080
+    }
+}

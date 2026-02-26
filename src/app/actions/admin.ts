@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { createAdminClient, createAuthClient, verifyAdminSession } from '@/lib/supabase/admin';
 import { format } from 'date-fns';
 import { ActionState, businessUpdateSchema, SubscriptionTier } from '@/lib/types';
+import { AdminPermission, hasAdminPermission } from '@/lib/admin-rbac';
 import {
   sendPremiumActivationEmail,
   sendPremiumRejectionEmail
@@ -136,6 +137,41 @@ function buildDeterministicBusinessId(name: string, city: string): string {
   return slugifyForBusinessId(`${name}-${city}`);
 }
 
+async function enforceAdminPermission(
+  serviceClient: any,
+  adminId: string,
+  permission: AdminPermission
+) {
+  const profilesTable = serviceClient?.from?.('profiles');
+  if (!profilesTable || typeof profilesTable.select !== 'function') {
+    return;
+  }
+
+  const extendedProfile = await profilesTable
+    .select('role, admin_access_level, admin_permissions')
+    .eq('id', adminId)
+    .single();
+
+  // Backward-compatible fallback for environments where new RBAC columns are not yet present.
+  if (extendedProfile.error) {
+    const message = String(extendedProfile.error.message || '').toLowerCase();
+    const missingRbacColumns =
+      message.includes('admin_access_level')
+      || message.includes('admin_permissions')
+      || message.includes('schema cache')
+      || String(extendedProfile.error.code || '') === '42703';
+
+    if (!missingRbacColumns) {
+      throw new Error(`Non autorise: verification permission impossible (${extendedProfile.error.message})`);
+    }
+  }
+
+  const profile = extendedProfile.data || { role: 'admin' };
+  if (!hasAdminPermission(profile, permission)) {
+    throw new Error(`Non autorise: permission '${permission}' requise.`);
+  }
+}
+
 /**
  * Toggle a user's premium status
  * Logs the change in premium_audit_log for compliance and tracking
@@ -217,6 +253,7 @@ export async function changeUserRole(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'user.role.manage');
 
     // Prevent admin from demoting themselves
     if (targetUserId === adminId && newRole !== 'admin') {
@@ -266,6 +303,7 @@ export async function toggleUserSuspension(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'user.suspend');
 
     // Prevent admin from suspending themselves
     if (targetUserId === adminId) {
@@ -605,6 +643,7 @@ export async function deleteBusiness(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'business.delete');
 
     // First, get business info for logging
     const { data: business } = await serviceClient
@@ -1550,6 +1589,7 @@ export async function updateSiteSettings(settings: any): Promise<AdminActionResu
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'settings.write');
     const payload = { ...settings, id: 'main', updated_at: new Date().toISOString() };
 
     const { error: updateError, data: updatedRows } = await serviceClient
@@ -1601,9 +1641,24 @@ export async function updateSiteSettings(settings: any): Promise<AdminActionResu
 /**
  * Toggle maintenance mode directly
  */
-export async function toggleMaintenanceMode(enabled: boolean): Promise<AdminActionResult> {
+export async function toggleMaintenanceMode(
+  enabled: boolean,
+  options?: { reason?: string; confirmationText?: string }
+): Promise<AdminActionResult> {
   const adminId = await verifyAdminSession();
   const serviceClient = await createAdminClient();
+  await enforceAdminPermission(serviceClient, adminId, 'settings.maintenance.toggle');
+
+  const reason = String(options?.reason || '').trim();
+  if (reason.length < 10) {
+    return { status: 'error', message: 'Une raison detaillee (10+ caracteres) est obligatoire.' };
+  }
+
+  const expectedConfirmation = enabled ? 'ENABLE_MAINTENANCE' : 'DISABLE_MAINTENANCE';
+  const confirmationText = String(options?.confirmationText || '').trim();
+  if (confirmationText !== expectedConfirmation) {
+    return { status: 'error', message: `Confirmation invalide. Saisissez '${expectedConfirmation}'.` };
+  }
 
   const { error } = await serviceClient
     .from('site_settings')
@@ -1627,7 +1682,11 @@ export async function toggleMaintenanceMode(enabled: boolean): Promise<AdminActi
     action: 'TOGGLE_MAINTENANCE',
     targetType: 'site_settings',
     targetId: 'main',
-    details: { maintenance_mode: enabled }
+    details: {
+      maintenance_mode: enabled,
+      reason,
+      confirmation_text: confirmationText,
+    }
   });
 
   return {
@@ -1683,6 +1742,7 @@ export async function deleteUserCompletely(userId: string): Promise<AdminActionR
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'user.delete');
 
     // Prevent admin from deleting themselves
     if (userId === adminId) {

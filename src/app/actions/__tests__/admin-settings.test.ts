@@ -133,7 +133,10 @@ describe('Admin Settings Operations', () => {
 
   describe('toggleMaintenanceMode', () => {
     it('should enable maintenance mode successfully', async () => {
-      const result = await toggleMaintenanceMode(true);
+      const result = await toggleMaintenanceMode(true, {
+        reason: 'Maintenance preventive planifiee',
+        confirmationText: 'ENABLE_MAINTENANCE'
+      });
 
       expect(result).toEqual({
         status: 'success',
@@ -144,7 +147,10 @@ describe('Admin Settings Operations', () => {
     });
 
     it('should disable maintenance mode successfully', async () => {
-      const result = await toggleMaintenanceMode(false);
+      const result = await toggleMaintenanceMode(false, {
+        reason: 'Retour operationnel apres verification',
+        confirmationText: 'DISABLE_MAINTENANCE'
+      });
 
       expect(result).toEqual({
         status: 'success',
@@ -167,7 +173,10 @@ describe('Admin Settings Operations', () => {
         }))
       } as any));
 
-      const result = await toggleMaintenanceMode(true);
+      const result = await toggleMaintenanceMode(true, {
+        reason: 'Maintenance preventive planifiee',
+        confirmationText: 'ENABLE_MAINTENANCE'
+      });
 
       expect(result).toEqual({
         status: 'error',
@@ -179,7 +188,10 @@ describe('Admin Settings Operations', () => {
       // Mock authentication failure
       vi.mocked(verifyAdminSession).mockRejectedValueOnce(new Error('Access denied'));
 
-      await expect(toggleMaintenanceMode(true)).rejects.toThrow('Access denied');
+      await expect(toggleMaintenanceMode(true, {
+        reason: 'Maintenance preventive planifiee',
+        confirmationText: 'ENABLE_MAINTENANCE'
+      })).rejects.toThrow('Access denied');
     });
   });
 
@@ -246,7 +258,10 @@ describe('Admin Settings Operations', () => {
     });
 
     it('should invalidate cache when toggling maintenance mode', async () => {
-      await toggleMaintenanceMode(true);
+      await toggleMaintenanceMode(true, {
+        reason: 'Maintenance preventive planifiee',
+        confirmationText: 'ENABLE_MAINTENANCE'
+      });
 
       expect(revalidateTag).toHaveBeenCalledWith('site-settings');
       expect(revalidatePath).toHaveBeenCalledWith('/');
@@ -276,14 +291,21 @@ describe('Admin Settings Operations', () => {
       const { logAuditAction } = await import('@/lib/audit-logger');
       vi.mocked(logAuditAction).mockResolvedValueOnce(undefined);
 
-      await toggleMaintenanceMode(true);
+      await toggleMaintenanceMode(true, {
+        reason: 'Maintenance preventive planifiee',
+        confirmationText: 'ENABLE_MAINTENANCE'
+      });
 
       expect(logAuditAction).toHaveBeenCalledWith({
         adminId: 'admin-user-id',
         action: 'TOGGLE_MAINTENANCE',
         targetType: 'site_settings',
         targetId: 'main',
-        details: { maintenance_mode: true }
+        details: {
+          maintenance_mode: true,
+          reason: 'Maintenance preventive planifiee',
+          confirmation_text: 'ENABLE_MAINTENANCE'
+        }
       });
     });
 

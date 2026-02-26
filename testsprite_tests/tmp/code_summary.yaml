@@ -1,0 +1,179 @@
+﻿version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js 15 (App Router)
+  - React 19
+  - Tailwind CSS
+  - Supabase
+routes:
+  - path: /
+    file: src/app/page.tsx
+    auth_required: false
+    description: Landing and discovery home page
+  - path: /login
+    file: src/app/login/page.tsx
+    auth_required: false
+    description: User authentication page
+  - path: /signup
+    file: src/app/signup/page.tsx
+    auth_required: false
+    description: Account creation page
+  - path: /businesses
+    file: src/app/businesses/page.tsx
+    auth_required: false
+    description: Business listing directory
+  - path: /businesses/[slug]
+    file: src/app/businesses/[slug]/page.tsx
+    auth_required: false
+    description: Business detail page
+  - path: /categories
+    file: src/app/categories/page.tsx
+    auth_required: false
+    description: Category index
+  - path: /categorie/[categorySlug]
+    file: src/app/categorie/[categorySlug]/page.tsx
+    auth_required: false
+    description: Category-specific listing page
+  - path: /dashboard
+    file: src/app/dashboard/page.tsx
+    auth_required: true
+    description: Pro user dashboard root
+  - path: /dashboard/reviews
+    file: src/app/dashboard/reviews/page.tsx
+    auth_required: true
+    description: Dashboard review management
+  - path: /dashboard/messages
+    file: src/app/dashboard/messages/page.tsx
+    auth_required: true
+    description: Dashboard messaging inbox
+  - path: /dashboard/premium
+    file: src/app/dashboard/premium/page.tsx
+    auth_required: true
+    description: Premium plan management
+  - path: /profile
+    file: src/app/profile/page.tsx
+    auth_required: true
+    description: User profile overview
+  - path: /support
+    file: src/app/support/page.tsx
+    auth_required: false
+    description: Support contact and help page
+  - path: /admin
+    file: src/app/(admin)/admin/page.tsx
+    auth_required: true
+    description: Admin dashboard landing
+  - path: /admin/utilisateurs
+    file: src/app/(admin)/admin/utilisateurs/page.tsx
+    auth_required: true
+    description: Admin user management
+  - path: /admin/etablissements
+    file: src/app/(admin)/admin/etablissements/page.tsx
+    auth_required: true
+    description: Admin businesses management
+  - path: /salaires
+    file: src/app/salaires/page.tsx
+    auth_required: false
+    description: Salary transparency index
+  - path: /review
+    file: src/app/review/page.tsx
+    auth_required: true
+    description: Review submission flow
+features:
+  - name: Authentication
+    description: Email/password sign up, login, and password recovery flows
+    files:
+      - src/app/login/page.tsx
+      - src/app/signup/page.tsx
+      - src/app/forgot-password/page.tsx
+      - src/app/reset-password/page.tsx
+      - src/app/actions/auth.ts
+    entry_route: /login
+    user_interactions:
+      - Fill email/password fields
+      - Submit login or signup form
+      - Trigger password recovery and reset flow
+    api_calls:
+      - method: SERVER_ACTION
+        endpoint: src/app/actions/auth.ts
+    auth_required: false
+  - name: Business Discovery
+    description: Browse, search, and open business detail pages
+    files:
+      - src/app/page.tsx
+      - src/app/businesses/page.tsx
+      - src/app/businesses/[slug]/page.tsx
+      - src/app/actions/search.ts
+      - src/app/api/businesses/search/route.ts
+    entry_route: /
+    user_interactions:
+      - Use search input and filters
+      - Open a business detail card
+      - Navigate between category and city pages
+    api_calls:
+      - method: GET
+        endpoint: /api/businesses/search
+      - method: GET
+        endpoint: /api/v1/businesses/search
+    auth_required: false
+  - name: Reviews and Ratings
+    description: Users can create and edit reviews for businesses
+    files:
+      - src/app/review/page.tsx
+      - src/app/businesses/[slug]/review/page.tsx
+      - src/app/reviews/[id]/edit/page.tsx
+      - src/app/actions/review.ts
+    entry_route: /review
+    user_interactions:
+      - Select target business
+      - Enter rating and textual feedback
+      - Submit or edit existing review
+    api_calls:
+      - method: SERVER_ACTION
+        endpoint: src/app/actions/review.ts
+    auth_required: true
+  - name: Pro Dashboard
+    description: Authenticated businesses manage analytics, reviews, and premium features
+    files:
+      - src/app/dashboard/page.tsx
+      - src/app/dashboard/analytics/page.tsx
+      - src/app/dashboard/reviews/page.tsx
+      - src/app/dashboard/premium/page.tsx
+      - src/app/actions/analytics.ts
+      - src/app/actions/premium.ts
+    entry_route: /dashboard
+    user_interactions:
+      - Open dashboard modules from side navigation
+      - View analytics and incoming reviews
+      - Upgrade or manage premium features
+    api_calls:
+      - method: SERVER_ACTION
+        endpoint: src/app/actions/analytics.ts
+      - method: SERVER_ACTION
+        endpoint: src/app/actions/premium.ts
+    auth_required: true
+  - name: Admin Console
+    description: Internal admin manages users, businesses, moderation, categories, and settings
+    files:
+      - src/app/(admin)/admin/page.tsx
+      - src/app/(admin)/admin/utilisateurs/page.tsx
+      - src/app/(admin)/admin/etablissements/page.tsx
+      - src/app/actions/admin.ts
+      - src/app/actions/admin-bulk.ts
+    entry_route: /admin
+    user_interactions:
+      - Browse admin sections
+      - Search and update users/businesses
+      - Perform moderation and bulk actions
+    api_calls:
+      - method: GET
+        endpoint: /api/admin/users/search
+      - method: GET
+        endpoint: /api/admin/businesses/search
+      - method: SERVER_ACTION
+        endpoint: src/app/actions/admin.ts
+    auth_required: true
+known_limitations:
+  - issue: Code summary lists representative primary routes, not every nested route file.
+    location: src/app
+    impact: Some generated tests may not cover long-tail pages unless manually expanded.

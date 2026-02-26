@@ -41,13 +41,26 @@ export function BulkActions({ reviews, businesses, onReviewsUpdate, onBusinesses
 
     try {
       let result;
+      const trimmedReason = reviewReason.trim();
+
+      if ((reviewAction === 'reject' || reviewAction === 'delete') && !trimmedReason) {
+        toast({
+          title: "Raison requise",
+          description: reviewAction === 'reject'
+            ? "Une raison est obligatoire pour rejeter des avis."
+            : "Une raison est obligatoire pour retirer des avis.",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
 
       if (reviewAction === 'delete') {
-        result = await bulkDeleteReviews(selectedReviews);
+        result = await bulkDeleteReviews(selectedReviews, trimmedReason);
       } else if (reviewAction === 'publish' || reviewAction === 'reject') {
         result = await bulkUpdateReviews(selectedReviews, {
           status: reviewAction === 'publish' ? 'published' : 'rejected',
-          reason: reviewReason || undefined
+          reason: trimmedReason || undefined
         });
       }
 
@@ -187,10 +200,10 @@ export function BulkActions({ reviews, businesses, onReviewsUpdate, onBusinesses
                   </SelectContent>
                 </Select>
 
-                {reviewAction === 'reject' && (
+                {(reviewAction === 'reject' || reviewAction === 'delete') && (
                   <input
                     type="text"
-                    placeholder="Raison (optionnel)"
+                    placeholder={reviewAction === 'reject' ? "Raison de rejet (obligatoire)" : "Raison de retrait (obligatoire)"}
                     value={reviewReason}
                     onChange={(e) => setReviewReason(e.target.value)}
                     className="ml-2 px-3 py-2 border rounded"

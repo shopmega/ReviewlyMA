@@ -1,53 +1,21 @@
 {
-  "targetUrl": "http://localhost:9002",
-  "productSpec": "./PRODUCT_SPECIFICATION.md",
-  "testType": "e2e",
-  "browser": "chromium",
-  "viewport": {
-    "width": 1920,
-    "height": 1080
-  },
-  "tests": [
-    {
-      "name": "Homepage Critical Path Test",
-      "description": "Test the main user journey from homepage to business discovery",
-      "actions": [
-        {
-          "type": "navigate",
-          "url": "/"
-        },
-        {
-          "type": "waitForSelector",
-          "selector": "h1"
-        },
-        {
-          "type": "fill",
-          "selector": "input[placeholder*='Restaurants']",
-          "value": "restaurant"
-        },
-        {
-          "type": "click",
-          "selector": "button:has-text('Rechercher')"
-        }
-      ]
-    },
-    {
-      "name": "Category Browsing Test",
-      "description": "Test category navigation and business listing",
-      "actions": [
-        {
-          "type": "navigate",
-          "url": "/"
-        },
-        {
-          "type": "click",
-          "selector": "a[href*='/businesses?category=Restaurants']"
-        },
-        {
-          "type": "waitForSelector",
-          "selector": ".business-card"
-        }
-      ]
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:9002",
+  "backendAuthType": "basic token",
+  "backendUsername": "th3mazze@gmail.com",
+  "backendPassword": "123456",
+  "executionArgs": {
+    "projectName": "AVis-prod",
+    "projectPath": "c:\\Users\\Zouhair\\Downloads\\AVis-prod",
+    "testIds": [],
+    "additionalInstruction": "Re-run the full frontend plan with updated RSC handling and auth pages now rendering.",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-RDYtGKeW_g8fVo0jh-MuiKYVU4CPXQ2PijpiE87LgPlUI48d87GwxmnN9CWOn9J_guRc0PuwGAUs1jxuv05BBDr-JJJX6jml4dA-QbC29LDHQaF96GR0aVUe_N5G3UFkMrM"
     }
-  ]
+  },
+  "serverPort": 61194,
+  "proxy": "http://1e29dc71-dfa2-4d56-8765-68aa589df5fa:lMeoOGC2sWefFiOd1jgOV3JNTsUbPqsw@tun.testsprite.com:8080"
 }

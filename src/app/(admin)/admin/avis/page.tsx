@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
+import { Table } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Star, MessageSquare, Trash2, ExternalLink } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { StarRating } from "@/components/shared/StarRating";
 import { BulkActions } from "@/components/admin/BulkActions";
 import { createClient } from "@/lib/supabase/client";
+import { bulkDeleteReviews, bulkUpdateReviews } from "@/app/actions/admin-bulk";
 
 type Review = {
   id: number;
@@ -21,7 +20,7 @@ type Review = {
   rating: number;
   title: string | null;
   content: string | null;
-  status: 'published' | 'pending' | 'rejected';
+  status: 'published' | 'pending' | 'rejected' | 'deleted';
   date: string;
   created_at: string;
   sub_ratings?: {
@@ -56,35 +55,47 @@ export default function AllReviewsPage() {
   }
 
   const updateStatus = async (id: number, status: 'published' | 'rejected') => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from('reviews')
-      .update({ status })
-      .eq('id', id);
+    let reason: string | undefined;
 
-    if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Succès', description: `Statut mis à jour : ${status}` });
-      fetchReviews();
+    if (status === 'rejected') {
+      const input = window.prompt('Raison obligatoire pour rejeter cet avis:');
+      if (input === null) return;
+      reason = input.trim();
+      if (!reason) {
+        toast({ title: 'Erreur', description: 'La raison est obligatoire pour rejeter un avis.', variant: 'destructive' });
+        return;
+      }
     }
+
+    const result = await bulkUpdateReviews([id], { status, reason });
+    if (!result.success) {
+      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'Succes', description: `Statut mis a jour : ${status}` });
+    fetchReviews();
   };
 
   const deleteReview = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet avis définitivement ?')) return;
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from('reviews')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Succès', description: 'Avis supprimé.' });
-      fetchReviews();
+    const input = window.prompt('Raison obligatoire pour retirer cet avis:');
+    if (input === null) return;
+    const reason = input.trim();
+    if (!reason) {
+      toast({ title: 'Erreur', description: 'La raison est obligatoire pour retirer un avis.', variant: 'destructive' });
+      return;
     }
+
+    if (!confirm('Confirmer le retrait de cet avis ?')) return;
+
+    const result = await bulkDeleteReviews([id], reason);
+    if (!result.success) {
+      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'Succes', description: 'Avis retire.' });
+    fetchReviews();
   };
 
   const getStatusBadge = (status: string) => {
@@ -92,9 +103,11 @@ export default function AllReviewsPage() {
       case 'pending':
         return <Badge variant="outline" className="border-yellow-500 text-yellow-600">En attente</Badge>;
       case 'published':
-        return <Badge className="bg-green-500 text-white">Publié</Badge>;
+        return <Badge className="bg-green-500 text-white">Publie</Badge>;
       case 'rejected':
-        return <Badge variant="destructive">Rejeté</Badge>;
+        return <Badge variant="destructive">Rejete</Badge>;
+      case 'deleted':
+        return <Badge variant="secondary">Retire</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -105,23 +118,23 @@ export default function AllReviewsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Tous les avis</h1>
         <p className="text-muted-foreground mt-1">
-          Gérez l'intégralité des avis publiés sur la plateforme.
+          Gerez l'integralite des avis publies sur la plateforme.
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Liste des avis</CardTitle>
-          <CardDescription>Consultez, approuvez ou supprimez les avis.</CardDescription>
+          <CardDescription>Consultez, approuvez ou retirez les avis.</CardDescription>
         </CardHeader>
         <CardContent>
-          <BulkActions 
+          <BulkActions
             reviews={reviews}
             businesses={[]}
             onReviewsUpdate={fetchReviews}
             onBusinessesUpdate={() => {}}
           />
-          
+
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -129,17 +142,17 @@ export default function AllReviewsPage() {
           ) : reviews.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Aucun avis trouvé.</p>
+              <p>Aucun avis trouve.</p>
             </div>
           ) : (
             <div className="rounded-lg border overflow-hidden mt-4">
               <Table>
                 <thead>
                   <tr className="bg-muted/50">
-                    <th className="px-4 py-3 text-left">Établissement</th>
+                    <th className="px-4 py-3 text-left">Etablissement</th>
                     <th className="px-4 py-3 text-left">Auteur</th>
                     <th className="px-4 py-3 text-left">Note</th>
-                                        <th className="px-4 py-3 text-left hidden lg:table-cell">Détails</th>
+                    <th className="px-4 py-3 text-left hidden lg:table-cell">Details</th>
                     <th className="px-4 py-3 text-left hidden md:table-cell">Avis</th>
                     <th className="px-4 py-3 text-left">Statut</th>
                     <th className="px-4 py-3 text-right">Actions</th>
@@ -182,7 +195,7 @@ export default function AllReviewsPage() {
                             )}
                             {review.sub_ratings.career_growth && (
                               <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground">Carrière:</span>
+                                <span className="text-muted-foreground">Carriere:</span>
                                 <StarRating rating={review.sub_ratings.career_growth} size={10} readOnly />
                                 <span>({review.sub_ratings.career_growth})</span>
                               </div>
@@ -204,19 +217,21 @@ export default function AllReviewsPage() {
                       <td className="px-4 py-3">{getStatusBadge(review.status)}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex gap-1 justify-end">
-                          {review.status !== 'published' && (
+                          {review.status !== 'published' && review.status !== 'deleted' && (
                             <Button size="icon" variant="outline" className="h-8 w-8 text-green-600" onClick={() => updateStatus(review.id, 'published')} title="Publier">
                               <Check className="h-4 w-4" />
                             </Button>
                           )}
-                          {review.status !== 'rejected' && (
+                          {review.status !== 'rejected' && review.status !== 'deleted' && (
                             <Button size="icon" variant="outline" className="h-8 w-8 text-amber-600" onClick={() => updateStatus(review.id, 'rejected')} title="Rejeter">
                               <X className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button size="icon" variant="outline" className="h-8 w-8 text-red-600" onClick={() => deleteReview(review.id)} title="Supprimer">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {review.status !== 'deleted' && (
+                            <Button size="icon" variant="outline" className="h-8 w-8 text-red-600" onClick={() => deleteReview(review.id)} title="Retirer">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

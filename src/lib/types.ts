@@ -476,6 +476,8 @@ export type Profile = {
   email: string;
   avatar_url?: string;
   role: 'user' | 'pro' | 'admin';
+  admin_access_level?: 'super_admin' | 'admin_ops' | 'moderator' | 'analyst' | 'support' | null;
+  admin_permissions?: string[] | null;
   is_premium: boolean; // Legacy
   tier: SubscriptionTier; // New
   premium_expires_at?: string;

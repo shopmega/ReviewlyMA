@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { AdminPermission, hasAdminPermission } from '@/lib/admin-rbac';
 
 /**
  * Creates a server-side Supabase client with the service role key.
@@ -50,6 +51,38 @@ export async function createAuthClient() {
   );
 }
 
+function isMissingColumnError(error: any, columnName: string): boolean {
+  if (!error) return false;
+  const message = String(error.message || '').toLowerCase();
+  return (
+    message.includes(columnName.toLowerCase())
+    || message.includes('schema cache')
+    || String(error.code || '') === '42703'
+  );
+}
+
+async function readAdminProfile(authClient: any, userId: string) {
+  const extended = await authClient
+    .from('profiles')
+    .select('role, admin_access_level, admin_permissions')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!extended.error) {
+    return extended;
+  }
+
+  if (isMissingColumnError(extended.error, 'admin_access_level') || isMissingColumnError(extended.error, 'admin_permissions')) {
+    return await authClient
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .maybeSingle();
+  }
+
+  return extended;
+}
+
 /**
  * Server-side check to verify if the current user is an administrator.
  * Returns the user ID if authorized, otherwise throws an error.
@@ -83,11 +116,7 @@ export async function verifyAdminSession() {
   }
 
   // Primary check: read the current user's profile through auth client (RLS-safe).
-  const { data: ownProfile, error: ownProfileError } = await authClient
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
+  const { data: ownProfile, error: ownProfileError } = await readAdminProfile(authClient, user.id);
 
   if (!ownProfileError && ownProfile) {
     const ownProfileRole = String(ownProfile.role || '').toLowerCase();
@@ -98,20 +127,33 @@ export async function verifyAdminSession() {
   }
 
   // Fallback: service-role lookup (if key exists) for environments where RLS check is unavailable.
-  let profile: { role: string } | null = null;
+  let profile: { role: string; admin_access_level?: string | null; admin_permissions?: string[] | null } | null = null;
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const adminClient = await createAdminClient();
     const { data: profiles, error: profileError } = await adminClient
       .from('profiles')
-      .select('role')
+      .select('role, admin_access_level, admin_permissions')
       .eq('id', user.id)
       .limit(1);
 
-    if (profileError) {
-      console.error('Admin verification profile error:', profileError);
-      throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);
+    if (profileError && (isMissingColumnError(profileError, 'admin_access_level') || isMissingColumnError(profileError, 'admin_permissions'))) {
+      const fallback = await adminClient
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .limit(1);
+      if (fallback.error) {
+        console.error('Admin verification profile fallback error:', fallback.error);
+        throw new Error(`Non autorise: impossible de verifier le profil (${fallback.error.message})`);
+      }
+      profile = fallback.data?.[0] || null;
+    } else {
+      if (profileError) {
+        console.error('Admin verification profile error:', profileError);
+        throw new Error(`Non autorise: impossible de verifier le profil (${profileError.message})`);
+      }
+      profile = profiles?.[0] || null;
     }
-    profile = profiles?.[0] || null;
   } else if (ownProfileError) {
     console.error('Admin verification own-profile error (service role unavailable):', ownProfileError);
   }
@@ -126,4 +168,39 @@ export async function verifyAdminSession() {
   }
 
   return user.id;
+}
+
+export async function verifyAdminPermission(permission: AdminPermission) {
+  const adminId = await verifyAdminSession();
+  const authClient = await createAuthClient();
+  let profile: { role: string; admin_access_level?: string | null; admin_permissions?: string[] | null } | null = null;
+
+  const ownProfile = await readAdminProfile(authClient, adminId);
+  if (!ownProfile.error && ownProfile.data) {
+    profile = ownProfile.data;
+  } else if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const adminClient = await createAdminClient();
+    const { data, error } = await adminClient
+      .from('profiles')
+      .select('role, admin_access_level, admin_permissions')
+      .eq('id', adminId)
+      .maybeSingle();
+
+    if (error && !(isMissingColumnError(error, 'admin_access_level') || isMissingColumnError(error, 'admin_permissions'))) {
+      throw new Error(`Non autorise: impossible de verifier les permissions (${error.message})`);
+    }
+
+    profile = data || null;
+  }
+
+  // Backward-compatible fallback: verified admins without RBAC profile data are treated as super admins.
+  if (!profile) {
+    profile = { role: 'admin' };
+  }
+
+  if (!hasAdminPermission(profile, permission)) {
+    throw new Error(`Non autorise: permission '${permission}' requise.`);
+  }
+
+  return adminId;
 }

@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
-import { verifyAdminSession } from '@/lib/supabase/admin';
+import { verifyAdminPermission } from '@/lib/supabase/admin';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   try {
-    await verifyAdminSession();
+    await verifyAdminPermission('admin.panel.access');
   } catch (error) {
     const message = error instanceof Error ? error.message.toLowerCase() : '';
     const adminNext = '/login?next=/admin';

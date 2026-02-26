@@ -1,0 +1,1517 @@
+[
+  {
+    "id": "TC001",
+    "title": "Sign up with valid email and password",
+    "description": "Verifies a new user can create an account via the signup form and is taken to an authenticated area afterward.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /signup"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Signup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"new.user+e2e@example.com\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPassw0rd!\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Create account\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/profile\""
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Sign up shows validation error for invalid email format",
+    "description": "Verifies the signup form blocks an invalid email and shows a visible error message.",
+    "category": "Authentication",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /signup"
+      },
+      {
+        "type": "action",
+        "description": "Type \"invalid-email\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ValidPassw0rd!\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Create account\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"email\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/signup\""
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Login with valid credentials redirects to authenticated page",
+    "description": "Verifies a user can log in with correct email/password and reaches an authenticated area.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Login\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/profile\""
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Login with wrong password shows invalid credentials error",
+    "description": "Verifies incorrect password prevents login and shows a visible invalid-credentials message.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"WrongPassword123!\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"invalid\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Login form shows required-field validation when submitted empty",
+    "description": "Verifies submitting the login form without credentials shows visible validation and stays on the login page.",
+    "category": "Authentication",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Forgot password request shows confirmation message",
+    "description": "Verifies a user can request a password reset email and sees a visible confirmation message.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Forgot password\" link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"forgot\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Send reset link\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"email sent\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Forgot password with invalid email format shows validation error",
+    "description": "Verifies the forgot-password form blocks an invalid email format and shows a visible error.",
+    "category": "Authentication",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Forgot password\" link"
+      },
+      {
+        "type": "action",
+        "description": "Type \"not-an-email\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Send reset link\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"email\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"forgot\""
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Reset password page shows error for invalid or expired reset token",
+    "description": "Verifies the reset password flow surfaces a visible error when the reset token is invalid.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /reset-password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Reset\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"invalid-token\" into the reset token field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"NewValidPassw0rd!\" into the new password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Reset password\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"invalid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Authenticated session persists and allows access to Profile after login",
+    "description": "Verifies that after logging in, the user can reach the Profile area without re-authenticating during the session.",
+    "category": "Authentication",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/profile\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Profile\" link in the navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/profile\""
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Search businesses by keyword from the home page",
+    "description": "Verifies a visitor can enter a keyword on the landing page and see matching business results.",
+    "category": "Business Discovery",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"AVis\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"boulangerie\" into the search input"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"business\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Search businesses by keyword and city filter",
+    "description": "Verifies a visitor can filter search results by providing a city along with a keyword.",
+    "category": "Business Discovery",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search area\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"boulangerie\" into the search input"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Paris\" into the city filter field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Search\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Paris\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Open a business detail page from the directory results",
+    "description": "Verifies a visitor can open a business detail page from a business card in search results.",
+    "category": "Business Discovery",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first business card in the results list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/businesses/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business name\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business details\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Browse categories and open a category listing page",
+    "description": "Verifies a visitor can browse the category index and reach a category-specific listing page.",
+    "category": "Business Discovery",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/categories\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Category list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first category in the category list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/categorie/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Category title\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Paginate through business results from the directory",
+    "description": "Verifies a visitor can move to another page of results from the business listing directory.",
+    "category": "Business Discovery",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"Pagination controls\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Next\" in the pagination controls"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"page\""
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Handle empty or whitespace-only search query gracefully",
+    "description": "Verifies the UI shows a user-friendly validation or error state when searching with only spaces.",
+    "category": "Business Discovery",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search area\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"   \" into the search input"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Search\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Please enter a search term\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "No results state for a clearly non-matching query",
+    "description": "Verifies the UI displays a clear empty state when no businesses match the search query.",
+    "category": "Business Discovery",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search area\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"zzzznotarealbusinessquery\" into the search input"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Search\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No results\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Search results remain visible after navigating to a business detail and returning via UI link",
+    "description": "Verifies a visitor can open a business detail and return to the directory using an in-page navigation control without breaking the experience.",
+    "category": "Business Discovery",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first business card in the results list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/businesses/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Businesses\" in the site navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/businesses\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Create a new 5-star review from the Review page",
+    "description": "Verifies an authenticated user can submit a new review with a valid rating and text and sees a visible success state.",
+    "category": "Reviews and Ratings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/review\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Write a review\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Create a new 5-star review (select business, fill rating and text, submit)",
+    "description": "Verifies the end-to-end creation flow: selecting a business, entering rating and feedback, and submitting successfully.",
+    "category": "Reviews and Ratings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "action",
+        "description": "Click on the business selector"
+      },
+      {
+        "type": "action",
+        "description": "Select a business option from the business dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected business name is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Submit a new review successfully after entering rating and text",
+    "description": "Verifies a valid rating and review text can be submitted and a visible confirmation appears.",
+    "category": "Reviews and Ratings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "action",
+        "description": "Select a 5-star rating in the rating control"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Great service\" into the review text field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" button"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Verify newly submitted review shows a visible success state",
+    "description": "Verifies that after submitting a valid review, the UI shows a success message or confirmation state indicating the review was created.",
+    "category": "Reviews and Ratings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "action",
+        "description": "Select a 5-star rating in the rating control"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Great service\" into the review text field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Submit\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Edit an existing review from Dashboard reviews management",
+    "description": "Verifies an authenticated user can access their reviews in the dashboard and reach an edit screen.",
+    "category": "Reviews and Ratings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Dashboard\" navigation item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Reviews\" section link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/reviews\""
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Attempt to submit a review with rating 0 and see validation error",
+    "description": "Verifies the UI blocks invalid rating values and shows a visible validation error message.",
+    "category": "Reviews and Ratings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "action",
+        "description": "Select a 0-star rating in the rating control"
+      },
+      {
+        "type": "action",
+        "description": "Type \"bad\" into the review text field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" button"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Validation message is displayed when submitting invalid rating",
+    "description": "Verifies a clear, visible error message appears when the review submission fails validation.",
+    "category": "Reviews and Ratings",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "action",
+        "description": "Select a 0-star rating in the rating control"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Submit\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"rating\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Log in required for review submission (cannot access review actions when not authenticated)",
+    "description": "Verifies the review feature is only usable after login by confirming the presence of authenticated review UI after login.",
+    "category": "Reviews and Ratings",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Write a review\" or \"Review\" entry point"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Submit\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Rating\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Review\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Access Pro Dashboard after login",
+    "description": "Verifies an authenticated user can log in and reach the Pro dashboard landing page.",
+    "category": "Pro Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Dashboard\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Open Analytics module from dashboard navigation and view analytics",
+    "description": "Verifies the Pro user can open the analytics area and see analytics content for a default time range.",
+    "category": "Pro Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Analytics\" in the dashboard side navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Analytics\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Open Reviews management module and view incoming reviews list",
+    "description": "Verifies the Pro user can navigate to review management and see the incoming reviews section.",
+    "category": "Pro Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Reviews\" in the dashboard side navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/reviews\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Reviews\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Open Premium plan management page from dashboard navigation",
+    "description": "Verifies the Pro user can navigate to premium plan management and see premium-related content.",
+    "category": "Pro Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Premium\" in the dashboard side navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/premium\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Premium\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Attempt to upgrade to Premium monthly plan (happy path UI submission)",
+    "description": "Verifies the user can initiate an upgrade from the Premium page and sees a visible success/confirmation state.",
+    "category": "Pro Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Premium\" in the dashboard side navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Upgrade\" / \"Passer Premium\" button for the monthly plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subscription\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Analytics page shows an authorization error message for non-Pro access",
+    "description": "Verifies the UI presents an authorization/forbidden message when the logged-in user lacks Pro permissions to analytics.",
+    "category": "Pro Dashboard",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Analytics\" in the dashboard side navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Forbidden\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Dashboard navigation remains functional after viewing multiple modules",
+    "description": "Verifies the user can switch between modules (Analytics, Reviews, Premium) using the side navigation without losing access.",
+    "category": "Pro Dashboard",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Reviews\" in the dashboard side navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/reviews\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Premium\" in the dashboard side navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/premium\""
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Admin can access the Admin Console landing page after login",
+    "description": "Verifies an authenticated admin can log in and reach the admin console landing screen.",
+    "category": "Admin Console",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/admin\""
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Admin searches for users from Admin > Utilisateurs",
+    "description": "Verifies admin can open user management and see search results for a query.",
+    "category": "Admin Console",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Utilisateurs\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Type \"dupont\" into the user search field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "User search shows a visible list or a clear empty-state message",
+    "description": "Verifies the user search results area renders correctly after searching, including empty results handling.",
+    "category": "Admin Console",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Utilisateurs\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Type \"dupont\" into the user search field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"User results list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC036",
+    "title": "Admin searches for businesses from Admin > Établissements",
+    "description": "Verifies admin can open business management and search for a business keyword.",
+    "category": "Admin Console",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Établissements\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Type \"restaurant\" into the business search field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      }
+    ]
+  },
+  {
+    "id": "TC037",
+    "title": "Business search shows a visible list or a clear empty-state message",
+    "description": "Verifies the business search results area renders correctly after searching, including empty results handling.",
+    "category": "Admin Console",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Établissements\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Type \"restaurant\" into the business search field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Business results list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC038",
+    "title": "Admin moderates a business by suspending it from the business list",
+    "description": "Verifies an admin can run a moderation action (suspend) for a business and sees an on-screen confirmation.",
+    "category": "Admin Console",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Établissements\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Type \"restaurant\" into the business search field"
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the first business in the results list to open its admin actions"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Suspendre\" / \"Suspend\" moderation action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Action confirmée\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC039",
+    "title": "Admin sees a validation error when submitting an invalid moderation action",
+    "description": "Verifies the UI blocks or reports an error when moderation is attempted with missing/invalid required fields.",
+    "category": "Admin Console",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Établissements\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Suspendre\" / \"Suspend\" without selecting a business"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Validation\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC040",
+    "title": "Admin console user search handles empty query gracefully",
+    "description": "Verifies the user search does not crash and shows guidance or no-results state when the query is empty.",
+    "category": "Admin Console",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Se connecter\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Admin\" link in the main navigation (or user menu)"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Utilisateurs\" in the admin console navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Rechercher\" / \"Search\" button with the search field empty"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Veuillez saisir\" is visible"
+      }
+    ]
+  },
+  {"id":"TC041","title":"Homepage loads and shows main sections","description":"Verifies the landing page loads with hero, search area, and primary navigation visible.","category":"Public / Home","priority":"High","steps":[{"type":"action","description":"Navigate to /"},{"type":"assertion","description":"Verify page title or heading contains \"AVis\""},{"type":"assertion","description":"Verify element \"Search input\" or \"search\" is visible"},{"type":"assertion","description":"Verify navigation or header is visible"}]},
+  {"id":"TC042","title":"Navigate to businesses directory from homepage","description":"Verifies a visitor can reach the businesses listing from the home page via navigation.","category":"Public / Home","priority":"High","steps":[{"type":"action","description":"Navigate to /"},{"type":"action","description":"Click on \"Businesses\" or \"Établissements\" in the navigation"},{"type":"assertion","description":"Verify URL contains \"/businesses\""},{"type":"assertion","description":"Verify element \"Business results list\" or search area is visible"}]},
+  {"id":"TC043","title":"Navigate to categories from homepage","description":"Verifies a visitor can reach the categories index from the home page.","category":"Public / Home","priority":"Medium","steps":[{"type":"action","description":"Navigate to /"},{"type":"action","description":"Click on \"Categories\" or \"Catégories\" in the navigation"},{"type":"assertion","description":"Verify URL contains \"/categories\""},{"type":"assertion","description":"Verify element \"Category list\" or category links are visible"}]},
+  {"id":"TC044","title":"Browse businesses by city (ville)","description":"Verifies a visitor can open a city-specific listing page from city navigation.","category":"Business Discovery","priority":"High","steps":[{"type":"action","description":"Navigate to /businesses"},{"type":"action","description":"Type \"Paris\" into the city filter or select Paris from city list"},{"type":"action","description":"Click on \"Search\" or apply filter"},{"type":"assertion","description":"Verify URL contains \"ville\" or \"city\" or results are filtered"},{"type":"assertion","description":"Verify element \"Business results list\" is visible"}]},
+  {"id":"TC045","title":"Business detail page shows reviews section","description":"Verifies the business detail page displays a reviews section or review count.","category":"Business Discovery","priority":"High","steps":[{"type":"action","description":"Navigate to /businesses"},{"type":"action","description":"Click on the first business card in the results list"},{"type":"assertion","description":"Verify URL contains \"/businesses/\""},{"type":"assertion","description":"Verify text \"review\" or \"avis\" or \"rating\" is visible"}]},
+  {"id":"TC046","title":"Support page loads for visitor","description":"Verifies the support/help page is accessible without login.","category":"Public / Home","priority":"Medium","steps":[{"type":"action","description":"Navigate to /"},{"type":"action","description":"Click on \"Support\" or \"Aide\" in the navigation or footer"},{"type":"assertion","description":"Verify URL contains \"/support\""},{"type":"assertion","description":"Verify text \"Support\" or \"Aide\" or contact form is visible"}]},
+  {"id":"TC047","title":"Authenticated user can open Profile page","description":"Verifies after login the user can open the profile area.","category":"Profile","priority":"High","steps":[{"type":"action","description":"Navigate to /login"},{"type":"action","description":"Type \"{{LOGIN_USER}}\" into the email field"},{"type":"action","description":"Type \"{{LOGIN_PASSWORD}}\" into the password field"},{"type":"action","description":"Click on the \"Log in\" or \"Se connecter\" button"},{"type":"assertion","description":"Verify URL does not contain \"/login\""},{"type":"action","description":"Click on \"Profile\" or \"Profil\" in the navigation"},{"type":"assertion","description":"Verify URL contains \"/profile\""},{"type":"assertion","description":"Verify text \"Profile\" or \"Profil\" or user email is visible"}]},
+  {"id":"TC048","title":"Profile settings page is accessible","description":"Verifies the user can open profile settings from profile.","category":"Profile","priority":"Medium","steps":[{"type":"action","description":"Navigate to /login"},{"type":"action","description":"Type \"{{LOGIN_USER}}\" into the email field"},{"type":"action","description":"Type \"{{LOGIN_PASSWORD}}\" into the password field"},{"type":"action","description":"Click on the \"Log in\" button"},{"type":"action","description":"Navigate to /profile"},{"type":"action","description":"Click on \"Settings\" or \"Paramètres\" or settings link"},{"type":"assertion","description":"Verify URL contains \"/profile/settings\" or settings form is visible"}]},
+  {"id":"TC049","title":"Saved businesses page is accessible","description":"Verifies the user can open the saved businesses list from profile.","category":"Profile","priority":"Medium","steps":[{"type":"action","description":"Navigate to /login"},{"type":"action","description":"Type \"{{LOGIN_USER}}\" into the email field"},{"type":"action","description":"Type \"{{LOGIN_PASSWORD}}\" into the password field"},{"type":"action","description":"Click on the \"Log in\" button"},{"type":"action","description":"Navigate to /profile"},{"type":"action","description":"Click on \"Saved businesses\" or \"Favoris\" or saved link"},{"type":"assertion","description":"Verify URL contains \"/profile/saved\" or saved list is visible"}]},
+  {"id":"TC050","title":"Logout redirects to public page","description":"Verifies the user can log out and is redirected to home or login.","category":"Authentication","priority":"High","steps":[{"type":"action","description":"Navigate to /login"},{"type":"action","description":"Type \"{{LOGIN_USER}}\" into the email field"},{"type":"action","description":"Type \"{{LOGIN_PASSWORD}}\" into the password field"},{"type":"action","description":"Click on the \"Log in\" button"},{"type":"assertion","description":"Verify user is logged in"},{"type":"action","description":"Click on user menu or avatar"},{"type":"action","description":"Click on \"Log out\" or \"Déconnexion\""},{"type":"assertion","description":"Verify URL contains \"/\" or \"/login\""},{"type":"assertion","description":"Verify \"Log in\" or \"Se connecter\" is visible"}]},
+  {"id":"TC051","title":"Unauthenticated access to dashboard redirects to login","description":"Verifies visiting /dashboard when not logged in redirects to login.","category":"Authentication","priority":"High","steps":[{"type":"action","description":"Navigate to /dashboard"},{"type":"assertion","description":"Verify URL contains \"/login\""},{"type":"assertion","description":"Verify login form or \"Se connecter\" is visible"}]},
+  {"id":"TC052","title":"Dashboard Messages module opens","description":"Verifies the Pro user can open the Messages module from the dashboard.","category":"Pro Dashboard","priority":"High","steps":[{"type":"action","description":"Navigate to /login"},{"type":"action","description":"Type \"{{LOGIN_USER}}\" into the email field"},{"type":"action","description":"Type \"{{LOGIN_PASSWORD}}\" into the password field"},{"type":"action","description":"Click on the \"Log in\" button"},{"type":"action","description":"Click on \"Dashboard\" or navigate to /dashboard"},{"type":"action","description":"Click on \"Messages\" in the dashboard side navigation"},{"type":"assertion","description":"Verify URL contains \"/dashboard/messages\""},{"type":"assertion","description":"Verify text \"Messages\" or inbox is visible"}]},
+  {"id":"TC053","title":"Salaires (salary) page loads for visitor","description":"Verifies the salary transparency page is accessible without login.","category":"Public / Home","priority":"Medium","steps":[{"type":"action","description":"Navigate to /"},{"type":"action","description":"Click on \"Salaires\" or navigate to /salaires"},{"type":"assertion","description":"Verify URL contains \"/salaires\""},{"type":"assertion","description":"Verify page content or title is visible"}]},
+  {"id":"TC054","title":"Admin can open Categories management","description":"Verifies admin can navigate to the Categories section in the admin console.","category":"Admin Console","priority":"High","steps":[{"type":"action","description":"Navigate to /login"},{"type":"action","description":"Type \"{{LOGIN_USER}}\" into the email field"},{"type":"action","description":"Type \"{{LOGIN_PASSWORD}}\" into the password field"},{"type":"action","description":"Click on the \"Log in\" button"},{"type":"action","description":"Navigate to /admin"},{"type":"action","description":"Click on \"Catégories\" or \"Categories\" in the admin navigation"},{"type":"assertion","description":"Verify URL contains \"/admin\" and categories content or list is visible"}]},
+  {"id":"TC055","title":"API health endpoint returns OK","description":"Verifies the public health API responds successfully.","category":"Public / Home","priority":"Medium","steps":[{"type":"action","description":"Navigate to /api/health"},{"type":"assertion","description":"Verify page or response contains \"ok\" or status 200"}]}
+]

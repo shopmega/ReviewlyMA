@@ -22,6 +22,7 @@ import { toggleMaintenanceMode } from '@/app/actions/admin';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { hasAdminPermission } from '@/lib/admin-rbac';
 
 interface AdminHeaderProps {
     onMenuClick?: () => void;
@@ -31,6 +32,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     const [isMaintenance, setIsMaintenance] = useState(false);
     const [adminUser, setAdminUser] = useState<any>(null);
     const [adminProfile, setAdminProfile] = useState<any>(null);
+    const [canToggleMaintenance, setCanToggleMaintenance] = useState(false);
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
@@ -52,6 +54,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                         .eq('id', user.id)
                         .single();
                     setAdminProfile(profile);
+                    setCanToggleMaintenance(hasAdminPermission(profile || {}, 'settings.maintenance.toggle'));
                 }
             } catch (error) {
                 console.error('Error fetching admin header data:', error);
@@ -61,9 +64,38 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     }, []);
 
     const handleToggleMaintenance = async (checked: boolean) => {
+        if (!canToggleMaintenance) {
+            toast({
+                title: "Action non autorisee",
+                description: "Vous n'avez pas la permission de modifier le mode maintenance.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const reason = window.prompt('Raison obligatoire pour ce changement (10+ caracteres):');
+        if (reason === null) return;
+
+        const normalizedReason = reason.trim();
+        if (normalizedReason.length < 10) {
+            toast({
+                title: "Raison requise",
+                description: "Veuillez saisir une raison detaillee (10+ caracteres).",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const expectedConfirmation = checked ? 'ENABLE_MAINTENANCE' : 'DISABLE_MAINTENANCE';
+        const confirmation = window.prompt(`Confirmez en saisissant '${expectedConfirmation}':`);
+        if (confirmation === null) return;
+
         setLoading(true);
         try {
-            const result = await toggleMaintenanceMode(checked);
+            const result = await toggleMaintenanceMode(checked, {
+                reason: normalizedReason,
+                confirmationText: confirmation.trim(),
+            });
             if (result.status === 'success') {
                 setIsMaintenance(checked);
                 toast({
@@ -139,7 +171,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                         id="maintenance-mode"
                         checked={isMaintenance}
                         onCheckedChange={handleToggleMaintenance}
-                        disabled={loading}
+                        disabled={loading || !canToggleMaintenance}
                         className="scale-75 data-[state=checked]:bg-amber-500"
                     />
                 </div>
