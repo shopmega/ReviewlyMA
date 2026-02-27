@@ -23,7 +23,8 @@ import {
   MessageSquare,
   UserPlus,
   Stethoscope,
-  DollarSign
+  DollarSign,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ const menuGroups = [
     items: [
       { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/admin/analytics', label: 'Analytics Hub', icon: BarChart3 },
+      { href: '/admin/statistiques', label: 'Statistiques', icon: BarChart3 },
       { href: '/admin/audit', label: 'Audit Logs', icon: FileText },
     ]
   },
@@ -58,6 +60,7 @@ const menuGroups = [
       { href: '/admin/salaires', label: 'Salaires', icon: DollarSign },
       { href: '/admin/parrainages', label: 'Parrainages', icon: BriefcaseBusiness },
       { href: '/admin/avis-signalements', label: 'Signalements avis', icon: Flag },
+      { href: '/admin/entreprises-signalements', label: 'Signalements entreprises', icon: Building2 },
       { href: '/admin/contenu', label: 'Médias signalés', icon: FileImage },
     ]
   },
@@ -188,4 +191,3 @@ export default function AdminLayout({
     </div>
   );
 }
-
