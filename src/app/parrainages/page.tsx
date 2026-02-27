@@ -199,7 +199,7 @@ export default async function ParrainagesPage({
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <section className="rounded-3xl border border-border/60 bg-gradient-to-br from-emerald-50 via-background to-sky-50 p-6 md:p-8">
+      <section className="rounded-2xl border border-border bg-card p-6 md:p-8">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="space-y-3">
             <Badge variant="outline" className="w-fit">{t('referrals.list.badge', 'Referral marketplace')}</Badge>
@@ -207,7 +207,7 @@ export default async function ParrainagesPage({
             <p className="text-muted-foreground max-w-2xl">
               {t('referrals.list.subtitle', 'Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.')}
             </p>
-            <div className="inline-flex items-center gap-2 rounded-xl border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <div className="inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
               <AlertTriangle className="h-4 w-4" />
               Aucun paiement n&apos;est autorise pour un parrainage. Signalez toute tentative.
             </div>
@@ -230,7 +230,7 @@ export default async function ParrainagesPage({
         </div>
       </section>
 
-      <Card className="rounded-2xl border-border/60">
+      <Card className="rounded-2xl border-border bg-card">
         <CardContent className="pt-6 space-y-4">
           <form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-6">
             <input
@@ -277,8 +277,8 @@ export default async function ParrainagesPage({
               <option value="manager">Manager</option>
             </select>
             <div className="md:col-span-4 flex flex-wrap items-center gap-2">
-              <Button type="submit" className="rounded-xl">Filtrer</Button>
-              <Button asChild variant="outline" className="rounded-xl">
+              <Button type="submit" className="rounded-md">Filtrer</Button>
+              <Button asChild variant="outline" className="rounded-md">
                 <Link href="/parrainages">Reinitialiser</Link>
               </Button>
               <span className="text-xs text-muted-foreground">
@@ -315,7 +315,7 @@ export default async function ParrainagesPage({
             const expiresAt = offer.expires_at ? new Date(offer.expires_at).toLocaleDateString(locale) : null;
             const responseLabel = offer.response_hours_avg ? `Repond en ~${offer.response_hours_avg}h` : 'Reactivite en cours';
             return (
-              <Card key={offer.id} className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+              <Card key={offer.id} className="rounded-2xl border-border bg-card transition-colors hover:border-primary/30">
                 <CardHeader className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <Badge variant="outline">
@@ -360,7 +360,7 @@ export default async function ParrainagesPage({
                     <p>{expiresAt ? `Expire le ${expiresAt}` : 'Expiration non precisee'}</p>
                   </div>
 
-                  <Button asChild variant="outline" className="w-full rounded-xl">
+                  <Button asChild variant="outline" className="w-full rounded-md">
                     <Link href={`/parrainages/${offer.id}`} className="inline-flex items-center justify-center gap-2">
                       {t('referrals.list.viewOffer', "Voir l'offre")}
                       <ArrowRight className="h-4 w-4" />

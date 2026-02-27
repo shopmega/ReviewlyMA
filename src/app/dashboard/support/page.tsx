@@ -157,10 +157,10 @@ export default function SupportPage() {
 
     const getStatusBadge = (status: SupportTicket['status']) => {
         const variants = {
-            pending: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock, label: 'En attente' },
-            in_progress: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: MessageCircle, label: 'En cours' },
-            resolved: { color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle2, label: 'Résolu' },
-            closed: { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: XCircle, label: 'Fermé' },
+            pending: { color: 'border-warning/20 bg-warning/10 text-warning', icon: Clock, label: 'En attente' },
+            in_progress: { color: 'border-info/20 bg-info/10 text-info', icon: MessageCircle, label: 'En cours' },
+            resolved: { color: 'border-success/20 bg-success/10 text-success', icon: CheckCircle2, label: 'Résolu' },
+            closed: { color: 'border-border bg-secondary text-muted-foreground', icon: XCircle, label: 'Fermé' },
         };
 
         const variant = variants[status];
@@ -192,29 +192,29 @@ export default function SupportPage() {
 
             {/* Contact Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="border-blue-200 bg-blue-50/50">
+                <Card className="border-border bg-card">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                <Mail className="h-6 w-6 text-blue-600" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-info/10 text-info">
+                                <Mail className="h-6 w-6 text-info" />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-blue-900">Email</p>
-                                <p className="text-sm text-blue-700">support@reviewly.ma</p>
+                                <p className="text-sm font-medium text-foreground">Email</p>
+                                <p className="text-sm text-muted-foreground">support@reviewly.ma</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-green-200 bg-green-50/50">
+                <Card className="border-border bg-card">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/10 text-success">
                                 <Phone className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-green-900">Téléphone</p>
-                                <p className="text-sm text-green-700">+212 5XX-XXXXXX</p>
+                                <p className="text-sm font-medium text-foreground">Téléphone</p>
+                                <p className="text-sm text-muted-foreground">+212 5XX-XXXXXX</p>
                             </div>
                         </div>
                     </CardContent>
@@ -278,7 +278,7 @@ export default function SupportPage() {
                     <>
                         {/* New Ticket Form */}
                         <div className="lg:col-span-2">
-                            <Card className="shadow-sm border-0 bg-white/50 backdrop-blur rounded-[2.5rem]">
+                            <Card className="rounded-xl border border-border bg-card shadow-none">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                                         <HelpCircle className="h-6 w-6 text-primary" />
@@ -297,7 +297,7 @@ export default function SupportPage() {
                                                     value={newTicket.category}
                                                     onValueChange={(value) => setNewTicket({ ...newTicket, category: value as SupportTicketCategory })}
                                                 >
-                                                    <SelectTrigger id="category" className="rounded-xl h-11">
+                                                    <SelectTrigger id="category" className="h-11 rounded-md">
                                                         <SelectValue placeholder="Sélectionnez" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -316,7 +316,7 @@ export default function SupportPage() {
                                                     value={newTicket.businessId}
                                                     onValueChange={(value) => setNewTicket({ ...newTicket, businessId: value })}
                                                 >
-                                                    <SelectTrigger id="business" className="rounded-xl h-11">
+                                                    <SelectTrigger id="business" className="h-11 rounded-md">
                                                         <SelectValue placeholder="Choisir un établissement" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -338,7 +338,7 @@ export default function SupportPage() {
                                                 value={newTicket.subject}
                                                 onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
                                                 placeholder="De quoi s'agit-il ?"
-                                                className="rounded-xl h-11"
+                                                className="h-11 rounded-md"
                                                 required
                                             />
                                         </div>
@@ -351,12 +351,12 @@ export default function SupportPage() {
                                                 onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
                                                 placeholder="Détaillez votre demande..."
                                                 rows={5}
-                                                className="rounded-2xl resize-none"
+                                                className="resize-none rounded-md"
                                                 required
                                             />
                                         </div>
 
-                                        <Button type="submit" disabled={submitting} className="w-full rounded-xl h-12 shadow-lg shadow-primary/20 bg-primary font-bold">
+                                        <Button type="submit" disabled={submitting} className="h-12 w-full rounded-md font-bold">
                                             {submitting ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -376,8 +376,8 @@ export default function SupportPage() {
 
                         {/* Existing Tickets */}
                         <div className="lg:col-span-1">
-                            <Card className="rounded-[2rem] border-0 shadow-sm overflow-hidden h-fit">
-                                <CardHeader className="bg-muted/30 border-b">
+                            <Card className="h-fit overflow-hidden rounded-xl border border-border shadow-none">
+                                <CardHeader className="border-b border-border bg-secondary/40">
                                     <CardTitle className="text-lg">Mes tickets</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0">
@@ -488,3 +488,5 @@ export default function SupportPage() {
         </div>
     );
 }
+
+

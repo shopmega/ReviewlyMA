@@ -157,7 +157,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
     const ratingPrevious = selectedWindow.ratingAvgPrev ?? stats.averageRating;
     const ratingDelta = ratingValue - ratingPrevious;
     const ratingTrendLabel = `${ratingDelta > 0 ? '+' : ''}${ratingDelta.toFixed(1)} vs periode precedente`;
-    const ratingTrendClass = ratingDelta > 0 ? 'text-emerald-600' : ratingDelta < 0 ? 'text-rose-600' : 'text-slate-500';
+    const ratingTrendClass = ratingDelta > 0 ? 'text-success' : ratingDelta < 0 ? 'text-destructive' : 'text-muted-foreground';
 
     const checklistItems = [
         {
@@ -202,16 +202,16 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             color: 'text-rose-600',
             bg: 'bg-rose-50',
             trend: buildDeltaLabel(selectedWindow.newFollowers, selectedWindow.newFollowersPrev),
-            trendColor: selectedWindow.newFollowers >= selectedWindow.newFollowersPrev ? 'text-rose-600' : 'text-slate-500',
+            trendColor: selectedWindow.newFollowers >= selectedWindow.newFollowersPrev ? 'text-destructive' : 'text-muted-foreground',
         },
         {
             name: 'Nouveaux avis',
             value: selectedWindow.newReviews.toString(),
             icon: Star,
-            color: 'text-blue-600',
-            bg: 'bg-blue-50',
+            color: 'text-info',
+            bg: 'bg-info/10',
             trend: buildDeltaLabel(selectedWindow.newReviews, selectedWindow.newReviewsPrev),
-            trendColor: selectedWindow.newReviews >= selectedWindow.newReviewsPrev ? 'text-blue-600' : 'text-slate-500',
+            trendColor: selectedWindow.newReviews >= selectedWindow.newReviewsPrev ? 'text-info' : 'text-muted-foreground',
         },
         {
             name: 'Note moyenne',
@@ -226,19 +226,19 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             name: 'Vues profil',
             value: selectedWindow.views.toString(),
             icon: Eye,
-            color: 'text-slate-600',
-            bg: 'bg-slate-50',
+            color: 'text-foreground',
+            bg: 'bg-secondary/30',
             trend: buildDeltaLabel(selectedWindow.views, selectedWindow.viewsPrev),
-            trendColor: selectedWindow.views >= selectedWindow.viewsPrev ? 'text-slate-600' : 'text-slate-500',
+            trendColor: selectedWindow.views >= selectedWindow.viewsPrev ? 'text-foreground' : 'text-muted-foreground',
         },
         {
             name: 'Leads generes',
             value: selectedWindow.leads.toString(),
             icon: Users,
-            color: 'text-blue-600',
-            bg: 'bg-blue-50',
+            color: 'text-info',
+            bg: 'bg-info/10',
             trend: buildDeltaLabel(selectedWindow.leads, selectedWindow.leadsPrev),
-            trendColor: selectedWindow.leads >= selectedWindow.leadsPrev ? 'text-blue-600' : 'text-slate-500',
+            trendColor: selectedWindow.leads >= selectedWindow.leadsPrev ? 'text-info' : 'text-muted-foreground',
         },
     ];
 
@@ -376,14 +376,14 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             )}
 
             <Card className={cn(
-                "rounded-2xl border shadow-sm",
-                primaryChecklistItem ? "border-amber-200 bg-amber-50/40" : "border-emerald-200 bg-emerald-50/30"
+                "rounded-xl border shadow-none",
+                primaryChecklistItem ? "border-warning/30 bg-warning/10" : "border-success/30 bg-success/10"
             )}>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-headline text-slate-900">
+                    <CardTitle className="text-lg font-headline text-foreground">
                         {primaryChecklistItem ? 'Prochaine action prioritaire' : 'Priorites sous controle'}
                     </CardTitle>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                         {primaryChecklistItem
                             ? 'Suivez cette action pour augmenter la confiance et la conversion de votre fiche.'
                             : `Toutes les actions critiques sont traitees pour les ${timeframe} derniers jours.`}
@@ -391,9 +391,9 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {primaryChecklistItem ? (
-                        <div className="rounded-xl border border-amber-200 bg-white p-4">
-                            <p className="text-sm font-semibold text-slate-900">{primaryChecklistItem.label}</p>
-                            <p className="mt-1 text-xs text-slate-600">{primaryChecklistItem.details}</p>
+                        <div className="rounded-md border border-warning/30 bg-card p-4">
+                            <p className="text-sm font-semibold text-foreground">{primaryChecklistItem.label}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">{primaryChecklistItem.details}</p>
                             <Button asChild size="sm" className="mt-3 rounded-lg">
                                 <Link href={primaryChecklistItem.href}>
                                     {primaryChecklistItem.cta}
@@ -402,9 +402,9 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                             </Button>
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-emerald-200 bg-white p-4">
-                            <p className="text-sm font-semibold text-emerald-700">Aucune action bloquante detectee</p>
-                            <p className="mt-1 text-xs text-slate-600">Vous pouvez maintenant concentrer vos efforts sur la croissance.</p>
+                        <div className="rounded-md border border-success/30 bg-card p-4">
+                            <p className="text-sm font-semibold text-success">Aucune action bloquante detectee</p>
+                            <p className="mt-1 text-xs text-muted-foreground">Vous pouvez maintenant concentrer vos efforts sur la croissance.</p>
                         </div>
                     )}
                     <div className="flex flex-wrap gap-2">
@@ -421,16 +421,16 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 </CardContent>
             </Card>
 
-            <Card className="border-slate-200 bg-white shadow-sm rounded-2xl">
+                <Card className="rounded-xl border border-border bg-card shadow-none">
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-headline text-slate-900">Checklist operateur</CardTitle>
-                    <p className="text-sm text-slate-500">Priorites pour les {timeframe} derniers jours.</p>
+                    <CardTitle className="text-lg font-headline text-foreground">Checklist operateur</CardTitle>
+                    <p className="text-sm text-muted-foreground">Priorites pour les {timeframe} derniers jours.</p>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-3">
                     {checklistItems.map((item) => (
                         <div key={item.key} className={cn(
-                            "rounded-xl border p-4",
-                            item.done ? "border-emerald-100 bg-emerald-50/40" : "border-amber-100 bg-amber-50/40"
+                            "rounded-xl border border-border p-4",
+                            item.done ? "border-success/20 bg-success/10" : "border-warning/20 bg-warning/10"
                         )}>
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex items-center gap-2">
@@ -439,19 +439,19 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                     ) : (
                                         <CircleAlert className="h-4 w-4 text-amber-600" />
                                     )}
-                                    <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
                                 </div>
                                 <Badge
                                     variant="outline"
                                     className={cn(
                                         "rounded-full text-[10px] uppercase tracking-wide",
-                                        item.done ? "border-emerald-200 text-emerald-700" : "border-amber-200 text-amber-700"
+                                        item.done ? "border-success/30 text-success" : "border-warning/30 text-warning"
                                     )}
                                 >
                                     {item.done ? 'ok' : 'action'}
                                 </Badge>
                             </div>
-                            <p className="mt-2 text-xs text-slate-600">{item.details}</p>
+                            <p className="mt-2 text-xs text-muted-foreground">{item.details}</p>
                             <Button asChild size="sm" variant="outline" className="mt-3 h-8 rounded-lg text-xs font-semibold">
                                 <Link href={item.href}>{item.cta}</Link>
                             </Button>
@@ -463,9 +463,9 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             {/* Clean Stats Grid */}
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {statCards.map((stat) => (
-                    <Card key={stat.name} className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden group">
+                    <Card key={stat.name} className="group overflow-hidden rounded-xl border border-border bg-card shadow-none transition-colors hover:bg-secondary/20">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-body">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-body">
                                 {stat.name}
                             </span>
                             <div className={cn("p-2 rounded-xl transition-all group-hover:bg-opacity-100 bg-opacity-80", stat.bg, stat.color)}>
@@ -473,7 +473,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold font-headline text-slate-900">{stat.value}</div>
+                            <div className="text-3xl font-bold font-headline text-foreground">{stat.value}</div>
                             <p className={cn("text-[10px] font-bold mt-2 flex items-center gap-1 uppercase tracking-wider", stat.trendColor)}>
                                 {stat.trend}
                             </p>
@@ -483,48 +483,48 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             </div>
 
             {profile?.tier === 'gold' && (
-                <Card className="border-amber-200 bg-amber-50/50 shadow-sm rounded-2xl overflow-hidden">
+                <Card className="border-warning/30 bg-warning/10 shadow-none rounded-xl overflow-hidden">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-amber-900 text-xl font-bold flex items-center gap-2">
-                            <Crown className="w-5 h-5 text-amber-600" />
+                        <CardTitle className="text-foreground text-xl font-bold flex items-center gap-2">
+                            <Crown className="w-5 h-5 text-warning" />
                             Benchmark salaires
                         </CardTitle>
-                        <p className="text-sm text-amber-800/80">
+                        <p className="text-sm text-muted-foreground">
                             Comparez votre competitivite salariale avec votre ville et votre secteur.
                         </p>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
-                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Mediane</p>
-                                <p className="text-lg font-bold text-amber-900">
+                            <div className="rounded-md border border-warning/20 bg-card p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-warning font-bold">Mediane</p>
+                                <p className="text-lg font-bold text-foreground">
                                     {formatCurrency(stats.salaryBenchmark?.medianMonthlySalary)}
                                 </p>
                             </div>
-                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
-                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Plage</p>
-                                <p className="text-sm font-bold text-amber-900">
+                            <div className="rounded-md border border-warning/20 bg-card p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-warning font-bold">Plage</p>
+                                <p className="text-sm font-bold text-foreground">
                                     {formatCurrency(stats.salaryBenchmark?.minMonthlySalary)} - {formatCurrency(stats.salaryBenchmark?.maxMonthlySalary)}
                                 </p>
                             </div>
-                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
-                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Vs ville</p>
-                                <p className="text-lg font-bold text-amber-900">
+                            <div className="rounded-md border border-warning/20 bg-card p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-warning font-bold">Vs ville</p>
+                                <p className="text-lg font-bold text-foreground">
                                     {formatPercent(stats.salaryBenchmark?.pctAboveCityAvg)}
                                 </p>
                             </div>
-                            <div className="rounded-xl border border-amber-100 bg-white/80 p-3">
-                                <p className="text-[10px] uppercase tracking-widest text-amber-700/70 font-bold">Vs secteur</p>
-                                <p className="text-lg font-bold text-amber-900">
+                            <div className="rounded-md border border-warning/20 bg-card p-3">
+                                <p className="text-[10px] uppercase tracking-widest text-warning font-bold">Vs secteur</p>
+                                <p className="text-lg font-bold text-foreground">
                                     {formatPercent(stats.salaryBenchmark?.pctAboveSectorAvg)}
                                 </p>
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <p className="text-xs font-semibold text-amber-800/80 uppercase tracking-wider">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {stats.salaryBenchmark?.submissionCount || 0} soumissions publiees
                             </p>
-                            <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl">
+                            <Button asChild className="bg-warning hover:opacity-90 text-warning-foreground font-bold rounded-md">
                                 <Link href="/dashboard/salary-benchmark">
                                     <BarChart3 className="w-4 h-4 mr-2" />
                                     Voir le benchmark
@@ -539,28 +539,28 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* Reviews Section */}
-                <Card className="lg:col-span-2 border-slate-200 bg-white shadow-sm rounded-2xl">
-                    <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50">
-                        <CardTitle className="font-headline text-xl text-slate-900">Derniers Avis Employés</CardTitle>
-                        <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 font-bold rounded-lg" asChild>
+                <Card className="lg:col-span-2 border border-border bg-card shadow-none rounded-xl">
+                    <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                        <CardTitle className="font-headline text-xl text-foreground">Derniers Avis Employés</CardTitle>
+                        <Button variant="ghost" size="sm" className="text-info hover:bg-info/10 font-bold rounded-md" asChild>
                             <Link href="/dashboard/reviews">Gérer les avis</Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="pt-6">
                         {stats.recentReviews.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 text-slate-400 text-center">
-                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
-                                    <Star className="w-10 h-10 text-slate-200" />
+                            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground text-center">
+                                <div className="w-20 h-20 bg-secondary/20 rounded-full flex items-center justify-center mb-6 border border-border">
+                                    <Star className="w-10 h-10 text-muted-foreground" />
                                 </div>
-                                <p className="font-bold text-slate-900">Aucun avis pour l'instant</p>
+                                <p className="font-bold text-foreground">Aucun avis pour l'instant</p>
                                 <p className="text-sm mt-1">Encouragez vos employés à partager leur expérience.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {stats.recentReviews.map((review) => (
-                                    <div key={review.id} className="group flex flex-col sm:flex-row gap-5 p-6 rounded-2xl bg-white hover:bg-slate-50 transition-all duration-300 border border-slate-100 hover:border-blue-100">
+                                    <div key={review.id} className="group flex flex-col sm:flex-row gap-5 p-6 rounded-xl bg-card hover:bg-secondary/20 transition-colors duration-300 border border-border hover:border-info/20">
                                         <div className="flex-shrink-0">
-                                            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg border border-blue-100 shadow-sm">
+                                            <div className="w-12 h-12 rounded-md bg-info/10 text-info flex items-center justify-center font-bold text-lg border border-info/20 shadow-none">
                                                 {getAuthorInitials(
                                                     review,
                                                     'pro', // Assuming Pro view
@@ -572,7 +572,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                         <div className="flex-grow space-y-2">
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <h4 className="font-bold text-base text-slate-900 font-headline">
+                                                    <h4 className="font-bold text-base text-foreground font-headline">
                                                         {getAuthorDisplayName(
                                                             review,
                                                             'pro',
@@ -580,20 +580,20 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                                             null
                                                         )}
                                                     </h4>
-                                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
                                                 </div>
-                                                <Badge variant="outline" className="text-[10px] font-bold rounded-full border-slate-200 text-slate-600">
+                                                <Badge variant="outline" className="text-[10px] font-bold rounded-full border-border text-muted-foreground">
                                                     {review.is_anonymous ? 'Anonyme' : 'Profil public'}
                                                 </Badge>
                                             </div>
                                             <div className="py-1">
                                                 <StarRating rating={review.rating} size={14} readOnly />
                                             </div>
-                                            <p className="text-sm text-slate-600 line-clamp-2 italic leading-relaxed font-body">
+                                            <p className="text-sm text-muted-foreground line-clamp-2 italic leading-relaxed font-body">
                                                 "{review.content || 'Pas de commentaire.'}"
                                             </p>
                                             <div className="pt-3 flex justify-end">
-                                                <Button size="sm" variant="outline" className="text-blue-600 hover:text-white hover:bg-blue-600 h-9 px-4 rounded-xl text-xs font-bold border-blue-100" asChild>
+                                                <Button size="sm" variant="outline" className="text-info hover:text-info hover:bg-info/10 h-9 px-4 rounded-md text-xs font-bold border-info/20" asChild>
                                                     <Link href="/dashboard/reviews">
                                                         Répondre <ArrowRight className="ml-1.5 w-3 h-3" />
                                                     </Link>
@@ -609,68 +609,68 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
 
                 {/* Side Info & Actions */}
                 <div className="space-y-8">
-                    <Card className="border-primary/20 bg-primary/5/20 overflow-hidden relative group rounded-2xl">
+                    <Card className="border-info/20 bg-info/10 overflow-hidden relative group rounded-xl">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-blue-900 text-lg font-bold flex items-center gap-2 font-headline">
-                                <Sparkles className="w-5 h-5 text-blue-600" /> Booster vos résultats
+                            <CardTitle className="text-foreground text-lg font-bold flex items-center gap-2 font-headline">
+                                <Sparkles className="w-5 h-5 text-info" /> Booster vos résultats
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <p className="text-sm text-blue-900/70 leading-relaxed font-medium">
+                            <p className="text-sm text-muted-foreground leading-relaxed font-medium">
                                 {profile?.tier === 'growth'
-                                    ? <>Passez au niveau <span className="font-bold text-blue-700">Business GOLD</span> pour débloquer :</>
-                                    : <>Passez au niveau supérieur avec <span className="font-bold text-blue-700">GOLD</span> :</>
+                                    ? <>Passez au niveau <span className="font-bold text-info">Business GOLD</span> pour débloquer :</>
+                                    : <>Passez au niveau supérieur avec <span className="font-bold text-info">GOLD</span> :</>
                                 }
                             </p>
-                            <ul className="text-xs space-y-3 text-blue-950 font-semibold">
-                                <li className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-blue-100/50 shadow-sm">
-                                    <ShieldCheck className="w-4 h-4 text-blue-600" /> Badge de confiance GOLD
+                            <ul className="text-xs space-y-3 text-foreground font-semibold">
+                                <li className="flex items-center gap-3 bg-card p-2.5 rounded-md border border-info/20 shadow-none">
+                                    <ShieldCheck className="w-4 h-4 text-info" /> Badge de confiance GOLD
                                 </li>
-                                <li className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-blue-100/50 shadow-sm">
-                                    <MessageSquare className="w-4 h-4 text-blue-600" /> Communication avec les employés
+                                <li className="flex items-center gap-3 bg-card p-2.5 rounded-md border border-info/20 shadow-none">
+                                    <MessageSquare className="w-4 h-4 text-info" /> Communication avec les employés
                                 </li>
-                                <li className="flex items-center gap-3 bg-white/60 p-2.5 rounded-xl border border-blue-100/50 shadow-sm">
-                                    <Star className="w-4 h-4 text-blue-600" /> Meilleure visibilité pour attirer les talents
+                                <li className="flex items-center gap-3 bg-card p-2.5 rounded-md border border-info/20 shadow-none">
+                                    <Star className="w-4 h-4 text-info" /> Meilleure visibilité pour attirer les talents
                                 </li>
                             </ul>
                             {!profile?.tier || profile.tier !== 'gold' ? (
                                 <Button
                                     asChild
-                                    className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 shadow-xl shadow-blue-600/20"
+                                    className="w-full rounded-md bg-info hover:opacity-90 text-white font-bold h-12 shadow-none"
                                 >
                                     <Link href="/dashboard/premium">
                                         {profile?.tier === 'growth' ? "Passer GOLD" : "Découvrir Avis Premium"}
                                     </Link>
                                 </Button>
                             ) : (
-                                <Button variant="outline" className="w-full rounded-xl border-blue-200 text-blue-600 font-bold h-12 pointer-events-none opacity-80">
+                                <Button variant="outline" className="w-full rounded-md border-info/20 text-info font-bold h-12 pointer-events-none opacity-80">
                                     <Sparkles className="w-4 h-4 mr-2" /> Statut GOLD Actif
                                 </Button>
                             )}
                         </CardContent>
                     </Card>
 
-                    <Card className="border-slate-200 bg-slate-900 text-white overflow-hidden relative rounded-2xl shadow-xl">
+                    <Card className="border-border bg-card text-foreground overflow-hidden relative rounded-xl shadow-none">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Zap className="w-20 h-20 rotate-12" />
                         </div>
                         <CardHeader>
-                            <CardTitle className="text-white font-headline text-lg uppercase tracking-widest">Raccourcis</CardTitle>
+                            <CardTitle className="text-foreground font-headline text-lg uppercase tracking-widest">Raccourcis</CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3">
-                            <Button variant="secondary" className="w-full justify-start h-12 bg-white/10 text-white font-bold hover:bg-white/20 border-white/10" asChild>
+                            <Button variant="secondary" className="w-full justify-start h-12 bg-secondary text-foreground font-bold hover:bg-secondary/80 border-border" asChild>
                                 <Link href="/dashboard/reviews">
-                                    <MessageSquare className="mr-3 w-4 h-4 text-blue-400" /> Répondre aux avis
+                                    <MessageSquare className="mr-3 w-4 h-4 text-info" /> Répondre aux avis
                                 </Link>
                             </Button>
-                            <Button variant="secondary" className="w-full justify-start h-12 bg-white/10 text-white font-bold hover:bg-white/20 border-white/10" asChild>
+                            <Button variant="secondary" className="w-full justify-start h-12 bg-secondary text-foreground font-bold hover:bg-secondary/80 border-border" asChild>
                                 <Link href="/dashboard/updates">
-                                    <TrendingUp className="mr-3 w-4 h-4 text-blue-400" /> Publier une promotion
+                                    <TrendingUp className="mr-3 w-4 h-4 text-info" /> Publier une promotion
                                 </Link>
                             </Button>
-                            <Button variant="secondary" className="w-full justify-start h-12 bg-white/10 text-white font-bold hover:bg-white/20 border-white/10" asChild>
+                            <Button variant="secondary" className="w-full justify-start h-12 bg-secondary text-foreground font-bold hover:bg-secondary/80 border-border" asChild>
                                 <Link href="/dashboard/edit-profile">
-                                    <Eye className="mr-3 w-4 h-4 text-blue-400" /> Éditer mon profil
+                                    <Eye className="mr-3 w-4 h-4 text-info" /> Éditer mon profil
                                 </Link>
                             </Button>
                         </CardContent>
