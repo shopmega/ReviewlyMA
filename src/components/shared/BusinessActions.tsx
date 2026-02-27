@@ -146,7 +146,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
             </Button>
           )}
           {website && (
-            <Button variant="outline" className="w-full bg-card/80 backdrop-blur-sm" onClick={handleWebsite}>
+            <Button variant="outline" className="w-full bg-card" onClick={handleWebsite}>
               <Globe className="mr-2 h-4 w-4" />
               {t('businessActions.website', 'Site web')}
             </Button>
@@ -157,7 +157,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 relative">
         <Button
           variant="outline"
-          className={cn('w-full bg-card/80 backdrop-blur-sm', showShareOptions && 'bg-accent')}
+          className={cn('w-full bg-card', showShareOptions && 'bg-accent')}
           onClick={handleShare}
         >
           <Share2 className="mr-2 h-4 w-4" />
@@ -186,7 +186,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
       </div>
       <Button
         variant="outline"
-        className={cn('w-full bg-card/80 backdrop-blur-sm transition-colors', isBookmarked && 'text-primary border-primary bg-primary/5')}
+        className={cn('w-full bg-card transition-colors', isBookmarked && 'text-primary border-primary bg-primary/5')}
         onClick={handleSave}
         disabled={loadingBookmark}
       >
