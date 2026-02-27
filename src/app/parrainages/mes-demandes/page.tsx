@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { sendReferralMessageForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
+import { blockReferralUserForm, sendReferralMessageForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +20,7 @@ type MyRequest = {
     company_name: string;
     job_title: string;
     status: string;
+    user_id: string;
   } | null;
 };
 
@@ -38,14 +39,26 @@ type MyRequestRow = Omit<MyRequest, 'offer'> & {
         company_name: string;
         job_title: string;
         status: string;
+        user_id: string;
       }
     | {
         id: string;
         company_name: string;
         job_title: string;
         status: string;
+        user_id: string;
       }[]
     | null;
+};
+
+const REQUEST_STATUS_LABELS: Record<string, string> = {
+  pending: 'Envoyee',
+  in_review: 'En revue',
+  referred: 'Parraine',
+  interview: 'Entretien',
+  hired: 'Embauche',
+  rejected: 'Refusee',
+  withdrawn: 'Retiree',
 };
 
 export default async function MyReferralRequestsPage() {
@@ -68,7 +81,8 @@ export default async function MyReferralRequestsPage() {
         id,
         company_name,
         job_title,
-        status
+        status,
+        user_id
       )
     `)
     .eq('candidate_user_id', auth.user.id)
@@ -97,6 +111,33 @@ export default async function MyReferralRequestsPage() {
         <p className="text-sm text-muted-foreground">Suivez le statut de vos demandes et retirez-les si necessaire.</p>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-2xl font-semibold">{requests.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">En attente</p>
+            <p className="text-2xl font-semibold">{requests.filter((r) => ['pending', 'in_review'].includes(r.status)).length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Parrainages actifs</p>
+            <p className="text-2xl font-semibold">{requests.filter((r) => ['referred', 'interview'].includes(r.status)).length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Embauches</p>
+            <p className="text-2xl font-semibold">{requests.filter((r) => r.status === 'hired').length}</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {requests.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
@@ -113,10 +154,13 @@ export default async function MyReferralRequestsPage() {
                   <Badge variant="outline">{request.offer?.company_name || 'Entreprise'}</Badge>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge>{request.status}</Badge>
+                  <Badge>{REQUEST_STATUS_LABELS[request.status] || request.status}</Badge>
                   <span className="text-xs text-muted-foreground">
                     Envoyee le {new Date(request.created_at).toLocaleDateString('fr-MA')}
                   </span>
+                  {['pending', 'in_review'].includes(request.status) ? (
+                    <span className="text-xs text-amber-700">Reponse attendue sous 72h</span>
+                  ) : null}
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -143,6 +187,16 @@ export default async function MyReferralRequestsPage() {
                       </Button>
                     </form>
                   )}
+                  {request.offer?.user_id ? (
+                    <form action={blockReferralUserForm}>
+                      <input type="hidden" name="offerId" value={request.offer.id} />
+                      <input type="hidden" name="blockedUserId" value={request.offer.user_id} />
+                      <input type="hidden" name="reason" value="blocked_by_candidate" />
+                      <Button type="submit" size="sm" variant="destructive">
+                        Bloquer le recruteur
+                      </Button>
+                    </form>
+                  ) : null}
                 </div>
 
                 <div className="rounded-lg border bg-muted/20 p-3 space-y-2">

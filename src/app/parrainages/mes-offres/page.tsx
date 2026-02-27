@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { sendReferralMessageForm, updateMyReferralOfferStatusForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
+import { blockReferralUserForm, sendReferralMessageForm, updateMyReferralOfferStatusForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +26,7 @@ type Request = {
   created_at: string;
   cv_url: string | null;
   linkedin_url: string | null;
+  response_due_at: string | null;
 };
 
 type ReferralMessage = {
@@ -88,6 +89,11 @@ export default async function MyReferralOffersPage() {
     }
   }
 
+  const totalRequests = requests.length;
+  const answeredRequests = requests.filter((r) => r.status !== 'pending').length;
+  const hires = requests.filter((r) => r.status === 'hired').length;
+  const responseRate = totalRequests > 0 ? Math.round((answeredRequests / totalRequests) * 100) : 0;
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -98,6 +104,27 @@ export default async function MyReferralOffersPage() {
         <Button asChild>
           <Link href="/parrainages/new">Publier une offre</Link>
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Demandes recues</p>
+            <p className="text-2xl font-semibold">{totalRequests}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Taux de reponse</p>
+            <p className="text-2xl font-semibold">{responseRate}%</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-muted-foreground">Candidats embauches</p>
+            <p className="text-2xl font-semibold">{hires}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {items.length === 0 ? (
@@ -167,6 +194,12 @@ export default async function MyReferralOffersPage() {
                             <Badge variant="secondary">{REQUEST_STATUS_LABELS[request.status] || request.status}</Badge>
                           </div>
 
+                          {['pending', 'in_review'].includes(request.status) ? (
+                            <p className="text-xs text-amber-700">
+                              SLA reponse cible: {new Date(request.response_due_at || new Date(new Date(request.created_at).getTime() + 72 * 60 * 60 * 1000)).toLocaleDateString('fr-MA')}
+                            </p>
+                          ) : null}
+
                           {request.message ? (
                             <p className="text-sm text-muted-foreground whitespace-pre-wrap rounded-md bg-muted/40 p-3">
                               {request.message}
@@ -189,6 +222,13 @@ export default async function MyReferralOffersPage() {
                             {!request.cv_url && !request.linkedin_url ? (
                               <p className="text-xs text-muted-foreground">Aucun CV ni lien LinkedIn fourni par le candidat.</p>
                             ) : null}
+
+                            <form action={blockReferralUserForm}>
+                              <input type="hidden" name="offerId" value={offer.id} />
+                              <input type="hidden" name="blockedUserId" value={request.candidate_user_id} />
+                              <input type="hidden" name="reason" value="blocked_by_offer_owner" />
+                              <Button type="submit" size="sm" variant="destructive">Bloquer</Button>
+                            </form>
                           </div>
 
                           <div className="flex flex-wrap gap-2 pt-1">

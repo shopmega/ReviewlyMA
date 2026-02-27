@@ -44,8 +44,9 @@ export function RequestReferralForm({ offerId }: { offerId: string }) {
               id="message"
               name="message"
               required
+              minLength={40}
               className="min-h-[120px]"
-              placeholder={t('referrals.request.messagePlaceholder', 'Presentez votre profil, experience et motivation...')}
+              placeholder={t('referrals.request.messagePlaceholder', 'Presentez votre profil, experience et motivation (minimum 40 caracteres)...')}
             />
             {fieldError('message') && <p className="text-xs text-destructive">{fieldError('message')}</p>}
           </div>
@@ -59,6 +60,10 @@ export function RequestReferralForm({ offerId }: { offerId: string }) {
             <Input id="linkedinUrl" name="linkedinUrl" placeholder="https://www.linkedin.com/in/..." />
             {fieldError('linkedinUrl') && <p className="text-xs text-destructive">{fieldError('linkedinUrl')}</p>}
           </div>
+          <label className="flex items-start gap-2 rounded-md border border-border/70 bg-muted/20 p-3 text-xs text-muted-foreground">
+            <input type="checkbox" required className="mt-0.5" />
+            Je confirme que je ne paierai jamais pour un parrainage et que je garde les echanges sur Reviewly.
+          </label>
           <p className="text-xs text-muted-foreground">
             {t('referrals.request.privacyNote', "Votre demande sera visible uniquement par l'auteur de l'offre.")}
           </p>

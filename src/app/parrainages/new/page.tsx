@@ -64,6 +64,9 @@ export default async function NewParrainagePage() {
               </div>
             </div>
           )}
+          <p className="text-xs text-muted-foreground">
+            Pourquoi ces conditions ? Elles limitent le spam, l&apos;usurpation d&apos;identite et les faux parrainages.
+          </p>
         </CardContent>
       </Card>
 

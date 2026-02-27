@@ -320,6 +320,7 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
               id="description"
               name="description"
               required
+              minLength={80}
               className="min-h-[140px]"
               placeholder={t('referrals.form.descriptionPlaceholder', "Expliquez le contexte, l'equipe, et ce que vous attendez du candidat.")}
             />
@@ -352,6 +353,9 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
               </Badge>
               <span>{t('referrals.form.footerHint', "Les candidats vous contacteront depuis la page de l'offre.")}</span>
             </div>
+            <p className="mt-2 text-xs text-amber-800">
+              Rappel securite: ne demandez jamais d&apos;argent, ne forcez pas un contact WhatsApp/Telegram externe.
+            </p>
           </div>
 
           <div className="flex justify-end">
