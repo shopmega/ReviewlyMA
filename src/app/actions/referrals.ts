@@ -26,6 +26,11 @@ const DIRECT_CONTACT_PATTERNS: Array<{ regex: RegExp; reason: string }> = [
   { regex: /\+?\d[\d\s().-]{7,}\d/g, reason: 'Les numeros de telephone doivent rester prives.' },
   { regex: /@[A-Za-z0-9._%+-]+\.[A-Za-z]{2,}/g, reason: 'Ne publiez pas d email direct dans le contenu.' },
 ];
+const INTIMIDATION_PATTERNS: Array<{ regex: RegExp; reason: string }> = [
+  { regex: /\b(?:lawsuit|legal action|tribunal|avocat|poursuite)\b/i, reason: 'Les menaces legales ne sont pas autorisees dans les messages de parrainage.' },
+  { regex: /\b(?:supprime ton avis|delete your review|retire ton avis)\b/i, reason: 'Aucune pression sur les avis utilisateurs n est autorisee.' },
+  { regex: /\b(?:on sait qui tu es|we know who you are|on va te retrouver)\b/i, reason: 'Les tentatives d intimidation sont interdites.' },
+];
 
 const DESCRIPTION_INTEGRITY_TOKENS = [
   'user_id',
@@ -142,6 +147,11 @@ function detectUnsafeReferralContent(value: string | undefined): string | null {
     }
   }
   for (const rule of DIRECT_CONTACT_PATTERNS) {
+    if (rule.regex.test(content)) {
+      return rule.reason;
+    }
+  }
+  for (const rule of INTIMIDATION_PATTERNS) {
     if (rule.regex.test(content)) {
       return rule.reason;
     }
@@ -916,6 +926,11 @@ export async function sendReferralMessage(_prev: ActionState, formData: FormData
   const isOwner = offer?.user_id === user.id;
   if (!isCandidate && !isOwner) {
     return { status: 'error', message: 'Non autorise.' };
+  }
+
+  const safetyIssue = detectUnsafeReferralContent(parsed.data.message);
+  if (safetyIssue) {
+    return { status: 'error', message: safetyIssue };
   }
 
   const { error } = await supabase.from('job_referral_messages').insert({

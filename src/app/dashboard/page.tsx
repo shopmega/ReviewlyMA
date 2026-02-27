@@ -7,6 +7,13 @@ import { isPaidTier } from '@/lib/tier-utils';
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const LEAD_EVENT_TYPES = new Set(['phone_click', 'website_click', 'contact_form', 'whatsapp_click', 'affiliate_click']);
 
+function computeStdDev(values: number[]): number {
+  if (values.length <= 1) return 0;
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance = values.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / values.length;
+  return Math.sqrt(variance);
+}
+
 function toTimestamp(input?: string | null): number | null {
   if (!input) return null;
   const ms = Date.parse(input);
@@ -281,6 +288,26 @@ export default async function DashboardPage(props: {
       }
     }
 
+    const latestReviewRatings = recentReviews
+      .map((review) => review.rating)
+      .filter((rating): rating is number => typeof rating === 'number')
+      .slice(0, 10);
+    const ratingVolatility = computeStdDev(latestReviewRatings);
+    const volatilityAlert = latestReviewRatings.length >= 6 && ratingVolatility >= 1.2
+      ? `Volatilite elevee (${ratingVolatility.toFixed(2)}) sur les derniers avis.`
+      : null;
+
+    const salaryAlert = salaryBenchmark
+      ? (() => {
+        const cityGap = salaryBenchmark.pctAboveCityAvg ?? 0;
+        const sectorGap = salaryBenchmark.pctAboveSectorAvg ?? 0;
+        if (cityGap <= -8 || sectorGap <= -8) {
+          return 'Position salariale sous le marche: risque d attrition a surveiller.';
+        }
+        return null;
+      })()
+      : null;
+
     const stats: DashboardStats = {
       business: {
         id: business.id,
@@ -304,6 +331,11 @@ export default async function DashboardPage(props: {
         hasPremiumAccess,
       },
       salaryBenchmark,
+      proAlerts: [
+        ...(volatilityAlert ? [{ id: 'rating_volatility', level: 'medium' as const, message: volatilityAlert }] : []),
+        ...(salaryAlert ? [{ id: 'salary_competitiveness', level: 'high' as const, message: salaryAlert }] : []),
+        ...((pendingReviewReplies || 0) >= 5 ? [{ id: 'reply_sla', level: 'high' as const, message: `${pendingReviewReplies} avis sans reponse: risque reputationnel.` }] : []),
+      ],
     };
 
     return <DashboardClient

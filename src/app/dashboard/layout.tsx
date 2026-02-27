@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         side="left"
         collapsible="icon"
         variant="sidebar"
-        className="border-r border-border/40 mt-16 h-[calc(100svh-4rem)] bg-card shadow-sm"
+        className="mt-16 h-[calc(100svh-4rem)] border-r border-border bg-card"
       >
         <SidebarHeader className="py-2 px-2">
           <div className="flex items-center gap-2 px-2 py-1">
@@ -122,14 +122,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   asChild
                   isActive={isMenuItemActive(item.href)}
                   tooltip={item.label}
-                  className="data-[active=true]:bg-accent/10 data-[active=true]:text-accent hover:bg-secondary/50 transition-colors"
+                  className="border-l-2 border-l-transparent data-[active=true]:border-l-primary data-[active=true]:bg-secondary data-[active=true]:text-foreground hover:bg-secondary/50 transition-colors"
                 >
                   <Link href={item.href}>
                     <item.icon className="h-4 w-4" />
                     <span className="font-medium inline-flex items-center gap-2">
                       {item.label}
                       {item.goldOnly && (
-                        <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                        <span className="inline-flex items-center rounded-md border border-border bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                           <Crown className="mr-1 h-3 w-3" />
                           Gold
                         </span>
@@ -142,12 +142,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className="bg-gradient-to-br from-background to-secondary/5 min-h-screen">
-        <div className="sticky top-[65px] z-10 flex h-12 items-center gap-4 border-b bg-background px-4 lg:hidden shadow-sm">
+      <SidebarInset className="min-h-screen bg-background">
+        <div className="sticky top-[65px] z-10 flex h-12 items-center gap-4 border-b border-border bg-background px-4 lg:hidden">
           <SidebarTrigger />
-          <div className="text-sm font-medium">Menu Dashboard</div>
+          <div className="text-sm font-medium text-foreground">Menu Dashboard</div>
         </div>
-        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
           {children}
         </div>
       </SidebarInset>

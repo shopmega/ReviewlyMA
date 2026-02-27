@@ -3,7 +3,7 @@
  * Moroccan-optimized categories, cities, quartiers, and amenities
  */
 
-// Main Categories with Icon Suggestions (Enterprise Focus)
+// Main Categories with Icon Suggestions (Business/Gold focus)
 export const MAIN_CATEGORIES = [
   { id: 'banque-finance', name: 'Banque & Finance', icon: 'building-library' },
   { id: 'centres-appel-bpo', name: 'Centres d’Appel & BPO', icon: 'headset' },
@@ -20,7 +20,7 @@ export const MAIN_CATEGORIES = [
   { id: 'telecommunications', name: 'Télécommunications', icon: 'radio' },
 ] as const;
 
-// Subcategories based on Moroccan Enterprise sectors
+// Subcategories based on major Moroccan business sectors
 export const SUBCATEGORIES: Record<string, string[]> = {
   'Banque & Finance': [
     'Banque',

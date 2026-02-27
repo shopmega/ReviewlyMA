@@ -30,7 +30,7 @@ export default async function SalariesIndexPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
-      <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-sky-50 via-background to-emerald-50 p-6 md:p-10">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-secondary/30 p-6 md:p-10">
         <div className="space-y-4 max-w-3xl">
           <Badge variant="outline" className="uppercase tracking-widest text-[10px]">Barometre</Badge>
           <h1 className="text-3xl md:text-5xl font-black tracking-tight">Salaires au Maroc</h1>
@@ -67,7 +67,7 @@ export default async function SalariesIndexPage() {
                 <Link
                   key={`${item.job_title}-${item.city_slug}`}
                   href={`/salaires/role/${roleSlug}/${item.city_slug}`}
-                  className="flex items-center justify-between rounded-xl border px-4 py-3 hover:bg-sky-50 transition-colors"
+                  className="flex items-center justify-between rounded-xl border border-border px-4 py-3 hover:bg-secondary transition-colors"
                 >
                   <div>
                     <p className="font-semibold">{item.job_title}</p>
@@ -109,7 +109,7 @@ export default async function SalariesIndexPage() {
                   <Link
                     key={`${item.sector_slug}-${item.city_slug}`}
                     href={`/salaires/secteur/${item.sector_slug}/${item.city_slug}`}
-                    className="flex items-center justify-between rounded-xl border px-4 py-3 hover:bg-emerald-50 transition-colors"
+                    className="flex items-center justify-between rounded-xl border border-border px-4 py-3 hover:bg-secondary transition-colors"
                   >
                     <div>
                       <p className="font-semibold">{item.sector_slug}</p>
@@ -136,7 +136,7 @@ export default async function SalariesIndexPage() {
       </section>
 
       {!isUnlocked && (
-        <section className="rounded-2xl border p-5 bg-muted/20">
+        <section className="rounded-2xl border border-border bg-card p-5">
           <h2 className="font-bold text-lg mb-1">Mode apercu actif</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Vous voyez un apercu limite. Connectez-vous pour acceder aux valeurs detaillees et a la comparaison avancee.
@@ -147,7 +147,7 @@ export default async function SalariesIndexPage() {
         </section>
       )}
 
-      <section className="rounded-2xl border p-6 bg-muted/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-xl font-bold mb-2">Contribuez au barometre</h2>
           <p className="text-muted-foreground">

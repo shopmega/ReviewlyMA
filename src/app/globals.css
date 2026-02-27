@@ -3,114 +3,110 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body), sans-serif;
 }
 
 @layer base {
   :root {
-    /* Premium Light Mode */
-    --background: 210 40% 98%;
-    /* Soft White */
-    --foreground: 224 71% 4%;
-    /* Deep Navy */
+    --background: 210 25% 97%;
+    --foreground: 216 36% 9%;
 
     --card: 0 0% 100%;
-    /* Pure White */
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 216 36% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
+    --popover-foreground: 216 36% 9%;
 
-    --primary: 221 83% 53%;
-    /* Professional Blue */
-    --primary-foreground: 210 40% 98%;
+    --primary: 209 59% 30%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 215 27% 95%;
+    --secondary-foreground: 215 25% 27%;
 
-    --muted: 210 40% 96.1%;
+    --muted: 215 27% 95%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 221 83% 96%;
-    /* Light Blue Tint */
-    --accent-foreground: 222 47% 11%;
+    --accent: 210 47% 94%;
+    --accent-foreground: 215 25% 27%;
 
-    --destructive: 343 85% 55%;
-    /* Softer Red */
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 76% 40%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --success: 145 59% 30%;
+    --warning: 38 92% 33%;
+    --error: 4 76% 40%;
+    --info: 224 76% 48%;
 
-    --radius: 1rem;
-    /* More rounded corners (16px) */
+    --border: 213 26% 87%;
+    --input: 213 26% 87%;
+    --ring: 209 59% 30%;
 
-    /* Status Colors */
-    --success: 150 60% 40%;
-    --warning: 35 90% 50%;
-    --error: 343 85% 55%;
-    --info: 210 80% 55%;
+    --chart-1: 209 59% 30%;
+    --chart-2: 170 76% 24%;
+    --chart-3: 215 16% 47%;
+    --chart-4: 213 26% 87%;
+    --chart-5: 38 92% 33%;
 
-    --sidebar-background: 0 0% 99%;
-    --sidebar-foreground: 224 71% 4%;
-    --sidebar-primary: 221 83% 53%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 210 25% 97%;
+    --sidebar-foreground: 216 36% 9%;
+    --sidebar-primary: 209 59% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-accent: 215 27% 95%;
+    --sidebar-accent-foreground: 215 25% 27%;
+    --sidebar-border: 213 26% 87%;
+    --sidebar-ring: 209 59% 30%;
   }
 
   .dark {
-    /* Premium Dark Mode - Deep Space Theme */
-    --background: 224 71% 4%;
-    /* Very Deep Navy (almost black) */
-    --foreground: 210 40% 98%;
+    --background: 213 51% 14%;
+    --foreground: 211 32% 95%;
 
-    --card: 224 71% 8%;
-    /* Slightly lighter Navy */
-    --card-foreground: 210 40% 98%;
+    --card: 212 45% 20%;
+    --card-foreground: 211 32% 95%;
 
-    --popover: 224 71% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 212 45% 20%;
+    --popover-foreground: 211 32% 95%;
 
-    --primary: 217 91% 60%;
-    /* Lighter Blue for Dark Mode */
-    --primary-foreground: 210 40% 98%;
+    --primary: 207 53% 37%;
+    --primary-foreground: 211 32% 95%;
 
-    --secondary: 224 71% 12%;
-    /* Lighter Navy for secondary elements */
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 211 19% 49%;
+    --secondary-foreground: 211 32% 95%;
 
-    --muted: 224 71% 12%;
-    --muted-foreground: 215 20% 70%;
+    --muted: 212 32% 24%;
+    --muted-foreground: 211 19% 62%;
 
-    --accent: 224 71% 12%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 212 45% 28%;
+    --accent-foreground: 211 32% 95%;
 
-    --destructive: 343 85% 55%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 6 59% 47%;
+    --destructive-foreground: 211 32% 95%;
 
-    --border: 224 71% 15%;
-    /* Subtle border */
-    --input: 224 71% 12%;
-    --ring: 217 91% 60%;
+    --success: 145 53% 33%;
+    --warning: 37 80% 39%;
+    --error: 6 59% 47%;
+    --info: 221 73% 52%;
 
-    /* Status Colors - Brighter for Dark Mode */
-    --success: 150 60% 50%;
-    --warning: 35 90% 60%;
-    --error: 343 85% 60%;
-    --info: 210 80% 65%;
+    --border: 212 26% 31%;
+    --input: 212 26% 31%;
+    --ring: 207 53% 37%;
 
-    --sidebar-background: 224 71% 5%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 224 71% 12%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 224 71% 15%;
-    --sidebar-ring: 217 91% 60%;
+    --chart-1: 207 53% 37%;
+    --chart-2: 165 67% 30%;
+    --chart-3: 211 19% 62%;
+    --chart-4: 212 26% 31%;
+    --chart-5: 37 80% 39%;
+
+    --sidebar-background: 213 51% 14%;
+    --sidebar-foreground: 211 32% 95%;
+    --sidebar-primary: 207 53% 37%;
+    --sidebar-primary-foreground: 211 32% 95%;
+    --sidebar-accent: 212 32% 24%;
+    --sidebar-accent-foreground: 211 32% 95%;
+    --sidebar-border: 212 26% 31%;
+    --sidebar-ring: 207 53% 37%;
   }
 }
 
@@ -119,25 +115,22 @@ body {
     @apply border-border;
   }
 
-  /* Premium Utilities */
   .glass {
-    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm dark:bg-black/30 dark:border-white/10;
+    @apply bg-card border border-border shadow-none;
   }
 
   .glass-card {
-    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-sm hover:shadow-md transition-all duration-300;
+    @apply bg-card border border-border shadow-none transition-colors duration-150 hover:border-primary/40;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 dark:to-blue-400;
+    @apply text-primary;
   }
 
   body {
     @apply bg-background text-foreground selection:bg-primary/20 overflow-x-hidden;
-    /* Subtle noise texture or gradient could be added here */
   }
 
-  /* Custom Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -151,7 +144,6 @@ body {
     @apply bg-primary/40 rounded-full hover:bg-primary/60 transition-colors;
   }
 
-  /* Mobile-specific utilities */
   @media (max-width: 768px) {
     .touch-manipulation {
       touch-action: manipulation;

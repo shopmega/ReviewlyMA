@@ -82,7 +82,7 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
     return (
         <div className="sticky top-28 space-y-6">
             {/* Quick Info Card */}
-            <div className="glass-card rounded-2xl overflow-hidden p-0 border border-border/50">
+            <div className="overflow-hidden rounded-xl border border-border bg-card p-0 shadow-none">
                 <BusinessMap location={displayLocation} businessName={business.name} />
                 <CardContent className="p-6 space-y-6">
                     {/* Contact Info */}
@@ -91,9 +91,9 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                             <a
                                 href={`tel:${business.phone}`}
                                 onClick={handlePhoneClick}
-                                className="flex items-center gap-3 text-sm font-medium text-foreground hover:text-primary transition-all p-4 rounded-xl bg-secondary/30 hover:bg-secondary/60 group border border-transparent hover:border-primary/20"
+                                className="group flex items-center gap-3 rounded-lg border border-transparent bg-secondary/30 p-4 text-sm font-medium text-foreground transition-colors hover:border-primary/20 hover:bg-secondary/60 hover:text-primary"
                             >
-                                <div className="p-2 rounded-full bg-background border border-border shadow-sm group-hover:scale-110 transition-transform">
+                                <div className="rounded-md border border-border bg-background p-2 transition-colors">
                                     <Phone className="w-4 h-4 text-primary" />
                                 </div>
                                 <span className="font-bold font-headline">{business.phone}</span>
@@ -105,9 +105,9 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={handleWebsiteClick}
-                                className="flex items-center gap-3 text-sm font-medium text-foreground hover:text-primary transition-all p-4 rounded-xl bg-secondary/30 hover:bg-secondary/60 group border border-transparent hover:border-primary/20"
+                                className="group flex items-center gap-3 rounded-lg border border-transparent bg-secondary/30 p-4 text-sm font-medium text-foreground transition-colors hover:border-primary/20 hover:bg-secondary/60 hover:text-primary"
                             >
-                                <div className="p-2 rounded-full bg-background border border-border shadow-sm group-hover:scale-110 transition-transform">
+                                <div className="rounded-md border border-border bg-background p-2 transition-colors">
                                     <Globe className="w-4 h-4 text-primary" />
                                 </div>
                                 <span className="font-bold font-headline">{t('business.sidebar.visitWebsite', 'Visiter le site web')}</span>
@@ -115,8 +115,8 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                         )}
 
                         {displayLocation && (
-                            <div className="flex items-start gap-4 text-sm font-medium text-foreground p-4 rounded-xl bg-secondary/30 border border-transparent">
-                                <div className="p-2 rounded-full bg-background border border-border shadow-sm shrink-0">
+                            <div className="flex items-start gap-4 rounded-lg border border-transparent bg-secondary/30 p-4 text-sm font-medium text-foreground">
+                                <div className="shrink-0 rounded-md border border-border bg-background p-2">
                                     <MapPin className="w-4 h-4 text-primary" />
                                 </div>
                                 <div className="flex flex-col gap-0.5">
@@ -138,9 +138,9 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={handleWhatsappClick}
-                                        className="flex items-center gap-3 text-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all p-4 rounded-xl group shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                                        className="flex items-center gap-3 rounded-lg border border-success/20 bg-success/10 p-4 text-sm text-success transition-colors hover:bg-success/15"
                                     >
-                                        <MessageCircle className="w-5 h-5 text-emerald-100 group-hover:text-white" />
+                                        <MessageCircle className="w-5 h-5" />
                                         <span className="font-bold font-headline">WhatsApp Direct</span>
                                     </a>
                                 )}
@@ -151,9 +151,9 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={handleAffiliateClick}
-                                        className="flex items-center gap-3 text-sm text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all p-4 rounded-xl group shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                                        className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-primary transition-colors hover:bg-primary/15"
                                     >
-                                        <ExternalLink className="w-5 h-5 text-indigo-100 group-hover:text-white" />
+                                        <ExternalLink className="w-5 h-5" />
                                         <span className="font-bold font-headline">
                                             {business.affiliate_cta || (business.category === 'Hôtels' ? t('business.sidebar.bookNow', 'Reserver sur Booking') : t('business.sidebar.applyNow', 'Postuler maintenant'))}
                                         </span>
@@ -195,13 +195,13 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
             </div>
 
             {/* Reputaton Card */}
-            <div className="glass-card p-6 rounded-2xl border border-border/50 space-y-6">
+            <div className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-none">
                 <div>
                     <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-6">{t('business.sidebar.reputation', 'Reputation & avis')}</h3>
                     <div className="flex items-center gap-6">
                         {business.overallRating > 0 ? (
                             <>
-                                <div className="text-5xl font-black font-headline text-transparent bg-clip-text bg-gradient-to-br from-primary to-violet-600 leading-none">
+                                <div className="text-5xl font-black font-headline text-foreground leading-none">
                                     {business.overallRating.toFixed(1)}
                                 </div>
                                 <div className="flex flex-col gap-1.5">
@@ -236,12 +236,12 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                 {!business.owner_id && !loadingClaim && (
                     <>
                         {userClaim ? (
-                            <Button variant="outline" className="w-full text-xs text-amber-600 bg-amber-50 border-amber-200 mt-4 rounded-xl cursor-default hover:bg-amber-50">
+                            <Button variant="outline" className="mt-4 w-full cursor-default rounded-md text-xs text-warning border-warning/20 bg-warning/10 hover:bg-warning/10">
                                 <ShieldCheck className="w-4 h-4 mr-2" />
                                 {userClaim.status === 'pending' ? t('business.sidebar.claimPending', 'Demande en cours') : t('business.sidebar.claimedAlready', 'Deja revendique')}
                             </Button>
                         ) : (
-                            <Button asChild variant="ghost" className="w-full text-xs text-primary hover:bg-primary/10 mt-4 border border-primary/20 rounded-xl">
+                            <Button asChild variant="ghost" className="mt-4 w-full rounded-md border border-primary/20 text-xs text-primary hover:bg-primary/10">
                                 <Link href={`/claim/new?businessId=${business.id}`}>
                                     <ShieldCheck className="w-4 h-4 mr-2" />
                                     {t('business.sidebar.isYourBusiness', "C'est votre entreprise ?")}
@@ -251,18 +251,18 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                     </>
                 )}
                 {loadingClaim && !business.owner_id && (
-                    <div className="h-10 w-full bg-secondary/50 animate-pulse rounded-xl mt-4" />
+                    <div className="mt-4 h-10 w-full animate-pulse rounded-md bg-secondary/50" />
                 )}
             </div>
 
             {/* Salarie.ma Integration Widget */}
-            <div className="relative group overflow-hidden rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-primary/5 p-6 space-y-4">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                    <GraduationCap className="w-20 h-20 text-indigo-500" />
+            <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 space-y-4">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <GraduationCap className="w-20 h-20 text-primary" />
                 </div>
 
                 <div className="relative z-10 space-y-2">
-                    <Badge variant="outline" className="bg-indigo-500/10 text-indigo-600 border-indigo-500/20 text-[10px] font-black uppercase tracking-tighter">{t('business.sidebar.employeeTools', 'Outils employes')}</Badge>
+                    <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wide">{t('business.sidebar.employeeTools', 'Outils employes')}</Badge>
                     <h3 className="text-lg font-bold font-headline text-foreground leading-tight">{t('business.sidebar.knowYourRights', 'Connaissez-vous vos droits ?')}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         {t('business.sidebar.rightsDesc', 'Calculez votre salaire net, vos indemnites de depart ou generez vos documents juridiques en quelques clics.')}
@@ -274,25 +274,25 @@ export function BusinessSidebar({ business, settings }: BusinessSidebarProps) {
                         href={siteSettings?.partner_app_url || "https://monrh.vercel.app/simulateurs"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-border hover:border-indigo-500/50 hover:shadow-md transition-all group/item"
+                        className="group/item flex items-center justify-between rounded-lg border border-border bg-background p-3 transition-colors hover:bg-secondary"
                     >
                         <span className="text-xs font-bold text-foreground">{t('business.sidebar.salarySimulator', 'Simulateur de salaire')}</span>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover/item:text-indigo-500 group-hover/item:translate-x-1 transition-all" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover/item:text-primary group-hover/item:translate-x-1" />
                     </a>
                     <a
                         href={`${siteSettings?.partner_app_url || "https://monrh.vercel.app"}/documents`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-border hover:border-indigo-500/50 hover:shadow-md transition-all group/item"
+                        className="group/item flex items-center justify-between rounded-lg border border-border bg-background p-3 transition-colors hover:bg-secondary"
                     >
                         <span className="text-xs font-bold text-foreground">{t('business.sidebar.documentTemplates', 'Modeles de documents')}</span>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover/item:text-indigo-500 group-hover/item:translate-x-1 transition-all" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover/item:text-primary group-hover/item:translate-x-1" />
                     </a>
                 </div>
 
                 <div className="relative z-10 pt-2 flex items-center justify-center">
                     <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1.5">
-                        {t('business.sidebar.poweredBy', 'Propulse par')} <span className="font-bold text-indigo-600">{siteSettings?.partner_app_name || "MOR RH"}</span>
+                        {t('business.sidebar.poweredBy', 'Propulse par')} <span className="font-bold text-primary">{siteSettings?.partner_app_name || "MOR RH"}</span>
                     </span>
                 </div>
             </div>

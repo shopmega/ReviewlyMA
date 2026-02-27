@@ -96,6 +96,11 @@ export type DashboardStats = {
         pctAboveSectorAvg: number | null;
         submissionCount: number;
     } | null;
+    proAlerts?: Array<{
+        id: string;
+        level: 'low' | 'medium' | 'high';
+        message: string;
+    }>;
 };
 
 interface DashboardClientProps {
@@ -132,14 +137,14 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-lg text-center space-y-6">
-                    <div className="mx-auto w-20 h-20 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
                         <AlertCircle className="w-10 h-10" />
                     </div>
                     <h1 className="text-3xl font-bold font-headline">Accès Restreint</h1>
                     <p className="text-muted-foreground text-lg">
                         {error || "Nous n'avons pas trouvé votre entreprise associée."}
                     </p>
-                    <Button asChild size="lg" className="rounded-full font-bold px-8">
+                    <Button asChild size="lg" className="px-8 font-bold">
                         <Link href="/pour-les-pros">Revendiquer mon entreprise</Link>
                     </Button>
                 </div>
@@ -242,7 +247,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
 
             {/* Unread Support Alert */}
             {stats.unreadTickets > 0 && (
-                <Card className="border-primary/20 bg-primary/5 shadow-sm rounded-2xl overflow-hidden">
+                <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-none">
                     <CardHeader className="flex flex-row items-center gap-4 py-4">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                             <MessageSquare className="h-5 w-5" />
@@ -259,21 +264,21 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
             )}
 
             {/* Modern SaaS Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col items-start gap-6 rounded-xl border border-border bg-card p-8 lg:flex-row lg:items-center lg:justify-between">
                 <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-3xl md:text-4xl font-bold font-headline text-slate-900 tracking-tight flex items-center gap-2">
+                        <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground font-headline md:text-4xl">
                             Dashboard
                             {otherBusinesses.length > 1 ? (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="text-blue-600 hover:bg-blue-50 px-2 h-auto text-3xl md:text-4xl font-bold font-headline transition-colors flex items-center gap-2 group">
+                                        <Button variant="ghost" className="group h-auto gap-2 px-2 text-3xl font-bold text-primary transition-colors hover:bg-secondary md:text-4xl font-headline">
                                             {stats.business.name}
-                                            <ChevronDown className="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                                            <ChevronDown className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-64 rounded-xl shadow-xl border-slate-200">
-                                        <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">
+                                    <DropdownMenuContent align="start" className="w-64 rounded-md border border-border shadow-sm">
+                                        <div className="mb-1 border-b border-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                             Mes Établissements
                                         </div>
                                         {otherBusinesses.map((b) => (
@@ -281,38 +286,38 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                                 key={b.id}
                                                 onClick={() => handleBusinessSwitch(b.id)}
                                                 className={cn(
-                                                    "flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-lg transition-colors",
-                                                    b.id === stats.business.id ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-600 hover:bg-slate-50"
+                                                    "flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 transition-colors",
+                                                    b.id === stats.business.id ? "bg-secondary text-foreground font-semibold" : "text-muted-foreground hover:bg-secondary"
                                                 )}
                                             >
-                                                <Building2 className={cn("w-4 h-4", b.id === stats.business.id ? "text-blue-600" : "text-slate-400")} />
+                                                <Building2 className={cn("h-4 w-4", b.id === stats.business.id ? "text-primary" : "text-muted-foreground")} />
                                                 <span className="truncate">{b.name}</span>
                                                 {b.id === stats.business.id && (
-                                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                                                 )}
                                             </DropdownMenuItem>
                                         ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             ) : (
-                                <span className="text-blue-600">{stats.business.name}</span>
+                                <span className="text-primary">{stats.business.name}</span>
                             )}
                         </h1>
                         {profile?.tier && isPaidTier(profile.tier) && (
-                            <Badge className="bg-blue-600 text-white border-none px-3 py-1 rounded-full flex gap-1.5 items-center shadow-lg shadow-blue-600/20 text-[10px] uppercase font-bold tracking-widest">
+                            <Badge className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide" variant="info">
                                 <Sparkles className="w-3 h-3 fill-white" />
                                 {profile?.tier.toUpperCase()}
                             </Badge>
                         )}
                     </div>
-                    <p className="text-slate-500 text-base font-medium">
+                    <p className="text-base font-medium text-muted-foreground">
                         {profile?.tier && isPaidTier(profile.tier)
                             ? `Propulsé par Avis ${profile.tier.toUpperCase()} • Votre entreprise se démarque.`
                             : "Voici les performances de votre entreprise aujourd'hui."}
                     </p>
                 </div>
                 <div className="flex flex-col items-start gap-3 lg:items-end">
-                    <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                    <div className="flex items-center gap-1 rounded-md border border-border bg-secondary/50 p-1">
                         {(['7', '30', '90'] as Array<'7' | '30' | '90'>).map((windowDays) => (
                             <Button
                                 key={windowDays}
@@ -330,7 +335,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     {(!profile?.tier || !isPaidTier(profile.tier)) && (
                         <Button
                             asChild
-                            className="rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold border border-blue-100 h-11"
+                            className="h-11 rounded-md border border-border bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80"
                         >
                             <Link href="/dashboard/premium">
                                 <Sparkles className="w-4 h-4 mr-2" />
@@ -338,14 +343,37 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                             </Link>
                         </Button>
                     )}
-                    <Button asChild className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold shadow-xl h-11">
+                    <Button asChild className="h-11 rounded-md font-semibold">
                         <Link href={`/businesses/${stats.business.id}`}>
                             Voir ma page publique <ArrowRight className="ml-2 w-4 h-4" />
                         </Link>
                     </Button>
+                    {stats.actionChecklist.hasPremiumAccess && (
+                        <Button asChild variant="outline" className="rounded-xl h-11">
+                            <a href={`/api/business/export?businessId=${encodeURIComponent(stats.business.id)}&format=json`}>
+                                Export JSON
+                            </a>
+                        </Button>
+                    )}
                     </div>
                 </div>
             </div>
+
+            {(stats.proAlerts || []).length > 0 && (
+                <Card className="rounded-xl border border-border bg-card shadow-none">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg font-headline text-foreground">Alertes Pro</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {(stats.proAlerts || []).map((alert) => (
+                            <div key={alert.id} className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground">
+                                {alert.level === 'high' ? <CircleAlert className="h-4 w-4 text-rose-600" /> : <CircleCheckBig className="h-4 w-4 text-amber-600" />}
+                                <span>{alert.message}</span>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
 
             <Card className={cn(
                 "rounded-2xl border shadow-sm",

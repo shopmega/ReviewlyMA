@@ -72,11 +72,11 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
   }, [business.reviews]);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="bg-white dark:bg-slate-900 border-b border-border/50 sticky top-0 z-30">
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-30 border-b border-border bg-background">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild className="rounded-full">
+            <Button variant="ghost" size="icon" asChild>
               <Link href={`/businesses/${business.id}`}>
                 <ArrowLeft className="h-5 w-5" />
               </Link>
@@ -97,7 +97,7 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
             </div>
           </div>
 
-          <Button asChild className="rounded-xl font-bold px-6 shadow-lg shadow-primary/20">
+          <Button asChild className="px-6 font-bold">
             <Link href={`/businesses/${business.id}/review`}>{t('business.reviews.giveReview', 'Donner mon avis')}</Link>
           </Button>
         </div>
@@ -106,18 +106,18 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4 space-y-6">
-            <Card className="border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden">
-              <div className="h-24 bg-gradient-to-r from-primary/10 to-indigo-500/10" />
+            <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-none">
+              <div className="h-16 border-b border-border bg-secondary/40" />
               <CardContent className="px-8 pb-8 pt-0 -mt-12">
                 <div className="relative mb-6 inline-block">
-                  <div className="h-24 w-24 rounded-3xl bg-white dark:bg-slate-800 shadow-2xl p-4 flex items-center justify-center border border-border/50 overflow-hidden group">
+                  <div className="group flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm">
                     {business.logo_url ? (
                       <Image src={business.logo_url} alt={business.name} width={80} height={80} className="object-contain group-hover:scale-110 transition-transform duration-500" />
                     ) : (
                       <Building2 className="h-10 w-10 text-primary/40" />
                     )}
                   </div>
-                  {business.is_premium && <Badge className="absolute -bottom-2 -right-2 bg-amber-500 text-white border-none font-bold text-[10px] uppercase shadow-lg">PRO</Badge>}
+                  {business.is_premium && <Badge className="absolute -bottom-2 -right-2 text-[10px] uppercase font-semibold" variant="warning">PRO</Badge>}
                 </div>
 
                 <h2 className="text-2xl font-black tracking-tight mb-2">{business.name}</h2>
@@ -130,7 +130,7 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
                   </span>
                 </div>
 
-                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-border/50">
+                <div className="rounded-xl border border-border bg-secondary/30 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-4xl font-black text-foreground">{business.overallRating?.toFixed(1) || '0.0'}</p>
@@ -148,7 +148,7 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 rounded-[2.5rem]">
+            <Card className="rounded-xl border border-border bg-card shadow-none">
               <CardHeader className="px-8 pt-8 pb-4">
                 <CardTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
@@ -164,7 +164,7 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
                       </span>
                       <span className="text-muted-foreground">{tf('business.hero.reviewCount', '{count} avis', { count: stat.count })}</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/60">
                       <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: `${stat.percentage}%` }} />
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 rounded-[2.5rem]">
+            <Card className="rounded-xl border border-border bg-card shadow-none">
               <CardHeader className="px-8 pt-8 pb-4">
                 <CardTitle className="text-lg font-black uppercase tracking-wider flex items-center gap-2">
                   <Users className="h-5 w-5 text-primary" />
@@ -191,20 +191,20 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
               <div className="relative flex-1 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
-                  className="h-14 pl-12 rounded-2xl border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 font-medium text-lg focus-visible:ring-primary/20"
+                  className="h-12 rounded-md border-input bg-background pl-12 text-base font-medium"
                   placeholder={t('business.reviews.searchPlaceholder', 'Rechercher un mot-cle (ex: salaire, ambiance)...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Button variant="outline" className="h-14 rounded-2xl px-6 bg-white dark:bg-slate-900 border-none shadow-xl shadow-slate-200/50 dark:shadow-none">
+              <Button variant="outline" className="h-12 rounded-md px-6">
                 <Filter className="mr-2 h-5 w-5" />
                 {t('listing.filters', 'Filtres')}
               </Button>
             </div>
 
             <div className="space-y-6">
-              <Card className="border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] p-4 md:p-8">
+              <Card className="rounded-xl border border-border bg-card p-4 shadow-none md:p-8">
                 <SharedReviewsSection business={business} searchTerm={searchTerm} />
               </Card>
             </div>

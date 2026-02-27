@@ -9,7 +9,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { BusinessProvider } from '@/contexts/BusinessContext';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { getCachedSiteSettings } from '@/lib/cache';
-import { Inter, Outfit } from 'next/font/google';
+import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
 import { AdSense } from '@/components/shared/AdSense';
 import { getServerSiteUrl } from '@/lib/site-config';
@@ -17,16 +17,25 @@ import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
 
-const inter = Inter({
+const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap',
+  weight: ['400', '500', '600', '700'],
 });
 
-const outfit = Outfit({
+const plexHeadline = IBM_Plex_Sans({
   subsets: ['latin'],
   variable: '--font-headline',
   display: 'swap',
+  weight: ['500', '600', '700'],
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-code',
+  display: 'swap',
+  weight: ['400', '500'],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -81,7 +90,7 @@ export default async function RootLayout({
   const { locale, messages } = await getI18nState();
 
   return (
-    <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", inter.variable, outfit.variable)} suppressHydrationWarning>
+    <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", plexSans.variable, plexHeadline.variable, plexMono.variable)} suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col')}>
         <ErrorBoundary>
           <ThemeProvider
@@ -108,4 +117,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

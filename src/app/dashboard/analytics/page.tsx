@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
   if (profileError || !stats) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-        <div className="p-4 bg-destructive/10 rounded-full text-destructive">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <AlertCircle className="h-8 w-8" />
         </div>
         <h1 className="text-2xl font-bold font-headline">Accès refusé</h1>
@@ -165,10 +165,10 @@ export default function AnalyticsPage() {
   }
 
   const statCards = [
-    { name: 'Total avis', value: stats.totalReviews.toString(), icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { name: 'Note moyenne', value: stats.averageRating.toFixed(1), icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { name: 'Vues du profil', value: stats.views.toString(), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { name: 'Conversion Leads', value: stats.leads.toString(), icon: Users, color: 'text-cyan-600', bg: 'bg-cyan-500/10' },
+    { name: 'Total avis', value: stats.totalReviews.toString(), icon: Star, color: 'text-warning', bg: 'bg-warning/10' },
+    { name: 'Note moyenne', value: stats.averageRating.toFixed(1), icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+    { name: 'Vues du profil', value: stats.views.toString(), icon: Eye, color: 'text-primary', bg: 'bg-primary/10' },
+    { name: 'Conversion Leads', value: stats.leads.toString(), icon: Users, color: 'text-info', bg: 'bg-info/10' },
   ];
 
   return (
@@ -182,7 +182,7 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
-          <Card key={stat.name} className="border-white/20 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+          <Card key={stat.name} className="rounded-xl border border-border bg-card shadow-none transition-colors hover:bg-secondary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground font-body uppercase tracking-in-wider">
                 {stat.name}
@@ -201,38 +201,38 @@ export default function AnalyticsPage() {
       {/* GOLD Lead Details */}
       <div className="grid gap-6 md:grid-cols-2">
         <PremiumFeatureGate level="gold" title="WhatsApp Tracking" description="Activez le plan Business GOLD pour voir vos leads WhatsApp.">
-          <Card className="border-white/20 bg-emerald-50 dark:bg-emerald-950/20 shadow-lg relative overflow-hidden">
+          <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Clics WhatsApp</CardTitle>
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <CardTitle className="text-sm font-bold text-foreground">Clics WhatsApp</CardTitle>
+                <TrendingUp className="h-4 w-4 text-success" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-emerald-600 tabular-nums">{stats.whatsappClicks}</div>
-              <p className="text-[10px] uppercase font-bold text-emerald-700/60 mt-1">Nouveaux contacts directs</p>
+              <div className="text-4xl font-black text-foreground tabular-nums">{stats.whatsappClicks}</div>
+              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1">Nouveaux contacts directs</p>
             </CardContent>
           </Card>
         </PremiumFeatureGate>
 
         <PremiumFeatureGate level="gold" title="Booking Tracking" description="Suivez vos réservations externes avec le plan GOLD.">
-          <Card className="border-white/20 bg-indigo-50 dark:bg-indigo-950/20 shadow-lg relative overflow-hidden">
+          <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-indigo-700 dark:text-indigo-400">Liens Affiliés / Résas</CardTitle>
-                <TrendingUp className="h-4 w-4 text-indigo-500" />
+                <CardTitle className="text-sm font-bold text-foreground">Liens Affiliés / Résas</CardTitle>
+                <TrendingUp className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-indigo-600 tabular-nums">{stats.affiliateClicks}</div>
-              <p className="text-[10px] uppercase font-bold text-indigo-700/60 mt-1">Redirections vers vos liens</p>
+              <div className="text-4xl font-black text-foreground tabular-nums">{stats.affiliateClicks}</div>
+              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1">Redirections vers vos liens</p>
             </CardContent>
           </Card>
         </PremiumFeatureGate>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-white/20 bg-white/60 dark:bg-slate-900/60 backdrop-blur-lg shadow-lg relative overflow-hidden">
+        <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
           <PremiumFeatureGate level="growth" title="Analyses Avancées" description="Passez au statut Premium pour débloquer l'historique complet des avis.">
             <CardHeader>
               <CardTitle className="font-headline">Avis au Fil du Temps</CardTitle>
@@ -258,17 +258,17 @@ export default function AnalyticsPage() {
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
+                        backgroundColor: 'hsl(var(--card))',
                         borderColor: 'hsl(var(--border))',
-                        borderRadius: '12px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        borderRadius: '8px',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.08)'
                       }}
                       cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
                     />
                     <Bar
                       dataKey="avis"
                       fill="hsl(var(--primary))"
-                      radius={[6, 6, 0, 0]}
+                      radius={[4, 4, 0, 0]}
                       barSize={40}
                     />
                   </BarChart>
@@ -278,7 +278,7 @@ export default function AnalyticsPage() {
           </PremiumFeatureGate>
         </Card>
 
-        <Card className="border-white/20 bg-white/60 dark:bg-slate-900/60 backdrop-blur-lg shadow-lg relative overflow-hidden">
+        <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
           <PremiumFeatureGate level="growth" title="Distribution Détaillée" description="Analysez précisément la répartition de vos notes avec Premium.">
             <CardHeader>
               <CardTitle className="font-headline">Distribution des Notes</CardTitle>
@@ -292,11 +292,11 @@ export default function AnalyticsPage() {
                     <div key={rating} className="flex items-center gap-4">
                       <div className="flex items-center gap-1 w-12">
                         <span className="font-bold text-lg">{rating}</span>
-                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                        <Star className="h-4 w-4 fill-warning text-warning" />
                       </div>
                       <div className="flex-1 h-3 bg-secondary/50 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-500"
+                          className="h-full rounded-full bg-primary transition-all duration-500"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -312,3 +312,5 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+
+

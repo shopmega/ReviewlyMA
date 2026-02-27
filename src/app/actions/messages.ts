@@ -5,6 +5,27 @@ import { cookies } from 'next/headers';
 import { ActionState, type SubscriptionTier } from '@/lib/types';
 import { isPaidTier } from '@/lib/tier-utils';
 
+const BUSINESS_MESSAGE_BLOCKLIST: Array<{ regex: RegExp; reason: string }> = [
+  { regex: /\b(?:delete|remove|supprimer)\s+(?:your|vos?|ton)\s+(?:review|avis)\b/i, reason: 'Les demandes de suppression d avis ne sont pas autorisees.' },
+  { regex: /\b(?:lawsuit|legal action|tribunal|avocat|poursuite)\b/i, reason: 'Les formulations intimidantes ne sont pas autorisees.' },
+  { regex: /\b(?:contact me on|whatsapp|telegram)\b/i, reason: 'Gardez les echanges sur la messagerie Reviewly.' },
+  { regex: /\b(?:we know who you are|on sait qui vous etes|on va vous retrouver)\b/i, reason: 'Les menaces ou tentatives d intimidation sont interdites.' },
+];
+
+function validateBusinessOutgoingMessage(content: string): string | null {
+  const normalized = content.replace(/\s+/g, ' ').trim();
+  if (!normalized) return 'Message vide.';
+  if (normalized.length < 8) return 'Message trop court.';
+
+  for (const rule of BUSINESS_MESSAGE_BLOCKLIST) {
+    if (rule.regex.test(normalized)) {
+      return rule.reason;
+    }
+  }
+
+  return null;
+}
+
 export type Message = {
   id: string;
   business_id: string;
@@ -166,6 +187,11 @@ export async function sendMessage(payload: {
     }
     if (!access.isAdmin && !access.hasPremiumAccess) {
       return { status: 'error', message: 'Messagerie reservee aux comptes Premium.' };
+    }
+
+    const businessMessageIssue = validateBusinessOutgoingMessage(payload.content);
+    if (businessMessageIssue) {
+      return { status: 'error', message: businessMessageIssue };
     }
   }
 

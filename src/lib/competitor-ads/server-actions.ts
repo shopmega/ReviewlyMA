@@ -3,6 +3,57 @@
 import { createClient } from '../supabase/server';
 import { revalidatePath } from 'next/cache';
 import { CompetitorAd, CompetitorAdEventType } from '../types';
+import { isPaidTier } from '../tier-utils';
+import type { SubscriptionTier } from '../types';
+
+async function canManageAdvertiserBusiness(supabase: any, userId: string, businessId: string): Promise<{ allowed: boolean; hasGoldAccess: boolean }> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, business_id, tier')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!profile) return { allowed: false, hasGoldAccess: false };
+
+  const isAdmin = profile.role === 'admin';
+  let allowed = isAdmin || profile.business_id === businessId;
+
+  if (!allowed) {
+    const [{ data: assignment }, { data: claim }] = await Promise.all([
+      supabase
+        .from('user_businesses')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('business_id', businessId)
+        .eq('assignment_status', 'active')
+        .maybeSingle(),
+      supabase
+        .from('business_claims')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('business_id', businessId)
+        .or('claim_state.eq.verified,status.eq.approved')
+        .maybeSingle(),
+    ]);
+
+    allowed = Boolean(assignment || claim);
+  }
+
+  if (!allowed) return { allowed: false, hasGoldAccess: false };
+
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('tier')
+    .eq('id', businessId)
+    .maybeSingle();
+
+  const profileTier = (profile.tier ?? null) as SubscriptionTier | null;
+  const businessTier = (business?.tier ?? null) as SubscriptionTier | null;
+  const hasPaidAccess = isPaidTier(profileTier) || isPaidTier(businessTier);
+  const hasGoldAccess = profileTier === 'gold' || businessTier === 'gold';
+
+  return { allowed: hasPaidAccess && hasGoldAccess, hasGoldAccess };
+}
 
 // Create a new competitor ad
 export async function createCompetitorAd(adData: Omit<CompetitorAd, 'id' | 'created_at' | 'updated_at' | 'spent_cents'>): Promise<{ success: boolean; error?: string; ad?: CompetitorAd }> {
@@ -15,16 +66,9 @@ export async function createCompetitorAd(adData: Omit<CompetitorAd, 'id' | 'crea
       return { success: false, error: 'User not authenticated' };
     }
 
-    // Verify that the user owns the advertiser business
-    const { data: businessData, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('id', adData.advertiser_business_id)
-      .eq('owner_id', user.id)
-      .single();
-
-    if (businessError || !businessData) {
-      return { success: false, error: 'You do not have permission to create ads for this business' };
+    const access = await canManageAdvertiserBusiness(supabase, user.id, adData.advertiser_business_id);
+    if (!access.allowed) {
+      return { success: false, error: 'Competitor ads are restricted to GOLD accounts with verified business access' };
     }
 
     // Prepare the ad data
@@ -77,15 +121,9 @@ export async function updateCompetitorAd(adId: string, adData: Partial<Omit<Comp
       return { success: false, error: 'Competitor ad not found' };
     }
 
-    const { data: businessData, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('id', adRecord.advertiser_business_id)
-      .eq('owner_id', user.id)
-      .single();
-
-    if (businessError || !businessData) {
-      return { success: false, error: 'You do not have permission to update this competitor ad' };
+    const access = await canManageAdvertiserBusiness(supabase, user.id, adRecord.advertiser_business_id);
+    if (!access.allowed) {
+      return { success: false, error: 'Competitor ads are restricted to GOLD accounts with verified business access' };
     }
 
     // Update the ad
@@ -137,15 +175,9 @@ export async function deleteCompetitorAd(adId: string): Promise<{ success: boole
       return { success: false, error: 'Competitor ad not found' };
     }
 
-    const { data: businessData, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('id', adRecord.advertiser_business_id)
-      .eq('owner_id', user.id)
-      .single();
-
-    if (businessError || !businessData) {
-      return { success: false, error: 'You do not have permission to delete this competitor ad' };
+    const access = await canManageAdvertiserBusiness(supabase, user.id, adRecord.advertiser_business_id);
+    if (!access.allowed) {
+      return { success: false, error: 'Competitor ads are restricted to GOLD accounts with verified business access' };
     }
 
     // Delete the ad
@@ -235,15 +267,9 @@ export async function toggleCompetitorAdStatus(adId: string, newStatus: 'active'
       return { success: false, error: 'Competitor ad not found' };
     }
 
-    const { data: businessData, error: businessError } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('id', adRecord.advertiser_business_id)
-      .eq('owner_id', user.id)
-      .single();
-
-    if (businessError || !businessData) {
-      return { success: false, error: 'You do not have permission to update this competitor ad' };
+    const access = await canManageAdvertiserBusiness(supabase, user.id, adRecord.advertiser_business_id);
+    if (!access.allowed) {
+      return { success: false, error: 'Competitor ads are restricted to GOLD accounts with verified business access' };
     }
 
     // Update the ad status

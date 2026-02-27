@@ -24,9 +24,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['"Inter"', 'sans-serif'],
-        headline: ['"Inter"', 'sans-serif'],
-        code: ['monospace'],
+        body: ['var(--font-body)', 'sans-serif'],
+        headline: ['var(--font-headline)', 'sans-serif'],
+        code: ['var(--font-code)', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
