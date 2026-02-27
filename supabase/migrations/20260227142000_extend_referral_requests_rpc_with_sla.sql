@@ -1,3 +1,5 @@
+drop function if exists public.get_my_referral_offer_requests();
+
 create or replace function public.get_my_referral_offer_requests()
 returns table (
   id uuid,

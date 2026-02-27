@@ -44,8 +44,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
     { href: '/dashboard/premium', label: 'Premium', icon: Zap },
     { href: '/dashboard/advertising', label: 'Advertising', icon: Megaphone },
-    { href: '/dashboard/competitor-ads', label: 'Competitor Ads', icon: BarChart3 },
-    { href: '/dashboard/pinned-content', label: 'Pinned Content', icon: CodeXml },
     {
       href: hasGoldAccess ? '/dashboard/salary-benchmark' : '/dashboard/premium',
       label: 'Benchmark salaires',

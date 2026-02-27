@@ -44,8 +44,8 @@ export const marketingFeatures: PremiumFeature[] = [
     requiredTier: 'gold'
   },
   {
-    title: 'Contenu Épinglé',
-    description: 'Mettez en avant vos offres d\'emploi et annonces importantes.',
+    title: 'Nouveautes epinglees',
+    description: 'Mettez en avant vos annonces importantes en tete de votre flux.',
     icon: Zap,
     requiredTier: 'gold'
   },
@@ -78,7 +78,7 @@ export const dashboardFeatures: Array<{
     { icon: TrendingUp, text: "Placement prioritaire dans les résultats", requiredTier: 'growth' },
     { icon: Star, text: "Accès complet aux statistiques détaillées sur votre réputation employeur", requiredTier: 'growth' },
     { icon: MessageSquare, text: "Communication directe avec les candidats", requiredTier: 'gold' },
-    { icon: Zap, text: "Possibilité d'épingler du contenu important", requiredTier: 'gold' },
+    { icon: Zap, text: "Epinglage des nouveautes importantes", requiredTier: 'gold' },
     { icon: TrendingUp, text: "Benchmark salaires Gold (ville + secteur)", requiredTier: 'gold' },
     { icon: Star, text: "Baromètre mensuel des salaires", requiredTier: 'gold' }
   ];
@@ -132,4 +132,5 @@ export default function PremiumFeatures({ variant = 'marketing', userTier = 'sta
     </ul>
   );
 }
+
 

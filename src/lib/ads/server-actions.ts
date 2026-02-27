@@ -2,7 +2,6 @@
 
 import { createClient } from '../supabase/server';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { Ad } from '../types';
 
 // Create a new ad
@@ -37,7 +36,7 @@ export async function createAd(adData: Omit<Ad, 'id' | 'created_at' | 'updated_a
       return { success: false, error: error.message };
     }
 
-    revalidatePath('/dashboard/ads');
+    revalidatePath('/dashboard/advertising');
     return { success: true, ad: data as Ad };
   } catch (error) {
     console.error('Unexpected error creating ad:', error);
@@ -75,8 +74,8 @@ export async function updateAd(adId: string, adData: Partial<Omit<Ad, 'id' | 'ad
       return { success: false, error: error.message };
     }
 
-    revalidatePath('/dashboard/ads');
-    revalidatePath(`/dashboard/ads/${adId}`);
+    revalidatePath('/dashboard/advertising');
+    revalidatePath(`/dashboard/advertising/${adId}`);
     return { success: true, ad: data as Ad };
   } catch (error) {
     console.error('Unexpected error updating ad:', error);
@@ -107,7 +106,7 @@ export async function deleteAd(adId: string): Promise<{ success: boolean; error?
       return { success: false, error: error.message };
     }
 
-    revalidatePath('/dashboard/ads');
+    revalidatePath('/dashboard/advertising');
     return { success: true };
   } catch (error) {
     console.error('Unexpected error deleting ad:', error);
@@ -239,8 +238,8 @@ export async function toggleAdStatus(adId: string, status: 'active' | 'paused'):
       return { success: false, error: error.message };
     }
 
-    revalidatePath('/dashboard/ads');
-    revalidatePath(`/dashboard/ads/${adId}`);
+    revalidatePath('/dashboard/advertising');
+    revalidatePath(`/dashboard/advertising/${adId}`);
     return { success: true };
   } catch (error) {
     console.error('Unexpected error updating ad status:', error);

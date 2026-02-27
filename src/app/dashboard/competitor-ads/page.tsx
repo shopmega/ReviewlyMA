@@ -1,5 +1,5 @@
-import { CompetitorAdsContent } from './CompetitorAdsContent';
+import { redirect } from 'next/navigation';
 
 export default function CompetitorAdsPage() {
-  return <CompetitorAdsContent />;
+  redirect('/dashboard/advertising?tab=competitor');
 }

@@ -1,5 +1,5 @@
-import { PinnedContentContent } from './PinnedContentContent';
+import { redirect } from 'next/navigation';
 
 export default function PinnedContentPage() {
-  return <PinnedContentContent />;
+  redirect('/dashboard/updates');
 }

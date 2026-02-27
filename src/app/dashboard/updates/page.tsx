@@ -1,27 +1,28 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Megaphone, Trash2, Edit, AlertCircle, Loader2, X, Check, Lock, Link as LinkIcon } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Megaphone, Trash2, Edit, AlertCircle, Loader2, X, Check, Lock, Pin, PinOff } from 'lucide-react';
 import Link from 'next/link';
-import { useActionState, useEffect, useState } from "react";
-import { submitUpdate, type BusinessActionState } from "@/app/actions/business";
-import { deleteUpdate, editUpdate } from "@/app/actions/admin";
-import { useToast } from "@/hooks/use-toast";
-import { useBusinessProfile } from "@/hooks/useBusinessProfile";
-import { createClient } from "@/lib/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { isPaidTier } from "@/lib/tier-utils";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useActionState, useEffect, useState } from 'react';
+import { submitUpdate, type BusinessActionState } from '@/app/actions/business';
+import { deleteUpdate, editUpdate, setUpdatePinned } from '@/app/actions/admin';
+import { useToast } from '@/hooks/use-toast';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { createClient } from '@/lib/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { isPaidTier } from '@/lib/tier-utils';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type Update = {
-  id: string;
+  id: string | number;
   title: string;
   content: string;
   date: string;
+  is_pinned?: boolean;
 };
 
 function SubmitButton() {
@@ -34,51 +35,41 @@ function SubmitButton() {
 }
 
 export default function UpdatesPage() {
-  const { businessId, profile, loading: profileLoading, error: profileError } = useBusinessProfile();
+  const { businessId, profile, loading: profileLoading } = useBusinessProfile();
   const initialState: BusinessActionState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(submitUpdate, initialState);
   const { toast } = useToast();
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | number | null>(null);
 
-  // Edit state
   const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
 
-  // Delete confirmation state
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; updateId: string; title: string }>({
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; updateId: string | number; title: string }>({
     open: false,
     updateId: '',
-    title: ''
+    title: '',
   });
 
   const isPro = profile?.tier && isPaidTier(profile.tier);
 
   useEffect(() => {
-    fetchUpdates();
-  }, [businessId, profileLoading]); // Added dependencies
+    void fetchUpdates();
+  }, [businessId, profileLoading]);
 
   useEffect(() => {
     if (state.status === 'success') {
-      toast({
-        title: 'Succès',
-        description: state.message || 'Nouveauté publiée avec succès!'
-      });
-      fetchUpdates();
+      toast({ title: 'Succes', description: state.message || 'Nouveaute publiee.' });
+      void fetchUpdates();
     } else if (state.status === 'error') {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: state.message || 'Échec de la publication. Veuillez vérifier vos informations.'
-      });
+      toast({ variant: 'destructive', title: 'Erreur', description: state.message || 'Echec de publication.' });
     }
   }, [state.status, state.message, toast]);
 
   const fetchUpdates = async () => {
     if (profileLoading || !businessId) {
-      // Do not stop loading here if it's just profileLoading. We wait.
       if (!profileLoading) setLoading(false);
       return;
     }
@@ -88,8 +79,9 @@ export default function UpdatesPage() {
       .from('updates')
       .select('*')
       .eq('business_id', businessId)
+      .order('is_pinned', { ascending: false })
       .order('date', { ascending: false })
-      .limit(10);
+      .limit(20);
 
     setUpdates((data || []) as Update[]);
     setLoading(false);
@@ -99,11 +91,10 @@ export default function UpdatesPage() {
     if (!deleteDialog.updateId) return;
 
     setActionLoading(deleteDialog.updateId);
-    const result = await deleteUpdate(deleteDialog.updateId);
-
+    const result = await deleteUpdate(String(deleteDialog.updateId));
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
-      setUpdates(prev => prev.filter(u => u.id !== deleteDialog.updateId));
+      toast({ title: 'Succes', description: result.message });
+      setUpdates((prev) => prev.filter((u) => String(u.id) !== String(deleteDialog.updateId)));
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
@@ -114,22 +105,27 @@ export default function UpdatesPage() {
 
   const handleEdit = async () => {
     if (!editingUpdate) return;
-
     setActionLoading(editingUpdate.id);
-    const result = await editUpdate(editingUpdate.id, editTitle, editContent);
-
+    const result = await editUpdate(String(editingUpdate.id), editTitle, editContent);
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
-      setUpdates(prev => prev.map(u =>
-        u.id === editingUpdate.id
-          ? { ...u, title: editTitle, content: editContent }
-          : u
-      ));
+      toast({ title: 'Succes', description: result.message });
+      setUpdates((prev) => prev.map((u) => (String(u.id) === String(editingUpdate.id) ? { ...u, title: editTitle, content: editContent } : u)));
       setEditingUpdate(null);
     } else {
       toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
     }
+    setActionLoading(null);
+  };
 
+  const handleTogglePin = async (update: Update) => {
+    setActionLoading(update.id);
+    const result = await setUpdatePinned(String(update.id), !update.is_pinned);
+    if (result.status === 'success') {
+      toast({ title: 'Succes', description: result.message });
+      await fetchUpdates();
+    } else {
+      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+    }
     setActionLoading(null);
   };
 
@@ -142,10 +138,8 @@ export default function UpdatesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gérer les Nouveautés</h1>
-        <p className="text-muted-foreground">
-          Partagez des annonces, offres spéciales ou actualités avec vos clients.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">Gerer les Nouveautes</h1>
+        <p className="text-muted-foreground">Partagez des annonces, offres speciales ou actualites avec vos clients.</p>
       </div>
 
       {!isPro && !loading && (
@@ -155,15 +149,11 @@ export default function UpdatesPage() {
               <Lock className="h-8 w-8 text-amber-600 dark:text-amber-500" />
             </div>
             <div className="space-y-2 max-w-md">
-              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">Fonctionnalité PRO / GOLD</h3>
-              <p className="text-sm text-amber-700/80 dark:text-amber-500/80">
-                La diffusion de nouveautés et promotions est réservée aux abonnés PRO ou GOLD. Boostez votre visibilité en partageant vos actualités directement avec vos abonnés.
-              </p>
+              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">Fonctionnalite PRO / GOLD</h3>
+              <p className="text-sm text-amber-700/80 dark:text-amber-500/80">La diffusion de nouveautes est reservee aux abonnes PRO ou GOLD.</p>
             </div>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl" asChild>
-              <Link href="/dashboard/premium">
-                Passer en Version PRO
-              </Link>
+              <Link href="/dashboard/premium">Passer en Version PRO</Link>
             </Button>
           </CardContent>
         </Card>
@@ -171,7 +161,6 @@ export default function UpdatesPage() {
 
       {isPro && (
         <>
-
           {state.status === 'error' && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -183,18 +172,22 @@ export default function UpdatesPage() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Poster une nouvelle Nouveauté</CardTitle>
+                  <CardTitle>Poster une nouvelle Nouveaute</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <form action={formAction} className="space-y-4">
                     {businessId && <input type="hidden" name="businessId" value={businessId} />}
                     <div className="space-y-2">
-                      <Label htmlFor="updateTitle">Titre de la nouveauté</Label>
-                      <Input id="updateTitle" name="updateTitle" placeholder="Ex: Offre spéciale St-Valentin" required />
+                      <Label htmlFor="updateTitle">Titre de la nouveaute</Label>
+                      <Input id="updateTitle" name="updateTitle" placeholder="Ex: Offre speciale de saison" required />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="updateText">Contenu de la nouveauté</Label>
-                      <Textarea id="updateText" name="updateText" placeholder="Décrivez votre annonce en détail..." className="min-h-32" required />
+                      <Label htmlFor="updateText">Contenu</Label>
+                      <Textarea id="updateText" name="updateText" placeholder="Decrivez votre annonce..." className="min-h-32" required />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input id="isPinned" name="isPinned" type="checkbox" className="h-4 w-4" />
+                      <Label htmlFor="isPinned">Epingler cette nouveaute en haut de la liste</Label>
                     </div>
                     <CardFooter className="px-0">
                       <SubmitButton />
@@ -207,10 +200,8 @@ export default function UpdatesPage() {
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardHeader>
-                  <CardTitle>Nouveautés publiées</CardTitle>
-                  <CardDescription>
-                    Vos dernières publications.
-                  </CardDescription>
+                  <CardTitle>Nouveautes publiees</CardTitle>
+                  <CardDescription>Vos dernieres publications.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   {loading ? (
@@ -218,10 +209,18 @@ export default function UpdatesPage() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                     </div>
                   ) : updates.length > 0 ? (
-                    updates.map(update => (
-                      <div key={update.id} className="flex items-start justify-between gap-2 p-3 rounded-md border bg-muted/50">
+                    updates.map((update) => (
+                      <div key={String(update.id)} className="flex items-start justify-between gap-2 p-3 rounded-md border bg-muted/50">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{update.title}</p>
+                          <p className="font-semibold truncate flex items-center gap-2">
+                            {update.title}
+                            {update.is_pinned && (
+                              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold">
+                                <Pin className="mr-1 h-3 w-3" />
+                                Epinglee
+                              </span>
+                            )}
+                          </p>
                           <p className="text-xs text-muted-foreground">{update.date}</p>
                           <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{update.content}</p>
                         </div>
@@ -230,23 +229,17 @@ export default function UpdatesPage() {
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
                             <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => openEditDialog(update)}
-                              >
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleTogglePin(update)}>
+                                {update.is_pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(update)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-destructive hover:text-destructive"
-                                onClick={() => setDeleteDialog({
-                                  open: true,
-                                  updateId: update.id,
-                                  title: update.title
-                                })}
+                                onClick={() => setDeleteDialog({ open: true, updateId: update.id, title: update.title })}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -256,43 +249,27 @@ export default function UpdatesPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      Aucune nouveauté publiée pour le moment.
-                    </p>
+                    <p className="text-sm text-muted-foreground text-center py-4">Aucune nouveaute publiee pour le moment.</p>
                   )}
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* Edit Dialog */}
           <Dialog open={!!editingUpdate} onOpenChange={(open) => !open && setEditingUpdate(null)}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Modifier la nouveauté</DialogTitle>
-                <DialogDescription>
-                  Modifiez le titre et le contenu de votre publication.
-                </DialogDescription>
+                <DialogTitle>Modifier la nouveaute</DialogTitle>
+                <DialogDescription>Modifiez le titre et le contenu de votre publication.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="editTitle">Titre</Label>
-                  <Input
-                    id="editTitle"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    placeholder="Titre de la nouveauté"
-                  />
+                  <Input id="editTitle" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="editContent">Contenu</Label>
-                  <Textarea
-                    id="editContent"
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    placeholder="Contenu de la nouveauté"
-                    className="min-h-24"
-                  />
+                  <Textarea id="editContent" value={editContent} onChange={(e) => setEditContent(e.target.value)} className="min-h-24" />
                 </div>
               </div>
               <DialogFooter>
@@ -300,41 +277,27 @@ export default function UpdatesPage() {
                   <X className="mr-2 h-4 w-4" />
                   Annuler
                 </Button>
-                <Button
-                  onClick={handleEdit}
-                  disabled={actionLoading === editingUpdate?.id}
-                >
-                  {actionLoading === editingUpdate?.id ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="mr-2 h-4 w-4" />
-                  )}
+                <Button onClick={handleEdit} disabled={actionLoading === editingUpdate?.id}>
+                  {actionLoading === editingUpdate?.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
                   Enregistrer
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
-          {/* Delete Confirmation Dialog */}
           <Dialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, updateId: '', title: '' })}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Supprimer la nouveauté</DialogTitle>
+                <DialogTitle>Supprimer la nouveaute</DialogTitle>
                 <DialogDescription>
-                  Êtes-vous sûr de vouloir supprimer <strong>"{deleteDialog.title}"</strong> ?
+                  Etes-vous sur de vouloir supprimer <strong>"{deleteDialog.title}"</strong> ?
                   <br />
-                  Cette action est irréversible.
+                  Cette action est irreversible.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteDialog({ open: false, updateId: '', title: '' })}>
-                  Annuler
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={actionLoading === deleteDialog.updateId}
-                >
+                <Button variant="outline" onClick={() => setDeleteDialog({ open: false, updateId: '', title: '' })}>Annuler</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={actionLoading === deleteDialog.updateId}>
                   {actionLoading === deleteDialog.updateId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Supprimer
                 </Button>

@@ -17,6 +17,7 @@ export type Update = {
   title: string;
   text: string;
   date: string;
+  isPinned?: boolean;
 };
 
 
@@ -533,18 +534,6 @@ export interface SupportMessage {
   message: string;
   created_at: string;
 }
-
-// Pinned content type
-export type PinnedContent = {
-  id: string;
-  business_id: string;
-  title: string;
-  content: string;
-  media_urls?: string[];
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-};
 
 // Competitor ad type
 export type CompetitorAd = {

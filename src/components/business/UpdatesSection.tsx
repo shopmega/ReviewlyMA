@@ -1,7 +1,7 @@
 'use client';
 
 import { Update } from '@/lib/types';
-import { Newspaper } from 'lucide-react';
+import { Newspaper, Pin } from 'lucide-react';
 import { useI18n } from '@/components/providers/i18n-provider';
 
 interface UpdatesSectionProps {
@@ -24,7 +24,15 @@ export function UpdatesSection({ updates }: UpdatesSectionProps) {
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h3 className="font-bold text-lg text-foreground">{update.title}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg text-foreground">{update.title}</h3>
+                  {update.isPinned && (
+                    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold">
+                      <Pin className="mr-1 h-3 w-3" />
+                      Epinglee
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-md border border-border/50">{update.date}</span>
               </div>
               <p className="text-muted-foreground leading-relaxed">{update.text}</p>

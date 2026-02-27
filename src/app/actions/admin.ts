@@ -826,6 +826,62 @@ export async function editUpdate(
   }
 }
 
+export async function setUpdatePinned(
+  updateId: string,
+  isPinned: boolean
+): Promise<AdminActionResult> {
+  try {
+    const supabase = await createAuthClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { status: 'error', message: 'Vous devez etre connecte.' };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.business_id) {
+      return { status: 'error', message: 'Aucun etablissement associe.' };
+    }
+
+    const { data: update } = await supabase
+      .from('updates')
+      .select('business_id')
+      .eq('id', updateId)
+      .single();
+
+    if (!update || update.business_id !== profile.business_id) {
+      return { status: 'error', message: 'Mise a jour introuvable ou non autorisee.' };
+    }
+
+    const { error } = await supabase
+      .from('updates')
+      .update({
+        is_pinned: isPinned,
+        pinned_at: isPinned ? new Date().toISOString() : null,
+      })
+      .eq('id', updateId);
+
+    if (error) {
+      return { status: 'error', message: `Erreur: ${error.message}` };
+    }
+
+    revalidatePath('/dashboard/updates');
+    revalidatePath(`/businesses/${profile.business_id}`);
+
+    return {
+      status: 'success',
+      message: isPinned ? 'Nouveaute epinglee.' : 'Nouveaute desepinglee.',
+    };
+  } catch (error: any) {
+    return { status: 'error', message: error.message || 'Une erreur est survenue.' };
+  }
+}
+
 /**
  * Verify offline premium payment and grant premium status
  */

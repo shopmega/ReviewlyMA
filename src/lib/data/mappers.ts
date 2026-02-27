@@ -88,12 +88,19 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
             subRatings: r.sub_ratings,
             ownerReply: r.owner_reply ? { text: r.owner_reply, date: r.owner_reply_date } : undefined
         })) || [],
-        updates: dbItem.updates?.map((u: any) => ({
-            id: u.id,
-            title: u.title,
-            text: u.content,
-            date: u.date
-        })) || [],
+        updates: (dbItem.updates || [])
+            .map((u: any) => ({
+                id: u.id,
+                title: u.title,
+                text: u.content,
+                date: u.date,
+                isPinned: !!u.is_pinned,
+            }))
+            .sort((a: any, b: any) => {
+                const pinnedDelta = Number(b.isPinned) - Number(a.isPinned);
+                if (pinnedDelta !== 0) return pinnedDelta;
+                return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+            }),
         whatsapp_number: dbItem.whatsapp_number,
         affiliate_link: dbItem.affiliate_link,
         affiliate_cta: dbItem.affiliate_cta,

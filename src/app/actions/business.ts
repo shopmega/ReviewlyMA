@@ -350,6 +350,7 @@ export async function submitUpdate(
 
         const title = formData.get('updateTitle') as string;
         const content = formData.get('updateText') as string;
+        const isPinned = formData.get('isPinned') === 'on';
 
         if (!title || !content) {
             return { status: 'error', message: 'Champs requis manquants.' };
@@ -362,7 +363,9 @@ export async function submitUpdate(
                 business_id: businessId,
                 title,
                 content,
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                is_pinned: isPinned,
+                pinned_at: isPinned ? new Date().toISOString() : null,
             });
 
         if (insertError) {

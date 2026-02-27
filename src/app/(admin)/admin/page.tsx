@@ -28,12 +28,22 @@ import { createClient } from "@/lib/supabase/server";
 // Server action to get pending report count
 async function getPendingReportCount() {
   const supabase = await createClient();
-  const { count, error } = await supabase
-    .from('review_reports')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'pending');
+  const [reviewRes, businessRes] = await Promise.all([
+    supabase
+      .from('review_reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    supabase
+      .from('business_reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+  ]);
 
-  return error ? 0 : count || 0;
+  if (reviewRes.error || businessRes.error) {
+    return 0;
+  }
+
+  return (reviewRes.count || 0) + (businessRes.count || 0);
 }
 
 export default async function AdminDashboard() {
