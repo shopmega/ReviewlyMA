@@ -103,10 +103,14 @@ export function ReviewReportDialog({ reviewId, businessId, trigger }: ReviewRepo
                   <SelectValue placeholder="Sélectionnez une raison" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="spam">Spam</SelectItem>
-                  <SelectItem value="fake">Faux avis</SelectItem>
-                  <SelectItem value="offensive">Contenu offensant</SelectItem>
-                  <SelectItem value="irrelevant">Hors sujet</SelectItem>
+                  <SelectItem value="spam_or_promotional">Spam / promotion</SelectItem>
+                  <SelectItem value="fake_or_coordinated">Faux avis ou coordonne</SelectItem>
+                  <SelectItem value="personal_data_or_doxxing">Donnees personnelles / doxxing</SelectItem>
+                  <SelectItem value="harassment_or_hate">Harcèlement / haine</SelectItem>
+                  <SelectItem value="defamation_unverified_accusation">Accusation non verifiable</SelectItem>
+                  <SelectItem value="conflict_of_interest">Conflit d'interet</SelectItem>
+                  <SelectItem value="off_topic">Hors sujet</SelectItem>
+                  <SelectItem value="copyright_or_copied_content">Copie / droit d'auteur</SelectItem>
                   <SelectItem value="other">Autre</SelectItem>
                 </SelectContent>
               </Select>

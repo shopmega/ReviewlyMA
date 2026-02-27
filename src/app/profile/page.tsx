@@ -36,6 +36,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BusinessCard } from '@/components/shared/BusinessCard';
 import { getSavedBusinesses, updateUserProfile, exportUserData, requestAccountDeletion } from '@/app/actions/user';
+import { submitReviewAppeal } from '@/app/actions/review';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,6 +78,8 @@ type UserReview = {
   dislikes: number;
   owner_reply: string | null;
   owner_reply_date: string | null;
+  status?: string | null;
+  moderation_reason_code?: string | null;
 };
 
 type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'account';
@@ -160,6 +163,8 @@ export default function ProfilePage() {
     dislikes: r.dislikes || 0,
     owner_reply: r.owner_reply,
     owner_reply_date: r.owner_reply_date,
+    status: r.status || null,
+    moderation_reason_code: r.moderation_reason_code || null,
   });
 
   const fetchReviewsPage = async (userId: string, page: number, append: boolean) => {
@@ -170,7 +175,7 @@ export default function ProfilePage() {
     const { data: reviewsData, error: reviewsError } = await supabase
       .from('reviews')
       .select(`
-        id, business_id, rating, title, content, date, likes, dislikes,
+        id, business_id, rating, title, content, date, likes, dislikes, status, moderation_reason_code,
         owner_reply, owner_reply_date, businesses!inner (name)
       `)
       .eq('user_id', userId)
@@ -357,6 +362,23 @@ export default function ProfilePage() {
     setLoadingMoreReviews(true);
     await fetchReviewsPage(currentUserId, reviewsPage + 1, true);
     setLoadingMoreReviews(false);
+  };
+
+  const handleReviewAppeal = async (reviewId: number) => {
+    const message = window.prompt('Expliquez votre appel (minimum 10 caractères):');
+    if (message === null) return;
+    const cleaned = message.trim();
+    if (cleaned.length < 10) {
+      toast({ title: 'Erreur', description: 'Le message est trop court.', variant: 'destructive' });
+      return;
+    }
+
+    const result = await submitReviewAppeal({ review_id: reviewId, message: cleaned });
+    if (result.status === 'success') {
+      toast({ title: 'Appel soumis', description: result.message });
+    } else {
+      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+    }
   };
 
   const handleLoadMoreSaved = () => {
@@ -609,6 +631,18 @@ export default function ProfilePage() {
                                   Modifier
                                 </Link>
                               </Button>
+                              {(review.status === 'rejected' || review.status === 'hidden' || review.status === 'deleted') && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-full"
+                                  onClick={() => handleReviewAppeal(review.id)}
+                                >
+                                  <Undo className="mr-2 h-4 w-4" />
+                                  Faire appel
+                                </Button>
+                              )}
                               <VoteButtons
                                 reviewId={review.id}
                                 initialLikes={review.likes}

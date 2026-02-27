@@ -182,6 +182,49 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
   }, [reviews, sortBy, searchTerm]);
 
   const hasReviews = sortedReviews && sortedReviews.length > 0;
+  const getReviewMeta = (review: Review) => {
+    const chips: string[] = [];
+    if (review.employmentStatus) {
+      chips.push(
+        review.employmentStatus === 'current'
+          ? 'Employe actuel'
+          : review.employmentStatus === 'former'
+            ? 'Ancien employe'
+            : 'Candidat'
+      );
+    }
+    if (review.tenureBand) {
+      const tenureMap: Record<string, string> = {
+        lt_6m: '< 6 mois',
+        '6_12m': '6-12 mois',
+        '1_2y': '1-2 ans',
+        '3_5y': '3-5 ans',
+        gt_5y: '> 5 ans',
+      };
+      chips.push(tenureMap[review.tenureBand] || review.tenureBand);
+    }
+    if (review.contractType) {
+      const contractMap: Record<string, string> = {
+        cdi: 'CDI',
+        cdd: 'CDD',
+        intern: 'Stage',
+        freelance: 'Freelance',
+        other: 'Autre',
+      };
+      chips.push(contractMap[review.contractType] || review.contractType);
+    }
+    if (review.workMode) {
+      const modeMap: Record<string, string> = {
+        onsite: 'Presentiel',
+        hybrid: 'Hybride',
+        remote: 'Remote',
+      };
+      chips.push(modeMap[review.workMode] || review.workMode);
+    }
+    if (review.roleSlug) chips.push(review.roleSlug);
+    if (review.citySlug) chips.push(review.citySlug);
+    return chips.slice(0, 4);
+  };
 
   return (
     <section id="reviews">
@@ -238,6 +281,16 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
               <div className="pl-0 md:pl-16">
                 <h4 className="font-bold text-lg text-foreground mb-3 font-headline leading-snug">{review.title}</h4>
                 <p className="text-muted-foreground text-sm leading-relaxed font-body">{review.text}</p>
+                {getReviewMeta(review).length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {getReviewMeta(review).map((chip, idx) => (
+                      <span key={`${chip}-${idx}`} className="rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {review.subRatings && <ReviewSubRatings subRatings={review.subRatings} />}
 
                 {review.ownerReply && (
                   <div className="mt-6 pl-6 border-l-4 border-primary/30 py-4 bg-primary/5 rounded-r-xl">

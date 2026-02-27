@@ -86,6 +86,13 @@ export const mapBusinessFromDB = (dbItem: any): Business => {
             likes: r.likes,
             dislikes: r.dislikes,
             subRatings: r.sub_ratings,
+            employmentStatus: r.employment_status || undefined,
+            roleSlug: r.role_slug || undefined,
+            departmentSlug: r.department_slug || undefined,
+            citySlug: r.city_slug || undefined,
+            tenureBand: r.tenure_band || undefined,
+            contractType: r.contract_type || undefined,
+            workMode: r.work_mode || undefined,
             ownerReply: r.owner_reply ? { text: r.owner_reply, date: r.owner_reply_date } : undefined
         })) || [],
         updates: (dbItem.updates || [])

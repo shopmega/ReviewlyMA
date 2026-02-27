@@ -3,7 +3,7 @@
 import { moderateReview } from '@/ai/flows/moderate-reviews';
 import { revalidatePath } from 'next/cache';
 import type { ActionState } from '@/lib/types';
-import { reviewSchema, reviewReportSchema } from '@/lib/types';
+import { reviewSchema, reviewReportSchema, reviewAppealSchema } from '@/lib/types';
 
 export type ReviewFormState = ActionState;
 import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
@@ -19,6 +19,14 @@ import {
 } from '@/lib/errors';
 import { createServiceClient } from '@/lib/supabase/server';
 import { notifyAdmins } from '@/lib/notifications';
+
+const LEGACY_REVIEW_REPORT_REASON_MAP: Record<string, string> = {
+  spam: 'spam_or_promotional',
+  fake: 'fake_or_coordinated',
+  offensive: 'harassment_or_hate',
+  irrelevant: 'off_topic',
+  other: 'other',
+};
 
 export async function submitReview(
   prevState: ReviewFormState,
@@ -41,6 +49,13 @@ export async function submitReview(
     ...entries,
     rating: parseInt(String(entries.rating), 10),
     isAnonymous: entries.isAnonymous === 'true',
+    employmentStatus: String(entries.employmentStatus || '').trim() || undefined,
+    roleSlug: String(entries.roleSlug || '').trim() || undefined,
+    departmentSlug: String(entries.departmentSlug || '').trim() || undefined,
+    citySlug: String(entries.citySlug || '').trim() || undefined,
+    tenureBand: String(entries.tenureBand || '').trim() || undefined,
+    contractType: String(entries.contractType || '').trim() || undefined,
+    workMode: String(entries.workMode || '').trim() || undefined,
     subRatingWorkLifeBalance: parseInt(String(entries.subRatingWorkLifeBalance), 10) || 0,
     subRatingManagement: parseInt(String(entries.subRatingManagement), 10) || 0,
     subRatingCareerGrowth: parseInt(String(entries.subRatingCareerGrowth), 10) || 0,
@@ -127,6 +142,13 @@ export async function submitReview(
         career_growth: number | null;
         culture: number | null;
       };
+      employment_status?: 'current' | 'former' | 'candidate';
+      role_slug?: string | null;
+      department_slug?: string | null;
+      city_slug?: string | null;
+      tenure_band?: 'lt_6m' | '6_12m' | '1_2y' | '3_5y' | 'gt_5y';
+      contract_type?: 'cdi' | 'cdd' | 'intern' | 'freelance' | 'other';
+      work_mode?: 'onsite' | 'hybrid' | 'remote';
       status: 'pending' | 'published';
     } = {
       business_id: businessId,
@@ -142,6 +164,13 @@ export async function submitReview(
         career_growth: validatedFields.data.subRatingCareerGrowth || null,
         culture: validatedFields.data.subRatingCulture || null,
       },
+      employment_status: validatedFields.data.employmentStatus,
+      role_slug: validatedFields.data.roleSlug || null,
+      department_slug: validatedFields.data.departmentSlug || null,
+      city_slug: validatedFields.data.citySlug || null,
+      tenure_band: validatedFields.data.tenureBand,
+      contract_type: validatedFields.data.contractType,
+      work_mode: validatedFields.data.workMode,
       status: reviewStatus,
     };
 
@@ -211,7 +240,12 @@ export async function submitReview(
 export async function reportReview(
   data: any
 ): Promise<ActionState> {
-  const validatedFields = reviewReportSchema.safeParse(data);
+  const normalizedData = {
+    ...data,
+    reason: LEGACY_REVIEW_REPORT_REASON_MAP[String(data?.reason)] || data?.reason,
+  };
+
+  const validatedFields = reviewReportSchema.safeParse(normalizedData);
 
   if (!validatedFields.success) {
     return handleValidationError(
@@ -273,6 +307,88 @@ export async function reportReview(
     return createErrorResponse(
       ErrorCode.SERVER_ERROR,
       'Une erreur est survenue lors de l\'envoi du signalement.'
+    ) as ActionState;
+  }
+}
+
+/**
+ * Submit an appeal for a moderated review.
+ */
+export async function submitReviewAppeal(data: any): Promise<ActionState> {
+  const validatedFields = reviewAppealSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return handleValidationError(
+      'Données d appel invalides.',
+      validatedFields.error.flatten().fieldErrors as any
+    ) as ActionState;
+  }
+
+  const supabase = await createClient();
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return createErrorResponse(
+        ErrorCode.AUTHENTICATION_ERROR,
+        'Vous devez être connecté pour faire appel.'
+      ) as ActionState;
+    }
+
+    const { data: review, error: reviewError } = await supabase
+      .from('reviews')
+      .select('id, user_id, business_id')
+      .eq('id', validatedFields.data.review_id)
+      .single();
+
+    if (reviewError || !review) {
+      return createErrorResponse(ErrorCode.NOT_FOUND, 'Avis introuvable.') as ActionState;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_id, role')
+      .eq('id', user.id)
+      .single();
+
+    const isAuthor = review.user_id === user.id;
+    const isCompanyOwner = profile?.role === 'pro' && profile?.business_id === review.business_id;
+
+    if (!isAuthor && !isCompanyOwner) {
+      return createErrorResponse(
+        ErrorCode.AUTHORIZATION_ERROR,
+        'Vous ne pouvez pas faire appel pour cet avis.'
+      ) as ActionState;
+    }
+
+    const { error } = await supabase
+      .from('review_appeals')
+      .insert({
+        review_id: validatedFields.data.review_id,
+        appellant_user_id: user.id,
+        appeal_type: isAuthor ? 'author' : 'company_owner',
+        message: validatedFields.data.message,
+        status: 'open',
+      });
+
+    if (error) {
+      logError('submit_review_appeal_insert_error', error, { reviewId: validatedFields.data.review_id });
+      return handleDatabaseError(error) as ActionState;
+    }
+
+    await notifyAdmins({
+      title: 'Nouvel appel sur un avis',
+      message: 'Un appel de moderation a été soumis et attend traitement.',
+      type: 'admin_review_appeal_open',
+      link: '/admin/avis-appels',
+    });
+
+    return createSuccessResponse('Votre appel a été soumis.') as ActionState;
+  } catch (error) {
+    logError('submitReviewAppeal_unexpected', error, data);
+    return createErrorResponse(
+      ErrorCode.SERVER_ERROR,
+      'Une erreur est survenue lors de l envoi de l appel.'
     ) as ActionState;
   }
 }

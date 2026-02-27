@@ -28,6 +28,15 @@ type ReviewReport = {
 };
 
 const reasonLabels: Record<string, string> = {
+  spam_or_promotional: 'Spam / promotion',
+  fake_or_coordinated: 'Faux avis ou coordonne',
+  personal_data_or_doxxing: 'Donnees personnelles / doxxing',
+  harassment_or_hate: 'Harcelement / haine',
+  defamation_unverified_accusation: 'Accusation non verifiable',
+  conflict_of_interest: "Conflit d'interet",
+  off_topic: 'Hors sujet',
+  copyright_or_copied_content: "Copie / droit d'auteur",
+  // Legacy reasons kept for backward compatibility in old rows.
   spam: 'Spam',
   fake: 'Faux avis',
   offensive: 'Contenu offensant',

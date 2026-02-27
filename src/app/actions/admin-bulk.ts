@@ -131,7 +131,22 @@ async function resolveExistingIds(supabase: any, table: string, ids: Array<strin
 
 export async function bulkUpdateReviews(
   reviewIds: number[],
-  updateData: { status?: 'published' | 'rejected'; reason?: string }
+  updateData: {
+    status?:
+      | 'draft'
+      | 'submitted'
+      | 'pending'
+      | 'approved'
+      | 'published'
+      | 'rejected'
+      | 'hidden'
+      | 'under_investigation'
+      | 'edited_requires_review'
+      | 'appealed'
+      | 'restored'
+      | 'deleted';
+    reason?: string;
+  }
 ): Promise<BulkOperationResult> {
   const supabase = await getAuthenticatedClient();
 
@@ -147,17 +162,52 @@ export async function bulkUpdateReviews(
     const existing = await resolveExistingIds(supabase, 'reviews', reviewIds);
     if (existing.error) return fail('Erreur lors de la lecture des avis.', reviewIds.length, [existing.error.message]);
 
-    if (existing.existingIds.length > 0) {
+    if (!updateData.status) {
+      return fail('Le statut cible est obligatoire.', reviewIds.length, ['Missing status']);
+    }
+
+    const errors = existing.missingIds.map((id) => `Review ${id}: not found`);
+    const reasonCode = reason || 'bulk_status_update';
+    let processed = 0;
+    let fallbackToDirectUpdate = false;
+
+    for (const reviewId of existing.existingIds as number[]) {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('transition_review_status', {
+        p_review_id: reviewId,
+        p_to_status: updateData.status,
+        p_reason_code: reasonCode,
+        p_note: reason || null,
+      });
+
+      if (rpcError) {
+        const message = String(rpcError.message || '').toLowerCase();
+        if (message.includes('could not find') || message.includes('function transition_review_status')) {
+          fallbackToDirectUpdate = true;
+          break;
+        }
+        errors.push(`Review ${reviewId}: ${rpcError.message}`);
+        continue;
+      }
+
+      const result = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      if (result?.success === false) {
+        errors.push(`Review ${reviewId}: ${result.message || 'transition failed'}`);
+        continue;
+      }
+      processed++;
+    }
+
+    if (fallbackToDirectUpdate) {
       const { error: updateError } = await supabase
         .from('reviews')
         .update({
           status: updateData.status,
+          moderation_reason_code: reasonCode,
         })
         .in('id', existing.existingIds as number[]);
       if (updateError) return fail('Erreur lors de la mise a jour groupee.', reviewIds.length, [updateError.message]);
+      processed = existing.existingIds.length;
     }
-
-    const errors = existing.missingIds.map((id) => `Review ${id}: not found`);
 
     await writeAuditEntries(supabase, {
       userId,
@@ -167,10 +217,10 @@ export async function bulkUpdateReviews(
         review_ids: reviewIds,
         update_data: {
           status: updateData.status,
-          reason: reason || null,
+          reason: reasonCode,
         },
-        processed: existing.existingIds.length,
-        failed: existing.missingIds.length,
+        processed,
+        failed: errors.length,
         errors,
       },
     });
@@ -178,10 +228,10 @@ export async function bulkUpdateReviews(
     revalidatePath('/admin/avis');
     return {
       success: true,
-      processed: existing.existingIds.length,
-      failed: existing.missingIds.length,
+      processed,
+      failed: errors.length,
       errors,
-      message: msg('avis', existing.existingIds.length, existing.missingIds.length),
+      message: msg('avis', processed, errors.length),
     };
   } catch (e: any) {
     logError('bulk_update_reviews', e, { reviewIds, updateData });

@@ -60,6 +60,7 @@ const menuGroups = [
       { href: '/admin/salaires', label: 'Salaires', icon: DollarSign },
       { href: '/admin/parrainages', label: 'Parrainages', icon: BriefcaseBusiness },
       { href: '/admin/avis-signalements', label: 'Signalements avis', icon: Flag },
+      { href: '/admin/avis-appels', label: 'Appels avis', icon: FileText },
       { href: '/admin/entreprises-signalements', label: 'Signalements entreprises', icon: Building2 },
       { href: '/admin/contenu', label: 'Médias signalés', icon: FileImage },
     ]

@@ -51,6 +51,13 @@ export function ReviewForm({ businessId }: ReviewFormProps) {
       text: '',
       rating: 0,
       isAnonymous: true,
+      employmentStatus: 'current',
+      tenureBand: '1_2y',
+      contractType: 'cdi',
+      workMode: 'onsite',
+      roleSlug: '',
+      departmentSlug: '',
+      citySlug: '',
       subRatingWorkLifeBalance: 0,
       subRatingManagement: 0,
       subRatingCareerGrowth: 0,
@@ -82,6 +89,13 @@ export function ReviewForm({ businessId }: ReviewFormProps) {
           text: '',
           rating: 0,
           isAnonymous: true,
+          employmentStatus: 'current',
+          tenureBand: '1_2y',
+          contractType: 'cdi',
+          workMode: 'onsite',
+          roleSlug: '',
+          departmentSlug: '',
+          citySlug: '',
           subRatingWorkLifeBalance: 0,
           subRatingManagement: 0,
           subRatingCareerGrowth: 0,
@@ -101,12 +115,114 @@ export function ReviewForm({ businessId }: ReviewFormProps) {
             <input type="hidden" name="title" value={form.watch('title') || ''} />
             <input type="hidden" name="text" value={form.watch('text') || ''} />
             <input type="hidden" name="isAnonymous" value={form.watch('isAnonymous') ? 'true' : 'false'} />
+            <input type="hidden" name="employmentStatus" value={form.watch('employmentStatus') || ''} />
+            <input type="hidden" name="roleSlug" value={form.watch('roleSlug') || ''} />
+            <input type="hidden" name="departmentSlug" value={form.watch('departmentSlug') || ''} />
+            <input type="hidden" name="citySlug" value={form.watch('citySlug') || ''} />
+            <input type="hidden" name="tenureBand" value={form.watch('tenureBand') || ''} />
+            <input type="hidden" name="contractType" value={form.watch('contractType') || ''} />
+            <input type="hidden" name="workMode" value={form.watch('workMode') || ''} />
             <input type="hidden" name="subRatingWorkLifeBalance" value={form.watch('subRatingWorkLifeBalance') || 0} />
             <input type="hidden" name="subRatingManagement" value={form.watch('subRatingManagement') || 0} />
             <input type="hidden" name="subRatingCareerGrowth" value={form.watch('subRatingCareerGrowth') || 0} />
             <input type="hidden" name="subRatingCulture" value={form.watch('subRatingCulture') || 0} />
 
             <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 rounded-lg border border-border/30 bg-muted/20">
+                <FormField
+                  control={form.control}
+                  name="employmentStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Statut</FormLabel>
+                      <FormControl>
+                        <select className="h-8 text-sm w-full rounded-md border border-input bg-background px-2" value={field.value || 'current'} onChange={(e) => field.onChange(e.target.value)}>
+                          <option value="current">Employe actuel</option>
+                          <option value="former">Ancien employe</option>
+                          <option value="candidate">Candidat</option>
+                        </select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tenureBand"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Anciennete</FormLabel>
+                      <FormControl>
+                        <select className="h-8 text-sm w-full rounded-md border border-input bg-background px-2" value={field.value || '1_2y'} onChange={(e) => field.onChange(e.target.value)}>
+                          <option value="lt_6m">Moins de 6 mois</option>
+                          <option value="6_12m">6-12 mois</option>
+                          <option value="1_2y">1-2 ans</option>
+                          <option value="3_5y">3-5 ans</option>
+                          <option value="gt_5y">Plus de 5 ans</option>
+                        </select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="contractType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Contrat</FormLabel>
+                      <FormControl>
+                        <select className="h-8 text-sm w-full rounded-md border border-input bg-background px-2" value={field.value || 'cdi'} onChange={(e) => field.onChange(e.target.value)}>
+                          <option value="cdi">CDI</option>
+                          <option value="cdd">CDD</option>
+                          <option value="intern">Stage</option>
+                          <option value="freelance">Freelance</option>
+                          <option value="other">Autre</option>
+                        </select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="workMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Mode de travail</FormLabel>
+                      <FormControl>
+                        <select className="h-8 text-sm w-full rounded-md border border-input bg-background px-2" value={field.value || 'onsite'} onChange={(e) => field.onChange(e.target.value)}>
+                          <option value="onsite">Presentiel</option>
+                          <option value="hybrid">Hybride</option>
+                          <option value="remote">Remote</option>
+                        </select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="roleSlug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Role (optionnel)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ex: software_engineer" className="h-8 text-sm" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="citySlug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Ville (optionnel)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ex: casablanca" className="h-8 text-sm" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
                 name="rating"

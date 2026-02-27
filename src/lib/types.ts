@@ -48,6 +48,13 @@ export type Review = {
     text: string;
     date: string;
   };
+  employmentStatus?: 'current' | 'former' | 'candidate';
+  roleSlug?: string;
+  departmentSlug?: string;
+  citySlug?: string;
+  tenureBand?: 'lt_6m' | '6_12m' | '1_2y' | '3_5y' | 'gt_5y';
+  contractType?: 'cdi' | 'cdd' | 'intern' | 'freelance' | 'other';
+  workMode?: 'onsite' | 'hybrid' | 'remote';
 };
 
 
@@ -121,6 +128,13 @@ export const reviewSchema = z.object({
   text: z.string().min(10, { message: 'Votre avis doit contenir au moins 10 caractères.' }),
   rating: z.coerce.number().min(1, { message: 'Veuillez donner une note.' }).max(5),
   isAnonymous: z.boolean().optional().default(false),
+  employmentStatus: z.enum(['current', 'former', 'candidate']).optional(),
+  roleSlug: z.string().trim().max(80).optional(),
+  departmentSlug: z.string().trim().max(80).optional(),
+  citySlug: z.string().trim().max(80).optional(),
+  tenureBand: z.enum(['lt_6m', '6_12m', '1_2y', '3_5y', 'gt_5y']).optional(),
+  contractType: z.enum(['cdi', 'cdd', 'intern', 'freelance', 'other']).optional(),
+  workMode: z.enum(['onsite', 'hybrid', 'remote']).optional(),
   subRatingWorkLifeBalance: z.coerce.number().min(0).max(5).optional(),
   subRatingManagement: z.coerce.number().min(0).max(5).optional(),
   subRatingCareerGrowth: z.coerce.number().min(0).max(5).optional(),
@@ -428,8 +442,23 @@ export const mediaReportSchema = z.object({
 export const reviewReportSchema = z.object({
   review_id: z.number(),
   business_id: z.string(),
-  reason: z.enum(['spam', 'fake', 'offensive', 'irrelevant', 'other']),
+  reason: z.enum([
+    'spam_or_promotional',
+    'fake_or_coordinated',
+    'personal_data_or_doxxing',
+    'harassment_or_hate',
+    'defamation_unverified_accusation',
+    'conflict_of_interest',
+    'off_topic',
+    'copyright_or_copied_content',
+    'other',
+  ]),
   details: z.string().max(500).optional(),
+});
+
+export const reviewAppealSchema = z.object({
+  review_id: z.number(),
+  message: z.string().trim().min(10).max(2000),
 });
 
 export const businessReportSchema = z.object({
@@ -441,6 +470,7 @@ export const businessReportSchema = z.object({
 export type BusinessReportFormData = z.infer<typeof businessReportSchema>;
 export type MediaReportFormData = z.infer<typeof mediaReportSchema>;
 export type ReviewReportFormData = z.infer<typeof reviewReportSchema>;
+export type ReviewAppealFormData = z.infer<typeof reviewAppealSchema>;
 
 export type BusinessProfileUpdateData = z.infer<typeof businessProfileUpdateSchema>;
 
