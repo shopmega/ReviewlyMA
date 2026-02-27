@@ -166,7 +166,7 @@ export async function getAdminPendingClaims(limit = 50, offset = 0): Promise<{
         `,
         { count: 'exact' }
       )
-      .eq('status', 'pending')
+      .or('claim_state.eq.verification_pending,status.eq.pending')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

@@ -109,7 +109,10 @@ function NewClaimContent() {
           const claim = claims[0];
           setExistingClaim(claim);
 
-          if (claim.status === 'approved') {
+          const isVerified = claim.status === 'approved' || claim.claim_state === 'verified';
+          const isPending = claim.status === 'pending' || claim.claim_state === 'verification_pending';
+
+          if (isVerified) {
             setUserClaimStatus('approved');
             toast({
               title: "Accès refusé",
@@ -118,7 +121,7 @@ function NewClaimContent() {
             });
             setTimeout(() => router.push('/dashboard'), 2500);
             return;
-          } else if (claim.status === 'pending') {
+          } else if (isPending) {
             setUserClaimStatus('pending');
             toast({
               title: "Demande en cours",

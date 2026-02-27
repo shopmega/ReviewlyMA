@@ -85,7 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .from('business_claims')
           .select('id')
           .eq('user_id', user.id)
-          .eq('status', 'approved')
+          .or('claim_state.eq.verified,status.eq.approved')
           .maybeSingle();
 
         if (approvedClaim) {

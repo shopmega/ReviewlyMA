@@ -273,7 +273,7 @@ export async function updateSession(request: NextRequest) {
             .from('business_claims')
             .select('business_id, status')
             .eq('user_id', user.id)
-            .eq('status', 'approved')
+            .or('claim_state.eq.verified,status.eq.approved')
             .maybeSingle();
 
           if (data) {
@@ -297,7 +297,7 @@ export async function updateSession(request: NextRequest) {
               .from('business_claims')
               .select('id')
               .eq('user_id', user.id)
-              .eq('status', 'pending')
+              .or('claim_state.eq.verification_pending,status.eq.pending')
               .maybeSingle();
 
             if (data) {

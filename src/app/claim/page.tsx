@@ -69,13 +69,15 @@ export default function ClaimPage() {
         if (claims && claims.length > 0) {
           const claim = claims[0];
           setExistingClaim(claim);
+          const isVerified = claim.status === 'approved' || claim.claim_state === 'verified';
+          const isPending = claim.status === 'pending' || claim.claim_state === 'verification_pending';
 
-          if (claim.status === 'approved') {
+          if (isVerified) {
             setUserClaimStatus('approved');
             // Redirect to dashboard if they have an approved claim
             router.push('/dashboard');
             return;
-          } else if (claim.status === 'pending') {
+          } else if (isPending) {
             setUserClaimStatus('pending');
           }
         } else {

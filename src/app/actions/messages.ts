@@ -48,7 +48,7 @@ async function resolveBusinessAccess(
         .select('id')
         .eq('user_id', userId)
         .eq('business_id', businessId)
-        .eq('status', 'approved')
+        .or('claim_state.eq.verified,status.eq.approved')
         .maybeSingle(),
     ]);
 

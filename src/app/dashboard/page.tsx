@@ -114,7 +114,11 @@ export default async function DashboardPage(props: {
   // Source C: user_businesses assignments
 
   const [claimsResult, assignmentsResult] = await Promise.all([
-    supabase.from('business_claims').select('business_id').eq('user_id', user.id).eq('status', 'approved'),
+    supabase
+      .from('business_claims')
+      .select('business_id')
+      .eq('user_id', user.id)
+      .or('claim_state.eq.verified,status.eq.approved'),
     supabase.from('user_businesses').select('business_id').eq('user_id', user.id)
   ]);
 

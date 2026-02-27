@@ -39,6 +39,7 @@ type ClaimData = {
   message_to_admin?: string;
   message?: string;
   status: 'pending' | 'approved' | 'rejected';
+  claim_state?: 'verification_pending' | 'verified' | 'verification_failed' | 'suspended' | 'revoked' | 'claim_requested' | 'unclaimed' | null;
   created_at: string;
   reviewed_at?: string | null;
   reviewed_by?: string | null;
@@ -101,7 +102,7 @@ export default function ClaimsPage() {
       .order('created_at', { ascending: false });
 
     if (filterStatus === 'pending') {
-      query = query.eq('status', 'pending');
+      query = query.or('claim_state.eq.verification_pending,status.eq.pending');
     }
 
     const { data, error } = await query;
@@ -248,7 +249,9 @@ export default function ClaimsPage() {
     );
   };
 
-  const pendingCount = claims.filter(c => c.status === 'pending').length;
+  const pendingCount = claims.filter(
+    (c) => c.status === 'pending' || c.claim_state === 'verification_pending'
+  ).length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto">

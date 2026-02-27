@@ -161,7 +161,7 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
           .from('business_claims')
           .select('business_id')
           .eq('user_id', userId)
-          .eq('status', 'approved')
+          .or('claim_state.eq.verified,status.eq.approved')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();

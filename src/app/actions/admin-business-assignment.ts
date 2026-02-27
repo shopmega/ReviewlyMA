@@ -127,7 +127,7 @@ export async function assignBusinessToUser(
         .from('business_claims')
         .select('business_id')
         .eq('user_id', resolvedUserId)
-        .eq('status', 'approved')
+        .or('claim_state.eq.verified,status.eq.approved')
 
       if (approvedClaims && approvedClaims.length > 0) {
         for (const claim of approvedClaims) {
@@ -221,7 +221,7 @@ export async function assignBusinessToUser(
       .from('business_claims')
       .select('id, user_id, full_name')
       .eq('business_id', businessId)
-      .eq('status', 'approved')
+      .or('claim_state.eq.verified,status.eq.approved')
       .neq('user_id', resolvedUserId)
 
     if (conflictingClaims && conflictingClaims.length > 0) {

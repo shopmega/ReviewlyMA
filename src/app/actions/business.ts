@@ -100,7 +100,7 @@ async function verifyBusinessOwnership(supabase: any, userId: string, businessId
         .select('id')
         .eq('user_id', userId)
         .eq('business_id', businessId)
-        .eq('status', 'approved')
+        .or('claim_state.eq.verified,status.eq.approved')
         .maybeSingle();
 
     if (claim) return { authorized: true, profile };
@@ -519,7 +519,7 @@ export async function updateBusinessProfile(
                     .from('business_claims')
                     .select('business_id')
                     .eq('user_id', user.id)
-                    .eq('status', 'approved'),
+                    .or('claim_state.eq.verified,status.eq.approved'),
                 supabaseService
                     .from('user_businesses')
                     .select('business_id')

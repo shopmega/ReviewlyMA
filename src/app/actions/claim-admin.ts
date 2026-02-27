@@ -108,7 +108,7 @@ export async function updateClaimStatus(
           .from('business_claims')
           .select('business_id')
           .eq('user_id', claim.user_id)
-          .eq('status', 'approved');
+          .or('claim_state.eq.verified,status.eq.approved');
 
         if (approvedClaims) {
           approvedClaims.forEach((c) => existingBusinessIds.add(c.business_id));
@@ -196,24 +196,50 @@ export async function updateClaimStatus(
       }
     }
 
-    // 5) Persist moderation status.
+    // 5) Persist moderation status/state.
     let claimStatusUpdated = false;
     let claimUpdateErrorMessage = '';
+    const transitionTargetState = status === 'approved' ? 'verified' : 'verification_failed';
+    const transitionReasonCode = status === 'approved' ? 'admin_approved' : 'admin_rejected';
 
-    const { error: claimUpdateError } = await supabaseService
-      .from('business_claims')
-      .update({
-        status,
-        reviewed_at: reviewedAt,
-        reviewed_by: user.id,
-        rejection_reason: rejectionReason,
-      })
-      .eq('id', claimId);
+    const { error: transitionError } = await supabaseService.rpc('transition_claim_state', {
+      p_claim_id: claimId,
+      p_to_state: transitionTargetState,
+      p_reason_code: transitionReasonCode,
+      p_note: rejectionReason,
+    });
 
-    if (!claimUpdateError) {
+    if (!transitionError) {
       claimStatusUpdated = true;
     } else {
-      claimUpdateErrorMessage = claimUpdateError.message || 'Unknown claim update error';
+      // Backward compatibility: fallback to legacy update path when RPC is unavailable.
+      claimUpdateErrorMessage = transitionError.message || 'Unknown claim update error';
+      const transitionErrorText = claimUpdateErrorMessage.toLowerCase();
+      const looksLikeMissingTransitionRpc =
+        transitionErrorText.includes('transition_claim_state') ||
+        transitionErrorText.includes('function') ||
+        transitionErrorText.includes('not exist');
+
+      if (!looksLikeMissingTransitionRpc) {
+        return { status: 'error', message: `Erreur mise a jour revendication: ${claimUpdateErrorMessage}` };
+      }
+
+      const { error: claimUpdateError } = await supabaseService
+        .from('business_claims')
+        .update({
+          status,
+          reviewed_at: reviewedAt,
+          reviewed_by: user.id,
+          rejection_reason: rejectionReason,
+        })
+        .eq('id', claimId);
+
+      if (!claimUpdateError) {
+        claimStatusUpdated = true;
+      } else {
+        claimUpdateErrorMessage = claimUpdateError.message || claimUpdateErrorMessage;
+      }
+
       const claimUpdateErrorText = claimUpdateErrorMessage.toLowerCase();
       const looksLikeSchemaCacheIssue =
         claimUpdateErrorText.includes('rejection_reason') ||

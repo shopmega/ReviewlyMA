@@ -160,7 +160,7 @@ async function searchHandler(request: NextRequest) {
         .from('business_claims')
         .select('business_id')
         .in('business_id', businessIds)
-        .eq('status', 'approved');
+        .or('claim_state.eq.verified,status.eq.approved');
 
       if (claims) {
         claimedIds = new Set(claims.map(c => c.business_id));

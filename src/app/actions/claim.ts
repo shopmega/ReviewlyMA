@@ -84,7 +84,7 @@ export async function submitClaim(
     // 1. Check for existing claims (approved or pending)
     const { data: existingClaims } = await supabaseService
         .from('business_claims')
-        .select('id, status, business_id')
+        .select('id, status, claim_state, business_id')
         .eq('user_id', user.id);
 
     if (!isAdmin) {
@@ -97,7 +97,9 @@ export async function submitClaim(
         }
 
         // From approved claims
-        existingClaims?.filter(c => c.status === 'approved').forEach(c => managedBusinessIds.add(c.business_id));
+        existingClaims
+            ?.filter(c => c.status === 'approved' || c.claim_state === 'verified')
+            .forEach(c => managedBusinessIds.add(c.business_id));
 
         // From user_businesses assignments
         const { data: assignments } = await supabaseService
@@ -118,7 +120,9 @@ export async function submitClaim(
     }
 
     // Also check for pending claims - usually we only want 1 pending at a time
-    const hasPending = existingClaims?.some(c => c.status === 'pending');
+    const hasPending = existingClaims?.some(
+        c => c.status === 'pending' || c.claim_state === 'verification_pending'
+    );
     if (hasPending) {
         return createErrorResponse(
             ErrorCode.AUTHORIZATION_ERROR,
@@ -301,7 +305,7 @@ export async function submitClaim(
             .select('id')
             .eq('user_id', user.id)
             .eq('business_id', businessId)
-            .eq('status', 'pending')
+            .or('claim_state.eq.verification_pending,status.eq.pending')
             .maybeSingle();
 
         if (existingClaim) {
@@ -570,9 +574,9 @@ export async function isBusinessClaimed(businessId: string) {
     // Check if there's an approved claim for this business
     const { data, error } = await supabase
         .from('business_claims')
-        .select('id, status, user_id')
+        .select('id, status, claim_state, user_id')
         .eq('business_id', businessId)
-        .eq('status', 'approved')
+        .or('claim_state.eq.verified,status.eq.approved')
         .maybeSingle();
 
     if (error) {

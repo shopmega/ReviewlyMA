@@ -54,7 +54,7 @@ export function useBusinessProfile() {
                         .from('business_claims')
                         .select('business_id, created_at')
                         .eq('user_id', user.id)
-                        .eq('status', 'approved')
+                        .or('claim_state.eq.verified,status.eq.approved')
                         .order('created_at', { ascending: false })
                         .limit(1);
 

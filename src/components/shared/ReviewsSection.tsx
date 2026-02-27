@@ -56,10 +56,10 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
       // Check via claims
       const { data: claim } = await supabase
         .from('business_claims')
-        .select('status')
+        .select('status, claim_state')
         .eq('user_id', user.id)
         .eq('business_id', business.id)
-        .eq('status', 'approved')
+        .or('claim_state.eq.verified,status.eq.approved')
         .single();
 
       const isOwnerCheck = (profile?.business_id === business.id && profile?.role === 'pro') || !!claim;

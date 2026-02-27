@@ -60,7 +60,7 @@ export function DashboardAuthGuard({
             .from('business_claims')
             .select('id')
             .eq('user_id', user.id)
-            .eq('status', 'approved')
+            .or('claim_state.eq.verified,status.eq.approved')
             .maybeSingle();
 
           if (approvedClaim) {
@@ -71,7 +71,7 @@ export function DashboardAuthGuard({
               .from('business_claims')
               .select('id')
               .eq('user_id', user.id)
-              .eq('status', 'pending')
+              .or('claim_state.eq.verification_pending,status.eq.pending')
               .maybeSingle();
 
             if (pendingClaim && pathname !== '/dashboard/pending') {
