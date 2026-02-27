@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/salary-digest",
-      "schedule": "35 3 * * 1"
+      "schedule": "35 3 * * *"
     },
     {
       "path": "/api/cron/pro-insights-digest",
@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/cron/review-sla-sync",
-      "schedule": "*/30 * * * *"
+      "schedule": "50 3 * * *"
     },
     {
       "path": "/api/cron/claim-reverification",
