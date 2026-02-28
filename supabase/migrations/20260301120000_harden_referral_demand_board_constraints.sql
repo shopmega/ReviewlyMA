@@ -1,5 +1,39 @@
 -- Harden referral demand listings constraints, visibility, and indexes.
 
+-- Normalize legacy rows before enforcing strict checks.
+update public.job_referral_demand_listings
+set
+  title = left(trim(title), 140),
+  target_role = left(trim(target_role), 120),
+  city = nullif(left(trim(coalesce(city, '')), 80), ''),
+  summary = left(trim(summary), 1000),
+  details = case
+    when details is null then null
+    else nullif(left(trim(details), 3000), '')
+  end,
+  contract_type = case
+    when contract_type in ('cdi', 'cdd', 'stage', 'freelance', 'alternance', 'autre') then contract_type
+    else null
+  end,
+  work_mode = case
+    when work_mode in ('onsite', 'hybrid', 'remote') then work_mode
+    else null
+  end,
+  seniority = case
+    when seniority in ('junior', 'confirme', 'senior', 'lead', 'manager', 'autre') then seniority
+    else null
+  end,
+  updated_at = timezone('utc'::text, now());
+
+-- Any active row that is already expired should be closed to remain policy-compatible.
+update public.job_referral_demand_listings
+set
+  status = 'closed',
+  updated_at = timezone('utc'::text, now())
+where status = 'active'
+  and expires_at is not null
+  and expires_at <= timezone('utc'::text, now());
+
 alter table public.job_referral_demand_listings
   add constraint job_referral_demand_listings_title_len_check
     check (char_length(trim(title)) between 6 and 140),
