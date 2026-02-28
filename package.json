@@ -30,7 +30,8 @@
     "test:e2e:report": "playwright show-report",
     "validate:prod": "powershell -ExecutionPolicy Bypass -File scripts/run-prod-validation.ps1",
     "validate:prod:salaries": "powershell -ExecutionPolicy Bypass -File scripts/run-prod-salaries-validation.ps1",
-    "validate:prod:userpro": "powershell -ExecutionPolicy Bypass -File scripts/run-userpro-validation.ps1"
+    "validate:prod:userpro": "powershell -ExecutionPolicy Bypass -File scripts/run-userpro-validation.ps1",
+    "check:seo-ia": "node scripts/check-seo-ia.mjs"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
