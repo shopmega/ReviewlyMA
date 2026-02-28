@@ -17,6 +17,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Business, Review } from '@/lib/types';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
+import { getClientSiteUrl } from '@/lib/site-config';
 
 interface ReviewsSectionProps {
   business: Business;
@@ -226,6 +228,18 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
     return chips.slice(0, 4);
   };
 
+  const sanitizeReviewSnippet = (value: string) => {
+    const normalized = value
+      .replace(/https?:\/\/\S+/gi, '')
+      .replace(/\S+@\S+\.\S+/g, '')
+      .replace(/\+?\d[\d\s().-]{7,}\d/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!normalized) return 'Extrait d avis employe anonymise.';
+    return normalized.slice(0, 180);
+  };
+
   return (
     <section id="reviews">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 border-b border-border/50 pb-4 gap-4">
@@ -339,6 +353,17 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
                         </Button>
                       </div>
                     )}
+                    <ContentShareButton
+                      url={`${getClientSiteUrl()}/businesses/${business.id}/reviews?reviewId=${review.id}`}
+                      title={`Avis sur ${business.name}`}
+                      text={`"${sanitizeReviewSnippet(review.text)}" - ${business.name}`}
+                      contentType="review_snippet"
+                      contentId={`${business.id}_${review.id}`}
+                      cardType="review_snippet"
+                      campaign="review_snippet_share"
+                      className="h-8 px-3 rounded-xl"
+                      label="Partager l extrait"
+                    />
                     <ReviewReportDialog reviewId={review.id} businessId={business.id} />
                   </div>
                 </div>

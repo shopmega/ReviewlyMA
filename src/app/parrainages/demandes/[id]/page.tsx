@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock3, MapPin } from 'lucide-react';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
+import { getServerSiteUrl } from '@/lib/site-config';
 
 type Params = { id: string };
 
@@ -26,16 +28,7 @@ type DemandListing = {
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { id } = await params;
-  return {
-    title: 'Demande de parrainage | Reviewly MA',
-    alternates: { canonical: `/parrainages/demandes/${id}` },
-  };
-}
-
-export default async function ReferralDemandDetailPage({ params }: { params: Promise<Params> }) {
-  const { id } = await params;
+async function getDemandListingById(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('job_referral_demand_listings')
@@ -44,8 +37,58 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
     .eq('status', 'active')
     .maybeSingle();
 
-  const item = data as DemandListing | null;
+  return (data as DemandListing | null) || null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { id } = await params;
+  const siteUrl = getServerSiteUrl();
+  const item = await getDemandListingById(id);
+  if (!item) {
+    return {
+      title: 'Demande de parrainage | Reviewly MA',
+      alternates: { canonical: `${siteUrl}/parrainages/demandes/${id}` },
+    };
+  }
+
+  const citySuffix = item.city ? ` - ${item.city}` : '';
+  const title = `${item.target_role}${citySuffix} | Demande de parrainage`;
+  const description = `Demande publique de parrainage pour ${item.target_role}${citySuffix}. Donnees anonymisees et moderees.`;
+  const ogQuery = new URLSearchParams({
+    role: item.target_role,
+    city: item.city || '',
+    title: item.title,
+  });
+  const canonical = `${siteUrl}/parrainages/demandes/${item.id}`;
+  const image = `${siteUrl}/api/og/referral-demand?${ogQuery.toString()}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: canonical,
+      images: [{ url: image, width: 1200, height: 630, alt: 'Demande de parrainage' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function ReferralDemandDetailPage({ params }: { params: Promise<Params> }) {
+  const { id } = await params;
+  const siteUrl = getServerSiteUrl();
+  const item = await getDemandListingById(id);
   if (!item) notFound();
+  const demandShareUrl = `${siteUrl}/parrainages/demandes/${item.id}`;
+  const demandShareText = `Demande de parrainage: ${item.target_role}${item.city ? ` a ${item.city}` : ''}.`;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -91,6 +134,15 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
           <Card className="rounded-2xl">
             <CardContent className="pt-6 text-sm text-muted-foreground space-y-3">
               <p>Vous pouvez contacter ce candidat via vos canaux habituels de candidature.</p>
+              <ContentShareButton
+                url={demandShareUrl}
+                title={`Demande de parrainage: ${item.target_role}`}
+                text={demandShareText}
+                contentType="referral_demand"
+                contentId={item.id}
+                cardType="referral_demand_snapshot"
+                className="w-full rounded-xl"
+              />
               <Button asChild className="w-full rounded-xl">
                 <Link href="/parrainages/demandes/new">Publier votre demande</Link>
               </Button>

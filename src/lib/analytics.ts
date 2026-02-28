@@ -18,7 +18,12 @@ export type AnalyticsEvent =
   | 'filter_applied'
   | 'business_saved'
   | 'carousel_click'
-  | 'carousel_impression';
+  | 'carousel_impression'
+  | 'share_initiated'
+  | 'share_completed'
+  | 'link_opened'
+  | 'visitor_to_signup'
+  | 'visitor_to_contribution';
 
 export interface AnalyticsData {
   event: AnalyticsEvent;

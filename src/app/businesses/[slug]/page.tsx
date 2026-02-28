@@ -37,8 +37,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = business.description?.substring(0, 160) || `Découvrez les avis, horaires, photos et informations de contact de ${business.name} à ${business.city}.`;
   const logoImage = business.logo?.imageUrl;
   const hasRealLogo = !!logoImage && !logoImage.includes('/placeholders/');
-  const image = business.cover_url || (hasRealLogo ? logoImage : '/opengraph-image');
   const siteUrl = getServerSiteUrl();
+  const canonical = `${siteUrl}/businesses/${business.id}`;
+  const ogQuery = new URLSearchParams({
+    name: business.name || '',
+    city: business.city || '',
+    category: business.category || '',
+    rating: business.overallRating ? business.overallRating.toFixed(1) : '0.0',
+    reviews: String(business.reviews?.length || 0),
+  });
+  const generatedImage = `${siteUrl}/api/og/company?${ogQuery.toString()}`;
+  const image = business.cover_url || (hasRealLogo ? logoImage : generatedImage);
 
   return {
     title,
@@ -47,8 +56,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: 'website',
-      url: `${siteUrl}/businesses/${business.id}`,
+      url: canonical,
       images: [
+        {
+          url: generatedImage,
+          width: 1200,
+          height: 630,
+          alt: `${business.name} - aperçu`,
+        },
         {
           url: image,
           width: 1200,
@@ -61,10 +76,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: 'summary_large_image',
       title,
       description,
-      images: [image],
+      images: [generatedImage, image],
     },
     alternates: {
-      canonical: `${siteUrl}/businesses/${business.id}`,
+      canonical,
     },
   };
 }

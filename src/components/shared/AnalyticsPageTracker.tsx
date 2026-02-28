@@ -8,6 +8,7 @@ export function AnalyticsPageTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const lastTrackedPath = useRef<string>('');
+  const trackedShareIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!pathname) {
@@ -29,6 +30,22 @@ export function AnalyticsPageTracker() {
       page_location: typeof window !== 'undefined' ? window.location.href : undefined,
       page_title: typeof document !== 'undefined' ? document.title : undefined,
       source: 'router_change',
+    });
+
+    const shareId = searchParams?.get('share_id');
+    if (!shareId || trackedShareIds.current.has(shareId)) {
+      return;
+    }
+
+    trackedShareIds.current.add(shareId);
+    analytics.track('link_opened', {
+      share_id: shareId,
+      utm_source: searchParams?.get('utm_source') || null,
+      utm_medium: searchParams?.get('utm_medium') || null,
+      utm_campaign: searchParams?.get('utm_campaign') || null,
+      utm_content: searchParams?.get('utm_content') || null,
+      page_path: pathname,
+      page_query: search,
     });
   }, [pathname, searchParams]);
 

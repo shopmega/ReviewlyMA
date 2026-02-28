@@ -13,23 +13,87 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
+import { getServerSiteUrl } from '@/lib/site-config';
 
 type SearchParams = {
   companyA?: string;
   companyB?: string;
+  companyALabel?: string;
+  companyBLabel?: string;
   role?: string;
+  roleLabel?: string;
   cityA?: string;
   cityB?: string;
+  cityALabel?: string;
+  cityBLabel?: string;
 };
 
 type PageProps = {
   searchParams: Promise<SearchParams>;
 };
 
-export const metadata: Metadata = {
-  title: 'Comparaison des salaires',
-  description: 'Comparez les salaires entre entreprises et villes au Maroc.',
-};
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const sp = await searchParams;
+  const siteUrl = getServerSiteUrl();
+
+  const hasCompanyCompare = !!sp.companyA && !!sp.companyB;
+  const hasRoleCompare = !!sp.role && !!sp.cityA && !!sp.cityB;
+
+  let title = 'Comparaison des salaires';
+  let description = 'Comparez les salaires entre entreprises et villes au Maroc.';
+
+  if (hasCompanyCompare) {
+    const companyALabel = sp.companyALabel || 'Entreprise A';
+    const companyBLabel = sp.companyBLabel || 'Entreprise B';
+    title = `${companyALabel} vs ${companyBLabel} | Comparaison salariale`;
+    description = `Comparez les tendances salariales entre ${companyALabel} et ${companyBLabel} au Maroc.`;
+  } else if (hasRoleCompare) {
+    const roleLabel = sp.roleLabel || 'Poste';
+    const cityALabel = sp.cityALabel || 'Ville A';
+    const cityBLabel = sp.cityBLabel || 'Ville B';
+    title = `${roleLabel}: ${cityALabel} vs ${cityBLabel} | Comparaison salariale`;
+    description = `Comparez les salaires de ${roleLabel} entre ${cityALabel} et ${cityBLabel}.`;
+  }
+
+  const ogQuery = new URLSearchParams();
+  if (sp.companyALabel) ogQuery.set('companyALabel', sp.companyALabel);
+  if (sp.companyBLabel) ogQuery.set('companyBLabel', sp.companyBLabel);
+  if (sp.roleLabel) ogQuery.set('roleLabel', sp.roleLabel);
+  if (sp.cityALabel) ogQuery.set('cityALabel', sp.cityALabel);
+  if (sp.cityBLabel) ogQuery.set('cityBLabel', sp.cityBLabel);
+  ogQuery.set('mode', hasCompanyCompare ? 'company' : hasRoleCompare ? 'role_city' : 'default');
+
+  const imageUrl = `${siteUrl}/api/og/salary-comparison?${ogQuery.toString()}`;
+  const canonicalQuery = new URLSearchParams();
+  if (sp.companyA) canonicalQuery.set('companyA', sp.companyA);
+  if (sp.companyB) canonicalQuery.set('companyB', sp.companyB);
+  if (sp.role) canonicalQuery.set('role', sp.role);
+  if (sp.cityA) canonicalQuery.set('cityA', sp.cityA);
+  if (sp.cityB) canonicalQuery.set('cityB', sp.cityB);
+  const canonical = canonicalQuery.toString()
+    ? `${siteUrl}/salaires/comparaison?${canonicalQuery.toString()}`
+    : `${siteUrl}/salaires/comparaison`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: canonical,
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: 'Comparaison salariale' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
 
 function formatMoney(value: number | null | undefined) {
   if (value === null || value === undefined) return '-';
@@ -101,6 +165,24 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
   const companyBHasData = hasSufficientSampleSize(companyB?.submission_count);
   const roleAHasData = hasSufficientSampleSize(roleCityA?.submission_count);
   const roleBHasData = hasSufficientSampleSize(roleCityB?.submission_count);
+  const siteUrl = getServerSiteUrl();
+
+  const companyComparisonSearch = new URLSearchParams({
+    companyA: companyAId,
+    companyB: companyBId,
+    companyALabel: companyA?.business_name || '',
+    companyBLabel: companyB?.business_name || '',
+  });
+  const companyComparisonUrl = `${siteUrl}/salaires/comparaison?${companyComparisonSearch.toString()}`;
+  const roleComparisonSearch = new URLSearchParams({
+    role: roleSlug,
+    cityA: cityASlug,
+    cityB: cityBSlug,
+    roleLabel: selectedRole || '',
+    cityALabel: cityA?.city || '',
+    cityBLabel: cityB?.city || '',
+  });
+  const roleComparisonUrl = `${siteUrl}/salaires/comparaison?${roleComparisonSearch.toString()}`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
@@ -143,33 +225,45 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
           )}
 
           {companyA && companyB && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader><CardTitle className="text-base">{companyA.business_name}</CardTitle></CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p>Mediane: <strong>{companyAHasData ? (isUnlocked ? formatMoney(companyA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                  <p>Moyenne: <strong>{companyAHasData ? (isUnlocked ? formatMoney(companyA.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                  <p>Vs ville: <strong>{companyAHasData ? (isUnlocked ? formatPct(companyA.pct_above_city_avg) : 'Connectez-vous') : '-'}</strong></p>
-                  <p>Maj: <strong>{formatRefreshedDate(companyA.refreshed_at)}</strong></p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle className="text-base">{companyB.business_name}</CardTitle></CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p>Mediane: <strong>{companyBHasData ? (isUnlocked ? formatMoney(companyB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                  <p>Moyenne: <strong>{companyBHasData ? (isUnlocked ? formatMoney(companyB.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                  <p>Vs ville: <strong>{companyBHasData ? (isUnlocked ? formatPct(companyB.pct_above_city_avg) : 'Connectez-vous') : '-'}</strong></p>
-                  <p>Maj: <strong>{formatRefreshedDate(companyB.refreshed_at)}</strong></p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle className="text-base">Ecart median</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-bold">
-                  {companyAHasData && companyBHasData
-                    ? (isUnlocked ? `${companyGap >= 0 ? '+' : ''}${companyGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
-                    : 'Donnees insuffisantes'}
-                </CardContent>
-              </Card>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader><CardTitle className="text-base">{companyA.business_name}</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Mediane: <strong>{companyAHasData ? (isUnlocked ? formatMoney(companyA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
+                    <p>Moyenne: <strong>{companyAHasData ? (isUnlocked ? formatMoney(companyA.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
+                    <p>Vs ville: <strong>{companyAHasData ? (isUnlocked ? formatPct(companyA.pct_above_city_avg) : 'Connectez-vous') : '-'}</strong></p>
+                    <p>Maj: <strong>{formatRefreshedDate(companyA.refreshed_at)}</strong></p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">{companyB.business_name}</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Mediane: <strong>{companyBHasData ? (isUnlocked ? formatMoney(companyB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
+                    <p>Moyenne: <strong>{companyBHasData ? (isUnlocked ? formatMoney(companyB.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
+                    <p>Vs ville: <strong>{companyBHasData ? (isUnlocked ? formatPct(companyB.pct_above_city_avg) : 'Connectez-vous') : '-'}</strong></p>
+                    <p>Maj: <strong>{formatRefreshedDate(companyB.refreshed_at)}</strong></p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Ecart median</CardTitle></CardHeader>
+                  <CardContent className="text-2xl font-bold">
+                    {companyAHasData && companyBHasData
+                      ? (isUnlocked ? `${companyGap >= 0 ? '+' : ''}${companyGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
+                      : 'Donnees insuffisantes'}
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="flex justify-end">
+                <ContentShareButton
+                  url={companyComparisonUrl}
+                  title={`Comparaison salariale: ${companyA.business_name} vs ${companyB.business_name}`}
+                  text={`Ecart de salaire median entre ${companyA.business_name} et ${companyB.business_name}.`}
+                  contentType="salary_company_comparison"
+                  contentId={`${companyA.business_id}_${companyB.business_id}`}
+                  cardType="company_delta"
+                />
+              </div>
             </div>
           )}
         </CardContent>
@@ -210,33 +304,45 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
           )}
 
           {selectedRole && roleCityA && roleCityB && cityA && cityB && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader><CardTitle className="text-base">{selectedRole} - {cityA.city}</CardTitle></CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p>Mediane: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                  <p>Junior: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                  <p>Senior+: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</strong></p>
-                  <p>Maj: <strong>{formatRefreshedDate(roleCityA.refreshed_at)}</strong></p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle className="text-base">{selectedRole} - {cityB.city}</CardTitle></CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  <p>Mediane: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                  <p>Junior: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                  <p>Senior+: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</strong></p>
-                  <p>Maj: <strong>{formatRefreshedDate(roleCityB.refreshed_at)}</strong></p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle className="text-base">Ecart median</CardTitle></CardHeader>
-                <CardContent className="text-2xl font-bold">
-                  {roleAHasData && roleBHasData
-                    ? (isUnlocked ? `${roleGap >= 0 ? '+' : ''}${roleGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
-                    : 'Donnees insuffisantes'}
-                </CardContent>
-              </Card>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader><CardTitle className="text-base">{selectedRole} - {cityA.city}</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Mediane: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
+                    <p>Junior: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
+                    <p>Senior+: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</strong></p>
+                    <p>Maj: <strong>{formatRefreshedDate(roleCityA.refreshed_at)}</strong></p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">{selectedRole} - {cityB.city}</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Mediane: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
+                    <p>Junior: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
+                    <p>Senior+: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</strong></p>
+                    <p>Maj: <strong>{formatRefreshedDate(roleCityB.refreshed_at)}</strong></p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Ecart median</CardTitle></CardHeader>
+                  <CardContent className="text-2xl font-bold">
+                    {roleAHasData && roleBHasData
+                      ? (isUnlocked ? `${roleGap >= 0 ? '+' : ''}${roleGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
+                      : 'Donnees insuffisantes'}
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="flex justify-end">
+                <ContentShareButton
+                  url={roleComparisonUrl}
+                  title={`Comparaison salaire ${selectedRole}: ${cityA.city} vs ${cityB.city}`}
+                  text={`Comparaison de salaire pour ${selectedRole} entre ${cityA.city} et ${cityB.city}.`}
+                  contentType="salary_role_city_comparison"
+                  contentId={`${roleSlug}_${cityASlug}_${cityBSlug}`}
+                  cardType="role_city_delta"
+                />
+              </div>
             </div>
           )}
         </CardContent>

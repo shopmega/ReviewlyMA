@@ -11,6 +11,8 @@ import { ArrowLeft, Clock3, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { getServerTranslator } from '@/lib/i18n/server';
 import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
+import { getServerSiteUrl } from '@/lib/site-config';
 
 type OfferRecord = {
   id: string;
@@ -142,20 +144,45 @@ async function getOfferById(id: string) {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { id } = await params;
+  const siteUrl = getServerSiteUrl();
   const offer = await getOfferById(id);
   if (!offer) {
     return {
       title: 'Offre de parrainage | Reviewly MA',
-      alternates: { canonical: `/parrainages/${id}` },
+      alternates: { canonical: `${siteUrl}/parrainages/${id}` },
     };
   }
 
   const citySuffix = offer.city ? ` - ${offer.city}` : '';
+  const title = `${offer.job_title} chez ${offer.company_name}${citySuffix} | Parrainage`;
+  const description = `Offre de parrainage pour ${offer.job_title} chez ${offer.company_name}${citySuffix}. Demande securisee sur Reviewly MA.`;
+  const ogQuery = new URLSearchParams({
+    company: offer.company_name,
+    role: offer.job_title,
+    city: offer.city || '',
+    slots: String(offer.slots || 0),
+  });
+  const canonical = `${siteUrl}/parrainages/${offer.id}`;
+  const image = `${siteUrl}/api/og/referral-offer?${ogQuery.toString()}`;
+
   return {
-    title: `${offer.job_title} chez ${offer.company_name}${citySuffix} | Parrainage`,
-    description: `Offre de parrainage pour ${offer.job_title} chez ${offer.company_name}${citySuffix}. Demande securisee sur Reviewly MA.`,
+    title,
+    description,
     alternates: {
-      canonical: `/parrainages/${offer.id}`,
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: canonical,
+      images: [{ url: image, width: 1200, height: 630, alt: 'Offre de parrainage' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
     },
   };
 }
@@ -163,6 +190,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function ParrainageDetailPage({ params }: { params: Promise<Params> }) {
   const { t, locale } = await getServerTranslator();
   const { id } = await params;
+  const siteUrl = getServerSiteUrl();
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   const currentUserId = auth.user?.id || null;
@@ -188,6 +216,8 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
   const safeDescription = hasCorruptedDescription(offer.description)
     ? "Description temporairement masquee pour verification. Merci de consulter les informations principales et de signaler l'offre si necessaire."
     : offer.description;
+  const offerShareUrl = `${siteUrl}/parrainages/${offer.id}`;
+  const offerShareText = `Parrainage ouvert: ${offer.job_title} chez ${offer.company_name}${offer.city ? ` (${offer.city})` : ''}.`;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -251,6 +281,15 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
                 <Link href="#apply-form">{t('referrals.detail.applyNow', 'Postuler maintenant')}</Link>
               </Button>
             ) : null}
+            <ContentShareButton
+              url={offerShareUrl}
+              title={`${offer.job_title} chez ${offer.company_name} | Parrainage`}
+              text={offerShareText}
+              contentType="referral_offer"
+              contentId={offer.id}
+              cardType="referral_offer_snapshot"
+              className="rounded-xl"
+            />
           </div>
           <p className="text-xs text-muted-foreground">
             Explorer aussi:
