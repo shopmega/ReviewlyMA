@@ -1,7 +1,7 @@
 'use server';
 
 import { claimSchema, ActionState, SubscriptionTier } from '@/lib/types';
-import { checkRateLimit, recordAttempt, clearRateLimit, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
+import { checkRateLimit, recordAttempt, resetRateLimit, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import {
     handleValidationError,
@@ -496,7 +496,7 @@ export async function verifyClaimCode(claimId: string, code: string): Promise<Cl
         }
 
         const rateKey = `verify-${user.id}-${claimId}`;
-        const { isLimited, retryAfterSeconds } = checkRateLimit(rateKey, RATE_LIMIT_CONFIG.verification);
+        const { isLimited, retryAfterSeconds } = await checkRateLimit(rateKey, RATE_LIMIT_CONFIG.verification);
         if (isLimited) {
             return {
                 status: 'error',
@@ -514,13 +514,13 @@ export async function verifyClaimCode(claimId: string, code: string): Promise<Cl
             .single();
 
         if (codeError || !codeData) {
-            recordAttempt(rateKey, RATE_LIMIT_CONFIG.verification);
+            await recordAttempt(rateKey, RATE_LIMIT_CONFIG.verification);
             return { status: 'error', message: 'Code invalide ou expiré.' };
         }
 
         // Check expiration
         if (new Date(codeData.expires_at) < new Date()) {
-            recordAttempt(rateKey, RATE_LIMIT_CONFIG.verification);
+            await recordAttempt(rateKey, RATE_LIMIT_CONFIG.verification);
             return { status: 'error', message: 'Le code a expiré. Veuillez demander un nouveau code.' };
         }
 
@@ -550,7 +550,7 @@ export async function verifyClaimCode(claimId: string, code: string): Promise<Cl
             return { status: 'error', message: 'Erreur lors de la mise à jour du statut de vérification.' };
         }
 
-        clearRateLimit(rateKey);
+        await resetRateLimit(rateKey);
 
         console.log('Verification successful:', {
             claimId,

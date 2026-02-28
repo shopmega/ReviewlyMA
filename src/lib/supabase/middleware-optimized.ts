@@ -181,26 +181,13 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }
 
-  // Detect Supabase auth cookies to mitigate middleware false negatives.
-  const hasSupabaseAuthCookie = request.cookies
-    .getAll()
-    .some((cookie) => cookie.name.includes('-auth-token'));
-
   // Protect /admin route (must be authenticated before role checks).
   if (!user && isAdminRoute) {
-    // If auth cookies exist, let server-side admin guard do the final check.
-    // This avoids redirect loops caused by occasional middleware auth misses.
-    if (hasSupabaseAuthCookie) {
-      return withAdminDebug(supabaseResponse, 'admin_no_user_but_cookie_passthrough');
-    }
     const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
     return withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login');
   }
 
   if (!user && isDashboardRoute) {
-    if (hasSupabaseAuthCookie) {
-      return withAdminDebug(supabaseResponse, 'dashboard_no_user_but_cookie_passthrough');
-    }
     const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }

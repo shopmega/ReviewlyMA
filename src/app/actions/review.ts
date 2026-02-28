@@ -6,7 +6,7 @@ import type { ActionState } from '@/lib/types';
 import { reviewSchema, reviewReportSchema, reviewAppealSchema } from '@/lib/types';
 
 export type ReviewFormState = ActionState;
-import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
+import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 import { createClient } from '@/lib/supabase/server';
 import {
   handleValidationError,
@@ -77,7 +77,7 @@ export async function submitReview(
   // For now, let's use a combination or just user ID if available, otherwise businessId (to prevent spamming a single business)
   const rateLimitKey = user ? `review-${user.id}` : `review-anon-${businessId}`;
 
-  const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
+  const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
   if (isLimited) {
     return createErrorResponse(
       ErrorCode.RATE_LIMIT_ERROR,
@@ -191,7 +191,7 @@ export async function submitReview(
     const { error } = await supabase.from('reviews').insert(reviewData);
 
     if (error) {
-      recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
+      await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
       logError('submit_review_insert', error, { businessId, userId: user?.id });
       return handleDatabaseError(error) as ReviewFormState;
     }
@@ -216,7 +216,7 @@ export async function submitReview(
       });
     }
 
-    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
     revalidatePath(`/businesses/${businessId}`);
     return createSuccessResponse(
       reviewStatus === 'published'
@@ -261,7 +261,7 @@ export async function reportReview(
 
     // Rate limiting
     const rateLimitKey = user ? `report-${user.id}` : 'report-anon';
-    const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.report);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.report);
     if (isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
@@ -288,7 +288,7 @@ export async function reportReview(
       .insert([reportData]);
 
     if (error) {
-      recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
+      await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
       logError('review_report_insert_error', error, { reviewId: validatedFields.data.review_id });
       return handleDatabaseError(error) as ActionState;
     }
@@ -300,7 +300,7 @@ export async function reportReview(
       link: '/admin/avis-signalements',
     });
 
-    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
+    await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
     return createSuccessResponse('Signalement envoyé avec succès. Merci de votre contribution.') as ActionState;
   } catch (error) {
     logError('reportReview_unexpected', error);
@@ -434,7 +434,7 @@ export async function updateReview(
 
     // Rate limiting for updates
     const rateLimitKey = `update-${user.id}`;
-    const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
     if (isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
@@ -518,7 +518,7 @@ export async function updateReview(
       return handleDatabaseError(updateError) as ReviewFormState;
     }
 
-    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
     revalidatePath(`/businesses/${review.business_id}`);
     return createSuccessResponse(
       'Votre avis a été mis à jour avec succès et est en attente de modération.'
@@ -551,7 +551,7 @@ export async function deleteReview(
 
     // Rate limiting for deletions
     const rateLimitKey = `delete-${user.id}`;
-    const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
     if (isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
@@ -605,7 +605,7 @@ export async function deleteReview(
       return handleDatabaseError(deleteError) as ReviewFormState;
     }
 
-    recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
     revalidatePath(`/businesses/${review.business_id}`);
     return createSuccessResponse(
       'Votre avis a été supprimé avec succès.'

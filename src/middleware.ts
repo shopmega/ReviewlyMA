@@ -5,6 +5,23 @@ import { APP_LOCALES, DEFAULT_LOCALE, LOCALE_COOKIE_NAME, isValidLocale } from '
 
 // Security: Request size limit (10MB)
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
+const CSP_NONCE_COOKIE = '__csp_nonce';
+
+function buildContentSecurityPolicy(nonce: string): string {
+  return [
+    "default-src 'self'",
+    // Keep unsafe-inline fallback while migrating all inline scripts to nonce-only.
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: https:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "object-src 'none'",
+  ].join('; ');
+}
 
 function resolveLocaleFromRequest(request: NextRequest): (typeof APP_LOCALES)[number] {
   const acceptLanguage = request.headers.get('accept-language');
@@ -25,6 +42,9 @@ function resolveLocaleFromRequest(request: NextRequest): (typeof APP_LOCALES)[nu
 }
 
 export async function middleware(request: NextRequest) {
+  const existingNonce = request.cookies.get(CSP_NONCE_COOKIE)?.value;
+  const nonce = existingNonce || crypto.randomUUID().replace(/-/g, '');
+
   // Check request size for POST/PUT requests
   if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
     const contentLength = request.headers.get('content-length');
@@ -38,6 +58,16 @@ export async function middleware(request: NextRequest) {
   }
   
   const response = await updateSession(request);
+  response.headers.set('Content-Security-Policy', buildContentSecurityPolicy(nonce));
+  if (!existingNonce) {
+    response.cookies.set(CSP_NONCE_COOKIE, nonce, {
+      path: '/',
+      sameSite: 'lax',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    });
+  }
+
   const localeCookie = request.cookies.get(LOCALE_COOKIE_NAME)?.value;
   if (!isValidLocale(localeCookie)) {
     response.cookies.set(LOCALE_COOKIE_NAME, resolveLocaleFromRequest(request), {

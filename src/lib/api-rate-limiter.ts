@@ -7,28 +7,15 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 
 /**
- * Extract client identifier (IP or user ID)
+ * Extract client identifier from trusted network headers.
  */
 function getClientIdentifier(request: NextRequest): string {
-  // Try to get user ID from JWT token
-  const authHeader = request.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    try {
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-      if (payload.sub) {
-        return `user:${payload.sub}`;
-      }
-    } catch {
-      // Token parsing failed, use IP
-    }
-  }
-
-  // Fallback to IP address
+  // Use trusted forwarding headers from the platform edge/proxy.
   const ip = 
     request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     request.headers.get('x-real-ip') ||
-    'unknown';
+    request.headers.get('cf-connecting-ip') ||
+    'unknown-ip';
   
   return `ip:${ip}`;
 }

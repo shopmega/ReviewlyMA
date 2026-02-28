@@ -19,7 +19,7 @@ import {
     logError,
     ErrorCode
 } from '@/lib/errors';
-import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
+import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 
 /**
  * Report a business for moderation
@@ -43,7 +43,7 @@ export async function reportBusiness(
 
         // Rate limiting
         const rateLimitKey = user ? `report-biz-${user.id}` : 'report-biz-anon';
-        const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.report);
+        const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.report);
         if (isLimited) {
             return createErrorResponse(
                 ErrorCode.RATE_LIMIT_ERROR,
@@ -69,7 +69,7 @@ export async function reportBusiness(
             .insert([reportData]);
 
         if (error) {
-            recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
+            await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.report);
             logError('business_report_insert_error', error, { businessId: validatedFields.data.business_id });
             return handleDatabaseError(error) as ActionState;
         }

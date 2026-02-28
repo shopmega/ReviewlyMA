@@ -17,6 +17,7 @@ import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/
 import { applyBusinessQaPreview, parseQaPreviewState, REAL_QA_PREVIEW_STATE, type QaPreviewState } from '@/lib/qa-preview';
 import { AdminQaPreviewToggle } from '@/components/business/AdminQaPreviewToggle';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { cookies } from 'next/headers';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -87,6 +88,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function BusinessPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
+  const cookieStore = await cookies();
+  const cspNonce = cookieStore.get('__csp_nonce')?.value;
   const requestedQaPreviewRaw = resolvedSearchParams.qa_preview;
   const requestedQaReviewsRaw = resolvedSearchParams.qa_reviews;
   const requestedQaSalariesRaw = resolvedSearchParams.qa_salaries;
@@ -229,6 +232,7 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
       {/* JSON-LD for SEO */}
       <script
         type="application/ld+json"
+        nonce={cspNonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 

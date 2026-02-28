@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { ActionState } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
-import { RATE_LIMIT_CONFIG, checkRateLimit, recordAttempt } from '@/lib/rate-limiter';
+import { RATE_LIMIT_CONFIG, checkRateLimit, recordAttempt } from '@/lib/rate-limiter-enhanced';
 import { notifyAdmins } from '@/lib/notifications';
 
 const CONTRACT_TYPES = ['cdi', 'cdd', 'stage', 'freelance', 'alternance', 'autre'] as const;
@@ -372,7 +372,7 @@ export async function createReferralOffer(_prev: ActionState, formData: FormData
   }
 
   const limitKey = `referrals:create-offer:${user.id}`;
-  const limitCheck = checkRateLimit(limitKey, RATE_LIMIT_CONFIG.review);
+  const limitCheck = await checkRateLimit(limitKey, RATE_LIMIT_CONFIG.review);
   if (limitCheck.isLimited) {
     return {
       status: 'error',
@@ -384,13 +384,13 @@ export async function createReferralOffer(_prev: ActionState, formData: FormData
   for (const field of riskFields) {
     const issue = detectUnsafeReferralContent(field);
     if (issue) {
-      recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
+      await recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
       return { status: 'error', message: issue };
     }
   }
 
   if (failsDescriptionIntegrity(raw.description)) {
-    recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
     return {
       status: 'error',
       message: "La description ressemble a du contenu technique brut. Merci d'ajouter une description humaine du poste.",
@@ -454,7 +454,7 @@ export async function createReferralOffer(_prev: ActionState, formData: FormData
     .single();
 
   if (error || !data) {
-    recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
     return { status: 'error', message: "Impossible de publier l'offre pour le moment." };
   }
 
@@ -627,7 +627,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   }
 
   const limitKey = `referrals:request:${user.id}`;
-  const limitCheck = checkRateLimit(limitKey, RATE_LIMIT_CONFIG.report);
+  const limitCheck = await checkRateLimit(limitKey, RATE_LIMIT_CONFIG.report);
   if (limitCheck.isLimited) {
     return {
       status: 'error',
@@ -637,13 +637,13 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
 
   const contentIssue = detectUnsafeReferralContent(parsed.data.message);
   if (contentIssue) {
-    recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
     return { status: 'error', message: contentIssue };
   }
 
   const linksIssue = validateRequestLinks(parsed.data.cvUrl || undefined, parsed.data.linkedinUrl || undefined);
   if (linksIssue) {
-    recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
     return { status: 'error', message: linksIssue };
   }
 
@@ -694,7 +694,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   });
 
   if (error) {
-    recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
     if (error.code === '23505') {
       return { status: 'error', message: 'Vous avez deja postule a cette offre.' };
     }
@@ -866,7 +866,7 @@ export async function reportReferralOffer(_prev: ActionState, formData: FormData
   }
 
   const limitKey = `referrals:report:${user.id}`;
-  const limitCheck = checkRateLimit(limitKey, RATE_LIMIT_CONFIG.report);
+  const limitCheck = await checkRateLimit(limitKey, RATE_LIMIT_CONFIG.report);
   if (limitCheck.isLimited) {
     return { status: 'error', message: "Vous avez atteint la limite de signalements. Reessayez plus tard." };
   }
@@ -881,7 +881,7 @@ export async function reportReferralOffer(_prev: ActionState, formData: FormData
     });
 
   if (error) {
-    recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
     if (error.code === '23505') {
       return { status: 'error', message: 'Vous avez deja signale cette offre.' };
     }

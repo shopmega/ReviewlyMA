@@ -18,6 +18,10 @@ export default [
   {
     ignores: [
       'archive/**',
+      '.next/**',
+      'playwright-report*/**',
+      'test-results/**',
+      'coverage/**',
       'tmp_*.html',
       'temp_test_import.js',
       'updated-suggest-business-function.ts',

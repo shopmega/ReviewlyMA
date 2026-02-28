@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isPaidTier } from '@/lib/tier-utils';
+import { rateLimitByEndpoint } from '@/lib/api-rate-limiter';
 
 function toCsvValue(value: unknown): string {
   const raw = value === null || value === undefined ? '' : String(value);
@@ -58,6 +59,10 @@ async function canAccessBusiness(supabase: any, userId: string, businessId: stri
 }
 
 export async function GET(request: NextRequest) {
+  return rateLimitByEndpoint.write(request, handler);
+}
+
+async function handler(request: NextRequest) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
@@ -124,4 +129,3 @@ export async function GET(request: NextRequest) {
     },
   });
 }
-

@@ -9,7 +9,7 @@ import {
     updatePasswordSchema,
     ActionState
 } from '@/lib/types';
-import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
+import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
@@ -42,7 +42,7 @@ export async function login(
     const { email, password } = validatedFields.data;
 
     // Rate limiting
-    const { isLimited, retryAfterSeconds } = checkRateLimit(email, RATE_LIMIT_CONFIG.login);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(email, RATE_LIMIT_CONFIG.login);
     if (isLimited) {
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
@@ -55,7 +55,7 @@ export async function login(
         const { error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            recordAttempt(email, RATE_LIMIT_CONFIG.login);
+            await recordAttempt(email, RATE_LIMIT_CONFIG.login);
             logError('login_action', error, { email });
             return handleAuthenticationError(
                 error.message || 'Identifiant ou mot de passe incorrect.'
@@ -91,7 +91,7 @@ export async function signup(
     const { email, password, fullName } = validatedFields.data;
 
     // Rate limiting
-    const { isLimited, retryAfterSeconds } = checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
     if (isLimited) {
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
@@ -125,7 +125,7 @@ export async function signup(
         });
 
         if (error) {
-            recordAttempt(email, RATE_LIMIT_CONFIG.signup);
+            await recordAttempt(email, RATE_LIMIT_CONFIG.signup);
             logError('signup_action', error, { email });
             return handleDatabaseError(error) as AuthFormState;
         }
@@ -180,7 +180,7 @@ export async function proSignup(
     };
 
     // Rate limiting
-    const { isLimited, retryAfterSeconds } = checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
     if (isLimited) {
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
@@ -205,7 +205,7 @@ export async function proSignup(
         });
 
         if (authError) {
-            recordAttempt(email, RATE_LIMIT_CONFIG.signup);
+            await recordAttempt(email, RATE_LIMIT_CONFIG.signup);
             logError('pro_signup_auth', authError, { email });
             return handleDatabaseError(authError) as AuthFormState;
         }

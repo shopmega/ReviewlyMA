@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { salarySubmissionSchema, ActionState } from '@/lib/types';
-import { checkRateLimit, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter';
+import { checkRateLimit, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 import { getSiteSettings } from '@/lib/data';
 import {
   createErrorResponse,
@@ -40,7 +40,7 @@ export async function submitSalary(
   }
 
   const rateLimitKey = `salary-submit-${user.id}`;
-  const { isLimited, retryAfterSeconds } = checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
+  const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
   if (isLimited) {
     return createErrorResponse(
       ErrorCode.RATE_LIMIT_ERROR,

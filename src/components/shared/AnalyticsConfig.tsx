@@ -7,13 +7,15 @@ interface AnalyticsConfigProps {
   metaPixelId?: string;
   googleAdsId?: string;
   requireConsent?: boolean;
+  nonce?: string;
 }
 
 export function AnalyticsConfig({ 
   gaId, 
   metaPixelId,
   googleAdsId,
-  requireConsent
+  requireConsent,
+  nonce,
 }: AnalyticsConfigProps) {
   // Load analytics IDs from environment variables (primary source)
   const googleAnalyticsId = gaId || process.env.NEXT_PUBLIC_GA_ID;
@@ -35,10 +37,12 @@ export function AnalyticsConfig({
           <Script
             strategy="afterInteractive"
             src={`https://www.googletagmanager.com/gtag/js?id=${gtagScriptId}`}
+            nonce={nonce}
           />
           <Script
             id="gtag-init"
             strategy="afterInteractive"
+            nonce={nonce}
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
@@ -75,6 +79,7 @@ export function AnalyticsConfig({
           <Script
             id="fb-pixel-init"
             strategy="afterInteractive"
+            nonce={nonce}
             dangerouslySetInnerHTML={{
               __html: `
                 !function(f,b,e,v,n,t,s)

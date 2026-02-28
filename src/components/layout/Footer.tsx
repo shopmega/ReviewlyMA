@@ -8,6 +8,9 @@ export async function Footer({ settings }: { settings?: SiteSettings }) {
   const siteSettings = settings || (await getSiteSettings());
   const siteName = siteSettings.site_name || 'Platform';
   const { t, tf } = await getServerTranslator();
+  const safeCopyrightText = (siteSettings.copyright_text || '')
+    .replace(/<[^>]*>/g, '')
+    .trim();
 
   return (
     <footer className="bg-secondary/20 pt-24 pb-12 border-t border-border">
@@ -162,8 +165,8 @@ export async function Footer({ settings }: { settings?: SiteSettings }) {
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-xs font-semibold text-muted-foreground">
-            {siteSettings.copyright_text ? (
-              <span dangerouslySetInnerHTML={{ __html: siteSettings.copyright_text || '' }} />
+            {safeCopyrightText ? (
+              <>{safeCopyrightText}</>
             ) : (
               <>{tf('footer.copyright', '© {year} {siteName}. Tous droits reserves.', { year: currentYear, siteName })}</>
             )}

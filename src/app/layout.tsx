@@ -17,6 +17,7 @@ import { getServerSiteUrl } from '@/lib/site-config';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
+import { cookies } from 'next/headers';
 
 const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -89,6 +90,8 @@ export default async function RootLayout({
 }>) {
   const settings = await getCachedSiteSettings();
   const { locale, messages } = await getI18nState();
+  const cookieStore = await cookies();
+  const cspNonce = cookieStore.get('__csp_nonce')?.value;
 
   return (
     <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", plexSans.variable, plexHeadline.variable, plexMono.variable)} suppressHydrationWarning>
@@ -111,6 +114,7 @@ export default async function RootLayout({
                 <AnalyticsConfig
                   gaId={settings.google_analytics_id || undefined}
                   metaPixelId={settings.facebook_pixel_id || undefined}
+                  nonce={cspNonce}
                 />
                 <AnalyticsPageTracker />
                 <AdSense

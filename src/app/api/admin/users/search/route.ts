@@ -28,59 +28,35 @@ async function handler(request: NextRequest) {
     }
 
     const supabase = await createAdminClient()
+    const normalizedEmail = email.trim().toLowerCase()
 
-    // Find user by email
-    const { data: users, error: usersError } = await supabase.auth.admin.listUsers()
-    
-    if (usersError) {
+    // Query profile directly (indexed lookup candidate) instead of scanning auth users.
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, business_id, role')
+      .ilike('email', normalizedEmail)
+      .limit(1)
+      .maybeSingle()
+
+    if (profileError) {
       return NextResponse.json(
-        { success: false, error: 'Error listing users' },
+        { success: false, error: 'Error fetching user profile' },
         { status: 500 }
       )
     }
-
-    const user = users.users.find(u => u.email === email)
     
-    if (!user) {
+    if (!profile) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
       )
     }
 
-    // Get user profile details
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, full_name, business_id, role')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError) {
-      // If profile doesn't exist, return basic user info
-      if (profileError.code === 'PGRST116') {
-        return NextResponse.json({
-          success: true,
-          user: {
-            id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || 'Unknown',
-            role: 'user',
-            business_id: null
-          }
-        });
-      }
-      
-      return NextResponse.json(
-        { success: false, error: 'Error fetching user profile' },
-        { status: 500 }
-      )
-    }
-
     return NextResponse.json({
       success: true,
       user: {
-        id: user.id,
-        email: user.email,
+        id: profile.id,
+        email: profile.email || normalizedEmail,
         full_name: profile.full_name,
         role: profile.role,
         business_id: profile.business_id
