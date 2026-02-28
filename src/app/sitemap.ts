@@ -9,7 +9,7 @@ import {
     MIN_INDEXABLE_REFERRAL_DEMAND_ROLE_CITY_LISTINGS,
 } from '@/lib/seo-ia';
 import { buildMonthlyReferralReportSlugFromYearMonth } from '@/lib/report-period';
-import { getAllBlogPosts } from '@/lib/blog-playbooks';
+import { getMergedBlogPosts } from '@/lib/data';
 
 // Keep sitemap reasonably fresh without requiring build-time DB access.
 export const revalidate = 3600; // 1 hour
@@ -177,7 +177,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .slice(0, 24)
         .map((item) => item.page);
 
-    const blogPages = getAllBlogPosts().map((post) => ({
+    const blogPages = (await getMergedBlogPosts()).map((post) => ({
         url: `${baseUrl}/blog/${post.slug}`,
         lastModified: new Date(post.updatedAt || post.publishedAt),
         changeFrequency: 'monthly' as const,

@@ -3,23 +3,69 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Link2 } from 'lucide-react';
 import { getServerSiteUrl } from '@/lib/site-config';
-import { getAllBlogPosts, getBlogPostBySlug, getBlogPostSlugs } from '@/lib/blog-playbooks';
+import { getMergedBlogPostBySlug, getMergedBlogPostSlugs, getMergedBlogPosts } from '@/lib/data';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Params = { slug: string };
+type MarkdownBlock =
+  | { type: 'heading'; level: 2 | 3; text: string }
+  | { type: 'list'; items: string[] }
+  | { type: 'paragraph'; text: string };
 
-export const dynamicParams = false;
+function parseSimpleMarkdown(markdown: string): MarkdownBlock[] {
+  const lines = markdown.split('\n').map((line) => line.trim());
+  const blocks: MarkdownBlock[] = [];
+  let listItems: string[] = [];
 
-export function generateStaticParams() {
-  return getBlogPostSlugs().map((slug) => ({ slug }));
+  const flushList = () => {
+    if (listItems.length > 0) {
+      blocks.push({ type: 'list', items: listItems });
+      listItems = [];
+    }
+  };
+
+  for (const line of lines) {
+    if (!line) {
+      flushList();
+      continue;
+    }
+
+    if (line.startsWith('## ')) {
+      flushList();
+      blocks.push({ type: 'heading', level: 2, text: line.slice(3).trim() });
+      continue;
+    }
+
+    if (line.startsWith('### ')) {
+      flushList();
+      blocks.push({ type: 'heading', level: 3, text: line.slice(4).trim() });
+      continue;
+    }
+
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      listItems.push(line.slice(2).trim());
+      continue;
+    }
+
+    flushList();
+    blocks.push({ type: 'paragraph', text: line });
+  }
+
+  flushList();
+  return blocks;
+}
+
+export async function generateStaticParams() {
+  const slugs = await getMergedBlogPostSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getMergedBlogPostBySlug(slug);
   if (!post) {
     return {
       title: 'Blog article | Reviewly MA',
@@ -38,18 +84,26 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function BlogArticlePage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getMergedBlogPostBySlug(slug);
   if (!post) {
     notFound();
   }
 
-  const related = getAllBlogPosts().filter((item) => item.slug !== post.slug).slice(0, 3);
+  const related = (await getMergedBlogPosts()).filter((item) => item.slug !== post.slug).slice(0, 3);
+  const markdownBlocks = post.contentMd ? parseSimpleMarkdown(post.contentMd) : [];
+  const isPillar = post.category === 'pillar';
+  const categoryLabelMap: Record<string, string> = {
+    pillar: 'Pillar guide',
+    how_to: 'How-to guide',
+    analysis: 'Analysis',
+    report: 'Report',
+  };
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-        <Badge variant={post.category === 'pillar' ? 'secondary' : 'outline'} className="w-fit">
-          {post.category === 'pillar' ? 'Pillar guide' : 'How-to guide'}
+        <Badge variant={isPillar ? 'secondary' : 'outline'} className="w-fit">
+          {categoryLabelMap[post.category] || 'Article'}
         </Badge>
         <h1 className="text-3xl md:text-4xl font-bold font-headline">{post.title}</h1>
         <p className="text-muted-foreground max-w-3xl">{post.description}</p>
@@ -68,36 +122,71 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
 
       <Card className="rounded-2xl">
         <CardContent className="pt-6 space-y-4">
-          <p className="text-base leading-7">{post.intro}</p>
+          {post.source === 'static' && post.staticPost ? (
+            <p className="text-base leading-7">{post.staticPost.intro}</p>
+          ) : (
+            <p className="text-base leading-7">Article publie depuis le CMS blog.</p>
+          )}
         </CardContent>
       </Card>
 
       <InternalAdsSlot placement="referrals_top_banner" />
 
-      {post.sections.map((section, sectionIndex) => (
-        <div key={section.heading} className="space-y-6">
-          <Card className="rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-2xl">{section.heading}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {section.paragraphs.map((paragraph, index) => (
-                <p key={`${section.heading}-${index}`} className="text-sm text-muted-foreground leading-7">
-                  {paragraph}
+      {post.source === 'static' && post.staticPost ? (
+        post.staticPost.sections.map((section, sectionIndex) => (
+          <div key={section.heading} className="space-y-6">
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-2xl">{section.heading}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {section.paragraphs.map((paragraph, index) => (
+                  <p key={`${section.heading}-${index}`} className="text-sm text-muted-foreground leading-7">
+                    {paragraph}
+                  </p>
+                ))}
+                {section.bullets && section.bullets.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                    {section.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </CardContent>
+            </Card>
+            {sectionIndex === 1 ? <InternalAdsSlot placement="referrals_inline" /> : null}
+          </div>
+        ))
+      ) : (
+        <Card className="rounded-2xl">
+          <CardContent className="pt-6 space-y-4">
+            {markdownBlocks.map((block, index) => {
+              if (block.type === 'heading') {
+                if (block.level === 2) {
+                  return <h2 key={`h2-${index}`} className="text-2xl font-semibold">{block.text}</h2>;
+                }
+                return <h3 key={`h3-${index}`} className="text-xl font-semibold">{block.text}</h3>;
+              }
+
+              if (block.type === 'list') {
+                return (
+                  <ul key={`list-${index}`} className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                    {block.items.map((item, itemIndex) => (
+                      <li key={`li-${index}-${itemIndex}`}>{item}</li>
+                    ))}
+                  </ul>
+                );
+              }
+
+              return (
+                <p key={`p-${index}`} className="text-sm text-muted-foreground leading-7">
+                  {block.text}
                 </p>
-              ))}
-              {section.bullets && section.bullets.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                  {section.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </CardContent>
-          </Card>
-          {sectionIndex === 1 ? <InternalAdsSlot placement="referrals_inline" /> : null}
-        </div>
-      ))}
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="rounded-2xl">
         <CardHeader>

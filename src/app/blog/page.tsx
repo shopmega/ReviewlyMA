@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, FileText, LineChart, NotebookPen } from 'lucide-react';
 import { getServerSiteUrl } from '@/lib/site-config';
-import { getAllBlogPosts } from '@/lib/blog-playbooks';
 import { ENABLE_BLOG_HUB_INDEXING } from '@/lib/seo-ia';
+import { getMergedBlogPosts } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function BlogHubPage() {
-  const posts = getAllBlogPosts();
+export default async function BlogHubPage() {
+  const posts = await getMergedBlogPosts();
+  if (posts.length === 0) {
+    return (
+      <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
+        <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-3">
+          <Badge variant="outline" className="w-fit">Editorial Hub</Badge>
+          <h1 className="text-3xl md:text-4xl font-bold font-headline">Blog and playbooks</h1>
+          <p className="text-muted-foreground max-w-3xl">
+            Aucun article n&apos;est publie pour le moment.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   const pillar = posts.find((post) => post.category === 'pillar') || posts[0];
   const guides = posts.filter((post) => post.slug !== pillar.slug);
 

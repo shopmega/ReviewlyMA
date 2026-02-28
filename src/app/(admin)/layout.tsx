@@ -69,6 +69,7 @@ const menuGroups = [
     label: 'Plateforme',
     items: [
       { href: '/admin/homepage', label: 'Page d’accueil', icon: Home },
+      { href: '/admin/blog', label: 'Blog CMS', icon: FileText },
       { href: '/admin/paiements', label: 'Paiements', icon: CreditCard },
       { href: '/admin/support', label: 'Support Client', icon: MessageSquare },
       { href: '/admin/diagnostics', label: 'Diagnostics', icon: Stethoscope },

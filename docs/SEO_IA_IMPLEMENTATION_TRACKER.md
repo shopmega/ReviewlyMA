@@ -64,6 +64,7 @@ Implement the revised SEO information architecture without cannibalizing existin
 - [x] Add first pillar page: "What Is Referral Demand? (Complete Guide 2026)".
 - [x] Add first 4 how-to guides aligned with demand/salary/company clusters.
 - [x] Enforce internal linking policy from every guide to data pages.
+- [x] Add admin CMS workflow so non-developers can publish normal articles.
 
 ### 5) Periodic Reports
 - [x] Add `/reports` hub page.
@@ -103,3 +104,7 @@ Implement the revised SEO information architecture without cannibalizing existin
   - Added `.env.example` with SEO IA cutover flags.
   - Added SEO IA cutover runbook with phased rollout, checklist, and rollback plan.
   - Added `npm run check:seo-ia` smoke checker for canonical/robots verification across core IA routes.
+  - Added blog CMS foundation (`blog_articles` table + RLS + admin policies).
+  - Added `/admin/blog` management page and server actions for create/update/publish/archive/delete.
+  - Merged published CMS articles into `/blog` and `/blog/[slug]` rendering with static playbooks fallback.
+  - Added published CMS blog slugs to sitemap generation.
