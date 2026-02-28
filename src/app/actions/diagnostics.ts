@@ -52,6 +52,22 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
     details: adsenseEnv ? maskSecret(adsenseEnv) : undefined,
   });
 
+  const gaEnv = process.env.NEXT_PUBLIC_GA_ID;
+  checks.push({
+    name: 'Env: NEXT_PUBLIC_GA_ID',
+    status: gaEnv ? 'ok' : 'warn',
+    message: gaEnv ? 'Configured' : 'Not set (GA uses DB fallback if provided)',
+    details: gaEnv ? maskSecret(gaEnv) : undefined,
+  });
+
+  const googleAdsEnv = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+  checks.push({
+    name: 'Env: NEXT_PUBLIC_GOOGLE_ADS_ID',
+    status: googleAdsEnv ? 'ok' : 'warn',
+    message: googleAdsEnv ? 'Configured' : 'Not set (Google Ads conversion tracking disabled)',
+    details: googleAdsEnv ? maskSecret(googleAdsEnv) : undefined,
+  });
+
   try {
     const serviceClient = await createAdminClient();
 
@@ -64,7 +80,7 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
 
     const { data: settings, error: settingsError } = await serviceClient
       .from('site_settings')
-      .select('id, adsense_enabled, adsense_client_id, tier_pro_annual_price')
+      .select('id, google_analytics_id, facebook_pixel_id, adsense_enabled, adsense_client_id, tier_pro_annual_price')
       .eq('id', 'main')
       .maybeSingle();
 
@@ -91,6 +107,12 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
         name: 'Schema: adsense columns',
         status: settings && Object.hasOwn(settings, 'adsense_enabled') && Object.hasOwn(settings, 'adsense_client_id') ? 'ok' : 'error',
         message: settings && Object.hasOwn(settings, 'adsense_enabled') && Object.hasOwn(settings, 'adsense_client_id') ? 'Present' : 'Missing AdSense columns',
+      });
+
+      checks.push({
+        name: 'Schema: analytics columns',
+        status: settings && Object.hasOwn(settings, 'google_analytics_id') && Object.hasOwn(settings, 'facebook_pixel_id') ? 'ok' : 'error',
+        message: settings && Object.hasOwn(settings, 'google_analytics_id') && Object.hasOwn(settings, 'facebook_pixel_id') ? 'Present' : 'Missing analytics columns',
       });
     }
 

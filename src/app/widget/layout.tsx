@@ -3,6 +3,7 @@ import '../globals.css';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
+import { AnalyticsPageTracker } from '@/components/shared/AnalyticsPageTracker';
 
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function WidgetLayout({
         >
           {children}
           <AnalyticsConfig />
+          <AnalyticsPageTracker />
         </ThemeProvider>
       </body>
     </html>

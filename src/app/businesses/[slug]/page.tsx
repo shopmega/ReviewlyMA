@@ -16,6 +16,7 @@ import { getServerSiteUrl } from '@/lib/site-config';
 import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
 import { applyBusinessQaPreview, parseQaPreviewState, REAL_QA_PREVIEW_STATE, type QaPreviewState } from '@/lib/qa-preview';
 import { AdminQaPreviewToggle } from '@/components/business/AdminQaPreviewToggle';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -261,6 +262,12 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
               />
             )}
 
+            <InternalAdsSlot
+              placement="business_profile_inline"
+              context={{ businessId: displayedBusiness.id }}
+              limit={1}
+            />
+
             {/* Similar Businesses */}
             <div className="pt-8">
               <SimilarBusinesses business={displayedBusiness} />
@@ -269,6 +276,13 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
 
           {/* Sidebar (Right) - Sticky */}
           <aside className="lg:w-1/3 order-first lg:order-last">
+            <div className="mb-6">
+              <InternalAdsSlot
+                placement="business_profile_sidebar"
+                context={{ businessId: displayedBusiness.id }}
+                limit={1}
+              />
+            </div>
             <BusinessSidebar business={displayedBusiness} settings={settings} />
           </aside>
 

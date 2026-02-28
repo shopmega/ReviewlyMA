@@ -20,6 +20,33 @@ import { CompetitorAdsContent } from '../competitor-ads/CompetitorAdsContent';
 
 type AdvertisingTab = 'manage' | 'create' | 'analytics' | 'competitor';
 
+const AD_PLACEMENTS = [
+  { value: 'home_top_banner', label: 'Home top banner' },
+  { value: 'directory_top_banner', label: 'Directory top banner' },
+  { value: 'directory_inline', label: 'Directory inline' },
+  { value: 'business_profile_inline', label: 'Business profile inline' },
+  { value: 'business_profile_sidebar', label: 'Business profile sidebar' },
+  { value: 'referrals_top_banner', label: 'Referrals top banner' },
+  { value: 'referrals_inline', label: 'Referrals inline' },
+  { value: 'referrals_detail_sidebar', label: 'Referrals detail sidebar' },
+  { value: 'salary_page_top_banner', label: 'Salary page top banner' },
+  { value: 'salary_page_inline', label: 'Salary page inline' },
+  { value: 'salary_compare_top_banner', label: 'Salary compare top banner' },
+  { value: 'salary_role_city_inline', label: 'Salary role/city inline' },
+  { value: 'salary_sector_city_inline', label: 'Salary sector/city inline' },
+  { value: 'salary_share_top_banner', label: 'Salary share top banner' },
+] as const;
+
+type TargetingForm = {
+  placements: string[];
+  salaryCitySlugs: string;
+  salaryRoleSlugs: string;
+  salarySectorSlugs: string;
+  ctaUrl: string;
+  ctaLabel: string;
+  targetBusinessIds: string;
+};
+
 const EMPTY_AD: Omit<Ad, 'id' | 'created_at' | 'updated_at' | 'spent_cents'> = {
   advertiser_id: '',
   title: '',
@@ -32,6 +59,155 @@ const EMPTY_AD: Omit<Ad, 'id' | 'created_at' | 'updated_at' | 'spent_cents'> = {
   targeting_criteria: {},
 };
 
+const EMPTY_TARGETING: TargetingForm = {
+  placements: [],
+  salaryCitySlugs: '',
+  salaryRoleSlugs: '',
+  salarySectorSlugs: '',
+  ctaUrl: '',
+  ctaLabel: '',
+  targetBusinessIds: '',
+};
+
+const parseCsv = (value: string): string[] =>
+  value
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+const formatCsv = (value?: string[]): string => (Array.isArray(value) ? value.join(', ') : '');
+
+const parseTargeting = (criteria: Record<string, any> | undefined, targetBusinessIds?: string[]): TargetingForm => {
+  const c = criteria || {};
+  const salary = c.salary || {};
+  return {
+    placements: Array.isArray(c.placements) ? c.placements : [],
+    salaryCitySlugs: formatCsv(salary.citySlugs),
+    salaryRoleSlugs: formatCsv(salary.roleSlugs),
+    salarySectorSlugs: formatCsv(salary.sectorSlugs),
+    ctaUrl: typeof c.cta_url === 'string' ? c.cta_url : '',
+    ctaLabel: typeof c.cta_label === 'string' ? c.cta_label : '',
+    targetBusinessIds: formatCsv(targetBusinessIds),
+  };
+};
+
+const buildTargetingCriteria = (form: TargetingForm): Record<string, any> => {
+  const citySlugs = parseCsv(form.salaryCitySlugs);
+  const roleSlugs = parseCsv(form.salaryRoleSlugs);
+  const sectorSlugs = parseCsv(form.salarySectorSlugs);
+
+  const criteria: Record<string, any> = {};
+
+  if (form.placements.length > 0) {
+    criteria.placements = form.placements;
+  }
+
+  if (citySlugs.length > 0 || roleSlugs.length > 0 || sectorSlugs.length > 0) {
+    criteria.salary = {};
+    if (citySlugs.length > 0) criteria.salary.citySlugs = citySlugs;
+    if (roleSlugs.length > 0) criteria.salary.roleSlugs = roleSlugs;
+    if (sectorSlugs.length > 0) criteria.salary.sectorSlugs = sectorSlugs;
+  }
+
+  if (form.ctaUrl.trim()) criteria.cta_url = form.ctaUrl.trim();
+  if (form.ctaLabel.trim()) criteria.cta_label = form.ctaLabel.trim();
+
+  return criteria;
+};
+
+const buildTargetBusinessIds = (form: TargetingForm): string[] => parseCsv(form.targetBusinessIds);
+
+function TargetingFields({
+  value,
+  onChange,
+}: {
+  value: TargetingForm;
+  onChange: (next: TargetingForm) => void;
+}) {
+  const togglePlacement = (placement: string) => {
+    const next = value.placements.includes(placement)
+      ? value.placements.filter((p) => p !== placement)
+      : [...value.placements, placement];
+    onChange({ ...value, placements: next });
+  };
+
+  return (
+    <div className="space-y-4 rounded-md border p-4">
+      <div className="space-y-2">
+        <Label>Placements</Label>
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          {AD_PLACEMENTS.map((placement) => (
+            <label key={placement.value} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={value.placements.includes(placement.value)}
+                onChange={() => togglePlacement(placement.value)}
+              />
+              <span>{placement.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-1">
+          <Label>Salary city slugs</Label>
+          <Input
+            placeholder="casablanca, rabat"
+            value={value.salaryCitySlugs}
+            onChange={(e) => onChange({ ...value, salaryCitySlugs: e.target.value })}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>Salary role slugs</Label>
+          <Input
+            placeholder="software-engineer, accountant"
+            value={value.salaryRoleSlugs}
+            onChange={(e) => onChange({ ...value, salaryRoleSlugs: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <Label>Salary sector slugs</Label>
+        <Input
+          placeholder="it, finance"
+          value={value.salarySectorSlugs}
+          onChange={(e) => onChange({ ...value, salarySectorSlugs: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-1">
+        <Label>Target business IDs</Label>
+        <Input
+          placeholder="acme-corp, globex"
+          value={value.targetBusinessIds}
+          onChange={(e) => onChange({ ...value, targetBusinessIds: e.target.value })}
+        />
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-1">
+          <Label>CTA URL</Label>
+          <Input
+            placeholder="https://..."
+            value={value.ctaUrl}
+            onChange={(e) => onChange({ ...value, ctaUrl: e.target.value })}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>CTA Label</Label>
+          <Input
+            placeholder="En savoir plus"
+            value={value.ctaLabel}
+            onChange={(e) => onChange({ ...value, ctaLabel: e.target.value })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdvertisingDashboard() {
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as AdvertisingTab) || 'manage';
@@ -41,8 +217,10 @@ export default function AdvertisingDashboard() {
   const [activeTab, setActiveTab] = useState<AdvertisingTab>(initialTab);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newAd, setNewAd] = useState<Omit<Ad, 'id' | 'created_at' | 'updated_at' | 'spent_cents'>>(EMPTY_AD);
+  const [newTargeting, setNewTargeting] = useState<TargetingForm>(EMPTY_TARGETING);
   const [editingAd, setEditingAd] = useState<Ad | null>(null);
   const [editForm, setEditForm] = useState<Partial<Ad>>({});
+  const [editTargeting, setEditTargeting] = useState<TargetingForm>(EMPTY_TARGETING);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,7 +279,11 @@ export default function AdvertisingDashboard() {
       return;
     }
 
-    const result = await createAd(newAd);
+    const result = await createAd({
+      ...newAd,
+      target_business_ids: buildTargetBusinessIds(newTargeting),
+      targeting_criteria: buildTargetingCriteria(newTargeting),
+    });
     if (!result.success) {
       toast({ title: 'Erreur', description: result.error || 'Impossible de creer l annonce', variant: 'destructive' });
       return;
@@ -109,6 +291,7 @@ export default function AdvertisingDashboard() {
 
     toast({ title: 'Succes', description: 'Annonce creee avec succes' });
     setNewAd(EMPTY_AD);
+    setNewTargeting(EMPTY_TARGETING);
     setShowCreateDialog(false);
     setActiveTab('manage');
     await loadAds();
@@ -124,6 +307,7 @@ export default function AdvertisingDashboard() {
       end_date: ad.end_date,
       targeting_criteria: ad.targeting_criteria || {},
     });
+    setEditTargeting(parseTargeting(ad.targeting_criteria || {}, ad.target_business_ids || []));
   };
 
   const handleSaveEdit = async () => {
@@ -134,7 +318,8 @@ export default function AdvertisingDashboard() {
       budget_cents: Number(editForm.budget_cents || 0),
       start_date: editForm.start_date || undefined,
       end_date: editForm.end_date || undefined,
-      targeting_criteria: (editForm.targeting_criteria as Record<string, any>) || {},
+      target_business_ids: buildTargetBusinessIds(editTargeting),
+      targeting_criteria: buildTargetingCriteria(editTargeting),
     });
     if (!result.success) {
       toast({ title: 'Erreur', description: result.error || 'Impossible de mettre a jour l annonce', variant: 'destructive' });
@@ -143,6 +328,7 @@ export default function AdvertisingDashboard() {
     toast({ title: 'Succes', description: 'Annonce mise a jour' });
     setEditingAd(null);
     setEditForm({});
+    setEditTargeting(EMPTY_TARGETING);
     await loadAds();
   };
 
@@ -171,8 +357,8 @@ export default function AdvertisingDashboard() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Advertising</h1>
-        <p className="text-muted-foreground mt-2">Gestion des campagnes ads et concurrentes dans un seul hub.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Ads</h1>
+        <p className="text-muted-foreground mt-2">Gestion des campagnes et placements publicitaires internes.</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AdvertisingTab)}>
@@ -186,7 +372,16 @@ export default function AdvertisingDashboard() {
         <TabsContent value="manage" className="mt-6 space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Vos Campagnes</h2>
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <Dialog
+              open={showCreateDialog}
+              onOpenChange={(open) => {
+                setShowCreateDialog(open);
+                if (!open) {
+                  setNewAd(EMPTY_AD);
+                  setNewTargeting(EMPTY_TARGETING);
+                }
+              }}
+            >
               <DialogTrigger asChild>
                 <Button><Plus className="mr-2 h-4 w-4" />Creer Annonce</Button>
               </DialogTrigger>
@@ -208,6 +403,7 @@ export default function AdvertisingDashboard() {
                     <Label htmlFor="budget" className="text-right">Budget (MAD)</Label>
                     <Input id="budget" type="number" className="col-span-3" value={newAd.budget_cents ? newAd.budget_cents / 100 : 0} onChange={(e) => setNewAd({ ...newAd, budget_cents: Math.max(0, Number(e.target.value || 0) * 100) })} />
                   </div>
+                  <TargetingFields value={newTargeting} onChange={setNewTargeting} />
                 </div>
                 <Button onClick={handleCreateAd}>Creer Annonce</Button>
               </DialogContent>
@@ -277,6 +473,7 @@ export default function AdvertisingDashboard() {
               <div><Label htmlFor="campaign-title">Titre</Label><Input id="campaign-title" value={newAd.title} onChange={(e) => setNewAd({ ...newAd, title: e.target.value })} /></div>
               <div><Label htmlFor="campaign-content">Contenu</Label><Textarea id="campaign-content" value={newAd.content} onChange={(e) => setNewAd({ ...newAd, content: e.target.value })} rows={3} /></div>
               <div><Label htmlFor="campaign-budget">Budget (MAD)</Label><Input id="campaign-budget" type="number" value={newAd.budget_cents ? newAd.budget_cents / 100 : 0} onChange={(e) => setNewAd({ ...newAd, budget_cents: Math.max(0, Number(e.target.value || 0) * 100) })} /></div>
+              <TargetingFields value={newTargeting} onChange={setNewTargeting} />
               <Button className="w-full" onClick={handleCreateAd}><Plus className="mr-2 h-4 w-4" />Creer la campagne</Button>
             </CardContent>
           </Card>
@@ -310,8 +507,16 @@ export default function AdvertisingDashboard() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!editingAd} onOpenChange={(open) => !open && setEditingAd(null)}>
-        <DialogContent className="max-w-2xl">
+      <Dialog
+        open={!!editingAd}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingAd(null);
+            setEditTargeting(EMPTY_TARGETING);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Modifier l annonce</DialogTitle>
             <DialogDescription>Mettez a jour les informations de la campagne.</DialogDescription>
@@ -320,9 +525,10 @@ export default function AdvertisingDashboard() {
             <div className="space-y-2"><Label htmlFor="edit-title">Titre</Label><Input id="edit-title" value={String(editForm.title || '')} onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="edit-content">Contenu</Label><Textarea id="edit-content" rows={4} value={String(editForm.content || '')} onChange={(e) => setEditForm((p) => ({ ...p, content: e.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="edit-budget">Budget (MAD)</Label><Input id="edit-budget" type="number" value={Number(editForm.budget_cents || 0) / 100} onChange={(e) => setEditForm((p) => ({ ...p, budget_cents: Math.max(0, Number(e.target.value || 0) * 100) }))} /></div>
+            <TargetingFields value={editTargeting} onChange={setEditTargeting} />
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setEditingAd(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => { setEditingAd(null); setEditTargeting(EMPTY_TARGETING); }}>Annuler</Button>
             <Button onClick={handleSaveEdit}>Enregistrer</Button>
           </div>
         </DialogContent>

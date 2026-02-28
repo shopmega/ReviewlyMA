@@ -5,6 +5,7 @@ import { BusinessList } from '@/components/shared/BusinessList';
 import { getFilteredBusinesses, getAllCategories, getAllBenefits } from '@/lib/data';
 import { getCityFromSlug, slugify } from '@/lib/utils';
 import { Suspense } from 'react';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 interface CityPageProps {
     params: Promise<{ citySlug: string }>;
@@ -69,6 +70,10 @@ export default async function CityPage({ params, searchParams }: CityPageProps) 
                 </div>
             </div>
 
+            <div className="mb-8">
+                <InternalAdsSlot placement="directory_top_banner" />
+            </div>
+
             <Suspense fallback={<div className="flex justify-center py-20">Chargement des résultats...</div>}>
                 <BusinessList
                     initialBusinesses={result.businesses}
@@ -79,6 +84,9 @@ export default async function CityPage({ params, searchParams }: CityPageProps) 
                     allBenefits={allBenefits}
                 />
             </Suspense>
+            <div className="mt-10">
+                <InternalAdsSlot placement="directory_inline" />
+            </div>
         </div>
     );
 }

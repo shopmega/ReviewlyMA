@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/categories',
         '/villes',
         '/parrainages',
+        '/parrainages/demandes',
         '/salaires',
         '/salaires/partager',
         '/salaires/comparaison',
@@ -35,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // If Supabase env vars are missing (local build/CI), fall back to static-only sitemap.
     let businesses: Array<{ id: string; created_at?: string }> = [];
     let referralOffers: Array<{ id: string; created_at?: string; expires_at?: string | null }> = [];
+    let referralDemandListings: Array<{ id: string; created_at?: string; expires_at?: string | null }> = [];
     try {
         const { getBusinessesForSitemap } = await import('@/lib/data');
         businesses = await getBusinessesForSitemap();
@@ -47,9 +49,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             .order('created_at', { ascending: false })
             .limit(500);
         referralOffers = (referralData || []) as Array<{ id: string; created_at?: string; expires_at?: string | null }>;
+        const { data: demandData } = await admin
+            .from('job_referral_demand_listings')
+            .select('id, created_at, expires_at')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(500);
+        referralDemandListings = (demandData || []) as Array<{ id: string; created_at?: string; expires_at?: string | null }>;
     } catch (e) {
         businesses = [];
         referralOffers = [];
+        referralDemandListings = [];
     }
 
     const businessPages = businesses.map((business) => ({
@@ -64,6 +74,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: offer.expires_at ? new Date(offer.expires_at) : offer.created_at ? new Date(offer.created_at) : new Date(),
         changeFrequency: 'daily' as const,
         priority: 0.75,
+    }));
+
+    const referralDemandPages = referralDemandListings.map((listing) => ({
+        url: `${baseUrl}/parrainages/demandes/${listing.id}`,
+        lastModified: listing.expires_at ? new Date(listing.expires_at) : listing.created_at ? new Date(listing.created_at) : new Date(),
+        changeFrequency: 'daily' as const,
+        priority: 0.7,
     }));
 
     // 3. Fetch all active categories
@@ -138,6 +155,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...staticPages,
         ...businessPages,
         ...referralOfferPages,
+        ...referralDemandPages,
         ...categoryPages,
         ...cityPages,
         ...combinedPages,

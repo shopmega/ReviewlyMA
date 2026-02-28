@@ -190,7 +190,7 @@ export async function getActiveAds(options: {
 
     // Apply additional filters if provided
     if (options.targetBusinessId) {
-      query = query.or(`target_business_ids->>${options.targetBusinessId}.is_not_null, target_business_ids.is_null`);
+      query = query.or(`target_business_ids.cs.{${options.targetBusinessId}},target_business_ids.is.null`);
     }
 
     // Apply limit if provided

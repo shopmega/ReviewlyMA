@@ -135,6 +135,26 @@ class AnalyticsService {
       });
     }
 
+    // Optional Google Ads conversion tracking (when conversion labels are configured).
+    if (typeof window !== 'undefined' && window.gtag) {
+      const googleAdsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+      const conversionLabel = this.getGoogleAdsConversionLabel(data.event);
+
+      if (googleAdsId && conversionLabel) {
+        const maybeValue = data.properties?.value ?? data.properties?.price;
+        const numericValue = typeof maybeValue === 'number' ? maybeValue : undefined;
+        const currency =
+          typeof data.properties?.currency === 'string' ? data.properties.currency : 'MAD';
+
+        window.gtag('event', 'conversion', {
+          send_to: `${googleAdsId}/${conversionLabel}`,
+          value: numericValue,
+          currency,
+          transaction_id: data.properties?.transaction_id ?? undefined,
+        });
+      }
+    }
+
     // Custom webhook for real-time monitoring
     if (process.env.NEXT_PUBLIC_ANALYTICS_WEBHOOK) {
       fetch(process.env.NEXT_PUBLIC_ANALYTICS_WEBHOOK, {
@@ -194,6 +214,21 @@ class AnalyticsService {
     this.track('business_saved', {
       business_name: businessName
     }, businessId);
+  }
+
+  private getGoogleAdsConversionLabel(event: AnalyticsEvent): string | null {
+    switch (event) {
+      case 'premium_subscribed':
+        return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_PREMIUM_SUBSCRIBED || null;
+      case 'business_claimed':
+        return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_BUSINESS_CLAIMED || null;
+      case 'user_registered':
+        return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_USER_REGISTERED || null;
+      case 'review_submitted':
+        return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_REVIEW_SUBMITTED || null;
+      default:
+        return null;
+    }
   }
 
   trackCtaClick(

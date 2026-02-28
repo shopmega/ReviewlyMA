@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, ArrowRight, Clock3, MapPin, ShieldCheck, TrendingUp, Users } from 'lucide-react';
 import { getServerTranslator } from '@/lib/i18n/server';
 import { slugify } from '@/lib/utils';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 type ReferralOffer = {
   id: string;
@@ -221,14 +222,22 @@ export default async function ParrainagesPage({
                 <Button asChild variant="outline" className="rounded-xl">
                   <Link href="/parrainages/mes-demandes">{t('referrals.list.myRequests', 'Mes demandes')}</Link>
                 </Button>
+                <Button asChild variant="outline" className="rounded-xl">
+                  <Link href="/parrainages/mes-demandes-publiques">Mes demandes publiques</Link>
+                </Button>
               </>
             ) : null}
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/parrainages/demandes">Demand board</Link>
+            </Button>
             <Button asChild className="rounded-xl">
               <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
             </Button>
           </div>
         </div>
       </section>
+
+      <InternalAdsSlot placement="referrals_top_banner" />
 
       <Card className="rounded-2xl border-border bg-card">
         <CardContent className="pt-6 space-y-4">
@@ -372,6 +381,8 @@ export default async function ParrainagesPage({
           })}
         </div>
       )}
+
+      <InternalAdsSlot placement="referrals_inline" />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Metadata } from 'next';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { createClient } from '@/lib/supabase/server';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 export const revalidate = 3600;
 
@@ -47,6 +48,8 @@ export default async function SalariesIndexPage() {
           </div>
         </div>
       </section>
+
+      <InternalAdsSlot placement="salary_page_top_banner" />
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="rounded-2xl shadow-sm">
@@ -134,6 +137,8 @@ export default async function SalariesIndexPage() {
           </CardContent>
         </Card>
       </section>
+
+      <InternalAdsSlot placement="salary_page_inline" />
 
       {!isUnlocked && (
         <section className="rounded-2xl border border-border bg-card p-5">

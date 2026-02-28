@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { getCachedSiteSettings } from '@/lib/cache';
 import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
+import { AnalyticsPageTracker } from '@/components/shared/AnalyticsPageTracker';
 import { AdSense } from '@/components/shared/AdSense';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { I18nProvider } from '@/components/providers/i18n-provider';
@@ -107,8 +108,16 @@ export default async function RootLayout({
                   <Footer settings={settings} />
                 </ConditionalFooter>
                 <Toaster />
-                <AnalyticsConfig />
-                <AdSense />
+                <AnalyticsConfig
+                  gaId={settings.google_analytics_id || undefined}
+                  metaPixelId={settings.facebook_pixel_id || undefined}
+                />
+                <AnalyticsPageTracker />
+                <AdSense
+                  enabled={settings.adsense_enabled ?? false}
+                  pubId={settings.adsense_client_id || undefined}
+                  autoAdsEnabled={settings.adsense_auto_ads_enabled ?? false}
+                />
               </BusinessProvider>
             </I18nProvider>
           </ThemeProvider>

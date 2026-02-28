@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
 import { getSalaryAlertSubscriptionStatus } from '@/app/actions/salary-alerts';
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 type Params = { sectorSlug: string; citySlug: string };
 
@@ -90,6 +91,11 @@ export default async function SalarySectorCityPage({ params }: { params: Promise
         </p>
         <p className="text-xs text-muted-foreground">Derniere mise a jour: {formatRefreshedDate(metric.refreshed_at)}</p>
       </section>
+
+      <InternalAdsSlot
+        placement="salary_sector_city_inline"
+        context={{ sectorSlug, citySlug }}
+      />
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>

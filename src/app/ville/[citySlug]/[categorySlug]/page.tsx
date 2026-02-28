@@ -6,6 +6,7 @@ import { getFilteredBusinesses, getAllCategories, getAllBenefits, getSubcategori
 import { getCategoryBySlug } from '@/app/actions/categories';
 import { getCityFromSlug } from '@/lib/utils';
 import { Suspense } from 'react';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 interface CombinedPageProps {
     params: Promise<{ citySlug: string; categorySlug: string }>;
@@ -88,6 +89,10 @@ export default async function CombinedPage({ params, searchParams }: CombinedPag
                 </div>
             </div>
 
+            <div className="mb-8">
+                <InternalAdsSlot placement="directory_top_banner" />
+            </div>
+
             <Suspense fallback={<div className="flex justify-center py-20">Chargement des résultats...</div>}>
                 <BusinessList
                     initialBusinesses={result.businesses}
@@ -99,6 +104,9 @@ export default async function CombinedPage({ params, searchParams }: CombinedPag
                     allBenefits={allBenefits}
                 />
             </Suspense>
+            <div className="mt-10">
+                <InternalAdsSlot placement="directory_inline" />
+            </div>
 
             {result.totalCount === 0 && (
                 <div className="mt-20 text-center space-y-4">

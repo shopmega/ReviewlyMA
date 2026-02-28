@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 type SearchParams = {
   companyA?: string;
@@ -110,6 +111,8 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
           Comparez entreprise vs entreprise et role dans deux villes. URL partageable via les filtres.
         </p>
       </section>
+
+      <InternalAdsSlot placement="salary_compare_top_banner" />
 
       <Card>
         <CardHeader>

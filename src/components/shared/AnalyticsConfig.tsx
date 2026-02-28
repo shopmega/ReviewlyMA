@@ -5,29 +5,36 @@ import Script from 'next/script';
 interface AnalyticsConfigProps {
   gaId?: string;
   metaPixelId?: string;
+  googleAdsId?: string;
+  requireConsent?: boolean;
 }
 
 export function AnalyticsConfig({ 
   gaId, 
-  metaPixelId
+  metaPixelId,
+  googleAdsId,
+  requireConsent
 }: AnalyticsConfigProps) {
   // Load analytics IDs from environment variables (primary source)
   const googleAnalyticsId = gaId || process.env.NEXT_PUBLIC_GA_ID;
   const facebookPixelId = metaPixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  const googleAdsTagId = googleAdsId || process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+  const gtagScriptId = googleAnalyticsId || googleAdsTagId;
+  const shouldRequireConsent = requireConsent ?? process.env.NEXT_PUBLIC_REQUIRE_TRACKING_CONSENT === 'true';
 
   // Simple validation
-  if (!googleAnalyticsId && !facebookPixelId) {
+  if (!googleAnalyticsId && !facebookPixelId && !googleAdsTagId) {
     return null;
   }
 
   return (
     <>
       {/* Google Analytics */}
-      {googleAnalyticsId && (
+      {gtagScriptId && (
         <>
           <Script
             strategy="afterInteractive"
-            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${gtagScriptId}`}
           />
           <Script
             id="gtag-init"
@@ -37,7 +44,25 @@ export function AnalyticsConfig({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${googleAnalyticsId}');
+                gtag('consent', 'default', {
+                  analytics_storage: '${shouldRequireConsent ? 'denied' : 'granted'}',
+                  ad_storage: '${shouldRequireConsent ? 'denied' : 'granted'}',
+                  ad_user_data: '${shouldRequireConsent ? 'denied' : 'granted'}',
+                  ad_personalization: '${shouldRequireConsent ? 'denied' : 'granted'}'
+                });
+                ${googleAnalyticsId ? `gtag('config', '${googleAnalyticsId}', { send_page_view: false });` : ''}
+                ${googleAdsTagId ? `gtag('config', '${googleAdsTagId}');` : ''}
+
+                // Optional bridge for a cookie banner/CMP to update consent at runtime.
+                window.addEventListener('avis:tracking-consent', function(event) {
+                  var detail = event && event.detail ? event.detail : {};
+                  gtag('consent', 'update', {
+                    analytics_storage: detail.analytics_storage || 'granted',
+                    ad_storage: detail.ad_storage || 'granted',
+                    ad_user_data: detail.ad_user_data || 'granted',
+                    ad_personalization: detail.ad_personalization || 'granted'
+                  });
+                });
               `,
             }}
           />

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getCityFromSlug } from '@/lib/utils';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 type Params = { citySlug: string };
 
@@ -53,6 +54,8 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
         <p className="text-sm text-muted-foreground">{offers.length} offre(s) active(s)</p>
       </div>
 
+      <InternalAdsSlot placement="referrals_top_banner" />
+
       {offers.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
@@ -78,6 +81,7 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
           ))}
         </div>
       )}
+      <InternalAdsSlot placement="referrals_inline" />
     </div>
   );
 }

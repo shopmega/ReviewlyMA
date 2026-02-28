@@ -74,6 +74,69 @@ const createOfferSchema = z.object({
   }
 });
 
+const createDemandListingSchema = z.object({
+  title: z.string().trim().min(6).max(140),
+  targetRole: z.string().trim().min(2).max(120),
+  city: z.string().trim().max(80).optional(),
+  contractType: z.enum(CONTRACT_TYPES).optional(),
+  workMode: z.enum(WORK_MODES).optional(),
+  seniority: z.enum(SENIORITY_LEVELS).optional(),
+  summary: z.string().trim().min(60).max(1000),
+  details: z.string().trim().max(3000).optional(),
+  expiresAt: z.string().trim().optional(),
+}).superRefine((value, ctx) => {
+  if (!value.expiresAt) return;
+  const date = new Date(value.expiresAt);
+  if (Number.isNaN(date.getTime())) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expiresAt'],
+      message: 'Date d expiration invalide.',
+    });
+    return;
+  }
+  const min = Date.now() + 30 * 60 * 1000;
+  if (date.getTime() < min) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expiresAt'],
+      message: "L expiration doit etre dans le futur.",
+    });
+  }
+});
+
+const updateDemandListingSchema = z.object({
+  demandListingId: z.string().uuid(),
+  title: z.string().trim().min(6).max(140),
+  targetRole: z.string().trim().min(2).max(120),
+  city: z.string().trim().max(80).optional(),
+  contractType: z.enum(CONTRACT_TYPES).optional(),
+  workMode: z.enum(WORK_MODES).optional(),
+  seniority: z.enum(SENIORITY_LEVELS).optional(),
+  summary: z.string().trim().min(60).max(1000),
+  details: z.string().trim().max(3000).optional(),
+  expiresAt: z.string().trim().optional(),
+}).superRefine((value, ctx) => {
+  if (!value.expiresAt) return;
+  const date = new Date(value.expiresAt);
+  if (Number.isNaN(date.getTime())) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expiresAt'],
+      message: 'Date d expiration invalide.',
+    });
+    return;
+  }
+  const min = Date.now() + 30 * 60 * 1000;
+  if (date.getTime() < min) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expiresAt'],
+      message: "L expiration doit etre dans le futur.",
+    });
+  }
+});
+
 const requestReferralSchema = z.object({
   offerId: z.string().uuid(),
   message: z.string().trim().min(40).max(1200),
@@ -83,6 +146,11 @@ const requestReferralSchema = z.object({
 
 const updateOfferStatusSchema = z.object({
   offerId: z.string().uuid(),
+  status: z.enum(['active', 'paused', 'closed']),
+});
+
+const updateDemandListingStatusSchema = z.object({
+  demandListingId: z.string().uuid(),
   status: z.enum(['active', 'paused', 'closed']),
 });
 
@@ -395,6 +463,146 @@ export async function createReferralOffer(_prev: ActionState, formData: FormData
   return { status: 'success', message: 'Offre publiee avec succes.', data: { id: data.id } };
 }
 
+export async function createReferralDemandListing(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = createDemandListingSchema.safeParse({
+    title: String(formData.get('title') || ''),
+    targetRole: String(formData.get('targetRole') || ''),
+    city: String(formData.get('city') || ''),
+    contractType: String(formData.get('contractType') || '') || undefined,
+    workMode: String(formData.get('workMode') || '') || undefined,
+    seniority: String(formData.get('seniority') || '') || undefined,
+    summary: String(formData.get('summary') || ''),
+    details: String(formData.get('details') || ''),
+    expiresAt: String(formData.get('expiresAt') || ''),
+  });
+
+  if (!parsed.success) {
+    return {
+      status: 'error',
+      message: 'Veuillez corriger les champs du formulaire.',
+      errors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const contentIssue = detectUnsafeReferralContent(`${parsed.data.summary}\n${parsed.data.details || ''}`);
+  if (contentIssue) {
+    return { status: 'error', message: contentIssue };
+  }
+
+  const expiresAt = parsed.data.expiresAt ? new Date(parsed.data.expiresAt).toISOString() : null;
+  const payload = {
+    user_id: user.id,
+    title: parsed.data.title,
+    target_role: parsed.data.targetRole,
+    city: parsed.data.city || null,
+    contract_type: parsed.data.contractType || null,
+    work_mode: parsed.data.workMode || null,
+    seniority: parsed.data.seniority || null,
+    summary: parsed.data.summary,
+    details: parsed.data.details || null,
+    expires_at: expiresAt,
+    status: 'active' as const,
+  };
+
+  const { data, error } = await supabase
+    .from('job_referral_demand_listings')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error || !data) {
+    return { status: 'error', message: "Impossible de publier votre demande pour le moment." };
+  }
+
+  revalidatePath('/parrainages');
+  revalidatePath('/parrainages/demandes');
+  revalidatePath('/parrainages/demandes/new');
+
+  return {
+    status: 'success',
+    message: 'Demande publiee avec succes.',
+    data: { id: data.id },
+  };
+}
+
+export async function updateReferralDemandListing(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = updateDemandListingSchema.safeParse({
+    demandListingId: String(formData.get('demandListingId') || ''),
+    title: String(formData.get('title') || ''),
+    targetRole: String(formData.get('targetRole') || ''),
+    city: String(formData.get('city') || ''),
+    contractType: String(formData.get('contractType') || '') || undefined,
+    workMode: String(formData.get('workMode') || '') || undefined,
+    seniority: String(formData.get('seniority') || '') || undefined,
+    summary: String(formData.get('summary') || ''),
+    details: String(formData.get('details') || ''),
+    expiresAt: String(formData.get('expiresAt') || ''),
+  });
+
+  if (!parsed.success) {
+    return {
+      status: 'error',
+      message: 'Veuillez corriger les champs du formulaire.',
+      errors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const contentIssue = detectUnsafeReferralContent(`${parsed.data.summary}\n${parsed.data.details || ''}`);
+  if (contentIssue) {
+    return { status: 'error', message: contentIssue };
+  }
+
+  const expiresAt = parsed.data.expiresAt ? new Date(parsed.data.expiresAt).toISOString() : null;
+  const payload = {
+    title: parsed.data.title,
+    target_role: parsed.data.targetRole,
+    city: parsed.data.city || null,
+    contract_type: parsed.data.contractType || null,
+    work_mode: parsed.data.workMode || null,
+    seniority: parsed.data.seniority || null,
+    summary: parsed.data.summary,
+    details: parsed.data.details || null,
+    expires_at: expiresAt,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from('job_referral_demand_listings')
+    .update(payload)
+    .eq('id', parsed.data.demandListingId)
+    .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    return { status: 'error', message: 'Impossible de mettre a jour la demande.' };
+  }
+  if (!data) {
+    return { status: 'error', message: 'Demande introuvable ou acces refuse.' };
+  }
+
+  revalidatePath('/parrainages/demandes');
+  revalidatePath('/parrainages/mes-demandes-publiques');
+  revalidatePath(`/parrainages/demandes/${parsed.data.demandListingId}`);
+  revalidatePath(`/parrainages/mes-demandes-publiques/${parsed.data.demandListingId}/edit`);
+
+  return { status: 'success', message: 'Demande mise a jour.', data: { id: parsed.data.demandListingId } };
+}
+
 export async function requestReferral(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
   const { data: auth, error: authError } = await supabase.auth.getUser();
@@ -537,6 +745,73 @@ export async function updateMyReferralOfferStatus(_prev: ActionState, formData: 
   revalidatePath('/parrainages/mes-offres');
   revalidatePath(`/parrainages/${parsed.data.offerId}`);
   return { status: 'success', message: 'Statut de l offre mis a jour.' };
+}
+
+export async function updateMyReferralDemandListingStatus(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = updateDemandListingStatusSchema.safeParse({
+    demandListingId: String(formData.get('demandListingId') || ''),
+    status: String(formData.get('status') || ''),
+  });
+
+  if (!parsed.success) {
+    return { status: 'error', message: 'Donnees invalides.' };
+  }
+
+  const { data, error } = await supabase
+    .from('job_referral_demand_listings')
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.demandListingId)
+    .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    return { status: 'error', message: 'Impossible de mettre a jour le statut de la demande.' };
+  }
+  if (!data) {
+    return { status: 'error', message: 'Demande introuvable ou acces refuse.' };
+  }
+
+  revalidatePath('/parrainages/demandes');
+  revalidatePath('/parrainages/mes-demandes-publiques');
+  revalidatePath(`/parrainages/demandes/${parsed.data.demandListingId}`);
+  return { status: 'success', message: 'Statut de la demande mis a jour.' };
+}
+
+export async function retractReferralDemandListing(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const demandListingId = String(formData.get('demandListingId') || '');
+  if (!demandListingId) {
+    return { status: 'error', message: 'Demande invalide.' };
+  }
+
+  const { error } = await supabase
+    .from('job_referral_demand_listings')
+    .delete()
+    .eq('id', demandListingId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { status: 'error', message: 'Impossible de supprimer la demande pour le moment.' };
+  }
+
+  revalidatePath('/parrainages/demandes');
+  revalidatePath('/parrainages/mes-demandes-publiques');
+  revalidatePath(`/parrainages/demandes/${demandListingId}`);
+  return { status: 'success', message: 'Demande supprimee.' };
 }
 
 export async function retractReferralOffer(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -952,6 +1227,14 @@ export async function updateMyReferralOfferStatusForm(formData: FormData): Promi
   await updateMyReferralOfferStatus(DEFAULT_ACTION_STATE, formData);
 }
 
+export async function updateMyReferralDemandListingStatusForm(formData: FormData): Promise<void> {
+  await updateMyReferralDemandListingStatus(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function updateReferralDemandListingForm(formData: FormData): Promise<void> {
+  await updateReferralDemandListing(DEFAULT_ACTION_STATE, formData);
+}
+
 export async function updateReferralRequestStatusForm(formData: FormData): Promise<void> {
   await updateReferralRequestStatus(DEFAULT_ACTION_STATE, formData);
 }
@@ -982,4 +1265,8 @@ export async function blockReferralUserForm(formData: FormData): Promise<void> {
 
 export async function retractReferralOfferForm(formData: FormData): Promise<void> {
   await retractReferralOffer(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function retractReferralDemandListingForm(formData: FormData): Promise<void> {
+  await retractReferralDemandListing(DEFAULT_ACTION_STATE, formData);
 }

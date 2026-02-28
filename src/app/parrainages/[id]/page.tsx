@@ -10,6 +10,7 @@ import { SafetyActions } from './SafetyActions';
 import { ArrowLeft, Clock3, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { getServerTranslator } from '@/lib/i18n/server';
 import { slugify } from '@/lib/utils';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 type OfferRecord = {
   id: string;
@@ -286,6 +287,8 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
         </Card>
 
         <div className="space-y-4">
+          <InternalAdsSlot placement="referrals_detail_sidebar" limit={1} />
+
           {!currentUserId && (
             <Card className="rounded-2xl">
               <CardContent className="pt-6 text-sm text-muted-foreground">

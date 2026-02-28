@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SalaryQuickSubmitCard } from '@/components/salaries/SalaryQuickSubmitCard';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 export const revalidate = 3600;
 
@@ -60,6 +61,8 @@ export default async function ShareSalaryPage() {
           </div>
         </div>
       </section>
+
+      <InternalAdsSlot placement="salary_share_top_banner" />
 
       <section className="grid grid-cols-1 gap-4">
         <SalaryQuickSubmitCard

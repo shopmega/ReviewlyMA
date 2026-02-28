@@ -6,6 +6,7 @@ import { Metadata } from 'next';
 import { slugify } from '@/lib/utils';
 import { getCategoryByName } from '@/app/actions/categories';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const resolvedParams = await searchParams;
@@ -100,6 +101,9 @@ export default async function BusinessesPage({
             : t('listingPage.allSubtitle', "Parcourez et filtrez des milliers d'etablissements pour trouver celui qui vous convient.")}
         </p>
       </div>
+      <div className="mb-8">
+        <InternalAdsSlot placement="directory_top_banner" />
+      </div>
       <Suspense fallback={<div>{t('common.loading', 'Chargement...')}</div>}>
         <BusinessList
           initialBusinesses={result.businesses}
@@ -111,6 +115,9 @@ export default async function BusinessesPage({
           allBenefits={allBenefits}
         />
       </Suspense>
+      <div className="mt-10">
+        <InternalAdsSlot placement="directory_inline" />
+      </div>
     </div>
   );
 }

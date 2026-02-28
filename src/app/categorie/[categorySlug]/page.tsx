@@ -6,6 +6,7 @@ import { getFilteredBusinesses, getAllCategories, getAllBenefits, getSubcategori
 import { getCategoryBySlug } from '@/app/actions/categories';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 
 interface CategoryPageProps {
     params: Promise<{ categorySlug: string }>;
@@ -127,6 +128,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                 )}
             </div>
 
+            <div className="mb-8">
+                <InternalAdsSlot placement="directory_top_banner" />
+            </div>
+
             <Suspense fallback={<div className="flex justify-center py-20">Chargement des résultats...</div>}>
                 <BusinessList
                     initialBusinesses={result.businesses}
@@ -138,6 +143,9 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     allBenefits={allBenefits}
                 />
             </Suspense>
+            <div className="mt-10">
+                <InternalAdsSlot placement="directory_inline" />
+            </div>
         </div>
     );
 }
