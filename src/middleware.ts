@@ -7,6 +7,22 @@ import { APP_LOCALES, DEFAULT_LOCALE, LOCALE_COOKIE_NAME, isValidLocale } from '
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
 const CSP_NONCE_COOKIE = '__csp_nonce';
 
+function isInternalNavigationRequest(request: NextRequest): boolean {
+  const pathname = request.nextUrl.pathname;
+  const isProtectedRoute =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/review') ||
+    /^\/businesses\/[^/]+\/review\/?$/.test(pathname);
+
+  if (request.nextUrl.searchParams.has('_rsc') && !isProtectedRoute) return true;
+  if (request.headers.get('next-router-prefetch') === '1') return true;
+  if (request.headers.get('x-middleware-prefetch') === '1') return true;
+
+  const purpose = request.headers.get('purpose') || request.headers.get('sec-purpose') || '';
+  return purpose.toLowerCase().includes('prefetch');
+}
+
 function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
@@ -42,9 +58,6 @@ function resolveLocaleFromRequest(request: NextRequest): (typeof APP_LOCALES)[nu
 }
 
 export async function middleware(request: NextRequest) {
-  const existingNonce = request.cookies.get(CSP_NONCE_COOKIE)?.value;
-  const nonce = existingNonce || crypto.randomUUID().replace(/-/g, '');
-
   // Check request size for POST/PUT requests
   if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
     const contentLength = request.headers.get('content-length');
@@ -56,6 +69,14 @@ export async function middleware(request: NextRequest) {
       });
     }
   }
+
+  // Avoid auth/redirect/cookie logic on internal Next.js RSC and prefetch subrequests.
+  if (isInternalNavigationRequest(request)) {
+    return NextResponse.next();
+  }
+
+  const existingNonce = request.cookies.get(CSP_NONCE_COOKIE)?.value;
+  const nonce = existingNonce || crypto.randomUUID().replace(/-/g, '');
   
   const response = await updateSession(request);
   response.headers.set('Content-Security-Policy', buildContentSecurityPolicy(nonce));
@@ -86,9 +107,10 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
+     * - _next/data (Next data files)
      * - favicon.ico (favicon file)
      * - any file with an extension (e.g. .js, .css, .png)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/((?!api|_next/static|_next/image|_next/data|favicon.ico|.*\\..*).*)',
   ],
 }

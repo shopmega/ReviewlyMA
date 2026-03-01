@@ -29,6 +29,7 @@ class ErrorTrackingService {
   private sessionId: string;
   private userId: string | null = null;
   private isInitialized = false;
+  private static readonly FETCH_PATCH_FLAG = '__errorTrackingFetchPatched__';
 
   constructor() {
     this.sessionId = this.generateSessionId();
@@ -44,7 +45,10 @@ class ErrorTrackingService {
 
     this.isInitialized = true;
     this.setupGlobalErrorHandlers();
-    this.setupNetworkErrorTracking();
+    // Opt-in only: global fetch monkey-patching can interfere with Next.js RSC internals.
+    if (process.env.NEXT_PUBLIC_ENABLE_FETCH_ERROR_TRACKING === 'true') {
+      this.setupNetworkErrorTracking();
+    }
     this.setupReactErrorTracking();
   }
 
@@ -91,14 +95,19 @@ class ErrorTrackingService {
   }
 
   private setupNetworkErrorTracking() {
+    if ((window as Window & { __errorTrackingFetchPatched__?: boolean })[ErrorTrackingService.FETCH_PATCH_FLAG]) {
+      return;
+    }
+
     // Override fetch to track network errors
-    const originalFetch = window.fetch;
-    window.fetch = async (...args) => {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = this.getRequestUrl(input);
+
       try {
-        const response = await originalFetch(...args);
+        const response = await originalFetch(input, init);
         
         // Skip tracking for Server Actions and internal Next.js requests
-        const url = args[0] as string;
         if (this.isInternalRequest(url)) {
           return response;
         }
@@ -109,8 +118,8 @@ class ErrorTrackingService {
             message: `HTTP Error: ${response.status} ${response.statusText}`,
             type: 'network',
             context: {
-              url: args[0],
-              method: args[1]?.method || 'GET',
+              url,
+              method: init?.method || 'GET',
               status: response.status,
               statusText: response.statusText
             }
@@ -123,7 +132,6 @@ class ErrorTrackingService {
         const errorStack = error instanceof Error ? error.stack : (error as any)?.stack;
         
         // Skip tracking for internal requests that fail
-        const url = args[0] as string;
         if (this.isInternalRequest(url)) {
           throw error;
         }
@@ -133,18 +141,42 @@ class ErrorTrackingService {
           stack: errorStack,
           type: 'network',
           context: {
-            url: args[0],
-            method: args[1]?.method || 'GET'
+            url,
+            method: init?.method || 'GET'
           }
         });
         throw error;
       }
     };
+    (window as Window & { __errorTrackingFetchPatched__?: boolean })[ErrorTrackingService.FETCH_PATCH_FLAG] = true;
+  }
+
+  private getRequestUrl(input: RequestInfo | URL): string {
+    if (typeof input === 'string') return input;
+    if (typeof URL !== 'undefined' && input instanceof URL) return input.toString();
+    if (typeof Request !== 'undefined' && input instanceof Request) return input.url;
+    if (input && typeof input === 'object' && 'url' in input && typeof (input as { url?: unknown }).url === 'string') {
+      return (input as { url: string }).url;
+    }
+    return '';
   }
 
   private isInternalRequest(url: string): boolean {
+    if (!url) return false;
+
+    let pathname = '';
+    let hasRscQuery = false;
+    try {
+      const parsed = new URL(url, window.location.origin);
+      pathname = parsed.pathname;
+      hasRscQuery = parsed.searchParams.has('_rsc');
+    } catch {
+      pathname = url;
+    }
+
     // Skip Server Actions and internal Next.js requests
-    return url.includes('/_next/') || 
+    return pathname.includes('/_next/') ||
+           hasRscQuery ||
            url.includes('__next') ||
            url.includes('server-actions') ||
            url.includes('api/auth') ||
@@ -481,5 +513,6 @@ declare global {
   interface Window {
     supabase?: any;
     Sentry?: any;
+    __errorTrackingFetchPatched__?: boolean;
   }
 }
