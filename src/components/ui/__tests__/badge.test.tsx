@@ -11,64 +11,64 @@ describe('Badge Component', () => {
 
     it('should render with default variant', () => {
       const { container } = render(<Badge>Default</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-primary');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('bg-primary/10');
     });
 
     it('should render with secondary variant', () => {
       const { container } = render(<Badge variant="secondary">Secondary</Badge>);
-      const badge = container.querySelector('div');
+      const badge = container.firstElementChild as HTMLElement;
       expect(badge).toHaveClass('bg-secondary');
     });
 
     it('should render with destructive variant', () => {
       const { container } = render(<Badge variant="destructive">Error</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-destructive');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('bg-destructive/10');
     });
 
     it('should render with outline variant', () => {
       const { container } = render(<Badge variant="outline">Outline</Badge>);
-      const badge = container.querySelector('div');
+      const badge = container.firstElementChild as HTMLElement;
       expect(badge).toHaveClass('border-border');
     });
 
     it('should render with success variant', () => {
       const { container } = render(<Badge variant="success">Success</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-success');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('bg-success/10');
     });
 
     it('should render with warning variant', () => {
       const { container } = render(<Badge variant="warning">Warning</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-warning');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('bg-warning/10');
     });
 
     it('should render with error variant', () => {
       const { container } = render(<Badge variant="error">Error</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-error');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('bg-error/10');
     });
 
     it('should render with info variant', () => {
       const { container } = render(<Badge variant="info">Info</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('bg-info');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('bg-info/10');
     });
   });
 
   describe('Styling', () => {
     it('should apply custom className', () => {
       const { container } = render(<Badge className="custom-badge">Custom</Badge>);
-      const badge = container.querySelector('div');
+      const badge = container.firstElementChild as HTMLElement;
       expect(badge).toHaveClass('custom-badge');
     });
 
     it('should have rounded-full class', () => {
       const { container } = render(<Badge>Badge</Badge>);
-      const badge = container.querySelector('div');
-      expect(badge).toHaveClass('rounded-full');
+      const badge = container.firstElementChild as HTMLElement;
+      expect(badge).toHaveClass('rounded-md');
     });
   });
 

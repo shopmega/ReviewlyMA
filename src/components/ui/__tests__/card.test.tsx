@@ -13,7 +13,7 @@ describe('Card Components', () => {
   describe('Card', () => {
     it('should render card element', () => {
       const { container } = render(<Card>Card content</Card>);
-      expect(container.querySelector('.rounded-xl')).toBeInTheDocument();
+      expect(container.querySelector('.rounded-lg')).toBeInTheDocument();
     });
 
     it('should apply custom className', () => {

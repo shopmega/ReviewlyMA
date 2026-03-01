@@ -62,6 +62,10 @@ describe('Admin Bulk Actions', () => {
   it('bulkUpdateReviews should process existing ids and report missing ones', async () => {
     const updateIn = vi.fn(async () => ({ error: null }));
     const auditInsert = vi.fn(async () => ({ error: null }));
+    const rpc = vi.fn(async () => ({
+      data: null,
+      error: { message: 'function transition_review_status does not exist' },
+    }));
 
     const supabase = {
       auth: {
@@ -70,6 +74,7 @@ describe('Admin Bulk Actions', () => {
           error: null,
         })),
       },
+      rpc,
       from: vi.fn((table: string) => {
         if (table === 'profiles') {
           return {

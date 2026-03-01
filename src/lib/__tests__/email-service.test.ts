@@ -1,10 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { sendEmail, emailTemplates } from '../email-service';
 
+vi.mock('../data', () => ({
+  getSiteSettings: vi.fn().mockResolvedValue({
+    email_provider: 'console',
+    email_from: 'noreply@example.com',
+  }),
+}));
+
 describe('Email Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.EMAIL_PROVIDER = 'console';
+    process.env.NODE_ENV = 'development';
   });
 
   describe('sendEmail', () => {
@@ -19,6 +27,7 @@ describe('Email Service', () => {
 
       expect(result.status).toBe('success');
       expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
 
     it('should handle errors gracefully', async () => {
@@ -66,4 +75,3 @@ describe('Email Service', () => {
     });
   });
 });
-

@@ -132,6 +132,30 @@ describe('Admin Settings Operations', () => {
   });
 
   describe('toggleMaintenanceMode', () => {
+    it('should reject when reason is too short', async () => {
+      const result = await toggleMaintenanceMode(true, {
+        reason: 'too short',
+        confirmationText: 'ENABLE_MAINTENANCE'
+      });
+
+      expect(result).toEqual({
+        status: 'error',
+        message: 'Une raison detaillee (10+ caracteres) est obligatoire.'
+      });
+    });
+
+    it('should reject when confirmation text is invalid', async () => {
+      const result = await toggleMaintenanceMode(false, {
+        reason: 'Retour operationnel apres verification',
+        confirmationText: 'WRONG_CONFIRMATION'
+      });
+
+      expect(result).toEqual({
+        status: 'error',
+        message: "Confirmation invalide. Saisissez 'DISABLE_MAINTENANCE'."
+      });
+    });
+
     it('should enable maintenance mode successfully', async () => {
       const result = await toggleMaintenanceMode(true, {
         reason: 'Maintenance preventive planifiee',
@@ -246,6 +270,65 @@ describe('Admin Settings Operations', () => {
         status: 'success',
         message: 'Paramètres mis à jour et cache vidé avec succès.'
       });
+    });
+  });
+
+  describe('Permissions', () => {
+    it('should return permission error when admin lacks settings.write', async () => {
+      const mockAdminClient = (await import('@/lib/supabase/admin')).createAdminClient;
+      vi.mocked(mockAdminClient).mockImplementationOnce(() => ({
+        from: vi.fn((table) => {
+          if (table === 'profiles') {
+            return {
+              select: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: { role: 'pro' }, error: null }))
+                }))
+              }))
+            };
+          }
+          return {
+            update: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                select: vi.fn(() => Promise.resolve({ data: [{ id: 'main' }], error: null }))
+              }))
+            }))
+          };
+        })
+      } as any));
+
+      const result = await updateSiteSettings({ site_name: 'Blocked Update' });
+      expect(result.status).toBe('error');
+      expect(result.message).toContain("permission 'settings.write' requise");
+    });
+
+    it('should throw when admin lacks settings.maintenance.toggle permission', async () => {
+      const mockAdminClient = (await import('@/lib/supabase/admin')).createAdminClient;
+      vi.mocked(mockAdminClient).mockImplementationOnce(() => ({
+        from: vi.fn((table) => {
+          if (table === 'profiles') {
+            return {
+              select: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: { role: 'pro' }, error: null }))
+                }))
+              }))
+            };
+          }
+          return {
+            update: vi.fn(() => ({
+              eq: vi.fn(() => Promise.resolve({ error: null }))
+            }))
+          };
+        })
+      } as any));
+
+      await expect(
+        toggleMaintenanceMode(true, {
+          reason: 'Maintenance preventive planifiee',
+          confirmationText: 'ENABLE_MAINTENANCE'
+        })
+      ).rejects.toThrow("permission 'settings.maintenance.toggle' requise");
     });
   });
 

@@ -156,6 +156,56 @@ describe('Business CRUD Operations', () => {
     expect(notifyAdmins).toHaveBeenCalledTimes(1);
   });
 
+  it('reportMedia should require authentication', async () => {
+    vi.mocked(createServerClient).mockReturnValue(buildAuthClient({ userId: null }) as any);
+
+    const result = await reportMedia({
+      media_url: 'https://example.com/image.jpg',
+      media_type: 'image',
+      business_id: 'biz-1',
+      reason: 'other',
+      details: 'test',
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('connecte');
+  });
+
+  it('reportMedia should validate payload', async () => {
+    vi.mocked(createServerClient).mockReturnValue(buildAuthClient({ userId: 'u1' }) as any);
+
+    const result = await reportMedia({
+      media_url: 'not-a-valid-url',
+      media_type: 'image',
+      business_id: 'biz-1',
+      reason: 'other',
+      details: 'test',
+    } as any);
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('invalides');
+  });
+
+  it('reportMedia should not notify admins when insert fails', async () => {
+    vi.mocked(createServerClient).mockReturnValue(
+      buildAuthClient({
+        userId: 'u1',
+        mediaReportError: { message: 'insert failed' },
+      }) as any
+    );
+
+    const result = await reportMedia({
+      media_url: 'https://example.com/image.jpg',
+      media_type: 'image',
+      business_id: 'biz-1',
+      reason: 'other',
+      details: 'test',
+    });
+
+    expect(result.status).toBe('error');
+    expect(notifyAdmins).not.toHaveBeenCalled();
+  });
+
   it('submitUpdate should fail for unauthenticated user', async () => {
     vi.mocked(createServerClient).mockReturnValue(buildAuthClient({ userId: null }) as any);
 

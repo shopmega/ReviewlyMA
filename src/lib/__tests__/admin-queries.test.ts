@@ -75,8 +75,8 @@ describe('Admin Queries', () => {
 
     const range = vi.fn().mockResolvedValue({ data: rows, count: 1, error: null });
     const order = vi.fn(() => ({ range }));
-    const eq = vi.fn(() => ({ order }));
-    const select = vi.fn(() => ({ eq }));
+    const or = vi.fn(() => ({ order }));
+    const select = vi.fn(() => ({ or }));
     const from = vi.fn(() => ({ select }));
     mockCreateServerClient.mockReturnValue({ from });
 

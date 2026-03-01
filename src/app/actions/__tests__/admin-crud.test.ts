@@ -6,8 +6,12 @@ import {
   deleteBusiness,
   fetchPremiumPayments,
   bulkUpdateBusinesses,
+  toggleUserPremium,
+  toggleUserSuspension,
+  deleteUserCompletely,
 } from '../admin';
 import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { logAuditAction } from '@/lib/audit-logger';
 import { revalidatePath } from 'next/cache';
 
@@ -15,6 +19,10 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(),
   createAuthClient: vi.fn(),
   verifyAdminSession: vi.fn(),
+}));
+
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn(),
 }));
 
 vi.mock('@/lib/audit-logger', () => ({
@@ -93,6 +101,22 @@ describe('Admin CRUD Operations', () => {
 
     expect(result.status).toBe('success');
     expect(logAuditAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('changeUserRole should return error when profile update fails', async () => {
+    const serviceClient = {
+      from: vi.fn(() => ({
+        update: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: { message: 'update failed' } })),
+        })),
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await changeUserRole('user-1', 'admin');
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('update failed');
   });
 
   it('createBusiness should upsert and return created business', async () => {
@@ -206,15 +230,30 @@ describe('Admin CRUD Operations', () => {
   });
 
   it('bulkUpdateBusinesses should map featured to is_featured', async () => {
-    const updateSpy = vi.fn(() => ({
-      in: vi.fn(() => Promise.resolve({ error: null, count: 1 })),
-    }));
-    const insertSpy = vi.fn(() => Promise.resolve({ error: null }));
-
-    const serviceClient = {
+    const updateSpy = vi.fn(() => ({ in: vi.fn(async () => ({ error: null })) }));
+    const insertSpy = vi.fn(async () => ({ error: null }));
+    const supabaseClient = {
+      auth: {
+        getUser: vi.fn(async () => ({ data: { user: { id: 'admin-1' } }, error: null })),
+      },
       from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(async () => ({
+                  data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+                  error: null,
+                })),
+              })),
+            })),
+          };
+        }
         if (table === 'businesses') {
           return {
+            select: vi.fn(() => ({
+              in: vi.fn(async () => ({ data: [{ id: 'biz-1' }], error: null })),
+            })),
             update: updateSpy,
           };
         }
@@ -226,18 +265,318 @@ describe('Admin CRUD Operations', () => {
         return {};
       }),
     };
-    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+    vi.mocked(createClient).mockResolvedValue(supabaseClient as any);
 
     const result = await bulkUpdateBusinesses(['biz-1'], { featured: true });
 
     expect(result.success).toBe(true);
     expect(updateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ is_featured: true }),
-      { count: 'exact' }
+      expect.objectContaining({ is_featured: true })
     );
     expect(updateSpy).not.toHaveBeenCalledWith(
-      expect.objectContaining({ featured: true }),
-      { count: 'exact' }
+      expect.objectContaining({ featured: true })
     );
+  });
+
+  it('toggleUserPremium should return error when RPC fails', async () => {
+    const serviceClient = {
+      rpc: vi.fn(async () => ({
+        data: null,
+        error: { message: 'rpc failed' },
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await toggleUserPremium('user-1', 'gold', 3);
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('Erreur atomique');
+  });
+
+  it('toggleUserPremium should return success when RPC succeeds', async () => {
+    const serviceClient = {
+      rpc: vi.fn(async () => ({
+        data: { success: true, businesses_updated: 2, business_ids: ['b1', 'b2'] },
+        error: null,
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await toggleUserPremium('user-1', 'gold', 3);
+
+    expect(result.status).toBe('success');
+    expect(result.message).toContain('activé');
+    expect(logAuditAction).toHaveBeenCalled();
+  });
+
+  it('toggleUserPremium should still succeed when audit logging fails', async () => {
+    const serviceClient = {
+      rpc: vi.fn(async () => ({
+        data: { success: true, businesses_updated: 1, business_ids: ['b1'] },
+        error: null,
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+    vi.mocked(logAuditAction).mockRejectedValueOnce(new Error('audit failed'));
+
+    const result = await toggleUserPremium('user-1', 'growth', 1);
+
+    expect(result.status).toBe('success');
+    expect(result.message).toContain('activé');
+  });
+
+  it('toggleUserSuspension should block self-suspension', async () => {
+    vi.mocked(verifyAdminSession).mockResolvedValue('admin-self');
+
+    const serviceClient = {
+      from: vi.fn((_table: string) => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(async () => ({
+              data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+              error: null,
+            })),
+          })),
+        })),
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await toggleUserSuspension('admin-self', true);
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('propre compte');
+  });
+
+  it('deleteUserCompletely should block self-deletion', async () => {
+    vi.mocked(verifyAdminSession).mockResolvedValue('admin-self');
+
+    const serviceClient = {
+      from: vi.fn((_table: string) => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(async () => ({
+              data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+              error: null,
+            })),
+          })),
+        })),
+      })),
+      rpc: vi.fn(),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await deleteUserCompletely('admin-self');
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('propre compte');
+    expect(serviceClient.rpc).not.toHaveBeenCalled();
+  });
+
+  it('toggleUserSuspension should block suspending another admin', async () => {
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn((fields?: string) => {
+              if (fields === 'role, admin_access_level, admin_permissions') {
+                return {
+                  eq: vi.fn(() => ({
+                    single: vi.fn(async () => ({
+                      data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+                      error: null,
+                    })),
+                  })),
+                };
+              }
+              return {
+                eq: vi.fn(() => ({
+                  single: vi.fn(async () => ({
+                    data: { role: 'admin' },
+                    error: null,
+                  })),
+                })),
+              };
+            }),
+          };
+        }
+        return {};
+      }),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await toggleUserSuspension('target-admin', true);
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('administrateur');
+  });
+
+  it('toggleUserSuspension should return db error when update fails', async () => {
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn((fields?: string) => {
+              if (fields === 'role, admin_access_level, admin_permissions') {
+                return {
+                  eq: vi.fn(() => ({
+                    single: vi.fn(async () => ({
+                      data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+                      error: null,
+                    })),
+                  })),
+                };
+              }
+              return {
+                eq: vi.fn(() => ({
+                  single: vi.fn(async () => ({
+                    data: { role: 'user' },
+                    error: null,
+                  })),
+                })),
+              };
+            }),
+            update: vi.fn(() => ({
+              eq: vi.fn(async () => ({
+                error: { message: 'update failed' },
+              })),
+            })),
+          };
+        }
+        return {};
+      }),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await toggleUserSuspension('user-2', true);
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('update failed');
+  });
+
+  it('deleteUserCompletely should block deleting admin target', async () => {
+    const rpcSpy = vi.fn();
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn((fields?: string) => {
+              if (fields === 'role, admin_access_level, admin_permissions') {
+                return {
+                  eq: vi.fn(() => ({
+                    single: vi.fn(async () => ({
+                      data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+                      error: null,
+                    })),
+                  })),
+                };
+              }
+              return {
+                eq: vi.fn(() => ({
+                  single: vi.fn(async () => ({
+                    data: { role: 'admin', email: 'admin@example.com' },
+                    error: null,
+                  })),
+                })),
+              };
+            }),
+          };
+        }
+        return {};
+      }),
+      rpc: rpcSpy,
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await deleteUserCompletely('admin-target');
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('administrateur');
+    expect(rpcSpy).not.toHaveBeenCalled();
+  });
+
+  it('deleteUserCompletely should return db error when RPC fails', async () => {
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn((fields?: string) => {
+              if (fields === 'role, admin_access_level, admin_permissions') {
+                return {
+                  eq: vi.fn(() => ({
+                    single: vi.fn(async () => ({
+                      data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+                      error: null,
+                    })),
+                  })),
+                };
+              }
+              return {
+                eq: vi.fn(() => ({
+                  single: vi.fn(async () => ({
+                    data: { role: 'user', email: 'user@example.com' },
+                    error: null,
+                  })),
+                })),
+              };
+            }),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn(async () => ({
+        data: null,
+        error: { message: 'rpc delete failed' },
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await deleteUserCompletely('user-2');
+
+    expect(result.status).toBe('error');
+    expect(result.message).toContain('rpc delete failed');
+  });
+
+  it('deleteUserCompletely should succeed and revalidate users page', async () => {
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn((fields?: string) => {
+              if (fields === 'role, admin_access_level, admin_permissions') {
+                return {
+                  eq: vi.fn(() => ({
+                    single: vi.fn(async () => ({
+                      data: { role: 'admin', admin_access_level: 'super_admin', admin_permissions: [] },
+                      error: null,
+                    })),
+                  })),
+                };
+              }
+              return {
+                eq: vi.fn(() => ({
+                  single: vi.fn(async () => ({
+                    data: { role: 'user', email: 'user@example.com' },
+                    error: null,
+                  })),
+                })),
+              };
+            }),
+          };
+        }
+        return {};
+      }),
+      rpc: vi.fn(async () => ({
+        data: { profile_deleted: true },
+        error: null,
+      })),
+    };
+    vi.mocked(createAdminClient).mockResolvedValue(serviceClient as any);
+
+    const result = await deleteUserCompletely('user-2');
+
+    expect(result.status).toBe('success');
+    expect(revalidatePath).toHaveBeenCalledWith('/admin/utilisateurs');
+    expect(logAuditAction).toHaveBeenCalled();
   });
 });
