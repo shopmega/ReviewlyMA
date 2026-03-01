@@ -17,8 +17,13 @@ export function AnalyticsConfig({
   requireConsent,
   nonce,
 }: AnalyticsConfigProps) {
-  // Load analytics IDs from environment variables (primary source)
-  const googleAnalyticsId = gaId || process.env.NEXT_PUBLIC_GA_ID;
+  // Backward-compatible GA env resolution:
+  // - NEXT_PUBLIC_GA_ID (current)
+  // - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID (legacy)
+  const googleAnalyticsId =
+    gaId ||
+    process.env.NEXT_PUBLIC_GA_ID ||
+    process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
   const facebookPixelId = metaPixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const googleAdsTagId = googleAdsId || process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
   const gtagScriptId = googleAnalyticsId || googleAdsTagId;

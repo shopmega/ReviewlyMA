@@ -27,11 +27,12 @@ function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
     // Keep unsafe-inline fallback while migrating all inline scripts to nonce-only.
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com`,
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
+    `script-src-elem 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' data: https:",
+    "img-src 'self' data: https: https://www.facebook.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
+    "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://*.adtrafficquality.google",
     "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",

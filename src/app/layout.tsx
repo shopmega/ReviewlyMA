@@ -13,6 +13,7 @@ import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
 import { AnalyticsPageTracker } from '@/components/shared/AnalyticsPageTracker';
 import { AdSense } from '@/components/shared/AdSense';
+import { TrackingConsentBridge } from '@/components/shared/TrackingConsentBridge';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
@@ -116,6 +117,7 @@ export default async function RootLayout({
                   metaPixelId={settings.facebook_pixel_id || undefined}
                   nonce={cspNonce}
                 />
+                <TrackingConsentBridge />
                 <AnalyticsPageTracker />
                 <AdSense
                   enabled={settings.adsense_enabled ?? false}
