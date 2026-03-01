@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const post = await getMergedBlogPostBySlug(slug);
   if (!post) {
     return {
-      title: 'Blog article | Reviewly MA',
+      title: 'Article de blog | Reviewly MA',
     };
   }
 
@@ -93,11 +93,14 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
   const markdownBlocks = post.contentMd ? parseSimpleMarkdown(post.contentMd) : [];
   const isPillar = post.category === 'pillar';
   const categoryLabelMap: Record<string, string> = {
-    pillar: 'Pillar guide',
-    how_to: 'How-to guide',
-    analysis: 'Analysis',
-    report: 'Report',
+    pillar: 'Guide pilier',
+    how_to: 'Guide pratique',
+    analysis: 'Analyse',
+    report: 'Rapport',
   };
+  const firstCmsParagraph = markdownBlocks.find((block) => block.type === 'paragraph');
+  const firstCmsParagraphIndex = markdownBlocks.findIndex((block) => block.type === 'paragraph');
+  const cmsInlineAdIndex = markdownBlocks.length > 2 ? Math.floor(markdownBlocks.length / 2) : -1;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -108,14 +111,14 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
         <h1 className="text-3xl md:text-4xl font-bold font-headline">{post.title}</h1>
         <p className="text-muted-foreground max-w-3xl">{post.description}</p>
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-          <span>Published: {new Date(post.publishedAt).toLocaleDateString('fr-MA')}</span>
-          <span>Updated: {new Date(post.updatedAt).toLocaleDateString('fr-MA')}</span>
-          <span>Read time: {post.readTimeMinutes} min</span>
+          <span>Publie le : {new Date(post.publishedAt).toLocaleDateString('fr-MA')}</span>
+          <span>Mis a jour le : {new Date(post.updatedAt).toLocaleDateString('fr-MA')}</span>
+          <span>Temps de lecture : {post.readTimeMinutes} min</span>
         </div>
         <Button asChild variant="outline">
           <Link href="/blog" className="inline-flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to blog
+            Retour au blog
           </Link>
         </Button>
       </section>
@@ -125,7 +128,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
           {post.source === 'static' && post.staticPost ? (
             <p className="text-base leading-7">{post.staticPost.intro}</p>
           ) : (
-            <p className="text-base leading-7">Article publie depuis le CMS blog.</p>
+            <p className="text-base leading-7">{firstCmsParagraph?.type === 'paragraph' ? firstCmsParagraph.text : post.description}</p>
           )}
         </CardContent>
       </Card>
@@ -161,27 +164,47 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
         <Card className="rounded-2xl">
           <CardContent className="pt-6 space-y-4">
             {markdownBlocks.map((block, index) => {
+              if (index === firstCmsParagraphIndex && block.type === 'paragraph') {
+                return null;
+              }
+              const showInlineAd = cmsInlineAdIndex > 0 && index === cmsInlineAdIndex;
               if (block.type === 'heading') {
                 if (block.level === 2) {
-                  return <h2 key={`h2-${index}`} className="text-2xl font-semibold">{block.text}</h2>;
+                  return (
+                    <div key={`h2-wrap-${index}`} className="space-y-4">
+                      {showInlineAd ? <InternalAdsSlot placement="referrals_inline" /> : null}
+                      <h2 className="text-2xl font-semibold">{block.text}</h2>
+                    </div>
+                  );
                 }
-                return <h3 key={`h3-${index}`} className="text-xl font-semibold">{block.text}</h3>;
+                return (
+                  <div key={`h3-wrap-${index}`} className="space-y-4">
+                    {showInlineAd ? <InternalAdsSlot placement="referrals_inline" /> : null}
+                    <h3 className="text-xl font-semibold">{block.text}</h3>
+                  </div>
+                );
               }
 
               if (block.type === 'list') {
                 return (
-                  <ul key={`list-${index}`} className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                    {block.items.map((item, itemIndex) => (
-                      <li key={`li-${index}-${itemIndex}`}>{item}</li>
-                    ))}
-                  </ul>
+                  <div key={`list-wrap-${index}`} className="space-y-4">
+                    {showInlineAd ? <InternalAdsSlot placement="referrals_inline" /> : null}
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                      {block.items.map((item, itemIndex) => (
+                        <li key={`li-${index}-${itemIndex}`}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
                 );
               }
 
               return (
-                <p key={`p-${index}`} className="text-sm text-muted-foreground leading-7">
-                  {block.text}
-                </p>
+                <div key={`p-wrap-${index}`} className="space-y-4">
+                  {showInlineAd ? <InternalAdsSlot placement="referrals_inline" /> : null}
+                  <p className="text-sm text-muted-foreground leading-7">
+                    {block.text}
+                  </p>
+                </div>
               );
             })}
           </CardContent>
@@ -192,7 +215,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
         <CardHeader>
           <CardTitle className="inline-flex items-center gap-2 text-xl">
             <Link2 className="h-5 w-5" />
-            Required cluster links
+            Liens utiles
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
@@ -209,13 +232,13 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-xl">Related guides</CardTitle>
+          <CardTitle className="text-xl">Guides similaires</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {related.map((item) => (
             <Link key={item.slug} href={`/blog/${item.slug}`} className="rounded-lg border border-border p-3 hover:bg-muted/30 transition-colors">
               <p className="font-medium">{item.title}</p>
-              <p className="text-xs text-muted-foreground mt-2">{item.readTimeMinutes} min read</p>
+              <p className="text-xs text-muted-foreground mt-2">{item.readTimeMinutes} min de lecture</p>
             </Link>
           ))}
         </CardContent>

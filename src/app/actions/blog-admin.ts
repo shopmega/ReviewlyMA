@@ -53,6 +53,31 @@ function parseClusterLinks(raw: string) {
   return [...links.values()];
 }
 
+function normalizeClusterLinksFromUnknown(raw: unknown): { href: string; label: string }[] {
+  if (typeof raw === 'string') {
+    return parseClusterLinks(raw);
+  }
+
+  const links = new Map<string, { href: string; label: string }>();
+  if (Array.isArray(raw)) {
+    for (const entry of raw) {
+      if (!entry || typeof entry !== 'object') continue;
+      const href = String((entry as Record<string, unknown>).href || '').trim();
+      if (!href.startsWith('/')) continue;
+      const label = String((entry as Record<string, unknown>).label || href).trim() || href;
+      links.set(href, { href, label });
+    }
+  }
+
+  for (const href of REQUIRED_CLUSTER_LINKS) {
+    if (!links.has(href)) {
+      links.set(href, { href, label: DEFAULT_LINK_LABELS[href] || href });
+    }
+  }
+
+  return [...links.values()];
+}
+
 function coerceReadTime(raw: string | null) {
   const value = Number(raw || '0');
   if (!Number.isFinite(value)) return 6;
@@ -205,5 +230,75 @@ export async function deleteBlogArticleAction(formData: FormData): Promise<void>
   revalidatePath('/admin/blog');
   revalidatePath('/blog');
   if (slug) revalidatePath(`/blog/${slug}`);
+  revalidatePath('/sitemap.xml');
+}
+
+export async function bulkImportBlogArticlesAction(formData: FormData): Promise<void> {
+  await verifyAdminSession();
+  const admin = await createAdminClient();
+
+  const rawJson = requiredField(formData.get('articles_json'));
+  if (!rawJson) {
+    throw new Error('Le JSON des articles est vide.');
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch {
+    throw new Error('JSON invalide. Verifiez la syntaxe.');
+  }
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('Le JSON doit etre un tableau non vide d articles.');
+  }
+
+  const payload = parsed.map((item, index) => {
+    if (!item || typeof item !== 'object') {
+      throw new Error(`Article #${index + 1}: format invalide.`);
+    }
+
+    const row = item as Record<string, unknown>;
+    const title = requiredField(String(row.title || ''));
+    const description = requiredField(String(row.description || ''));
+    const contentMd = requiredField(String(row.content_md || row.contentMd || ''));
+    const slugInput = requiredField(String(row.slug || title));
+    const slug = slugifyValue(slugInput);
+    const category = normalizeCategory(requiredField(String(row.category || 'how_to')));
+    const status = normalizeStatus(requiredField(String(row.status || 'draft')));
+    const readTimeMinutes = coerceReadTime(String(row.read_time_minutes || row.readTimeMinutes || '6'));
+    const clusterLinks = normalizeClusterLinksFromUnknown(row.cluster_links ?? row.clusterLinks ?? []);
+
+    if (!title || !description || !contentMd || !slug) {
+      throw new Error(`Article #${index + 1}: titre, description, contenu et slug sont obligatoires.`);
+    }
+
+    if (contentMd.length < 80) {
+      throw new Error(`Article #${index + 1}: contenu trop court (minimum 80 caracteres).`);
+    }
+
+    return {
+      slug,
+      title,
+      description,
+      category,
+      content_md: contentMd,
+      cluster_links: clusterLinks,
+      read_time_minutes: readTimeMinutes,
+      status,
+      published_at: status === 'published' ? new Date().toISOString() : null,
+    };
+  });
+
+  const { error } = await admin
+    .from('blog_articles')
+    .upsert(payload, { onConflict: 'slug' });
+
+  if (error) {
+    throw new Error(`Import echoue: ${error.message}`);
+  }
+
+  revalidatePath('/admin/blog');
+  revalidatePath('/blog');
   revalidatePath('/sitemap.xml');
 }
