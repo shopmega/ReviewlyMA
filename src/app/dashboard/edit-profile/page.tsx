@@ -150,11 +150,23 @@ export default function EditProfilePage() {
       ]);
       setCategories(cats.map((c: string) => ({ id: c, name: c })));
 
-      // Fallback to hardcoded BENEFITS if DB is empty (migration not run yet)
-      if (amens && amens.length > 0) {
-        setAmenitiesList(normalizeAmenityGroups(amens));
+      // Always expose the full default catalog in dashboard, then append custom DB amenities.
+      const defaultGroups = normalizeAmenityGroups(BENEFITS);
+      const defaultAmenities = new Set(defaultGroups.flatMap((group) => group.amenities));
+      const discoveredAmenities = Array.isArray(amens)
+        ? amens.filter((item): item is string => typeof item === 'string')
+        : [];
+      const customAmenities = discoveredAmenities
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0 && !defaultAmenities.has(item));
+
+      if (customAmenities.length > 0) {
+        setAmenitiesList([
+          ...defaultGroups,
+          { group: 'Autres services', amenities: Array.from(new Set(customAmenities)).sort() },
+        ]);
       } else {
-        setAmenitiesList(normalizeAmenityGroups(BENEFITS));
+        setAmenitiesList(defaultGroups);
       }
     }
     loadData();
@@ -257,10 +269,6 @@ export default function EditProfilePage() {
   }, [state, toast, form]);
 
   const onSubmit = (data: BusinessProfileUpdateData) => {
-    console.log('📤 [CLIENT] Form data before FormData conversion:', data);
-    console.log('📤 [CLIENT] Amenities from form:', data.amenities);
-    console.log('📤 [CLIENT] Business ID being edited:', businessId);
-
     if (!businessId) {
       toast({
         title: "Erreur",

@@ -11,6 +11,12 @@ import {
 } from './email';
 import { logAuditAction } from '@/lib/audit-logger';
 import { logger } from '@/lib/logger';
+import {
+  bulkUpdateReviews as bulkUpdateReviewsV2,
+  bulkDeleteReviews as bulkDeleteReviewsV2,
+  bulkUpdateBusinesses as bulkUpdateBusinessesV2,
+  bulkDeleteBusinesses as bulkDeleteBusinessesV2,
+} from './admin-bulk';
 
 export type AdminActionResult = {
   status: 'success' | 'error';
@@ -1290,136 +1296,18 @@ export async function bulkUpdateReviews(
     reason?: string;
   }
 ): Promise<BulkOperationResult> {
-  try {
-    const adminId = await verifyAdminSession();
-    const serviceClient = await createAdminClient();
-
-    if (reviewIds.length === 0) {
-      return {
-        success: true,
-        processed: 0,
-        failed: 0,
-        errors: [],
-        message: 'Aucun avis selectionne.'
-      };
-    }
-
-    const { error, count } = await serviceClient
-      .from('reviews')
-      .update({
-        status: updateData.status,
-        ...(updateData.reason && {
-          moderation_reason: updateData.reason,
-          moderated_at: new Date().toISOString(),
-          moderated_by: adminId
-        })
-      }, { count: 'exact' })
-      .in('id', reviewIds);
-
-    const processed = error ? 0 : Math.min(count ?? reviewIds.length, reviewIds.length);
-    const failed = error ? reviewIds.length : Math.max(0, reviewIds.length - processed);
-    const errors = error ? [`Bulk review update failed: ${error.message}`] : [];
-
-    // Log bulk operation
-    await logAuditAction({
-      adminId,
-      action: 'BULK_UPDATE_REVIEWS',
-      targetType: 'review',
-      details: {
-        review_ids: reviewIds,
-        update_data: updateData,
-        processed,
-        failed,
-        errors
-      }
-    });
-
-    revalidatePath('/admin/avis');
-
-    return {
-      success: !error,
-      processed,
-      failed,
-      errors,
-      message: `${processed} avis traites, ${failed} echecs`
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      processed: 0,
-      failed: reviewIds.length,
-      errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la mise a jour groupee.'
-    };
-  }
+  // Legacy export kept for backward compatibility. Delegates to the canonical implementation.
+  return bulkUpdateReviewsV2(reviewIds, updateData);
 }
 
 /**
  * Bulk delete multiple reviews
  */
 export async function bulkDeleteReviews(
-  reviewIds: number[]
+  reviewIds: number[],
+  reason = 'legacy_bulk_delete'
 ): Promise<BulkOperationResult> {
-  try {
-    const adminId = await verifyAdminSession();
-    const serviceClient = await createAdminClient();
-
-    if (reviewIds.length === 0) {
-      return {
-        success: true,
-        processed: 0,
-        failed: 0,
-        errors: [],
-        message: 'Aucun avis selectionne.'
-      };
-    }
-
-    const { error, count } = await serviceClient
-      .from('reviews')
-      .update({
-        status: 'deleted',
-        deleted_at: new Date().toISOString(),
-        deleted_by: adminId
-      }, { count: 'exact' })
-      .in('id', reviewIds);
-
-    const processed = error ? 0 : Math.min(count ?? reviewIds.length, reviewIds.length);
-    const failed = error ? reviewIds.length : Math.max(0, reviewIds.length - processed);
-    const errors = error ? [`Bulk review delete failed: ${error.message}`] : [];
-
-    // Log bulk operation
-    await serviceClient
-      .from('admin_audit_log')
-      .insert({
-        admin_id: adminId,
-        action: 'bulk_delete_reviews',
-        details: {
-          review_ids: reviewIds,
-          processed,
-          failed,
-          errors
-        },
-        created_at: new Date().toISOString()
-      });
-
-    revalidatePath('/admin/avis');
-
-    return {
-      success: !error,
-      processed,
-      failed,
-      errors,
-      message: `${processed} avis supprimes, ${failed} echecs`
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      processed: 0,
-      failed: reviewIds.length,
-      errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la suppression groupee.'
-    };
-  }
+  return bulkDeleteReviewsV2(reviewIds, reason);
 }
 
 /**
@@ -1434,69 +1322,7 @@ export async function bulkUpdateBusinesses(
     is_featured?: boolean;
   }
 ): Promise<BulkOperationResult> {
-  try {
-    const adminId = await verifyAdminSession();
-    const serviceClient = await createAdminClient();
-
-    if (businessIds.length === 0) {
-      return {
-        success: true,
-        processed: 0,
-        failed: 0,
-        errors: [],
-        message: 'Aucun etablissement selectionne.'
-      };
-    }
-
-    const { featured, ...rest } = updateData;
-    const normalizedUpdateData = {
-      ...rest,
-      ...(typeof featured === 'boolean' ? { is_featured: featured } : {}),
-    };
-
-    const { error, count } = await serviceClient
-      .from('businesses')
-      .update(normalizedUpdateData, { count: 'exact' })
-      .in('id', businessIds);
-
-    const processed = error ? 0 : Math.min(count ?? businessIds.length, businessIds.length);
-    const failed = error ? businessIds.length : Math.max(0, businessIds.length - processed);
-    const errors = error ? [`Bulk business update failed: ${error.message}`] : [];
-
-    // Log bulk operation
-    await serviceClient
-      .from('admin_audit_log')
-      .insert({
-        admin_id: adminId,
-        action: 'bulk_update_businesses',
-        details: {
-          business_ids: businessIds,
-          update_data: normalizedUpdateData,
-          processed,
-          failed,
-          errors
-        },
-        created_at: new Date().toISOString()
-      });
-
-    revalidatePath('/admin/etablissements');
-
-    return {
-      success: !error,
-      processed,
-      failed,
-      errors,
-      message: `${processed} etablissements mis a jour, ${failed} echecs`
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      processed: 0,
-      failed: businessIds.length,
-      errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la mise a jour groupee.'
-    };
-  }
+  return bulkUpdateBusinessesV2(businessIds, updateData);
 }
 
 /**
@@ -1505,66 +1331,7 @@ export async function bulkUpdateBusinesses(
 export async function bulkDeleteBusinesses(
   businessIds: string[]
 ): Promise<BulkOperationResult> {
-  try {
-    const adminId = await verifyAdminSession();
-    const serviceClient = await createAdminClient();
-
-    if (businessIds.length === 0) {
-      return {
-        success: true,
-        processed: 0,
-        failed: 0,
-        errors: [],
-        message: 'Aucun etablissement selectionne.'
-      };
-    }
-
-    const { error, count } = await serviceClient
-      .from('businesses')
-      .update({
-        status: 'deleted',
-        deleted_at: new Date().toISOString(),
-        deleted_by: adminId
-      }, { count: 'exact' })
-      .in('id', businessIds);
-
-    const processed = error ? 0 : Math.min(count ?? businessIds.length, businessIds.length);
-    const failed = error ? businessIds.length : Math.max(0, businessIds.length - processed);
-    const errors = error ? [`Bulk business delete failed: ${error.message}`] : [];
-
-    // Log bulk operation
-    await serviceClient
-      .from('admin_audit_log')
-      .insert({
-        admin_id: adminId,
-        action: 'bulk_delete_businesses',
-        details: {
-          business_ids: businessIds,
-          processed,
-          failed,
-          errors
-        },
-        created_at: new Date().toISOString()
-      });
-
-    revalidatePath('/admin/etablissements');
-
-    return {
-      success: !error,
-      processed,
-      failed,
-      errors,
-      message: `${processed} etablissements supprimes, ${failed} echecs`
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      processed: 0,
-      failed: businessIds.length,
-      errors: [error.message || 'Unknown error'],
-      message: 'Erreur lors de la suppression groupee.'
-    };
-  }
+  return bulkDeleteBusinessesV2(businessIds);
 }
 
 /**

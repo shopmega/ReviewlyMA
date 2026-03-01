@@ -141,9 +141,6 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
   const monthLabel = formatReportMonthLabel(parsed.reportDateUtc);
   const totalRecords = demandCurrent.length + offerCurrent.length;
   const isIndexable = totalRecords >= MIN_INDEXABLE_MONTHLY_REPORT_RECORDS;
-  if (!isIndexable) {
-    notFound();
-  }
 
   const topDemandRoles = topBuckets(
     demandCurrent.map((row) => normalizeBucketValue(row.target_role, 'Role non specifie')),
@@ -179,105 +176,125 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
         </div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <Users2 className="h-4 w-4" />
-              New demand listings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{demandCurrent.length}</CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <BriefcaseBusiness className="h-4 w-4" />
-              New referral offers
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{offerCurrent.length}</CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <LineChart className="h-4 w-4" />
-              Demand momentum
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{demandMomentum}%</CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <CalendarDays className="h-4 w-4" />
-              Total records
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{totalRecords}</CardContent>
-        </Card>
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {!isIndexable ? (
         <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-lg">Top demand roles</CardTitle>
+            <CardTitle className="text-lg">Insufficient data for a full monthly report</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {topDemandRoles.map((row) => {
-              const roleSlug = slugify(row.label);
-              const topCityForRole = topDemandCities[0]?.label;
-              const citySlug = topCityForRole ? slugify(topCityForRole) : null;
-              const targetHref = roleSlug && citySlug ? `/referral-demand/${roleSlug}/${citySlug}` : '/referral-demand';
-
-              return (
-                <div key={row.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
-                  <Link href={targetHref} className="text-sm hover:underline">
-                    {row.label}
-                  </Link>
-                  <Badge variant="secondary">{row.count}</Badge>
-                </div>
-              );
-            })}
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <p>
+              This period currently has {totalRecords} records. A minimum of{' '}
+              {MIN_INDEXABLE_MONTHLY_REPORT_RECORDS} records is required for a full report publication.
+            </p>
+            <p>
+              This page remains accessible for internal navigation and will auto-populate once more demand and offer
+              signals are available.
+            </p>
           </CardContent>
         </Card>
+      ) : (
+        <>
+          <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <Card className="rounded-2xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Users2 className="h-4 w-4" />
+                  New demand listings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-3xl font-bold">{demandCurrent.length}</CardContent>
+            </Card>
+            <Card className="rounded-2xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <BriefcaseBusiness className="h-4 w-4" />
+                  New referral offers
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-3xl font-bold">{offerCurrent.length}</CardContent>
+            </Card>
+            <Card className="rounded-2xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <LineChart className="h-4 w-4" />
+                  Demand momentum
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-3xl font-bold">{demandMomentum}%</CardContent>
+            </Card>
+            <Card className="rounded-2xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarDays className="h-4 w-4" />
+                  Total records
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-3xl font-bold">{totalRecords}</CardContent>
+            </Card>
+          </section>
 
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-lg">Top demand cities</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {topDemandCities.map((row) => (
-              <div key={row.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
-                <span className="inline-flex items-center gap-1 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  {row.label}
-                </span>
-                <Badge variant="secondary">{row.count}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Top demand roles</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {topDemandRoles.map((row) => {
+                  const roleSlug = slugify(row.label);
+                  const topCityForRole = topDemandCities[0]?.label;
+                  const citySlug = topCityForRole ? slugify(topCityForRole) : null;
+                  const targetHref = roleSlug && citySlug ? `/referral-demand/${roleSlug}/${citySlug}` : '/referral-demand';
 
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-lg">Top companies (offers)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {topOfferCompanies.map((row) => {
-              const slug = slugify(row.label);
-              return (
-                <div key={row.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
-                  <Link href={`/companies/${slug}/referrals`} className="text-sm hover:underline">
-                    {row.label}
-                  </Link>
-                  <Badge variant="secondary">{row.count}</Badge>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </section>
+                  return (
+                    <div key={row.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+                      <Link href={targetHref} className="text-sm hover:underline">
+                        {row.label}
+                      </Link>
+                      <Badge variant="secondary">{row.count}</Badge>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Top demand cities</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {topDemandCities.map((row) => (
+                  <div key={row.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+                    <span className="inline-flex items-center gap-1 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      {row.label}
+                    </span>
+                    <Badge variant="secondary">{row.count}</Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Top companies (offers)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {topOfferCompanies.map((row) => {
+                  const slug = slugify(row.label);
+                  return (
+                    <div key={row.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+                      <Link href={`/companies/${slug}/referrals`} className="text-sm hover:underline">
+                        {row.label}
+                      </Link>
+                      <Badge variant="secondary">{row.count}</Badge>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      )}
 
       <Card className="rounded-2xl">
         <CardHeader>

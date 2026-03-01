@@ -136,7 +136,6 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
 
   const fallbackToOldSystem = async (userId: string) => {
     try {
-      console.log('Falling back to old system for user:', userId);
       const supabase = createClient();
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -170,8 +169,6 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
       }
 
       if (fallbackBusinessId) {
-        console.log('Found business in fallback system:', fallbackBusinessId);
-        
         // First try to find by ID, then by slug if not found
         let { data: business, error: businessError } = await supabase
           .from('businesses')
@@ -181,8 +178,6 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
 
         // If not found by ID, the profile.business_id might be stored as the slug in the id field
         if (businessError && (businessError.code === 'PGRST116' || businessError.message.includes('Row not found'))) {
-          console.log('Business not found by ID, trying by slug (stored in id field):', fallbackBusinessId);
-          
           // In this schema, the id field in businesses table contains slugs like 'morocco-mall'
           const { data: businessBySlug, error: businessErrorBySlug } = await supabase
             .from('businesses')
@@ -213,11 +208,9 @@ export function BusinessProvider({ children }: BusinessProviderProps) {
           logo_url: business.logo_url,
         };
 
-        console.log('Setting business from fallback:', businessData);
         setAllBusinesses([businessData]);
         setCurrentBusiness(businessData);
       } else {
-        console.log('No business found for user in fallback system');
         setAllBusinesses([]);
         setCurrentBusiness(null);
       }

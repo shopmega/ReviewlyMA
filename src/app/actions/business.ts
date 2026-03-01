@@ -3,7 +3,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { ActionState, businessProfileUpdateSchema, MediaReportFormData, type SubscriptionTier } from '@/lib/types';
+import { ActionState, businessProfileUpdateSchema, mediaReportSchema, MediaReportFormData, type SubscriptionTier } from '@/lib/types';
 import { createServiceClient } from '@/lib/supabase/server';
 import { logger, LogLevel } from '@/lib/logger';
 import { notifyAdmins } from '@/lib/notifications';
@@ -261,14 +261,25 @@ export async function reportMedia(data: MediaReportFormData): Promise<ActionStat
     );
 
     try {
+        const validated = mediaReportSchema.safeParse(data);
+        if (!validated.success) {
+            return { status: 'error', message: 'Donnees de signalement invalides.' };
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { status: 'error', message: 'Vous devez etre connecte pour signaler un media.' };
+        }
+
         const { error } = await supabase
             .from('media_reports')
             .insert({
-                media_url: data.media_url,
-                media_type: data.media_type,
-                business_id: data.business_id,
-                reason: data.reason,
-                details: data.details,
+                media_url: validated.data.media_url,
+                media_type: validated.data.media_type,
+                business_id: validated.data.business_id,
+                reporter_id: user.id,
+                reason: validated.data.reason,
+                details: validated.data.details,
                 status: 'pending'
             });
 

@@ -148,7 +148,7 @@ export async function reportMediaAction(
             .from('media_reports')
             .insert([{
                 ...validatedFields.data,
-                user_id: user.id,
+                reporter_id: user.id,
                 status: 'pending'
             }]);
 
