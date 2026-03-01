@@ -1648,6 +1648,21 @@ export async function updateSiteSettings(settings: any): Promise<AdminActionResu
     await enforceAdminPermission(serviceClient, adminId, 'settings.write');
     const payload = { ...settings, id: 'main', updated_at: new Date().toISOString() };
 
+    // Keep legacy/new pricing aliases synchronized to prevent UI drift:
+    // admin page writes tier_pro_* while parts of the app still read tier_gold_* first.
+    if (Object.hasOwn(payload, 'tier_pro_monthly_price') && !Object.hasOwn(payload, 'tier_gold_monthly_price')) {
+      payload.tier_gold_monthly_price = payload.tier_pro_monthly_price;
+    }
+    if (Object.hasOwn(payload, 'tier_pro_annual_price') && !Object.hasOwn(payload, 'tier_gold_annual_price')) {
+      payload.tier_gold_annual_price = payload.tier_pro_annual_price;
+    }
+    if (Object.hasOwn(payload, 'tier_gold_monthly_price') && !Object.hasOwn(payload, 'tier_pro_monthly_price')) {
+      payload.tier_pro_monthly_price = payload.tier_gold_monthly_price;
+    }
+    if (Object.hasOwn(payload, 'tier_gold_annual_price') && !Object.hasOwn(payload, 'tier_pro_annual_price')) {
+      payload.tier_pro_annual_price = payload.tier_gold_annual_price;
+    }
+
     const { error: updateError, data: updatedRows } = await serviceClient
       .from('site_settings')
       .update(payload)
