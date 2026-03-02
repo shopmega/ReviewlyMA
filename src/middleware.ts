@@ -6,6 +6,7 @@ import { APP_LOCALES, DEFAULT_LOCALE, LOCALE_COOKIE_NAME, isValidLocale } from '
 // Security: Request size limit (10MB)
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
 const CSP_NONCE_COOKIE = '__csp_nonce';
+const CSP_NONCE_HEADER = 'x-csp-nonce';
 
 function isInternalNavigationRequest(request: NextRequest): boolean {
   const pathname = request.nextUrl.pathname;
@@ -33,7 +34,7 @@ function buildContentSecurityPolicy(nonce: string): string {
     "img-src 'self' data: https: https://www.facebook.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://*.adtrafficquality.google",
-    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://vercel.live https://*.adtrafficquality.google https://www.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "object-src 'none'",
@@ -78,9 +79,13 @@ export async function middleware(request: NextRequest) {
 
   const existingNonce = request.cookies.get(CSP_NONCE_COOKIE)?.value;
   const nonce = existingNonce || crypto.randomUUID().replace(/-/g, '');
-  
-  const response = await updateSession(request);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_HEADER, nonce);
+
+  const response = await updateSession(request, requestHeaders);
   response.headers.set('Content-Security-Policy', buildContentSecurityPolicy(nonce));
+  response.headers.set(CSP_NONCE_HEADER, nonce);
   if (!existingNonce) {
     response.cookies.set(CSP_NONCE_COOKIE, nonce, {
       path: '/',

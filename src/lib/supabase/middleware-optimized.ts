@@ -38,7 +38,7 @@ if (typeof setInterval !== 'undefined') {
   }, 5 * 60 * 1000); // Clean every 5 minutes
 }
 
-export async function updateSession(request: NextRequest) {
+export async function updateSession(request: NextRequest, requestHeaders?: Headers) {
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith('/admin');
   const isDashboardRoute = pathname.startsWith('/dashboard');
@@ -50,9 +50,12 @@ export async function updateSession(request: NextRequest) {
     isGeneralReviewRoute ||
     isBusinessReviewRoute;
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  const makeNextResponse = () =>
+    NextResponse.next({
+      request: requestHeaders ? { headers: requestHeaders } : request,
+    });
+
+  let supabaseResponse = makeNextResponse();
 
   const withAdminDebug = (response: NextResponse, reason: string) => {
     if (isAdminRoute) {
@@ -87,9 +90,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = makeNextResponse();
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );

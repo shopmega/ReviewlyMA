@@ -18,7 +18,7 @@ import { getServerSiteUrl } from '@/lib/site-config';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -91,8 +91,9 @@ export default async function RootLayout({
 }>) {
   const settings = await getCachedSiteSettings();
   const { locale, messages } = await getI18nState();
+  const headerStore = await headers();
   const cookieStore = await cookies();
-  const cspNonce = cookieStore.get('__csp_nonce')?.value;
+  const cspNonce = headerStore.get('x-csp-nonce') || cookieStore.get('__csp_nonce')?.value;
 
   return (
     <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", plexSans.variable, plexHeadline.variable, plexMono.variable)} suppressHydrationWarning>
