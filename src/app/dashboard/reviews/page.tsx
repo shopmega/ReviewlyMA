@@ -282,7 +282,7 @@ export default function ReviewsPage() {
                     <CardTitle className="text-lg font-bold font-headline leading-tight">{review.title || t('dashboardReviewsPage.untitled', 'Untitled review')}</CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="font-medium text-foreground">{getAuthorDisplayName(review, 'pro', null, null)}</span>
-                      <span>•</span>
+                      <span>â€¢</span>
                       <span>{new Date(review.date).toLocaleDateString(dateLocale)}</span>
                     </div>
                   </div>
