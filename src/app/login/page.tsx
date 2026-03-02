@@ -15,11 +15,13 @@ import { getClientOAuthRedirectUrl } from '@/lib/site-config';
 import { loginSchema, type AuthFormState, type LoginFormData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { login } from '@/app/actions/auth';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 export default function LoginPage() {
   const initialState: AuthFormState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(login, initialState);
   const { toast } = useToast();
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
   const [oauthPending, setOauthPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -47,23 +49,23 @@ export default function LoginPage() {
     if (state.status === 'success') {
       setErrorMessage('');
       toast({
-        title: 'Succes',
-        description: state.message || 'Connexion reussie. Redirection en cours...',
+        title: t('auth.login.successTitle', 'Success'),
+        description: t('auth.login.successDesc', 'Login successful. Redirecting...'),
       });
       window.location.assign(nextPath);
       return;
     }
 
     if (state.status === 'error') {
-      const message = state.message || 'Echec de la connexion. Veuillez verifier vos identifiants.';
+      const message = t('auth.login.errorDesc', 'Login failed. Please check your credentials.');
       setErrorMessage(message);
       toast({
         variant: 'destructive',
-        title: 'Erreur',
+        title: t('auth.login.errorTitle', 'Error'),
         description: message,
       });
     }
-  }, [state.status, state.message, nextPath, toast]);
+  }, [state.status, state.message, nextPath, toast, t]);
 
   const onSubmit = (data: LoginFormData) => {
     setErrorMessage('');
@@ -88,8 +90,8 @@ export default function LoginPage() {
       setOauthPending(false);
       toast({
         variant: 'destructive',
-        title: 'Erreur',
-        description: error.message || 'Impossible de demarrer la connexion LinkedIn.',
+        title: t('auth.login.errorTitle', 'Error'),
+        description: error.message || t('auth.login.linkedinError', 'Unable to start LinkedIn login.'),
       });
     }
   };
@@ -99,11 +101,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <Card className="border-white/20 bg-card/60 shadow-2xl backdrop-blur-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Connexion</CardTitle>
+            <CardTitle className="text-3xl font-bold">{t('auth.login.title', 'Login')}</CardTitle>
             <CardDescription>
-              Ou{' '}
+              {t('auth.login.signupPrompt', 'Or')}{' '}
               <Link href="/signup" className="font-medium text-primary hover:underline">
-                creez un compte
+                {t('auth.login.signupCta', 'create an account')}
               </Link>
             </CardDescription>
           </CardHeader>
@@ -113,7 +115,7 @@ export default function LoginPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card/60 px-2 text-muted-foreground">Continuer avec</span>
+                <span className="bg-card/60 px-2 text-muted-foreground">{t('auth.login.continueWith', 'Continue with')}</span>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4">
@@ -127,10 +129,10 @@ export default function LoginPage() {
                 {oauthPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connexion LinkedIn...
+                    {t('auth.login.linkedinLoading', 'LinkedIn login...')}
                   </>
                 ) : (
-                  'Continuer avec LinkedIn'
+                  t('auth.login.continueWithLinkedin', 'Continue with LinkedIn')
                 )}
               </Button>
             </div>
@@ -139,7 +141,7 @@ export default function LoginPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card/60 px-2 text-muted-foreground">Ou avec votre e-mail</span>
+                <span className="bg-card/60 px-2 text-muted-foreground">{t('auth.login.orEmail', 'Or with your email')}</span>
               </div>
             </div>
 
@@ -157,9 +159,9 @@ export default function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adresse e-mail</FormLabel>
+                      <FormLabel>{t('auth.login.emailLabel', 'Email address')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="nom@exemple.com" className="bg-input/80" {...field} />
+                        <Input placeholder={t('auth.login.emailPlaceholder', 'name@example.com')} className="bg-input/80" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -171,9 +173,9 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center">
-                        <FormLabel>Mot de passe</FormLabel>
+                        <FormLabel>{t('auth.login.passwordLabel', 'Password')}</FormLabel>
                         <Link href="/forgot-password" className="ml-auto inline-block text-sm underline">
-                          Mot de passe oublie?
+                          {t('auth.login.forgotPassword', 'Forgot password?')}
                         </Link>
                       </div>
                       <FormControl>
@@ -187,10 +189,10 @@ export default function LoginPage() {
                   {isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Connexion en cours...
+                      {t('auth.login.submitting', 'Logging in...')}
                     </>
                   ) : (
-                    'Se connecter'
+                    t('auth.login.submit', 'Log in')
                   )}
                 </Button>
               </form>

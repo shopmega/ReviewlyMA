@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { proSignupSchema, type ProSignupFormData, type AuthFormState } from '@/lib/types';
@@ -16,16 +15,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
+import { useI18n } from '@/components/providers/i18n-provider';
 
 export default function ProSignupPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  
+
   const initialState: AuthFormState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(proSignup, initialState);
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const form = useForm<ProSignupFormData>({
     resolver: zodResolver(proSignupSchema),
@@ -37,33 +37,38 @@ export default function ProSignupPage() {
       password: '',
     },
   });
-  
+
   useEffect(() => {
     const checkUser = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (user) {
         router.push('/claim');
         return;
       }
-      
+
       setLoading(false);
     };
-    
+
     checkUser();
   }, [router]);
 
   useEffect(() => {
     if (!loading && state.status === 'success') {
-      toast({ 
-        title: 'Succès', 
-        description: state.message || 'Compte pro créé avec succès! Redirection en cours...' 
+      toast({
+        title: t('auth.proSignup.successTitle', 'Success'),
+        description: t('auth.proSignup.successDesc', 'Pro account created. Redirecting...'),
       });
       setTimeout(() => {
         router.push('/dashboard/pending');
       }, 1000);
-    } else if (!loading && state.status === 'error') {
+      return;
+    }
+
+    if (!loading && state.status === 'error') {
       if (state.errors) {
         const errors = state.errors as Record<string, string[]>;
         Object.entries(errors).forEach(([key, messages]) => {
@@ -75,13 +80,13 @@ export default function ProSignupPage() {
           }
         });
       }
-      toast({ 
-        variant: 'destructive', 
-        title: 'Erreur', 
-        description: state.message || 'Échec de la création du compte pro. Veuillez vérifier vos informations.' 
+      toast({
+        variant: 'destructive',
+        title: t('auth.proSignup.errorTitle', 'Error'),
+        description: t('auth.proSignup.errorDesc', 'Failed to create pro account. Please check your information.'),
       });
     }
-  }, [loading, state, toast, router, form]);
+  }, [loading, state, toast, router, form, t]);
 
   const onSubmit = (data: ProSignupFormData) => {
     const formData = new FormData();
@@ -100,7 +105,7 @@ export default function ProSignupPage() {
       <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Vérification de l'état de connexion...</p>
+          <p className="text-muted-foreground">{t('auth.proSignup.loading', 'Checking authentication state...')}</p>
         </div>
       </div>
     );
@@ -111,13 +116,13 @@ export default function ProSignupPage() {
       <div className="w-full max-w-lg space-y-8">
         <Card className="bg-card/60 backdrop-blur-lg border-white/20 shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Créez votre compte pro</CardTitle>
+            <CardTitle className="text-3xl font-bold">{t('auth.proSignup.title', 'Create your pro account')}</CardTitle>
             <CardDescription>
-              Acces a des outils gratuits pour gerer la reputation de votre entreprise.
+              {t('auth.proSignup.subtitle', 'Access free tools to manage your business reputation.')}
               <br />
-              Vous avez deja un compte?{' '}
+              {t('auth.proSignup.loginPrompt', 'Already have an account?')}{' '}
               <Link href="/login" className="font-medium text-primary hover:underline">
-                Connectez-vous
+                {t('auth.proSignup.loginCta', 'Log in')}
               </Link>
             </CardDescription>
           </CardHeader>
@@ -125,7 +130,7 @@ export default function ProSignupPage() {
             {state.status === 'error' && !state.errors && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{state.message}</AlertDescription>
+                <AlertDescription>{t('auth.proSignup.errorDesc', 'Failed to create pro account. Please check your information.')}</AlertDescription>
               </Alert>
             )}
             <Form {...form}>
@@ -136,9 +141,9 @@ export default function ProSignupPage() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nom complet</FormLabel>
+                        <FormLabel>{t('auth.signup.fullNameLabel', 'Full name')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Prenom Nom" className="bg-input/80" {...field} />
+                          <Input placeholder={t('auth.proSignup.fullNamePlaceholder', 'Ex: First Last')} className="bg-input/80" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -149,9 +154,9 @@ export default function ProSignupPage() {
                     name="jobTitle"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Poste occupe</FormLabel>
+                        <FormLabel>{t('auth.proSignup.jobTitleLabel', 'Current role')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Gerant, Responsable Marketing" className="bg-input/80" {...field} />
+                          <Input placeholder={t('auth.proSignup.jobTitlePlaceholder', 'Ex: Manager, Marketing Lead')} className="bg-input/80" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -164,9 +169,9 @@ export default function ProSignupPage() {
                   name="businessName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom de l'entreprise</FormLabel>
+                      <FormLabel>{t('auth.proSignup.businessNameLabel', 'Business name')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Société SARL" className="bg-input/80" {...field} />
+                        <Input placeholder={t('auth.proSignup.businessNamePlaceholder', 'Ex: Company LLC')} className="bg-input/80" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -178,21 +183,21 @@ export default function ProSignupPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adresse e-mail professionnelle</FormLabel>
+                      <FormLabel>{t('auth.proSignup.businessEmailLabel', 'Work email')}</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="nom@votresociete.com" className="bg-input/80" {...field} />
+                        <Input type="email" placeholder={t('auth.proSignup.businessEmailPlaceholder', 'name@company.com')} className="bg-input/80" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mot de passe</FormLabel>
+                      <FormLabel>{t('auth.login.passwordLabel', 'Password')}</FormLabel>
                       <FormControl>
                         <Input type="password" required className="bg-input/80" {...field} />
                       </FormControl>
@@ -200,19 +205,23 @@ export default function ProSignupPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <p className="text-xs text-muted-foreground pt-2">
-                  En cliquant sur "Creer mon compte", vous acceptez nos <Link href="/terms" className="underline">Conditions dutilisation</Link> et notre <Link href="/privacy" className="underline">Politique de confidentialite</Link>.
+                  {t('auth.proSignup.termsPrefix', 'By clicking')}{' '}
+                  <span className="font-medium">"{t('auth.proSignup.submit', 'Create my professional account')}"</span>, {t('auth.proSignup.termsMiddle', 'you agree to our')}{' '}
+                  <Link href="/terms" className="underline">{t('auth.proSignup.termsLink', 'Terms of Use')}</Link>{' '}
+                  {t('auth.proSignup.and', 'and our')}{' '}
+                  <Link href="/privacy" className="underline">{t('auth.proSignup.privacyLink', 'Privacy Policy')}</Link>.
                 </p>
 
                 <Button type="submit" className="w-full !mt-6" size="lg" disabled={isPending}>
                   {isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Création en cours...
+                      {t('auth.signup.submitting', 'Creating account...')}
                     </>
                   ) : (
-                    'Créer mon compte professionnel'
+                    t('auth.proSignup.submit', 'Create my professional account')
                   )}
                 </Button>
               </form>
@@ -223,4 +232,3 @@ export default function ProSignupPage() {
     </div>
   );
 }
-

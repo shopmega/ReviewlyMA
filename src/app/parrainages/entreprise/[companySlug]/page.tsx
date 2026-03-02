@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { companySlug: string };
 
@@ -21,15 +22,17 @@ type ReferralOffer = {
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t, tf } = await getServerTranslator();
   const { companySlug } = await params;
   return {
-    title: `Parrainages entreprise | ${companySlug} | Reviewly MA`,
-    description: `Offres de parrainage actives pour l'entreprise ${companySlug} sur Reviewly MA.`,
+    title: tf('referralCompanyPage.metaTitle', 'Referrals company | {company} | Reviewly MA', { company: companySlug }),
+    description: tf('referralCompanyPage.metaDescription', 'Active referral offers for company {company} on Reviewly MA.', { company: companySlug }),
     alternates: { canonical: `/parrainages/entreprise/${companySlug}` },
   };
 }
 
 export default async function ReferralCompanyPage({ params }: { params: Promise<Params> }) {
+  const { t, tf } = await getServerTranslator();
   const { companySlug } = await params;
   const supabase = await createClient();
   const { data } = await supabase
@@ -45,8 +48,8 @@ export default async function ReferralCompanyPage({ params }: { params: Promise<
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold font-headline">Parrainages chez {companyName}</h1>
-        <p className="text-sm text-muted-foreground">{offers.length} offre(s) active(s)</p>
+        <h1 className="text-3xl font-bold font-headline">{tf('referralCompanyPage.title', 'Referrals at {company}', { company: companyName })}</h1>
+        <p className="text-sm text-muted-foreground">{tf('referralCompanyPage.activeCount', '{count} active offer(s)', { count: offers.length })}</p>
       </div>
 
       <InternalAdsSlot placement="referrals_top_banner" />
@@ -54,7 +57,7 @@ export default async function ReferralCompanyPage({ params }: { params: Promise<
       {offers.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
-            Aucune offre active pour cette entreprise.
+            {t('referralCompanyPage.empty', 'No active offer for this company.')}
           </CardContent>
         </Card>
       ) : (
@@ -66,10 +69,10 @@ export default async function ReferralCompanyPage({ params }: { params: Promise<
                 <CardTitle className="text-xl">{offer.job_title}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p>{offer.city || 'Ville non precisee'}</p>
-                <p>Places: {offer.slots}</p>
+                <p>{offer.city || t('referralCompanyPage.cityUnknown', 'City not specified')}</p>
+                <p>{tf('referralCompanyPage.slots', 'Slots: {count}', { count: offer.slots })}</p>
                 <Button asChild variant="outline" className="w-full rounded-xl">
-                  <Link href={`/parrainages/${offer.id}`}>Voir l&apos;offre</Link>
+                  <Link href={`/parrainages/${offer.id}`}>{t('referralCompanyPage.viewOffer', 'View offer')}</Link>
                 </Button>
               </CardContent>
             </Card>

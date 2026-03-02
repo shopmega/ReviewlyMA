@@ -47,6 +47,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type UserProfile = {
   id: string;
@@ -125,6 +126,8 @@ export default function ProfilePage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const { t, tf, locale } = useI18n();
+  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
 
   // Sort reviews based on selected option
   const sortedReviews = useMemo(() => {
@@ -289,7 +292,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (state?.status === 'success') {
-      toast({ title: 'Profil mis à jour', description: state.message });
+      toast({ title: t('profilePage.toasts.profileUpdated', 'Profile updated'), description: state.message });
       // Update local profile state
       if (profile) {
         setProfile({
@@ -299,9 +302,9 @@ export default function ProfilePage() {
         });
       }
     } else if (state?.status === 'error') {
-      toast({ title: 'Erreur', description: state.message, variant: 'destructive' });
+      toast({ title: t('profilePage.toasts.errorTitle', 'Error'), description: state.message, variant: 'destructive' });
     }
-  }, [state, toast, form, profile]);
+  }, [state, toast, form, profile, t]);
 
   const onSubmit = (data: UserProfileUpdateData) => {
     const formData = new FormData();
@@ -331,20 +334,23 @@ export default function ProfilePage() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        toast({ title: 'Export réussi', description: 'Vos données ont été téléchargées.' });
+        toast({
+          title: t('profilePage.toasts.exportSuccessTitle', 'Export successful'),
+          description: t('profilePage.toasts.exportSuccessDesc', 'Your data has been downloaded.'),
+        });
       } else {
-        toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+        toast({ title: t('profilePage.toasts.errorTitle', 'Error'), description: result.message, variant: 'destructive' });
       }
     });
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir demander la suppression de votre compte ? Cette action sera effective dans 30 jours.')) return;
+    if (!confirm(t('profilePage.confirmDelete', 'Are you sure you want to request account deletion? This action will be effective in 30 days.'))) return;
 
     startTransition(async () => {
       const result = await requestAccountDeletion();
       if (result.status === 'success') {
-        toast({ title: 'Demande enregistrée', description: result.message });
+        toast({ title: t('profilePage.toasts.deletionRequested', 'Request recorded'), description: result.message });
         // Refresh profile to show scheduled deletion
         const supabase = createClient();
         const { data } = await supabase.from('profiles').select('deletion_scheduled_at').eq('id', profile?.id).single();
@@ -352,7 +358,7 @@ export default function ProfilePage() {
           setProfile({ ...profile, deletion_scheduled_at: data.deletion_scheduled_at });
         }
       } else {
-        toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+        toast({ title: t('profilePage.toasts.errorTitle', 'Error'), description: result.message, variant: 'destructive' });
       }
     });
   };
@@ -365,19 +371,23 @@ export default function ProfilePage() {
   };
 
   const handleReviewAppeal = async (reviewId: number) => {
-    const message = window.prompt('Expliquez votre appel (minimum 10 caractères):');
+    const message = window.prompt(t('profilePage.reviews.appealPrompt', 'Explain your appeal (minimum 10 characters):'));
     if (message === null) return;
     const cleaned = message.trim();
     if (cleaned.length < 10) {
-      toast({ title: 'Erreur', description: 'Le message est trop court.', variant: 'destructive' });
+      toast({
+        title: t('profilePage.toasts.errorTitle', 'Error'),
+        description: t('profilePage.reviews.appealTooShort', 'Message is too short.'),
+        variant: 'destructive',
+      });
       return;
     }
 
     const result = await submitReviewAppeal({ review_id: reviewId, message: cleaned });
     if (result.status === 'success') {
-      toast({ title: 'Appel soumis', description: result.message });
+      toast({ title: t('profilePage.toasts.appealSubmitted', 'Appeal submitted'), description: result.message });
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('profilePage.toasts.errorTitle', 'Error'), description: result.message, variant: 'destructive' });
     }
   };
 
@@ -394,28 +404,28 @@ export default function ProfilePage() {
           <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
             <LogIn className="h-10 w-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold mb-4">Connexion requise</h1>
+          <h1 className="text-3xl font-bold mb-4">{t('profilePage.authRequired.title', 'Login required')}</h1>
           <p className="text-muted-foreground mb-8">
-            Rejoignez la communauté pour gérer votre profil, vos avis et vos favoris.
+            {t('profilePage.authRequired.description', 'Join the community to manage your profile, reviews and favorites.')}
           </p>
           <Button asChild size="lg" className="w-full rounded-full shadow-lg">
-            <Link href="/login?next=/profile">Se connecter</Link>
+            <Link href="/login?next=/profile">{t('profilePage.authRequired.cta', 'Log in')}</Link>
           </Button>
         </Card>
       </div>
     );
   }
 
-  const userName = profile?.full_name || 'Utilisateur';
+  const userName = profile?.full_name || t('profilePage.fallbackUserName', 'User');
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   const reviewCount = reviews.length;
   const helpfulVotes = reviews.reduce((acc, review) => acc + (review.likes || 0), 0);
-  const contributorLevel = reviewCount >= 10 ? 'Expert' : reviewCount >= 5 ? 'Confirmé' : 'Débutant';
+  const contributorLevel = reviewCount >= 10 ? t('profilePage.levels.expert', 'Expert') : reviewCount >= 5 ? t('profilePage.levels.confirmed', 'Confirmed') : t('profilePage.levels.beginner', 'Beginner');
 
   const userStats = [
-    { label: 'Avis écrits', value: reviewCount, icon: Star, color: 'text-amber-500' },
-    { label: 'Votes utiles', value: helpfulVotes, icon: ThumbsUp, color: 'text-blue-500' },
-    { label: 'Niveau', value: contributorLevel, icon: Medal, color: 'text-emerald-500' },
+    { label: t('profilePage.stats.reviewsWritten', 'Reviews written'), value: reviewCount, icon: Star, color: 'text-amber-500' },
+    { label: t('profilePage.stats.helpfulVotes', 'Helpful votes'), value: helpfulVotes, icon: ThumbsUp, color: 'text-blue-500' },
+    { label: t('profilePage.stats.level', 'Level'), value: contributorLevel, icon: Medal, color: 'text-emerald-500' },
   ];
 
   return (
@@ -458,7 +468,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-1.5 bg-secondary/30 px-3 py-1 rounded-full text-sm">
                     <Calendar className="w-4 h-4" />
-                    Depuis {new Date(profile?.created_at || Date.now()).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                    {tf('profilePage.memberSince', 'Since {date}', { date: new Date(profile?.created_at || Date.now()).toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' }) })}
                   </div>
                 </div>
               </div>
@@ -467,7 +477,7 @@ export default function ProfilePage() {
                 <Button size="lg" className="rounded-full shadow-lg bg-gradient-to-r from-primary to-accent hover:shadow-xl transition-all" asChild>
                   <Link href="/dashboard">
                     <SettingsIcon className="mr-2 h-5 w-5" />
-                    Ma Console Pro
+                    {t('profilePage.businessConsole', 'My Business Console')}
                   </Link>
                 </Button>
               )}
@@ -494,20 +504,20 @@ export default function ProfilePage() {
           <Card className="border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-sky-500/5 shadow-sm mb-10">
             <CardContent className="p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Prochaine action recommandee</p>
-                <p className="text-lg font-bold">Partagez un nouvel avis pour augmenter votre impact</p>
+                <p className="text-sm text-muted-foreground">{t('profilePage.recommended.title', 'Recommended next action')}</p>
+                <p className="text-lg font-bold">{t('profilePage.recommended.subtitle', 'Share a new review to increase your impact')}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button asChild className="rounded-full">
                   <Link href="/review">
                     <Star className="mr-2 h-4 w-4" />
-                    Ecrire un avis
+                    {t('profilePage.recommended.writeReview', 'Write a review')}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-full">
                   <Link href="/profile/saved-businesses">
                     <Heart className="mr-2 h-4 w-4" />
-                    Voir mes favoris
+                    {t('profilePage.recommended.viewFavorites', 'View my favorites')}
                   </Link>
                 </Button>
               </div>
@@ -520,19 +530,19 @@ export default function ProfilePage() {
               <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 backdrop-blur-sm h-14 w-max min-w-full md:min-w-0">
                 <TabsTrigger value="reviews" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Star className="w-4 h-4" />
-                  Mes Avis
+                  {t('profilePage.tabs.reviews', 'My Reviews')}
                 </TabsTrigger>
                 <TabsTrigger value="saved" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Heart className="w-4 h-4" />
-                  Favoris
+                  {t('profilePage.tabs.saved', 'Favorites')}
                 </TabsTrigger>
                 <TabsTrigger value="referrals" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <BriefcaseBusiness className="w-4 h-4" />
-                  Parrainage
+                  {t('profilePage.tabs.referrals', 'Referrals')}
                 </TabsTrigger>
                 <TabsTrigger value="account" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Edit className="w-4 h-4" />
-                  Compte
+                  {t('profilePage.tabs.account', 'Account')}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -542,24 +552,24 @@ export default function ProfilePage() {
               {/* Sorting Controls */}
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h3 className="text-xl font-bold">Mes Avis ({sortedReviews.length})</h3>
+                  <h3 className="text-xl font-bold">{tf('profilePage.reviews.title', 'My Reviews ({count})', { count: sortedReviews.length })}</h3>
                   {(hasMoreReviews || reviewsPage > 0) && (
                     <p className="text-xs text-muted-foreground">
-                      Affichage de {sortedReviews.length} avis charges.
+                      {tf('profilePage.reviews.loadedCount', 'Showing {count} loaded reviews.', { count: sortedReviews.length })}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <span className="text-sm text-muted-foreground">Trier par:</span>
+                  <span className="text-sm text-muted-foreground">{t('profilePage.reviews.sortBy', 'Sort by:')}</span>
                   <Select value={sortOption} onValueChange={(value: any) => setSortOption(value)}>
                     <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="newest">Plus récents</SelectItem>
-                      <SelectItem value="oldest">Plus anciens</SelectItem>
-                      <SelectItem value="helpful">Plus utiles</SelectItem>
-                      <SelectItem value="rating">Meilleure note</SelectItem>
+                      <SelectItem value="newest">{t('profilePage.reviews.sortNewest', 'Newest')}</SelectItem>
+                      <SelectItem value="oldest">{t('profilePage.reviews.sortOldest', 'Oldest')}</SelectItem>
+                      <SelectItem value="helpful">{t('profilePage.reviews.sortHelpful', 'Most helpful')}</SelectItem>
+                      <SelectItem value="rating">{t('profilePage.reviews.sortRating', 'Best rating')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -569,12 +579,12 @@ export default function ProfilePage() {
                   <div className="bg-muted p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                     <Star className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-3">Zéro avis pour l'instant</h3>
+                  <h3 className="text-2xl font-bold mb-3">{t('profilePage.reviews.emptyTitle', 'No reviews yet')}</h3>
                   <p className="text-muted-foreground max-w-md mx-auto mb-8 text-lg">
-                    Partagez votre expérience et aidez les autres à trouver les meilleures adresses du Maroc !
+                    {t('profilePage.reviews.emptyDescription', 'Share your experience and help others find the best places in Morocco!')}
                   </p>
                   <Button asChild size="lg" className="rounded-full shadow-lg">
-                    <Link href="/">Lancer ma première recherche</Link>
+                    <Link href="/">{t('profilePage.reviews.emptyCta', 'Start my first search')}</Link>
                   </Button>
                 </Card>
               ) : (
@@ -587,16 +597,16 @@ export default function ProfilePage() {
                         <div className="flex-1 p-8">
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                             <div>
-                              <h3 className="text-2xl font-bold mb-1 text-foreground">{review.title || 'Avis sur entreprise'}</h3>
+                              <h3 className="text-2xl font-bold mb-1 text-foreground">{review.title || t('profilePage.reviews.untitled', 'Company review')}</h3>
                               <div className="flex items-center flex-wrap gap-2 text-sm">
-                                <span className="text-muted-foreground">Établissement:</span>
+                                <span className="text-muted-foreground">{t('profilePage.reviews.businessLabel', 'Business:')}</span>
                                 <Link
                                   href={`/businesses/${review.business_id}`}
                                   className="font-bold text-primary hover:text-accent transition-colors underline decoration-primary/20 underline-offset-4"
                                 >
                                   {review.business_name}
                                 </Link>
-                                <span className="text-muted-foreground">• {new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                <span className="text-muted-foreground">? {new Date(review.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                               </div>
                             </div>
                             <div className="bg-secondary/50 p-2 rounded-xl border border-border/50">
@@ -613,9 +623,9 @@ export default function ProfilePage() {
                               <MessageSquare className="absolute -top-3 -right-3 w-10 h-10 text-primary/10" />
                               <div className="flex items-center gap-2 mb-3">
                                 <div className="p-1.5 bg-primary/10 rounded-lg">
-                                  <Badge className="bg-primary hover:bg-primary border-none">Réponse Pro</Badge>
+                                  <Badge className="bg-primary hover:bg-primary border-none">{t('profilePage.reviews.proReply', 'Pro reply')}</Badge>
                                 </div>
-                                <span className="text-xs text-muted-foreground">le {new Date(review.owner_reply_date!).toLocaleDateString()}</span>
+                                <span className="text-xs text-muted-foreground">{tf('profilePage.reviews.replyDate', 'on {date}', { date: new Date(review.owner_reply_date!).toLocaleDateString(dateLocale) })}</span>
                               </div>
                               <p className="text-foreground/80 font-medium">
                                 {review.owner_reply}
@@ -628,7 +638,7 @@ export default function ProfilePage() {
                               <Button asChild variant="outline" size="sm" className="rounded-full">
                                 <Link href={`/reviews/${review.id}/edit`}>
                                   <Edit className="mr-2 h-4 w-4" />
-                                  Modifier
+                                  {t('profilePage.reviews.edit', 'Edit')}
                                 </Link>
                               </Button>
                               {(review.status === 'rejected' || review.status === 'hidden' || review.status === 'deleted') && (
@@ -640,7 +650,7 @@ export default function ProfilePage() {
                                   onClick={() => handleReviewAppeal(review.id)}
                                 >
                                   <Undo className="mr-2 h-4 w-4" />
-                                  Faire appel
+                                  {t('profilePage.reviews.appeal', 'Appeal')}
                                 </Button>
                               )}
                               <VoteButtons
@@ -669,10 +679,10 @@ export default function ProfilePage() {
                       {loadingMoreReviews ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Chargement...
+                          {t('profilePage.reviews.loadingMore', 'Loading...')}
                         </>
                       ) : (
-                        'Charger plus d avis'
+                        t('profilePage.reviews.loadMore', 'Load more reviews')
                       )}
                     </Button>
                   </div>
@@ -686,10 +696,10 @@ export default function ProfilePage() {
               {savedBusinesses.length > 0 && (
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm text-muted-foreground">
-                    Affichage de {savedVisibleCount} favoris sur {savedBusinesses.length}.
+                    {tf('profilePage.saved.count', 'Showing {visible} favorites out of {total}.', { visible: savedVisibleCount, total: savedBusinesses.length })}
                   </p>
                   <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link href="/profile/saved-businesses">Voir tous mes favoris</Link>
+                    <Link href="/profile/saved-businesses">{t('profilePage.saved.viewAll', 'View all my favorites')}</Link>
                   </Button>
                 </div>
               )}
@@ -698,12 +708,12 @@ export default function ProfilePage() {
                   <div className="bg-muted p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                     <Heart className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-3">Vos favoris sont vides</h3>
+                  <h3 className="text-2xl font-bold mb-3">{t('profilePage.saved.emptyTitle', 'Your favorites are empty')}</h3>
                   <p className="text-muted-foreground max-w-md mx-auto mb-8 text-lg">
-                    Gardez une trace des lieux que vous adorez ou que vous projetez de visiter au Maroc.
+                    {t('profilePage.saved.emptyDescription', 'Keep track of places you love or plan to visit in Morocco.')}
                   </p>
                   <Button asChild size="lg" className="rounded-full shadow-lg">
-                    <Link href="/">Explorer les adresses</Link>
+                    <Link href="/">{t('profilePage.saved.emptyCta', 'Explore places')}</Link>
                   </Button>
                 </Card>
               ) : (
@@ -716,7 +726,7 @@ export default function ProfilePage() {
               {savedBusinesses.length > savedVisibleCount && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" className="rounded-full" onClick={handleLoadMoreSaved}>
-                    Charger plus de favoris
+                    {t('profilePage.saved.loadMore', 'Load more favorites')}
                   </Button>
                 </div>
               )}
@@ -728,23 +738,23 @@ export default function ProfilePage() {
                 <CardHeader className="border-b border-border/50 p-8">
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <BriefcaseBusiness className="w-6 h-6 text-primary" />
-                    Mon parrainage
+                    {t('profilePage.referrals.title', 'My referrals')}
                   </CardTitle>
                   <CardDescription className="text-base">
-                    Gere vos offres publiees et suivez vos demandes de parrainage.
+                    {t('profilePage.referrals.description', 'Manage your published offers and track your referral requests.')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <Card className="bg-background/70 border-border/60">
                       <CardContent className="p-6">
-                        <p className="text-sm text-muted-foreground mb-2">Offres publiees</p>
+                        <p className="text-sm text-muted-foreground mb-2">{t('profilePage.referrals.offers', 'Published offers')}</p>
                         <p className="text-3xl font-black">{referralStats.offers}</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-background/70 border-border/60">
                       <CardContent className="p-6">
-                        <p className="text-sm text-muted-foreground mb-2">Demandes envoyees</p>
+                        <p className="text-sm text-muted-foreground mb-2">{t('profilePage.referrals.requests', 'Sent requests')}</p>
                         <p className="text-3xl font-black">{referralStats.requests}</p>
                       </CardContent>
                     </Card>
@@ -754,18 +764,18 @@ export default function ProfilePage() {
                     <Button asChild className="rounded-full">
                       <Link href="/parrainages/mes-offres">
                         <BriefcaseBusiness className="mr-2 h-4 w-4" />
-                        Mes offres de parrainage
+                        {t('profilePage.referrals.myOffers', 'My referral offers')}
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="rounded-full">
                       <Link href="/parrainages/mes-demandes">
                         <SendHorizontal className="mr-2 h-4 w-4" />
-                        Mes demandes de parrainage
+                        {t('profilePage.referrals.myRequests', 'My referral requests')}
                       </Link>
                     </Button>
                     <Button asChild variant="ghost" className="rounded-full">
                       <Link href="/parrainages/new">
-                        Publier une nouvelle offre
+                        {t('profilePage.referrals.publishNew', 'Publish a new offer')}
                       </Link>
                     </Button>
                   </div>
@@ -781,10 +791,10 @@ export default function ProfilePage() {
                     <CardHeader className="border-b border-border/50 p-8">
                       <CardTitle className="text-2xl flex items-center gap-2">
                         <UserIcon className="w-6 h-6 text-primary" />
-                        Informations Personnelles
+                        {t('profilePage.account.personalTitle', 'Personal Information')}
                       </CardTitle>
                       <CardDescription className="text-base">
-                        Gérez vos informations de compte et l'affichage de votre profil public.
+                        {t('profilePage.account.personalDescription', 'Manage your account information and your public profile display.')}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-8">
@@ -795,9 +805,9 @@ export default function ProfilePage() {
                             name="full_name"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-base font-bold">Nom d'affichage</FormLabel>
+                                <FormLabel className="text-base font-bold">{t('profilePage.account.displayName', 'Display name')}</FormLabel>
                                 <FormControl>
-                                  <Input {...field} className="h-12 border-muted-foreground/20 focus:border-primary focus:ring-primary/20 rounded-xl" placeholder="Votre nom complet" />
+                                  <Input {...field} className="h-12 border-muted-foreground/20 focus:border-primary focus:ring-primary/20 rounded-xl" placeholder={t('profilePage.account.displayNamePlaceholder', 'Your full name')} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -808,9 +818,9 @@ export default function ProfilePage() {
                             name="email"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-base font-bold">Adresse Email</FormLabel>
+                                <FormLabel className="text-base font-bold">{t('profilePage.account.emailLabel', 'Email address')}</FormLabel>
                                 <FormControl>
-                                  <Input type="email" {...field} className="h-12 border-muted-foreground/20 focus:border-primary focus:ring-primary/20 rounded-xl" placeholder="votre@email.com" />
+                                  <Input type="email" {...field} className="h-12 border-muted-foreground/20 focus:border-primary focus:ring-primary/20 rounded-xl" placeholder={t('profilePage.account.emailPlaceholder', 'you@email.com')} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -819,13 +829,13 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex justify-end pt-6 border-t border-border/50 gap-4">
                           <Button variant="outline" type="button" onClick={() => form.reset()} disabled={isPending} className="rounded-full h-12 px-6">
-                            Réinitialiser
+                            {t('profilePage.account.reset', 'Reset')}
                           </Button>
                           <Button type="submit" disabled={isPending} className="rounded-full h-12 px-8 shadow-lg bg-primary hover:scale-[1.02] transition-transform">
                             {isPending ? (
-                              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Enregistrement...</>
+                              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t('profilePage.account.saving', 'Saving...')}</>
                             ) : (
-                              'Sauvegarder les changements'
+                              t('profilePage.account.saveChanges', 'Save changes')
                             )}
                           </Button>
                         </div>
@@ -837,9 +847,9 @@ export default function ProfilePage() {
                     <CardHeader className="p-8 pb-4">
                       <CardTitle className="text-xl flex items-center gap-2">
                         <Mail className="w-5 h-5 text-primary" />
-                        Préférences de communication
+                        {t('profilePage.account.preferencesTitle', 'Communication preferences')}
                       </CardTitle>
-                      <CardDescription>Choisissez les emails que vous souhaitez recevoir.</CardDescription>
+                      <CardDescription>{t('profilePage.account.preferencesDescription', 'Choose which emails you want to receive.')}</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8 pt-0">
                       <div className="space-y-6">
@@ -849,8 +859,8 @@ export default function ProfilePage() {
                           render={({ field }) => (
                             <div className="flex items-center justify-between py-4 border-b border-border/50">
                               <div className="space-y-0.5">
-                                <Label className="text-base">Actualités & Offres</Label>
-                                <p className="text-sm text-muted-foreground">Recevez nos dernières nouveautés et offres spéciales.</p>
+                                <Label className="text-base">{t('profilePage.account.prefMarketingTitle', 'News & Offers')}</Label>
+                                <p className="text-sm text-muted-foreground">{t('profilePage.account.prefMarketingDescription', 'Receive our latest updates and special offers.')}</p>
                               </div>
                               <FormControl>
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
@@ -864,8 +874,8 @@ export default function ProfilePage() {
                           render={({ field }) => (
                             <div className="flex items-center justify-between py-4 border-b border-border/50">
                               <div className="space-y-0.5">
-                                <Label className="text-base">Réponses aux avis</Label>
-                                <p className="text-sm text-muted-foreground">Soyez notifié quand une entreprise répond à votre avis.</p>
+                                <Label className="text-base">{t('profilePage.account.prefRepliesTitle', 'Review replies')}</Label>
+                                <p className="text-sm text-muted-foreground">{t('profilePage.account.prefRepliesDescription', 'Get notified when a business replies to your review.')}</p>
                               </div>
                               <FormControl>
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
@@ -879,8 +889,8 @@ export default function ProfilePage() {
                           render={({ field }) => (
                             <div className="flex items-center justify-between py-4 border-b border-border/50">
                               <div className="space-y-0.5">
-                                <Label className="text-base">Notifications Système</Label>
-                                <p className="text-sm text-muted-foreground">Alertes sur la sécurité et le fonctionnement de votre compte.</p>
+                                <Label className="text-base">{t('profilePage.account.prefSystemTitle', 'System notifications')}</Label>
+                                <p className="text-sm text-muted-foreground">{t('profilePage.account.prefSystemDescription', 'Alerts about account security and system activity.')}</p>
                               </div>
                               <FormControl>
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled />
@@ -894,8 +904,8 @@ export default function ProfilePage() {
                           render={({ field }) => (
                             <div className="flex items-center justify-between py-4">
                               <div className="space-y-0.5">
-                                <Label className="text-base">Mises à jour des revendications</Label>
-                                <p className="text-sm text-muted-foreground">Suivez l'état de vos demandes de gestion d'entreprises.</p>
+                                <Label className="text-base">{t('profilePage.account.prefClaimsTitle', 'Claim updates')}</Label>
+                                <p className="text-sm text-muted-foreground">{t('profilePage.account.prefClaimsDescription', 'Track the status of your business management claims.')}</p>
                               </div>
                               <FormControl>
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
@@ -913,13 +923,13 @@ export default function ProfilePage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Download className="w-5 h-5 text-blue-500" />
-                      Export des données
+                      {t('profilePage.account.exportTitle', 'Data export')}
                     </CardTitle>
-                    <CardDescription>Téléchargez une copie de vos données personnelles</CardDescription>
+                    <CardDescription>{t('profilePage.account.exportDescription', 'Download a copy of your personal data')}</CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <p className="text-muted-foreground mb-6 text-sm">
-                      Vous recevrez un fichier JSON contenant votre profil, vos avis et vos entreprises favorites.
+                      {t('profilePage.account.exportHint', 'You will receive a JSON file containing your profile, reviews, and favorite businesses.')}
                     </p>
                     <Button
                       variant="outline"
@@ -928,7 +938,7 @@ export default function ProfilePage() {
                       disabled={isPending}
                     >
                       {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                      Exporter mes données
+                      {t('profilePage.account.exportAction', 'Export my data')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -937,29 +947,29 @@ export default function ProfilePage() {
                   <CardHeader>
                     <CardTitle className={`flex items-center gap-2 ${profile?.deletion_scheduled_at ? 'text-amber-600' : 'text-destructive'}`}>
                       <AlertCircle className="w-5 h-5" />
-                      {profile?.deletion_scheduled_at ? 'Suppression planifiée' : 'Zone de danger'}
+                      {profile?.deletion_scheduled_at ? t('profilePage.account.deletionScheduledTitle', 'Deletion scheduled') : t('profilePage.account.dangerTitle', 'Danger zone')}
                     </CardTitle>
                     <CardDescription>
                       {profile?.deletion_scheduled_at
-                        ? `Votre compte sera supprimé le ${new Date(profile.deletion_scheduled_at).toLocaleDateString('fr-FR')}`
-                        : 'Suppression définitive du compte'}
+                        ? tf('profilePage.account.deletionScheduledDescription', 'Your account will be deleted on {date}', { date: new Date(profile.deletion_scheduled_at).toLocaleDateString(dateLocale) })
+                        : t('profilePage.account.deletionPermanentDescription', 'Permanent account deletion')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     {profile?.deletion_scheduled_at ? (
                       <div className="space-y-4">
                         <p className="text-amber-700 text-sm">
-                          Votre compte est actuellement en attente de suppression. Vous pouvez annuler cette demande en contactant le support ou en changeant vos paramètres (bientôt disponible).
+                          {t('profilePage.account.deletionScheduledHint', 'Your account is currently pending deletion. You can cancel this request by contacting support or updating your settings (coming soon).')}
                         </p>
                         <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-100" disabled>
                           <Undo className="mr-2 h-4 w-4" />
-                          Annuler la suppression
+                          {t('profilePage.account.cancelDeletion', 'Cancel deletion')}
                         </Button>
                       </div>
                     ) : (
                       <>
                         <p className="text-muted-foreground mb-6 text-sm">
-                          Cette action supprimera tous vos avis, favoris et données personnelles. Un délai de 30 jours est appliqué avant la suppression effective.
+                          {t('profilePage.account.deleteWarning', 'This action will delete all your reviews, favorites, and personal data. A 30-day delay is applied before permanent deletion.')}
                         </p>
                         <Button
                           variant="destructive"
@@ -968,7 +978,7 @@ export default function ProfilePage() {
                           disabled={isPending}
                         >
                           {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                          Supprimer mon compte
+                          {t('profilePage.account.deleteAction', 'Delete my account')}
                         </Button>
                       </>
                     )}
@@ -982,3 +992,6 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+
+

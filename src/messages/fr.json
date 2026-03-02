@@ -522,5 +522,886 @@
     "submit": "Envoyer le message",
     "sentTitle": "Message envoye !",
     "sentDesc": "L'entreprise a bien recu votre message."
+  },
+  "platformContactPage": {
+    "title": "Contactez-nous",
+    "subtitle": "Vous avez des questions ou des suggestions ? Contactez-nous.",
+    "fullName": "Nom complet",
+    "email": "Email",
+    "subject": "Sujet",
+    "message": "Message",
+    "namePlaceholder": "Votre nom",
+    "emailPlaceholder": "votre@email.com",
+    "subjectPlaceholder": "De quoi souhaitez-vous discuter ?",
+    "messagePlaceholder": "Votre message...",
+    "sending": "Envoi en cours...",
+    "submit": "Envoyer le message",
+    "sentTitle": "Message envoye",
+    "errorTitle": "Erreur",
+    "successDefault": "Votre message a ete envoye avec succes.",
+    "errorDefault": "Une erreur est survenue lors de l'envoi du message."
+  },
+  "auth": {
+    "signup": {
+      "title": "Creer un compte",
+      "loginPrompt": "Vous avez deja un compte ?",
+      "loginCta": "Connectez-vous",
+      "continueWith": "Continuer avec",
+      "linkedinLoading": "Inscription LinkedIn...",
+      "continueWithLinkedin": "Continuer avec LinkedIn",
+      "orEmail": "Ou avec votre e-mail",
+      "fullNameLabel": "Nom complet",
+      "fullNamePlaceholder": "Ex: Jean Dupont",
+      "submitting": "Creation en cours...",
+      "submit": "Creer mon compte",
+      "successTitle": "Succes",
+      "successDesc": "Compte cree avec succes. Veuillez verifier votre e-mail.",
+      "errorTitle": "Erreur",
+      "errorDesc": "Une erreur est survenue lors de la creation du compte.",
+      "linkedinError": "Impossible de demarrer l'inscription LinkedIn.",
+      "closedTitle1": "Inscriptions",
+      "closedTitle2": "Suspendues",
+      "closedSubtitle": "Nous ne pouvons pas accepter de nouveaux membres pour le moment.",
+      "closedBody": "Les inscriptions sont temporairement fermees par l'administration. Merci de votre patience.",
+      "backHome": "Retour a l'accueil"
+    },
+    "proSignup": {
+      "title": "Creez votre compte pro",
+      "subtitle": "Acces a des outils gratuits pour gerer la reputation de votre entreprise.",
+      "loginPrompt": "Vous avez deja un compte ?",
+      "loginCta": "Connectez-vous",
+      "loading": "Verification de l'etat de connexion...",
+      "successTitle": "Succes",
+      "successDesc": "Compte pro cree. Redirection en cours...",
+      "errorTitle": "Erreur",
+      "errorDesc": "Echec de la creation du compte pro. Verifiez vos informations.",
+      "fullNamePlaceholder": "Ex: Prenom Nom",
+      "jobTitleLabel": "Poste occupe",
+      "jobTitlePlaceholder": "Ex: Gerant, Responsable Marketing",
+      "businessNameLabel": "Nom de l'entreprise",
+      "businessNamePlaceholder": "Ex: Societe SARL",
+      "businessEmailLabel": "Adresse e-mail professionnelle",
+      "businessEmailPlaceholder": "nom@votresociete.com",
+      "submit": "Creer mon compte professionnel",
+      "termsPrefix": "En cliquant sur",
+      "termsMiddle": "vous acceptez nos",
+      "termsLink": "Conditions d'utilisation",
+      "and": "et notre",
+      "privacyLink": "Politique de confidentialite"
+    },
+    "login": {
+      "title": "Connexion",
+      "signupPrompt": "Ou",
+      "signupCta": "creez un compte",
+      "continueWith": "Continuer avec",
+      "linkedinLoading": "Connexion LinkedIn...",
+      "continueWithLinkedin": "Continuer avec LinkedIn",
+      "orEmail": "Ou avec votre e-mail",
+      "emailLabel": "Adresse e-mail",
+      "emailPlaceholder": "nom@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "forgotPassword": "Mot de passe oublie ?",
+      "submitting": "Connexion en cours...",
+      "submit": "Se connecter",
+      "successTitle": "Succes",
+      "successDesc": "Connexion reussie. Redirection en cours...",
+      "errorTitle": "Erreur",
+      "errorDesc": "Echec de la connexion. Veuillez verifier vos identifiants.",
+      "linkedinError": "Impossible de demarrer la connexion LinkedIn."
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublie",
+      "subtitleIdle": "Entrez votre e-mail pour recevoir un lien de reinitialisation",
+      "subtitleSent": "Verifiez votre boite de reception",
+      "sending": "Envoi en cours...",
+      "submit": "Envoyer le lien de reinitialisation",
+      "sentTitle": "E-mail envoye",
+      "sentToastDefault": "Les instructions de reinitialisation ont ete envoyees par e-mail.",
+      "errorTitle": "Erreur",
+      "errorDesc": "Impossible d'envoyer l'e-mail de reinitialisation. Veuillez reessayer.",
+      "tipTitle": "Conseil :",
+      "tipBody": "Si vous ne voyez pas l'e-mail, verifiez votre dossier spam.",
+      "expiryHint": "Le lien expirera dans 1 heure.",
+      "tryAnother": "Essayer avec une autre adresse",
+      "backToLogin": "Retour a la connexion"
+    },
+    "resetPassword": {
+      "updating": "Mise a jour...",
+      "submit": "Mettre a jour le mot de passe",
+      "errorTitle": "Erreur",
+      "errorDesc": "Impossible de mettre a jour le mot de passe. Veuillez reessayer.",
+      "titleExpired": "Lien expire",
+      "expiredSubtitle": "Le lien de reinitialisation n'est plus valide",
+      "expiredHint": "Les liens expirent apres 1 heure. Veuillez demander un nouveau lien.",
+      "requestNewLink": "Demander un nouveau lien",
+      "titleUpdated": "Mot de passe mis a jour",
+      "titleNew": "Nouveau mot de passe",
+      "subtitleUpdated": "Vous allez etre redirige vers la connexion",
+      "subtitleNew": "Choisissez un nouveau mot de passe securise",
+      "updatedSuccess": "Mot de passe mis a jour avec succes.",
+      "redirecting": "Redirection vers la page de connexion...",
+      "goLogin": "Aller a la connexion",
+      "newPasswordLabel": "Nouveau mot de passe",
+      "confirmPasswordLabel": "Confirmer le mot de passe",
+      "passwordMin": "Minimum 6 caracteres"
+    }
+  },
+  "profileSettingsPage": {
+    "title": "Parametres du compte",
+    "subtitle": "Mettez a jour vos informations personnelles et revenez rapidement a vos actions principales.",
+    "savedTitle": "Modifications enregistrees",
+    "savedDesc": "Votre profil a ete mis a jour.",
+    "errorTitle": "Erreur",
+    "errorDesc": "Impossible de mettre a jour votre profil.",
+    "recommended": "Action recommandee",
+    "recommendedDesc": "Mettez a jour vos coordonnees puis retournez a votre profil.",
+    "viewProfile": "Voir mon profil",
+    "goDashboard": "Aller au dashboard",
+    "personalTitle": "Informations personnelles",
+    "personalDesc": "Ces informations sont utilisees pour votre compte et vos notifications.",
+    "reset": "Reinitialiser",
+    "save": "Enregistrer les modifications",
+    "quickNav": "Navigation rapide",
+    "quickNavDesc": "Accedez rapidement aux espaces les plus utilises.",
+    "profile": "Mon profil",
+    "favorites": "Mes favoris",
+    "businessDashboard": "Dashboard entreprise",
+    "footerPrefix": "Pour gerer votre entreprise, rendez-vous sur le",
+    "footerLink": "tableau de bord"
+  },
+  "supportPage": {
+    "title": "Support client",
+    "subtitle": "Contactez notre equipe support pour toute question ou probleme.",
+    "errorTitle": "Erreur",
+    "successTitle": "Succes",
+    "loadTicketsError": "Impossible de charger vos tickets de support.",
+    "requiredFields": "Veuillez remplir tous les champs obligatoires.",
+    "loginRequiredTitle": "Connexion requise",
+    "loginRequiredDesc": "Vous devez etre connecte pour envoyer un ticket de support.",
+    "ticketCreated": "Ticket de support cree avec succes.",
+    "createTicketError": "Impossible de creer le ticket de support.",
+    "newTicketTab": "Nouveau ticket",
+    "myTicketsTab": "Mes tickets",
+    "newTicketTitle": "Nouveau ticket de support",
+    "newTicketDesc": "Remplissez le formulaire ci-dessous pour soumettre un nouveau ticket de support.",
+    "subject": "Sujet",
+    "subjectPlaceholder": "Decrivez brievement votre probleme",
+    "category": "Categorie",
+    "message": "Message",
+    "messagePlaceholder": "Decrivez votre probleme en detail...",
+    "sending": "Envoi en cours...",
+    "sendTicket": "Envoyer le ticket",
+    "myTicketsTitle": "Vos tickets de support",
+    "emptyTitle": "Aucun ticket de support",
+    "emptyDesc": "Vous n'avez aucun ticket de support actif.",
+    "createNew": "Creer un nouveau ticket",
+    "supportReply": "Reponse du support :",
+    "categoryLabel": "Categorie",
+    "channels": {
+      "email": "Email",
+      "phone": "Telephone",
+      "chat": "Chat",
+      "live": "En direct",
+      "faq": "FAQ",
+      "faqDesc": "Questions frequentes"
+    },
+    "status": {
+      "pending": "En attente",
+      "inProgress": "En cours",
+      "resolved": "Resolu",
+      "closed": "Ferme"
+    },
+    "categories": {
+      "account": "Compte et connexion",
+      "billing": "Facturation et abonnement",
+      "business": "Gestion de l'etablissement",
+      "reviews": "Avis et commentaires",
+      "technical": "Probleme technique",
+      "other": "Autre question"
+    }
+  },
+  "forProsPage": {
+    "hero": {
+      "badge": "Espace professionnel",
+      "titlePrefix": "Propulsez votre {siteName}",
+      "titleHighlight": "entreprise",
+      "subtitle": "Prenez le controle de votre reputation en ligne, engagez vos employes et ameliorez votre attractivite.",
+      "ctaStart": "Commencer gratuitement",
+      "ctaPremium": "Decouvrir Premium"
+    },
+    "stats": {
+      "1": "Entreprises inscrites",
+      "2": "Avis authentiques",
+      "3": "Vues mensuelles",
+      "4": "Villes couvertes"
+    },
+    "pricing": {
+      "titlePrefix": "Choisissez votre",
+      "titleHighlight": "plan",
+      "subtitle": "De la croissance a l excellence, trouvez le plan ideal pour votre entreprise.",
+      "perYear": "/ an",
+      "perMonth": "ou {amount} MAD/mois",
+      "basic": {
+        "badge": "GRATUIT",
+        "name": "Basic",
+        "desc": "Indispensable pour demarrer votre transition numerique.",
+        "cta": "Demarrer Basic"
+      },
+      "growth": {
+        "badge": "POPULAIRE",
+        "name": "Business Growth",
+        "desc": "Parfait pour booster votre visibilite.",
+        "cta": "Choisir Growth"
+      },
+      "gold": {
+        "badge": "RECOMMANDE",
+        "name": "Business Gold",
+        "desc": "Pack complet : benchmark salarial, reporting et acquisition.",
+        "cta": "Choisir Gold"
+      }
+    },
+    "features": {
+      "basic": {
+        "1": "Revendiquer votre entreprise",
+        "2": "Mettre a jour vos informations",
+        "3": "Repondre aux avis employes",
+        "4": "Statistiques de base (vues)",
+        "5": "Recevoir des messages (limite)"
+      },
+      "growth": {
+        "1": "Badge de confiance GOLD",
+        "2": "Visibilite prioritaire",
+        "3": "Reponses aux avis en illimite",
+        "4": "Statistiques detaillees",
+        "5": "Suppression des pubs concurrentes"
+      },
+      "gold": {
+        "1": "Tout ce qu inclut Growth",
+        "2": "Communication directe avec les candidats",
+        "3": "Contenu epingle pour vos offres",
+        "4": "Support prioritaire",
+        "5": "Benchmark salaires (Gold uniquement)",
+        "6": "Barometre mensuel des salaires",
+        "7": "Analytics avances",
+        "8": "Lead generation premium"
+      }
+    },
+    "premium": {
+      "badge": "AVANTAGES PREMIUM",
+      "title": "Fonctionnalites premium exclusives",
+      "subtitle": "Des outils puissants pour transformer votre presence en ligne et attirer les meilleurs talents."
+    },
+    "multi": {
+      "badge": "MULTI-ENTREPRISES",
+      "title": "Gerez plusieurs entreprises",
+      "subtitle": "Parfait pour les groupes et les proprietaires de plusieurs entreprises.",
+      "basic": {
+        "title": "Plan Basic",
+        "count": "1 entreprise",
+        "f1": "Gestion complete d une entreprise",
+        "f2": "Tableau de bord personnalise",
+        "f3": "Analytics de base",
+        "price": "Gratuit",
+        "priceDesc": "Inclus avec votre compte"
+      },
+      "premium": {
+        "title": "Plan Premium",
+        "count": "Jusqu a 5 entreprises",
+        "f1": "Multi-gestion d entreprises",
+        "f2": "Tableau de bord unifie",
+        "f3": "Analytics comparatifs",
+        "f4": "Changement rapide d entreprise",
+        "priceDesc": "Pour toutes vos entreprises"
+      },
+      "card": {
+        "title": "Ideal pour les groupes",
+        "desc": "Gerez plusieurs entreprises depuis un seul tableau de bord unifie. Basculez instantanement et suivez la performance globale.",
+        "kpi1": "Entreprises",
+        "kpi2": "Unifie",
+        "kpi3": "Prioritaire"
+      }
+    },
+    "how": {
+      "title": "Comment rejoindre Pro ?",
+      "subtitle": "Simple et rapide pour activer vos fonctionnalites premium.",
+      "step1": {
+        "title": "Effectuez le paiement",
+        "desc": "Transferez le montant convenu via compte bancaire ou partenaires de paiement securises."
+      },
+      "step2": {
+        "title": "Envoyez la preuve",
+        "desc": "Soumettez votre reference de transaction depuis le dashboard ou contactez le support dedie."
+      },
+      "step3": {
+        "title": "Activez premium",
+        "desc": "Une fois verifie, votre badge Pro et vos fonctionnalites premium sont actives immediatement."
+      }
+    },
+    "cta": {
+      "title": "Pret a dominer votre marche local ?",
+      "start": "Demarrer mon compte Pro",
+      "subscribe": "S abonner a Premium",
+      "subtitle": "Rejoignez les entreprises qui transforment leur attractivite en succes."
+    }
+  },
+  "dashboardMessagesPage": {
+    "title": "Messages pour {name}",
+    "yourBusiness": "votre entreprise",
+    "subtitlePremium": "Gerez vos conversations en temps reel.",
+    "subtitleLocked": "La messagerie Premium permet de communiquer directement avec les candidats.",
+    "businessSender": "Etablissement",
+    "replySent": "Reponse envoyee",
+    "errorTitle": "Erreur",
+    "replyError": "Impossible d envoyer la reponse.",
+    "lockedTitle": "Messagerie Premium",
+    "lockedDesc": "La messagerie directe est reservee aux membres Premium pour echanger avec les candidats et talents.",
+    "lockedCta": "Passer a Premium",
+    "nextUnread": "Aller au prochain non lu",
+    "currentTarget": "Cible actuelle",
+    "candidate": "Candidat",
+    "candidateLower": "ce candidat",
+    "loadingConversations": "Chargement des conversations...",
+    "emptyTitle": "Aucun message",
+    "emptyDesc": "Encouragez les candidats a vous contacter via votre page publique.",
+    "replyPlaceholder": "Repondre a {name}...",
+    "noTargetPlaceholder": "Aucun candidat a qui repondre",
+    "targetedReply": "Reponse ciblee sur",
+    "stats": {
+      "total": "Total: {count}",
+      "inbound": "Entrants: {count}",
+      "unread": "Non lus: {count}",
+      "sent": "Reponses envoyees: {count}"
+    }
+  },
+  "dashboardReviewsPage": {
+    "errorTitle": "Erreur",
+    "replyError": "Impossible d'envoyer la reponse.",
+    "replySentTitle": "Reponse envoyee",
+    "replySentDesc": "Votre reponse est maintenant visible sur votre page.",
+    "accessDenied": "Acces refuse",
+    "unknownError": "Erreur inconnue",
+    "claimBusiness": "Revendiquer une entreprise",
+    "pageTitle": "Gestion des avis",
+    "pageSubtitle": "Consultez et repondez aux avis pour {name}.",
+    "totalReviews": "Total avis",
+    "pendingReviews": "Avis en attente",
+    "responseRate": "Taux de reponse",
+    "priorityHint": "Priorite: traiter les avis sans reponse pour renforcer la confiance.",
+    "viewPending": "Voir les avis en attente",
+    "reviewsCount": "Avis ({count})",
+    "emptyTitle": "Aucun avis pour le moment",
+    "emptyDesc": "Les avis de vos clients apparaitront ici.",
+    "noFilterResult": "Aucun resultat pour ce filtre",
+    "noFilterResultDesc": "Changez le filtre pour afficher d'autres avis.",
+    "backAll": "Revenir a tous les avis",
+    "untitled": "Avis sans titre",
+    "noComment": "Pas de commentaire.",
+    "yourReply": "Votre reponse",
+    "replyPlaceholder": "Remerciez l'auteur pour son avis...",
+    "publish": "Publier",
+    "reply": "Repondre",
+    "filter": {
+      "all": "Tous",
+      "pending": "En attente",
+      "replied": "Repondus"
+    },
+    "sort": {
+      "newest": "Plus recents",
+      "oldest": "Plus anciens",
+      "rating": "Meilleure note",
+      "helpful": "Plus utiles"
+    }
+  },
+  "dashboardSupportPage": {
+    "pageTitle": "Centre d assistance",
+    "pageSubtitle": "Besoin d'aide ? Ouvrez un ticket support et notre equipe vous repondra rapidement.",
+    "newCount": "{count} nouveau(x)",
+    "errorTitle": "Erreur",
+    "loadError": "Impossible de charger vos tickets.",
+    "requiredTitle": "Champs requis",
+    "requiredDesc": "Veuillez remplir tous les champs obligatoires.",
+    "ticketCreated": "Ticket cree",
+    "ticketCreatedDesc": "Votre demande de support a bien ete envoyee.",
+    "submitError": "Impossible d'envoyer votre demande.",
+    "channelEmail": "Email",
+    "channelPhone": "Telephone",
+    "backToList": "Retour a la liste",
+    "createdOn": "Cree le",
+    "initialDescription": "Description initiale",
+    "linkedBusiness": "Etablissement lie",
+    "conversationTitle": "Conversation avec le support",
+    "newTicket": "Nouveau ticket",
+    "newTicketDesc": "Nous sommes la pour vous aider.",
+    "category": "Categorie",
+    "select": "Selectionner",
+    "linkedBusinessOptional": "Etablissement lie (optionnel)",
+    "chooseBusiness": "Choisir un etablissement",
+    "noneGeneral": "Aucun (Compte general)",
+    "subject": "Sujet",
+    "subjectPlaceholder": "De quoi s'agit-il ?",
+    "message": "Message",
+    "messagePlaceholder": "Detaillez votre demande...",
+    "sending": "Envoi...",
+    "openTicket": "Ouvrir le ticket",
+    "myTickets": "Mes tickets",
+    "noTicket": "Aucun ticket",
+    "faqTitle": "Questions frequentes",
+    "faqDesc": "Consultez nos reponses aux questions courantes",
+    "status": {
+      "pending": "En attente",
+      "inProgress": "En cours",
+      "resolved": "Resolu",
+      "closed": "Ferme"
+    },
+    "categories": {
+      "account": "Compte et connexion",
+      "billing": "Facturation et abonnement",
+      "business": "Gestion de l'etablissement",
+      "reviews": "Avis et commentaires",
+      "technical": "Probleme technique",
+      "other": "Autre question"
+    },
+    "faq": {
+      "q1": "Comment modifier les horaires de mon etablissement ?",
+      "a1": "Allez dans Etablissement depuis votre dashboard, puis onglet Services. Vous pourrez modifier les horaires d'ouverture.",
+      "q2": "Comment repondre aux avis sur mon etablissement ?",
+      "a2": "Rendez-vous dans Mes Avis, ouvrez un avis puis cliquez sur Repondre pour publier votre reponse publique.",
+      "q3": "Quelle difference entre Growth et PRO ?",
+      "a3": "Growth permet de gerer un seul etablissement avec les fonctions essentielles. PRO permet de gerer jusqu a 5 etablissements avec des fonctions avancees."
+    }
+  },
+  "dashboardPage": {
+    "errors": {
+      "profileLoad": "Impossible de charger le profil.",
+      "noBusiness": "Aucune entreprise associee trouvee.",
+      "businessLoad": "Erreur lors du chargement des donnees entreprise.",
+      "businessMissing": "Donnees entreprise introuvables (ID invalide ou supprime).",
+      "technical": "Erreur technique lors du chargement du dashboard."
+    },
+    "fields": {
+      "description": "description",
+      "website": "site web",
+      "phone": "telephone",
+      "address": "adresse",
+      "logo": "logo",
+      "cover": "couverture",
+      "city": "ville",
+      "category": "categorie"
+    },
+    "alerts": {
+      "volatility": "Volatilite elevee ({score}) sur les derniers avis.",
+      "salary": "Position salariale sous le marche: risque d attrition a surveiller.",
+      "replySla": "{count} avis sans reponse: risque reputationnel."
+    }
+  },
+  "profilePage": {
+    "toasts": {
+      "profileUpdated": "Profil mis a jour",
+      "errorTitle": "Erreur",
+      "exportSuccessTitle": "Export reussi",
+      "exportSuccessDesc": "Vos donnees ont ete telechargees.",
+      "deletionRequested": "Demande enregistree",
+      "appealSubmitted": "Appel soumis"
+    },
+    "confirmDelete": "Etes-vous sur de vouloir demander la suppression de votre compte ? Cette action sera effective dans 30 jours.",
+    "authRequired": {
+      "title": "Connexion requise",
+      "description": "Rejoignez la communaute pour gerer votre profil, vos avis et vos favoris.",
+      "cta": "Se connecter"
+    },
+    "fallbackUserName": "Utilisateur",
+    "levels": {
+      "expert": "Expert",
+      "confirmed": "Confirme",
+      "beginner": "Debutant"
+    },
+    "stats": {
+      "reviewsWritten": "Avis ecrits",
+      "helpfulVotes": "Votes utiles",
+      "level": "Niveau"
+    },
+    "memberSince": "Depuis {date}",
+    "businessConsole": "Ma Console Pro",
+    "recommended": {
+      "title": "Prochaine action recommandee",
+      "subtitle": "Partagez un nouvel avis pour augmenter votre impact",
+      "writeReview": "Ecrire un avis",
+      "viewFavorites": "Voir mes favoris"
+    },
+    "tabs": {
+      "reviews": "Mes Avis",
+      "saved": "Favoris",
+      "referrals": "Parrainage",
+      "account": "Compte"
+    },
+    "reviews": {
+      "title": "Mes Avis ({count})",
+      "loadedCount": "Affichage de {count} avis charges.",
+      "sortBy": "Trier par:",
+      "sortNewest": "Plus recents",
+      "sortOldest": "Plus anciens",
+      "sortHelpful": "Plus utiles",
+      "sortRating": "Meilleure note",
+      "emptyTitle": "Zero avis pour l instant",
+      "emptyDescription": "Partagez votre experience et aidez les autres a trouver les meilleures adresses du Maroc !",
+      "emptyCta": "Lancer ma premiere recherche",
+      "untitled": "Avis sur entreprise",
+      "businessLabel": "Etablissement:",
+      "proReply": "Reponse Pro",
+      "replyDate": "le {date}",
+      "edit": "Modifier",
+      "appeal": "Faire appel",
+      "loadingMore": "Chargement...",
+      "loadMore": "Charger plus d avis",
+      "appealPrompt": "Expliquez votre appel (minimum 10 caracteres):",
+      "appealTooShort": "Le message est trop court."
+    },
+    "saved": {
+      "count": "Affichage de {visible} favoris sur {total}.",
+      "viewAll": "Voir tous mes favoris",
+      "emptyTitle": "Vos favoris sont vides",
+      "emptyDescription": "Gardez une trace des lieux que vous adorez ou que vous projetez de visiter au Maroc.",
+      "emptyCta": "Explorer les adresses",
+      "loadMore": "Charger plus de favoris"
+    },
+    "referrals": {
+      "title": "Mon parrainage",
+      "description": "Gerez vos offres publiees et suivez vos demandes de parrainage.",
+      "offers": "Offres publiees",
+      "requests": "Demandes envoyees",
+      "myOffers": "Mes offres de parrainage",
+      "myRequests": "Mes demandes de parrainage",
+      "publishNew": "Publier une nouvelle offre"
+    },
+    "account": {
+      "personalTitle": "Informations personnelles",
+      "personalDescription": "Gerez vos informations de compte et l affichage de votre profil public.",
+      "displayName": "Nom d affichage",
+      "displayNamePlaceholder": "Votre nom complet",
+      "emailLabel": "Adresse e-mail",
+      "reset": "Reinitialiser",
+      "saving": "Enregistrement...",
+      "saveChanges": "Sauvegarder les changements",
+      "preferencesTitle": "Preferences de communication",
+      "preferencesDescription": "Choisissez les emails que vous souhaitez recevoir.",
+      "prefMarketingTitle": "Actualites et offres",
+      "prefMarketingDescription": "Recevez nos dernieres nouveautes et offres speciales.",
+      "prefRepliesTitle": "Reponses aux avis",
+      "prefRepliesDescription": "Soyez notifie quand une entreprise repond a votre avis.",
+      "prefSystemTitle": "Notifications systeme",
+      "prefSystemDescription": "Alertes sur la securite et le fonctionnement de votre compte.",
+      "prefClaimsTitle": "Mises a jour des revendications",
+      "prefClaimsDescription": "Suivez l etat de vos demandes de gestion d entreprises.",
+      "exportTitle": "Export des donnees",
+      "exportDescription": "Telechargez une copie de vos donnees personnelles",
+      "exportHint": "Vous recevrez un fichier JSON contenant votre profil, vos avis et vos entreprises favorites.",
+      "exportAction": "Exporter mes donnees",
+      "deletionScheduledTitle": "Suppression planifiee",
+      "dangerTitle": "Zone de danger",
+      "deletionScheduledDescription": "Votre compte sera supprime le {date}",
+      "deletionPermanentDescription": "Suppression definitive du compte",
+      "deletionScheduledHint": "Votre compte est actuellement en attente de suppression. Vous pouvez annuler cette demande en contactant le support ou en changeant vos parametres (bientot disponible).",
+      "cancelDeletion": "Annuler la suppression",
+      "deleteWarning": "Cette action supprimera tous vos avis, favoris et donnees personnelles. Un delai de 30 jours est applique avant la suppression effective.",
+      "deleteAction": "Supprimer mon compte",
+      "emailPlaceholder": "votre@email.com"
+    }
+  },
+  "dashboardWidgetPage": {
+    "titleGeneric": "Widget pour votre site web",
+    "titleWithBusiness": "Widget pour {name}",
+    "defaultSiteName": "votre site web",
+    "subtitle": "Affichez votre note et vos avis directement sur votre site pour renforcer la confiance.",
+    "errors": {
+      "businessNotFound": "Etablissement introuvable."
+    },
+    "toasts": {
+      "copySuccessTitle": "Succes",
+      "copySuccessDesc": "Code copie dans le presse-papiers !",
+      "errorTitle": "Erreur",
+      "copyErrorDesc": "Impossible de copier le code."
+    },
+    "customization": {
+      "title": "Personnalisation avancee",
+      "description": "Configurez l apparence de votre widget selon vos preferences.",
+      "sizeLabel": "Taille du widget",
+      "sizeSmall": "Petit",
+      "sizeMedium": "Moyen",
+      "sizeLarge": "Grand",
+      "themeLabel": "Theme",
+      "themeLight": "Clair",
+      "themeDark": "Sombre",
+      "displayOptions": "Options d affichage",
+      "showName": "Afficher le nom de l etablissement",
+      "showCategory": "Afficher la categorie",
+      "showLocation": "Afficher la localisation",
+      "showRating": "Afficher la notation",
+      "extraOptions": "Options supplementaires",
+      "showReviewsCount": "Afficher le nombre d avis",
+      "showHours": "Afficher les horaires",
+      "showCta": "Afficher le bouton \"Voir les avis\""
+    },
+    "embed": {
+      "title": "Copier le code",
+      "description": "Copiez et collez ce code HTML la ou vous souhaitez que le widget apparaisse sur votre site.",
+      "codeLabel": "Code d integration",
+      "copyButtonTitle": "Copier le code",
+      "copiedInline": "Code copie avec succes !",
+      "footerHint": "Le widget est entierement responsive et s adapte a la largeur de son conteneur. La hauteur est fixe."
+    },
+    "preview": {
+      "title": "Apercu du widget"
+    }
+  },
+  "blogPage": {
+    "metaTitle": "Blog | Reviewly MA",
+    "metaDescription": "Guides editoriaux et playbooks d execution referral.",
+    "badge": "Hub editorial",
+    "title": "Blog et playbooks",
+    "subtitle": "Guides et playbooks qui relient les signaux de demande de parrainage, l intelligence salariale, le ciblage entreprises et les rapports mensuels.",
+    "empty": "Aucun article n est publie pour le moment.",
+    "pillarBadge": "Guide pilier",
+    "published": "Publie: {date}",
+    "readTime": "Lecture: {minutes} min",
+    "readPillarCta": "Lire le guide pilier",
+    "guidesTitle": "Guides pratiques",
+    "guideMeta": "{date} | {minutes} min",
+    "readGuideCta": "Lire le guide",
+    "reportsCta": "Voir les rapports",
+    "topRolesCta": "Top roles demandes",
+    "topCitiesCta": "Top villes demandees",
+    "referralDashboardCta": "Voir le dashboard referral demand",
+    "cards": {
+      "howToTitle": "Guides pratiques",
+      "howToDesc": "Tactiques de demande de parrainage et templates actionnables.",
+      "dataTitle": "Insights data",
+      "dataDesc": "Analyses interpretees a partir des signaux de demande et de salaires.",
+      "reportsTitle": "Liaison rapports",
+      "reportsDesc": "Connexions directes avec les rapports mensuels pour renforcer l autorite topique."
+    }
+  },
+  "referralMyRequestsPage": {
+    "title": "Mes demandes de parrainage",
+    "subtitle": "Suivez le statut de vos demandes et retirez-les si necessaire.",
+    "kpis": {
+      "total": "Total",
+      "pending": "En attente",
+      "activeReferrals": "Parrainages actifs",
+      "hires": "Embauches"
+    },
+    "empty": "Aucune demande pour le moment.",
+    "fallback": {
+      "offer": "Offre",
+      "company": "Entreprise"
+    },
+    "status": {
+      "pending": "Envoyee",
+      "inReview": "En revue",
+      "referred": "Parraine",
+      "interview": "Entretien",
+      "hired": "Embauche",
+      "rejected": "Refusee",
+      "withdrawn": "Retiree"
+    },
+    "submittedOn": "Envoyee le {date}",
+    "responseEta": "Reponse attendue sous 72h",
+    "actions": {
+      "viewOffer": "Voir l offre",
+      "viewCv": "Voir mon CV",
+      "withdraw": "Retirer ma demande",
+      "blockRecruiter": "Bloquer le recruteur"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "empty": "Aucun message pour le moment.",
+      "you": "Vous",
+      "recruiter": "Recruteur",
+      "placeholder": "Envoyer un message au recruteur...",
+      "send": "Envoyer"
+    }
+  },
+  "referralMyPublicDemandsPage": {
+    "title": "Mes demandes publiques",
+    "subtitle": "Gerez vos annonces de demande sur le demand board.",
+    "empty": "Aucune demande publique publiee pour le moment.",
+    "publishedOn": "Publiee le {date}",
+    "expiresOn": "Expire le {date}",
+    "status": {
+      "active": "Active",
+      "paused": "En pause",
+      "closed": "Fermee"
+    },
+    "actions": {
+      "viewBoard": "Voir le board",
+      "publish": "Publier une demande",
+      "viewPublicPage": "Voir la page publique",
+      "edit": "Editer",
+      "delete": "Supprimer"
+    }
+  },
+  "referralPublicDemandEditPage": {
+    "title": "Modifier ma demande publique",
+    "subtitle": "Mettez a jour votre demande tout en gardant un contenu conforme.",
+    "toasts": {
+      "success": "Succes",
+      "error": "Erreur"
+    },
+    "form": {
+      "title": "Titre",
+      "targetRole": "Poste vise",
+      "cityOptional": "Ville (optionnel)",
+      "contract": "Contrat",
+      "notSpecified": "Non specifie",
+      "internship": "Stage",
+      "apprenticeship": "Alternance",
+      "other": "Autre",
+      "workMode": "Mode",
+      "onsite": "Presentiel",
+      "hybrid": "Hybride",
+      "seniority": "Niveau",
+      "confirmed": "Confirme",
+      "publicSummary": "Resume public",
+      "extraDetailsOptional": "Details supplementaires (optionnel)",
+      "expirationOptional": "Expiration (optionnel)"
+    },
+    "actions": {
+      "save": "Enregistrer",
+      "cancel": "Annuler"
+    }
+  },
+  "referralMyOffersPage": {
+    "title": "Mes offres de parrainage",
+    "subtitle": "Gerez vos offres et les demandes recues.",
+    "errors": {
+      "requestsLoad": "Impossible de charger les demandes recues pour le moment."
+    },
+    "kpis": {
+      "receivedRequests": "Demandes recues",
+      "responseRate": "Taux de reponse",
+      "hiredCandidates": "Candidats embauches"
+    },
+    "emptyOffers": "Aucune offre publiee pour le moment.",
+    "emptyOfferRequests": "Aucune demande recue pour cette offre.",
+    "offerStatus": {
+      "active": "Active",
+      "paused": "En pause",
+      "closed": "Fermee"
+    },
+    "requestStatus": {
+      "pending": "Recue",
+      "inReview": "En revue",
+      "referred": "Parraine",
+      "interview": "Entretien",
+      "hired": "Embauche",
+      "rejected": "Refusee",
+      "withdrawn": "Retiree"
+    },
+    "offerMeta": {
+      "publishedOn": "Publiee le {date}",
+      "requestsCount": "- {count} demande(s)"
+    },
+    "candidateLabel": "Candidat {id}",
+    "slaTarget": "SLA reponse cible: {date}",
+    "noCvLinkedin": "Aucun CV ni lien LinkedIn fourni par le candidat.",
+    "actions": {
+      "publishOffer": "Publier une offre",
+      "viewOfferPage": "Voir la page offre",
+      "downloadCv": "Telecharger CV",
+      "block": "Bloquer"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "empty": "Aucun message pour le moment.",
+      "you": "Vous",
+      "candidate": "Candidat",
+      "placeholder": "Envoyer un message au candidat...",
+      "send": "Envoyer"
+    }
+  },
+  "referralDemandBoardPage": {
+    "metaTitle": "Demandes de parrainage | Reviewly MA",
+    "metaDescription": "Consultez les demandes publiques de candidats a la recherche d un parrainage.",
+    "badge": "Demand board",
+    "title": "Demandes de parrainage",
+    "subtitle": "Les candidats publient leurs besoins. Les employes peuvent identifier des profils a recommander.",
+    "actions": {
+      "myPrivateRequests": "Mes demandes privees",
+      "myPublicRequests": "Mes demandes publiques",
+      "publish": "Publier une demande",
+      "viewRequest": "Voir la demande"
+    },
+    "filters": {
+      "searchPlaceholder": "Poste, mots-cles...",
+      "cityPlaceholder": "Ville",
+      "submit": "Filtrer",
+      "resultsCount": "{count} resultat(s)"
+    },
+    "empty": "Aucune demande publique pour le moment."
+  },
+  "referralDemandCreatePage": {
+    "metaTitle": "Publier une demande de parrainage | Reviewly MA",
+    "metaDescription": "Publiez votre demande de parrainage et soyez contacte par des employes qui peuvent vous recommander.",
+    "title": "Publier une demande",
+    "subtitle": "Cette annonce est publique. N incluez pas d email ou de numero de telephone direct dans le texte.",
+    "toasts": {
+      "success": "Succes",
+      "error": "Erreur"
+    },
+    "form": {
+      "title": "Titre",
+      "titlePlaceholder": "Ex: Recherche parrainage Data Analyst a Casablanca",
+      "targetRole": "Poste vise",
+      "targetRolePlaceholder": "Data Analyst",
+      "cityOptional": "Ville (optionnel)",
+      "cityPlaceholder": "Casablanca",
+      "contract": "Contrat",
+      "notSpecified": "Non specifie",
+      "internship": "Stage",
+      "apprenticeship": "Alternance",
+      "other": "Autre",
+      "workMode": "Mode",
+      "onsite": "Presentiel",
+      "hybrid": "Hybride",
+      "seniority": "Niveau",
+      "confirmed": "Confirme",
+      "publicSummary": "Resume public",
+      "publicSummaryPlaceholder": "Decrivez votre profil, vos points forts et le type d entreprise vise.",
+      "extraDetailsOptional": "Details supplementaires (optionnel)",
+      "extraDetailsPlaceholder": "Disponibilite, stack, certifications, contexte...",
+      "expirationOptional": "Expiration (optionnel)"
+    },
+    "actions": {
+      "publish": "Publier ma demande"
+    }
+  },
+  "referralCityPage": {
+    "metaTitle": "Parrainages a {city} | Reviewly MA",
+    "metaDescription": "Offres de parrainage internes actives a {city} sur Reviewly MA.",
+    "title": "Parrainages a {city}",
+    "activeCount": "{count} offre(s) active(s)",
+    "empty": "Aucune offre active pour cette ville.",
+    "slots": "Places: {count}",
+    "publishedOn": "Publiee le {date}",
+    "viewOffer": "Voir l offre"
+  },
+  "referralRolePage": {
+    "metaTitle": "Parrainages poste | {role} | Reviewly MA",
+    "metaDescription": "Offres de parrainage actives pour le poste {role} sur Reviewly MA.",
+    "title": "Parrainages pour {role}",
+    "activeCount": "{count} offre(s) active(s)",
+    "empty": "Aucune offre active pour ce poste.",
+    "cityUnknown": "Ville non precisee",
+    "slots": "Places: {count}",
+    "viewOffer": "Voir l offre"
+  },
+  "referralCompanyPage": {
+    "metaTitle": "Parrainages entreprise | {company} | Reviewly MA",
+    "metaDescription": "Offres de parrainage actives pour l entreprise {company} sur Reviewly MA.",
+    "title": "Parrainages chez {company}",
+    "activeCount": "{count} offre(s) active(s)",
+    "empty": "Aucune offre active pour cette entreprise.",
+    "cityUnknown": "Ville non precisee",
+    "slots": "Places: {count}",
+    "viewOffer": "Voir l offre"
   }
 }

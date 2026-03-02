@@ -4,13 +4,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signupSchema, type SignupFormData, type AuthFormState } from '@/lib/types';
 import { signup } from '@/app/actions/auth';
 import { useActionState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useTransition, useState } from 'react';
 import { getSiteSettings } from '@/lib/data';
@@ -19,13 +17,13 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createClient } from '@/lib/supabase/client';
 import { getClientOAuthRedirectUrl } from '@/lib/site-config';
-
+import { useI18n } from '@/components/providers/i18n-provider';
 
 export default function SignupPage() {
   const initialState: AuthFormState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(signup, initialState);
   const { toast } = useToast();
-  const router = useRouter();
+  const { t } = useI18n();
   const [isPending, startTransition] = useTransition();
   const [oauthPending, setOauthPending] = useState(false);
   const supabase = createClient();
@@ -52,13 +50,16 @@ export default function SignupPage() {
   useEffect(() => {
     if (state.status === 'success') {
       toast({
-        title: 'Succès',
-        description: state.message || 'Compte créé avec succès! Veuillez vérifier votre email.'
+        title: t('auth.signup.successTitle', 'Success'),
+        description: t('auth.signup.successDesc', 'Account created successfully. Please check your email.'),
       });
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
-    } else if (state.status === 'error') {
+      return;
+    }
+
+    if (state.status === 'error') {
       if (state.errors) {
         const errors = state.errors as Record<string, string[]>;
         Object.entries(errors).forEach(([key, messages]) => {
@@ -72,11 +73,11 @@ export default function SignupPage() {
       }
       toast({
         variant: 'destructive',
-        title: 'Erreur',
-        description: state.message || 'Une erreur est survenue lors de la création du compte.'
+        title: t('auth.signup.errorTitle', 'Error'),
+        description: t('auth.signup.errorDesc', 'An error occurred while creating your account.'),
       });
     }
-  }, [state, toast, router, form]);
+  }, [state, toast, form, t]);
 
   const onSubmit = (data: SignupFormData) => {
     const formData = new FormData();
@@ -101,8 +102,8 @@ export default function SignupPage() {
       setOauthPending(false);
       toast({
         variant: 'destructive',
-        title: 'Erreur',
-        description: error.message || 'Impossible de démarrer l’inscription LinkedIn.',
+        title: t('auth.signup.errorTitle', 'Error'),
+        description: error.message || t('auth.signup.linkedinError', 'Unable to start LinkedIn signup.'),
       });
     }
   };
@@ -117,17 +118,19 @@ export default function SignupPage() {
               <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-rose-50 flex items-center justify-center">
                 <AlertCircle className="h-10 w-10 text-rose-500" />
               </div>
-              <CardTitle className="text-3xl font-black text-slate-900 leading-tight">Inscriptions <span className="text-rose-500 italic">Suspendues</span></CardTitle>
+              <CardTitle className="text-3xl font-black text-slate-900 leading-tight">
+                {t('auth.signup.closedTitle1', 'Registrations')} <span className="text-rose-500 italic">{t('auth.signup.closedTitle2', 'Paused')}</span>
+              </CardTitle>
               <CardDescription className="text-lg font-medium pt-4">
-                Nous ne sommes pas en mesure d'accepter de nouveaux membres pour le moment.
+                {t('auth.signup.closedSubtitle', 'We are currently unable to accept new members.')}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-10 pt-4 text-center">
               <p className="text-slate-600 font-medium mb-8 leading-relaxed px-4">
-                Les inscriptions sont temporairement fermées par l'administration. Merci de votre patience et à très bientôt !
+                {t('auth.signup.closedBody', 'Registrations are temporarily closed by administration. Thank you for your patience.')}
               </p>
               <Button asChild variant="outline" size="lg" className="rounded-2xl border-2 px-10 font-bold hover:bg-slate-50 transition-all">
-                <Link href="/">Retour à l'accueil</Link>
+                <Link href="/">{t('auth.signup.backHome', 'Back to home')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -141,11 +144,11 @@ export default function SignupPage() {
       <div className="w-full max-w-md space-y-8">
         <Card className="bg-card/60 backdrop-blur-lg border-white/20 shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Créer un compte</CardTitle>
+            <CardTitle className="text-3xl font-bold">{t('auth.signup.title', 'Create an account')}</CardTitle>
             <CardDescription>
-              Vous avez déjà un compte?{' '}
+              {t('auth.signup.loginPrompt', 'Already have an account?')}{' '}
               <Link href="/login" className="font-medium text-primary hover:underline">
-                Connectez-vous
+                {t('auth.signup.loginCta', 'Log in')}
               </Link>
             </CardDescription>
           </CardHeader>
@@ -155,7 +158,7 @@ export default function SignupPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card/60 px-2 text-muted-foreground">Continuer avec</span>
+                <span className="bg-card/60 px-2 text-muted-foreground">{t('auth.signup.continueWith', 'Continue with')}</span>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4">
@@ -169,10 +172,10 @@ export default function SignupPage() {
                 {oauthPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Inscription LinkedIn...
+                    {t('auth.signup.linkedinLoading', 'LinkedIn signup...')}
                   </>
                 ) : (
-                  'Continuer avec LinkedIn'
+                  t('auth.signup.continueWithLinkedin', 'Continue with LinkedIn')
                 )}
               </Button>
             </div>
@@ -181,13 +184,13 @@ export default function SignupPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card/60 px-2 text-muted-foreground">Ou avec votre e-mail</span>
+                <span className="bg-card/60 px-2 text-muted-foreground">{t('auth.signup.orEmail', 'Or with your email')}</span>
               </div>
             </div>
             {state.status === 'error' && !state.errors && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{state.message}</AlertDescription>
+                <AlertDescription>{t('auth.signup.errorDesc', 'An error occurred while creating your account.')}</AlertDescription>
               </Alert>
             )}
             <Form {...form}>
@@ -197,13 +200,9 @@ export default function SignupPage() {
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom complet</FormLabel>
+                      <FormLabel>{t('auth.signup.fullNameLabel', 'Full name')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Ex: Jean Dupont"
-                          className="bg-input/80"
-                          {...field}
-                        />
+                        <Input placeholder={t('auth.signup.fullNamePlaceholder', 'Ex: John Doe')} className="bg-input/80" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,13 +213,9 @@ export default function SignupPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adresse e-mail</FormLabel>
+                      <FormLabel>{t('auth.login.emailLabel', 'Email address')}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="nom@exemple.com"
-                          className="bg-input/80"
-                          {...field}
-                        />
+                        <Input placeholder={t('auth.login.emailPlaceholder', 'name@example.com')} className="bg-input/80" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -231,13 +226,9 @@ export default function SignupPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mot de passe</FormLabel>
+                      <FormLabel>{t('auth.login.passwordLabel', 'Password')}</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          className="bg-input/80"
-                          {...field}
-                        />
+                        <Input type="password" className="bg-input/80" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -247,10 +238,10 @@ export default function SignupPage() {
                   {isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Création en cours...
+                      {t('auth.signup.submitting', 'Creating account...')}
                     </>
                   ) : (
-                    'Créer mon compte'
+                    t('auth.signup.submit', 'Create my account')
                   )}
                 </Button>
               </form>

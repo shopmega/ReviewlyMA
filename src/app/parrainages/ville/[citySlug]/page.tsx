@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getCityFromSlug } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { citySlug: string };
 
@@ -22,16 +23,19 @@ type ReferralOffer = {
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t, tf } = await getServerTranslator();
   const { citySlug } = await params;
   const city = getCityFromSlug(citySlug) || citySlug;
   return {
-    title: `Parrainages a ${city} | Reviewly MA`,
-    description: `Offres de parrainage internes actives a ${city} sur Reviewly MA.`,
+    title: tf('referralCityPage.metaTitle', 'Referrals in {city} | Reviewly MA', { city }),
+    description: tf('referralCityPage.metaDescription', 'Active internal referral offers in {city} on Reviewly MA.', { city }),
     alternates: { canonical: `/parrainages/ville/${citySlug}` },
   };
 }
 
 export default async function ReferralCityPage({ params }: { params: Promise<Params> }) {
+  const { t, tf, locale } = await getServerTranslator();
+  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
   const { citySlug } = await params;
   const city = getCityFromSlug(citySlug);
   if (!city) notFound();
@@ -50,8 +54,8 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold font-headline">Parrainages a {city}</h1>
-        <p className="text-sm text-muted-foreground">{offers.length} offre(s) active(s)</p>
+        <h1 className="text-3xl font-bold font-headline">{tf('referralCityPage.title', 'Referrals in {city}', { city })}</h1>
+        <p className="text-sm text-muted-foreground">{tf('referralCityPage.activeCount', '{count} active offer(s)', { count: offers.length })}</p>
       </div>
 
       <InternalAdsSlot placement="referrals_top_banner" />
@@ -59,7 +63,7 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
       {offers.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
-            Aucune offre active pour cette ville.
+            {t('referralCityPage.empty', 'No active offer for this city.')}
           </CardContent>
         </Card>
       ) : (
@@ -71,10 +75,14 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
                 <CardTitle className="text-xl">{offer.job_title}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p>Places: {offer.slots}</p>
-                <p>Publiee le {new Date(offer.created_at).toLocaleDateString('fr-MA')}</p>
+                <p>{tf('referralCityPage.slots', 'Slots: {count}', { count: offer.slots })}</p>
+                <p>
+                  {tf('referralCityPage.publishedOn', 'Published on {date}', {
+                    date: new Date(offer.created_at).toLocaleDateString(dateLocale),
+                  })}
+                </p>
                 <Button asChild variant="outline" className="w-full rounded-xl">
-                  <Link href={`/parrainages/${offer.id}`}>Voir l&apos;offre</Link>
+                  <Link href={`/parrainages/${offer.id}`}>{t('referralCityPage.viewOffer', 'View offer')}</Link>
                 </Button>
               </CardContent>
             </Card>

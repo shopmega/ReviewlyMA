@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock3, ArrowRight } from 'lucide-react';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type DemandListing = {
   id: string;
@@ -24,9 +25,13 @@ type SearchParams = { [key: string]: string | string[] | undefined };
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
   return {
-    title: 'Demandes de parrainage | Reviewly MA',
-    description: 'Consultez les demandes publiques de candidats a la recherche d un parrainage.',
+    title: t('referralDemandBoardPage.metaTitle', 'Referral requests | Reviewly MA'),
+    description: t(
+      'referralDemandBoardPage.metaDescription',
+      'Browse public requests from candidates looking for a referral.'
+    ),
     alternates: { canonical: '/parrainages/demandes' },
   };
 }
@@ -42,6 +47,8 @@ export default async function ReferralDemandBoardPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
+  const { t, tf, locale } = await getServerTranslator();
+  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
   const params = await searchParams;
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -70,25 +77,28 @@ export default async function ReferralDemandBoardPage({
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
-            <Badge variant="outline" className="w-fit">Demand board</Badge>
-            <h1 className="text-3xl md:text-4xl font-bold font-headline">Demandes de parrainage</h1>
+            <Badge variant="outline" className="w-fit">{t('referralDemandBoardPage.badge', 'Demand board')}</Badge>
+            <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('referralDemandBoardPage.title', 'Referral requests')}</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Les candidats publient leurs besoins. Les employes peuvent identifier des profils a recommander.
+              {t(
+                'referralDemandBoardPage.subtitle',
+                'Candidates publish their needs. Employees can identify profiles to refer.'
+              )}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {currentUserId ? (
               <>
                 <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-demandes">Mes demandes privees</Link>
+                  <Link href="/parrainages/mes-demandes">{t('referralDemandBoardPage.actions.myPrivateRequests', 'My private requests')}</Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-demandes-publiques">Mes demandes publiques</Link>
+                  <Link href="/parrainages/mes-demandes-publiques">{t('referralDemandBoardPage.actions.myPublicRequests', 'My public requests')}</Link>
                 </Button>
               </>
             ) : null}
             <Button asChild className="rounded-xl">
-              <Link href="/parrainages/demandes/new">Publier une demande</Link>
+              <Link href="/parrainages/demandes/new">{t('referralDemandBoardPage.actions.publish', 'Publish a request')}</Link>
             </Button>
           </div>
         </div>
@@ -103,26 +113,28 @@ export default async function ReferralDemandBoardPage({
               type="text"
               name="search"
               defaultValue={search}
-              placeholder="Poste, mots-cles..."
+              placeholder={t('referralDemandBoardPage.filters.searchPlaceholder', 'Role, keywords...')}
               className="h-10 rounded-md border bg-background px-3 text-sm md:col-span-2"
             />
             <input
               type="text"
               name="city"
               defaultValue={city}
-              placeholder="Ville"
+              placeholder={t('referralDemandBoardPage.filters.cityPlaceholder', 'City')}
               className="h-10 rounded-md border bg-background px-3 text-sm"
             />
-            <Button type="submit" className="rounded-md">Filtrer</Button>
+            <Button type="submit" className="rounded-md">{t('referralDemandBoardPage.filters.submit', 'Filter')}</Button>
           </form>
-          <p className="text-xs text-muted-foreground">{count ?? listings.length} resultat(s)</p>
+          <p className="text-xs text-muted-foreground">
+            {tf('referralDemandBoardPage.filters.resultsCount', '{count} result(s)', { count: count ?? listings.length })}
+          </p>
         </CardContent>
       </Card>
 
       {listings.length === 0 ? (
         <Card className="rounded-2xl">
           <CardContent className="py-10 text-center text-muted-foreground">
-            Aucune demande publique pour le moment.
+            {t('referralDemandBoardPage.empty', 'No public request at the moment.')}
           </CardContent>
         </Card>
       ) : (
@@ -134,7 +146,7 @@ export default async function ReferralDemandBoardPage({
                   <Badge variant="secondary">{item.target_role}</Badge>
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock3 className="h-3.5 w-3.5" />
-                    {new Date(item.created_at).toLocaleDateString('fr-MA')}
+                    {new Date(item.created_at).toLocaleDateString(dateLocale)}
                   </span>
                 </div>
                 <CardTitle className="text-xl">{item.title}</CardTitle>
@@ -149,7 +161,7 @@ export default async function ReferralDemandBoardPage({
                 <p className="text-sm text-muted-foreground line-clamp-4">{item.summary}</p>
                 <Button asChild variant="outline" className="w-full rounded-md">
                   <Link href={`/parrainages/demandes/${item.id}`} className="inline-flex items-center justify-center gap-2">
-                    Voir la demande
+                    {t('referralDemandBoardPage.actions.viewRequest', 'View request')}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

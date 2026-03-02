@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -38,7 +39,8 @@ import {
     ChevronUp,
     ChevronDown,
     Layout,
-    CreditCard
+    CreditCard,
+    CheckCircle2
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -66,11 +68,8 @@ type SiteSettings = {
     enable_competitor_ads_tracking: boolean;
     tier_growth_monthly_price?: number;
     tier_growth_annual_price?: number;
-    tier_pro_monthly_price?: number;
-    tier_pro_annual_price?: number;
-    // Keeping legacy for compatibility temporarily
-    premium_annual_price?: number;
-    premium_monthly_price?: number;
+    tier_gold_monthly_price?: number;
+    tier_gold_annual_price?: number;
     premium_enabled: boolean;
     premium_description: string;
     site_logo_url: string | null;
@@ -132,8 +131,8 @@ const defaultSettings: SiteSettings = {
     enable_competitor_ads_tracking: true,
     tier_growth_monthly_price: 99.00,
     tier_growth_annual_price: 990.00,
-    tier_pro_monthly_price: 299.00,
-    tier_pro_annual_price: 2900.00,
+    tier_gold_monthly_price: 299.00,
+    tier_gold_annual_price: 2900.00,
     premium_enabled: true,
     premium_description: 'Devenez membre Premium et bénéficiez de fonctionnalités exclusives pour propulser votre entreprise.',
     site_logo_url: '',
@@ -426,20 +425,26 @@ export default function SettingsPage() {
                     <div className="mt-8 p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-4">
                         <div className="flex items-center gap-2">
                             <Activity className="h-4 w-4 text-indigo-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">Statut du Noyau</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">Statut Système</span>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">Version</span>
-                                <span className="text-slate-900 dark:text-white">v3.4.0-pro</span>
+                                <span className="text-muted-foreground uppercase opacity-60">Maintenance</span>
+                                <span className={settings.maintenance_mode ? 'text-rose-500' : 'text-emerald-500'}>
+                                    {settings.maintenance_mode ? 'ACTIVÉ' : 'OFF'}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">Uptime</span>
-                                <span className="text-emerald-500">99.98%</span>
+                                <span className="text-muted-foreground uppercase opacity-60">Inscriptions</span>
+                                <span className={settings.allow_new_registrations ? 'text-emerald-500' : 'text-amber-500'}>
+                                    {settings.allow_new_registrations ? 'OUVERTES' : 'FERMÉES'}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">Update Channel</span>
-                                <span className="text-indigo-500">STABLE</span>
+                                <span className="text-muted-foreground uppercase opacity-60">Premium</span>
+                                <span className={settings.premium_enabled ? 'text-amber-500' : 'text-slate-400'}>
+                                    {settings.premium_enabled ? 'ACTIF' : 'OFF'}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -599,27 +604,15 @@ export default function SettingsPage() {
                                 <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Définissez le nom et les métadonnées SEO globales du service.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="site_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom public du service</Label>
-                                        <Input
-                                            id="site_name"
-                                            value={settings.site_name}
-                                            onChange={(e) => updateSetting('site_name', e.target.value)}
-                                            placeholder="Nom du site"
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 font-black text-lg"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label htmlFor="default_language" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Locale par défaut</Label>
-                                        <Input
-                                            id="default_language"
-                                            value={settings.default_language}
-                                            onChange={(e) => updateSetting('default_language', e.target.value)}
-                                            placeholder="fr"
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 font-bold"
-                                        />
-                                    </div>
+                                <div className="space-y-3">
+                                    <Label htmlFor="site_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom public du service</Label>
+                                    <Input
+                                        id="site_name"
+                                        value={settings.site_name}
+                                        onChange={(e) => updateSetting('site_name', e.target.value)}
+                                        placeholder="Nom du site"
+                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 font-black text-lg"
+                                    />
                                 </div>
                                 <div className="space-y-3">
                                     <Label htmlFor="site_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Balise Meta Description (SEO)</Label>
@@ -734,9 +727,7 @@ export default function SettingsPage() {
                                 {[
                                     { id: 'enable_reviews', label: 'Moteur d\'avis', desc: 'Gestion des notes et commentaires utilisateurs', icon: <Layers className="h-5 w-5" /> },
                                     { id: 'enable_salaries', label: 'Section Salaires', desc: 'Base de données anonyme des rémunérations', icon: <DollarSign className="h-5 w-5" /> },
-                                    { id: 'enable_interviews', label: 'Processus de Recrutement', desc: 'Retours d\'expérience sur les entretiens', icon: <UsersIcon className="h-5 w-5" /> },
                                     { id: 'enable_claims', label: 'Claims Engine', desc: 'Système de revendication d\'entreprises', icon: <ShieldCheck className="h-5 w-5" /> },
-                                    { id: 'enable_messaging', label: 'Real-time Chat', desc: 'Messagerie instantanée propriétaire (Bêta)', badge: 'Bêta', icon: <Mail className="h-5 w-5" /> },
                                     { id: 'enable_competitor_ads', label: 'Annonces concurrentes', desc: 'Réseau publicitaire entre pages entreprises', icon: <Activity className="h-5 w-5" /> },
                                     { id: 'enable_competitor_ads_tracking', label: 'Tracking annonces concurrentes', desc: 'Collecte des impressions et clics des annonces', icon: <Database className="h-5 w-5" /> },
                                 ].map((item) => (
@@ -748,7 +739,6 @@ export default function SettingsPage() {
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <Label className="text-sm font-black cursor-pointer group-hover:text-primary transition-colors uppercase tracking-tight">{item.label}</Label>
-                                                    {item.badge && <Badge className="bg-amber-500 text-white border-none font-bold text-[8px] uppercase px-2 h-4">{item.badge}</Badge>}
                                                 </div>
                                                 <p className="text-[10px] text-muted-foreground font-medium">{item.desc}</p>
                                             </div>
@@ -798,9 +788,9 @@ export default function SettingsPage() {
                                                     type="number"
                                                     value={settings.tier_growth_monthly_price ?? 99}
                                                     onChange={(e) => updateSetting('tier_growth_monthly_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-12 font-black tabular-nums text-lg"
+                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black">€</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
                                             </div>
                                         </div>
                                         <div className="space-y-3">
@@ -811,9 +801,9 @@ export default function SettingsPage() {
                                                     type="number"
                                                     value={settings.tier_growth_annual_price ?? 990}
                                                     onChange={(e) => updateSetting('tier_growth_annual_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-12 font-black tabular-nums text-lg"
+                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black">€</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
                                             </div>
                                         </div>
                                     </div>
@@ -822,29 +812,29 @@ export default function SettingsPage() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <Label htmlFor="tier_pro_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Pro Mensuel (MAD)</Label>
+                                            <Label htmlFor="tier_gold_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Gold Mensuel (MAD)</Label>
                                             <div className="relative">
                                                 <Input
-                                                    id="tier_pro_monthly_price"
+                                                    id="tier_gold_monthly_price"
                                                     type="number"
-                                                    value={settings.tier_pro_monthly_price ?? 299}
-                                                    onChange={(e) => updateSetting('tier_pro_monthly_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-12 font-black tabular-nums text-lg"
+                                                    value={settings.tier_gold_monthly_price ?? 299}
+                                                    onChange={(e) => updateSetting('tier_gold_monthly_price', parseFloat(e.target.value) || 0)}
+                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black">€</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
                                             </div>
                                         </div>
                                         <div className="space-y-3">
-                                            <Label htmlFor="tier_pro_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Pro Annuel (MAD)</Label>
+                                            <Label htmlFor="tier_gold_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Gold Annuel (MAD)</Label>
                                             <div className="relative">
                                                 <Input
-                                                    id="tier_pro_annual_price"
+                                                    id="tier_gold_annual_price"
                                                     type="number"
-                                                    value={settings.tier_pro_annual_price ?? 2900}
-                                                    onChange={(e) => updateSetting('tier_pro_annual_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-12 font-black tabular-nums text-lg"
+                                                    value={settings.tier_gold_annual_price ?? 2900}
+                                                    onChange={(e) => updateSetting('tier_gold_annual_price', parseFloat(e.target.value) || 0)}
+                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black">€</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
                                             </div>
                                             <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest text-right px-2">Économie suggérée: 20%</p>
                                         </div>
@@ -1079,18 +1069,18 @@ export default function SettingsPage() {
                             <CardContent className="p-8 space-y-8">
                                 <div className="space-y-3">
                                     <Label htmlFor="email_provider" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Fournisseur Email</Label>
-                                    <select
-                                        id="email_provider"
-                                        value={settings.email_provider || 'console'}
-                                        onChange={(e) => updateSetting('email_provider', e.target.value)}
-                                        className="w-full h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold focus:ring-1 focus:ring-primary focus:border-primary/30 appearance-none px-4"
-                                    >
-                                        <option value="console">Console (Développement)</option>
-                                        <option value="resend">Resend</option>
-                                        <option value="sendgrid">SendGrid</option>
-                                        <option value="mailjet">Mailjet</option>
-                                        <option value="ses">Amazon SES</option>
-                                    </select>
+                                    <Select value={settings.email_provider || 'console'} onValueChange={(value) => updateSetting('email_provider', value)}>
+                                        <SelectTrigger className="w-full h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold">
+                                            <SelectValue placeholder="Choisir un fournisseur" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
+                                            <SelectItem value="console">Console (Développement)</SelectItem>
+                                            <SelectItem value="resend">Resend</SelectItem>
+                                            <SelectItem value="sendgrid">SendGrid</SelectItem>
+                                            <SelectItem value="mailjet">Mailjet</SelectItem>
+                                            <SelectItem value="ses">Amazon SES</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div className="space-y-3">
@@ -1279,7 +1269,6 @@ export default function SettingsPage() {
                                 {[
                                     { id: 'maintenance_mode', label: 'Mode Maintenance Actif', desc: 'Le site sera inaccessible pour les visiteurs. Utile pour les mises à jour critiques.', warning: true },
                                     { id: 'allow_new_registrations', label: 'Ouverture des Inscriptions', desc: 'Permettre à de nouveaux utilisateurs de rejoindre la plateforme.' },
-                                    { id: 'require_email_verification', label: 'Validation Double Opt-in', desc: 'Forcer la vérification de l\'adresse email avant de permettre l\'interaction.' },
                                 ].map((item) => (
                                     <div key={item.id} className={cn(
                                         "flex items-center justify-between p-8 rounded-[2rem] border transition-all cursor-pointer",

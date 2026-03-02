@@ -1,18 +1,19 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Button } from "@/components/ui/button";
-import { useBusinessProfile } from "@/hooks/useBusinessProfile";
-import { Lock, Loader2, Sparkles, MessageSquare, User, Send } from "lucide-react";
-import { getMessages, sendMessage, type Message } from "@/app/actions/messages";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { Lock, Loader2, Sparkles, MessageSquare, User, Send } from 'lucide-react';
+import { getMessages, sendMessage, type Message } from '@/app/actions/messages';
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 import { isPaidTier } from '@/lib/tier-utils';
-import { Input } from "@/components/ui/input";
-import { createClient } from "@/lib/supabase/client";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { Input } from '@/components/ui/input';
+import { createClient } from '@/lib/supabase/client';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 export default function MessagesPage() {
   const { profile, businessId, loading, currentBusiness } = useBusinessProfile();
@@ -23,6 +24,7 @@ export default function MessagesPage() {
   const [activeTargetId, setActiveTargetId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
+  const { t, tf, locale } = useI18n();
 
   useEffect(() => {
     async function checkStatus() {
@@ -34,11 +36,7 @@ export default function MessagesPage() {
 
       if (businessId) {
         const supabase = createClient();
-        const { data: business } = await supabase
-          .from('businesses')
-          .select('tier')
-          .eq('id', businessId)
-          .single();
+        const { data: business } = await supabase.from('businesses').select('tier').eq('id', businessId).single();
 
         if (isPaidTier(business?.tier)) {
           setIsPremium(true);
@@ -77,33 +75,20 @@ export default function MessagesPage() {
         const supabase = createClient();
         const now = new Date().toISOString();
         supabase.from('messages').update({ read_at: now }).in('id', unreadIds);
-        setMessages((prev) => prev.map((message) => (
-          unreadIds.includes(message.id)
-            ? { ...message, read_at: now }
-            : message
-        )));
+        setMessages((prev) =>
+          prev.map((message) => (unreadIds.includes(message.id) ? { ...message, read_at: now } : message))
+        );
       }
     }
     setFetching(false);
   }
 
   const activeTarget = useMemo(() => {
-    return messages.find((m) => m.id === activeTargetId && !m.is_from_business)
-      || messages.find((m) => !m.is_from_business)
-      || null;
+    return messages.find((m) => m.id === activeTargetId && !m.is_from_business) || messages.find((m) => !m.is_from_business) || null;
   }, [messages, activeTargetId]);
-  const inboundMessages = useMemo(
-    () => messages.filter((message) => !message.is_from_business),
-    [messages]
-  );
-  const unreadInboundMessages = useMemo(
-    () => inboundMessages.filter((message) => !message.read_at),
-    [inboundMessages]
-  );
-  const outboundMessages = useMemo(
-    () => messages.filter((message) => message.is_from_business),
-    [messages]
-  );
+  const inboundMessages = useMemo(() => messages.filter((message) => !message.is_from_business), [messages]);
+  const unreadInboundMessages = useMemo(() => inboundMessages.filter((message) => !message.read_at), [inboundMessages]);
+  const outboundMessages = useMemo(() => messages.filter((message) => message.is_from_business), [messages]);
 
   const handleSendReply = async (targetMessage: Message | null) => {
     if (!replyText.trim() || !businessId || !targetMessage) return;
@@ -113,15 +98,19 @@ export default function MessagesPage() {
       business_id: businessId,
       content: replyText,
       is_from_business: true,
-      sender_name: profile?.full_name || 'Etablissement',
+      sender_name: profile?.full_name || t('dashboardMessagesPage.businessSender', 'Business'),
     });
 
     if (result.status === 'success') {
-      toast({ title: 'Reponse envoyee' });
+      toast({ title: t('dashboardMessagesPage.replySent', 'Reply sent') });
       setReplyText('');
       fetchMessages();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({
+        title: t('dashboardMessagesPage.errorTitle', 'Error'),
+        description: t('dashboardMessagesPage.replyError', 'Unable to send reply.'),
+        variant: 'destructive',
+      });
     }
     setSending(false);
   };
@@ -144,13 +133,15 @@ export default function MessagesPage() {
       <div className="flex justify-between items-end shrink-0">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
-            Messages pour {currentBusiness?.name || 'votre entreprise'}
+            {tf('dashboardMessagesPage.title', 'Messages for {name}', {
+              name: currentBusiness?.name || t('dashboardMessagesPage.yourBusiness', 'your business'),
+            })}
             {!isPremium && <Lock className="h-5 w-5 text-muted-foreground" />}
           </h1>
           <p className="text-muted-foreground">
             {isPremium
-              ? 'Gerez vos conversations en temps reel.'
-              : 'La messagerie Premium vous permet de communiquer directement avec les candidats.'}
+              ? t('dashboardMessagesPage.subtitlePremium', 'Manage your conversations in real time.')
+              : t('dashboardMessagesPage.subtitleLocked', 'Premium messaging allows direct communication with candidates.')}
           </p>
         </div>
         {isPremium && (
@@ -166,12 +157,12 @@ export default function MessagesPage() {
             <div className="bg-amber-500/10 p-4 rounded-full mb-4">
               <Sparkles className="h-8 w-8 text-amber-600" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">Messagerie Premium</h3>
+            <h3 className="text-2xl font-bold mb-2">{t('dashboardMessagesPage.lockedTitle', 'Premium messaging')}</h3>
             <p className="text-muted-foreground max-w-md mb-6">
-              La messagerie directe est une fonctionnalite exclusive aux membres Premium. Communiquez directement avec les candidats et employes potentiels pour renforcer votre attractivite.
+              {t('dashboardMessagesPage.lockedDesc', 'Direct messaging is exclusive to Premium members to help you engage candidates and talent.')}
             </p>
             <Button asChild className="bg-amber-500 hover:bg-amber-600 rounded-full px-8 h-12 text-lg font-semibold shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
-              <Link href="/dashboard/premium">Passer a Premium</Link>
+              <Link href="/dashboard/premium">{t('dashboardMessagesPage.lockedCta', 'Upgrade to Premium')}</Link>
             </Button>
           </div>
 
@@ -187,26 +178,20 @@ export default function MessagesPage() {
         <div className="flex-1 flex flex-col bg-card/30 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden shadow-xl">
           <div className="border-b border-border/50 bg-background/70 p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">Total: {messages.length}</Badge>
-              <Badge variant="outline">Entrants: {inboundMessages.length}</Badge>
+              <Badge variant="outline">{tf('dashboardMessagesPage.stats.total', 'Total: {count}', { count: messages.length })}</Badge>
+              <Badge variant="outline">{tf('dashboardMessagesPage.stats.inbound', 'Inbound: {count}', { count: inboundMessages.length })}</Badge>
               <Badge variant={unreadInboundMessages.length > 0 ? 'default' : 'outline'}>
-                Non lus: {unreadInboundMessages.length}
+                {tf('dashboardMessagesPage.stats.unread', 'Unread: {count}', { count: unreadInboundMessages.length })}
               </Badge>
-              <Badge variant="outline">Reponses envoyees: {outboundMessages.length}</Badge>
+              <Badge variant="outline">{tf('dashboardMessagesPage.stats.sent', 'Sent replies: {count}', { count: outboundMessages.length })}</Badge>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={focusNextUnread}
-                disabled={unreadInboundMessages.length === 0}
-              >
-                Aller au prochain non lu
+              <Button type="button" size="sm" variant="outline" onClick={focusNextUnread} disabled={unreadInboundMessages.length === 0}>
+                {t('dashboardMessagesPage.nextUnread', 'Go to next unread')}
               </Button>
               {activeTarget && (
                 <p className="text-xs text-muted-foreground">
-                  Cible actuelle: <span className="font-semibold text-foreground">{activeTarget.sender_name || 'Candidat'}</span>
+                  {t('dashboardMessagesPage.currentTarget', 'Current target')}: <span className="font-semibold text-foreground">{activeTarget.sender_name || t('dashboardMessagesPage.candidate', 'Candidate')}</span>
                 </p>
               )}
             </div>
@@ -215,25 +200,22 @@ export default function MessagesPage() {
             {fetching ? (
               <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-50">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="font-bold uppercase tracking-widest text-[10px]">Chargement des conversations...</p>
+                <p className="font-bold uppercase tracking-widest text-[10px]">{t('dashboardMessagesPage.loadingConversations', 'Loading conversations...')}</p>
               </div>
             ) : messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
                 <div className="bg-primary/10 p-6 rounded-full">
                   <MessageSquare className="h-12 w-12 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold">Aucun message</h3>
-                <p className="text-sm max-w-xs mx-auto">Encouragez les candidats a vous contacter via votre page publique.</p>
+                <h3 className="text-xl font-bold">{t('dashboardMessagesPage.emptyTitle', 'No messages')}</h3>
+                <p className="text-sm max-w-xs mx-auto">{t('dashboardMessagesPage.emptyDesc', 'Encourage candidates to contact you through your public page.')}</p>
               </div>
             ) : (
               <div className="space-y-6">
                 {[...messages].reverse().map((msg) => {
                   const isActiveTarget = !msg.is_from_business && msg.id === activeTarget?.id;
                   return (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col ${msg.is_from_business ? 'items-end' : 'items-start'} group animate-in slide-in-from-bottom-2 duration-300`}
-                    >
+                    <div key={msg.id} className={`flex flex-col ${msg.is_from_business ? 'items-end' : 'items-start'} group animate-in slide-in-from-bottom-2 duration-300`}>
                       <div className="flex items-end gap-2 max-w-[85%] sm:max-w-[70%]">
                         {!msg.is_from_business && (
                           <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0 mb-1 border border-border/50">
@@ -245,34 +227,25 @@ export default function MessagesPage() {
                             <button
                               type="button"
                               onClick={() => setActiveTargetId(msg.id)}
-                              className={cn(
-                                'flex items-center gap-2 ml-2 rounded-md px-1 py-0.5 text-left transition-colors',
-                                isActiveTarget ? 'bg-primary/10' : 'hover:bg-muted/50'
-                              )}
+                              className={cn('flex items-center gap-2 ml-2 rounded-md px-1 py-0.5 text-left transition-colors', isActiveTarget ? 'bg-primary/10' : 'hover:bg-muted/50')}
                             >
                               {!msg.read_at && <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
-                                {msg.sender_name || 'Candidat'}
-                              </span>
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{msg.sender_name || t('dashboardMessagesPage.candidate', 'Candidate')}</span>
                             </button>
                           )}
                           <div
                             className={cn(
                               'p-4 rounded-2xl shadow-sm relative border',
-                              msg.is_from_business
-                                ? 'bg-primary text-primary-foreground rounded-br-none border-primary/20'
-                                : 'bg-white dark:bg-slate-900 text-foreground rounded-bl-none border-border/50',
+                              msg.is_from_business ? 'bg-primary text-primary-foreground rounded-br-none border-primary/20' : 'bg-white dark:bg-slate-900 text-foreground rounded-bl-none border-border/50',
                               isActiveTarget && 'ring-2 ring-primary/30'
                             )}
                           >
                             <p className="text-sm leading-relaxed">{msg.content}</p>
-                            <div
-                              className={cn(
-                                'text-[9px] mt-2 opacity-60 font-medium whitespace-nowrap',
-                                msg.is_from_business ? 'text-right' : 'text-left'
-                              )}
-                            >
-                              {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                            <div className={cn('text-[9px] mt-2 opacity-60 font-medium whitespace-nowrap', msg.is_from_business ? 'text-right' : 'text-left')}>
+                              {new Date(msg.created_at).toLocaleTimeString(locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
                             </div>
                           </div>
                         </div>
@@ -292,7 +265,13 @@ export default function MessagesPage() {
           <div className="p-4 bg-background/50 border-t border-border/50 backdrop-blur-md">
             <div className="max-w-4xl mx-auto flex gap-3">
               <Input
-                placeholder={activeTarget ? `Repondre a ${activeTarget.sender_name || 'ce candidat'}...` : 'Aucun candidat a qui repondre'}
+                placeholder={
+                  activeTarget
+                    ? tf('dashboardMessagesPage.replyPlaceholder', 'Reply to {name}...', {
+                        name: activeTarget.sender_name || t('dashboardMessagesPage.candidateLower', 'this candidate'),
+                      })
+                    : t('dashboardMessagesPage.noTargetPlaceholder', 'No candidate to reply to')
+                }
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 disabled={!activeTarget}
@@ -304,17 +283,13 @@ export default function MessagesPage() {
                 }}
                 className="bg-background/80 border-none h-12 rounded-2xl px-6 focus-visible:ring-1 focus-visible:ring-primary/20 shadow-inner"
               />
-              <Button
-                onClick={() => handleSendReply(activeTarget)}
-                disabled={sending || !replyText.trim() || !activeTarget}
-                className="h-12 w-12 rounded-2xl shrink-0 shadow-lg shadow-primary/20"
-              >
+              <Button onClick={() => handleSendReply(activeTarget)} disabled={sending || !replyText.trim() || !activeTarget} className="h-12 w-12 rounded-2xl shrink-0 shadow-lg shadow-primary/20">
                 {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
               </Button>
             </div>
             {activeTarget && (
               <p className="text-[10px] text-center mt-2 text-muted-foreground font-medium">
-                Reponse ciblee sur <span className="text-primary">{activeTarget.sender_name || 'ce candidat'}</span>.
+                {t('dashboardMessagesPage.targetedReply', 'Targeted reply to')} <span className="text-primary">{activeTarget.sender_name || t('dashboardMessagesPage.candidateLower', 'this candidate')}</span>.
               </p>
             )}
           </div>

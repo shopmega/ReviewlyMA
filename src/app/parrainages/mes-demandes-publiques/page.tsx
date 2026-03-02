@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { retractReferralDemandListingForm, updateMyReferralDemandListingStatusForm } from '@/app/actions/referrals';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,13 +19,16 @@ type DemandListing = {
   expires_at: string | null;
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Active',
-  paused: 'En pause',
-  closed: 'Fermee',
-};
-
 export default async function MyPublicDemandListingsPage() {
+  const { t, tf, locale } = await getServerTranslator();
+  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+
+  const STATUS_LABELS: Record<string, string> = {
+    active: t('referralMyPublicDemandsPage.status.active', 'Active'),
+    paused: t('referralMyPublicDemandsPage.status.paused', 'Paused'),
+    closed: t('referralMyPublicDemandsPage.status.closed', 'Closed'),
+  };
+
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) {
@@ -43,15 +47,15 @@ export default async function MyPublicDemandListingsPage() {
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold font-headline">Mes demandes publiques</h1>
-          <p className="text-sm text-muted-foreground">Gerez vos annonces de demande sur le demand board.</p>
+          <h1 className="text-3xl font-bold font-headline">{t('referralMyPublicDemandsPage.title', 'My public requests')}</h1>
+          <p className="text-sm text-muted-foreground">{t('referralMyPublicDemandsPage.subtitle', 'Manage your request listings on the demand board.')}</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link href="/parrainages/demandes">Voir le board</Link>
+            <Link href="/parrainages/demandes">{t('referralMyPublicDemandsPage.actions.viewBoard', 'View board')}</Link>
           </Button>
           <Button asChild>
-            <Link href="/parrainages/demandes/new">Publier une demande</Link>
+            <Link href="/parrainages/demandes/new">{t('referralMyPublicDemandsPage.actions.publish', 'Publish request')}</Link>
           </Button>
         </div>
       </div>
@@ -59,7 +63,7 @@ export default async function MyPublicDemandListingsPage() {
       {items.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
-            Aucune demande publique publiee pour le moment.
+            {t('referralMyPublicDemandsPage.empty', 'No public request published yet.')}
           </CardContent>
         </Card>
       ) : (
@@ -75,11 +79,15 @@ export default async function MyPublicDemandListingsPage() {
                   <Badge>{STATUS_LABELS[item.status] || item.status}</Badge>
                   {item.city ? <span className="text-xs text-muted-foreground">{item.city}</span> : null}
                   <span className="text-xs text-muted-foreground">
-                    Publiee le {new Date(item.created_at).toLocaleDateString('fr-MA')}
+                    {tf('referralMyPublicDemandsPage.publishedOn', 'Published on {date}', {
+                      date: new Date(item.created_at).toLocaleDateString(dateLocale),
+                    })}
                   </span>
                   {item.expires_at ? (
                     <span className="text-xs text-muted-foreground">
-                      Expire le {new Date(item.expires_at).toLocaleDateString('fr-MA')}
+                      {tf('referralMyPublicDemandsPage.expiresOn', 'Expires on {date}', {
+                        date: new Date(item.expires_at).toLocaleDateString(dateLocale),
+                      })}
                     </span>
                   ) : null}
                 </div>
@@ -96,14 +104,14 @@ export default async function MyPublicDemandListingsPage() {
                     </form>
                   ))}
                   <Button asChild size="sm" variant="ghost">
-                    <Link href={`/parrainages/demandes/${item.id}`}>Voir la page publique</Link>
+                    <Link href={`/parrainages/demandes/${item.id}`}>{t('referralMyPublicDemandsPage.actions.viewPublicPage', 'View public page')}</Link>
                   </Button>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/parrainages/mes-demandes-publiques/${item.id}/edit`}>Editer</Link>
+                    <Link href={`/parrainages/mes-demandes-publiques/${item.id}/edit`}>{t('referralMyPublicDemandsPage.actions.edit', 'Edit')}</Link>
                   </Button>
                   <form action={retractReferralDemandListingForm}>
                     <input type="hidden" name="demandListingId" value={item.id} />
-                    <Button type="submit" size="sm" variant="destructive">Supprimer</Button>
+                    <Button type="submit" size="sm" variant="destructive">{t('referralMyPublicDemandsPage.actions.delete', 'Delete')}</Button>
                   </form>
                 </div>
               </CardContent>

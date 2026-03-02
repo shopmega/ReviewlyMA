@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { createClient } from '@/lib/supabase/client';
 import { getAuthorDisplayName } from '@/lib/utils/anonymous-reviews';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type Review = {
   id: number;
@@ -68,6 +69,9 @@ export default function ReviewsPage() {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const { toast } = useToast();
+  const { t, tf, locale } = useI18n();
+
+  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
 
   const sortedReviews = useMemo(() => {
     if (!reviews.length) return [];
@@ -80,7 +84,7 @@ export default function ReviewsPage() {
       case 'rating':
         return sorted.sort((a, b) => b.rating - a.rating);
       case 'helpful':
-        return sorted.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
+        return sorted.sort((a, b) => b.likes - b.dislikes - (a.likes - a.dislikes));
       default:
         return sorted;
     }
@@ -102,11 +106,7 @@ export default function ReviewsPage() {
     async function fetchData() {
       const supabase = createClient();
 
-      const { data: businessData, error: businessError } = await supabase
-        .from('businesses')
-        .select('id, name')
-        .eq('id', businessId)
-        .single();
+      const { data: businessData, error: businessError } = await supabase.from('businesses').select('id, name').eq('id', businessId).single();
 
       if (businessError || !businessData) {
         setLoading(false);
@@ -115,18 +115,13 @@ export default function ReviewsPage() {
 
       setBusiness(businessData);
 
-      const { data: reviewsData, error: reviewsError } = await supabase
+      const { data: reviewsData } = await supabase
         .from('reviews')
         .select('id, rating, title, content, author_name, is_anonymous, user_id, date, likes, dislikes, owner_reply, owner_reply_date')
         .eq('business_id', businessId)
         .order('date', { ascending: false });
 
-      if (reviewsError) {
-        console.error('Error fetching reviews:', reviewsError?.message || reviewsError || 'Unknown error');
-      } else {
-        setReviews(reviewsData || []);
-      }
-
+      setReviews(reviewsData || []);
       setLoading(false);
     }
 
@@ -147,20 +142,18 @@ export default function ReviewsPage() {
 
     if (error) {
       toast({
-        title: 'Erreur',
-        description: "Impossible d'envoyer la reponse.",
+        title: t('dashboardReviewsPage.errorTitle', 'Error'),
+        description: t('dashboardReviewsPage.replyError', 'Unable to send reply.'),
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Reponse envoyee',
-        description: 'Votre reponse est maintenant visible sur votre page.',
+        title: t('dashboardReviewsPage.replySentTitle', 'Reply sent'),
+        description: t('dashboardReviewsPage.replySentDesc', 'Your reply is now visible on your page.'),
       });
-      setReviews((prev) => prev.map((review) => (
-        review.id === reviewId
-          ? { ...review, owner_reply: replyText.trim(), owner_reply_date: new Date().toISOString().split('T')[0] }
-          : review
-      )));
+      setReviews((prev) =>
+        prev.map((review) => (review.id === reviewId ? { ...review, owner_reply: replyText.trim(), owner_reply_date: new Date().toISOString().split('T')[0] } : review))
+      );
       setReplyingTo(null);
       setReplyText('');
     }
@@ -173,9 +166,7 @@ export default function ReviewsPage() {
 
   if (profileLoading || loading) {
     return (
-      <div className="space-y-6">
-        {Array.from({ length: 3 }).map((_, index) => <ReviewCardSkeleton key={index} />)}
-      </div>
+      <div className="space-y-6">{Array.from({ length: 3 }).map((_, index) => <ReviewCardSkeleton key={index} />)}</div>
     );
   }
 
@@ -185,10 +176,10 @@ export default function ReviewsPage() {
         <div className="rounded-full bg-destructive/10 p-4 text-destructive">
           <AlertCircle className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl font-bold font-headline">Acces refuse</h1>
-        <p className="text-muted-foreground">{profileError || 'Erreur inconnue'}</p>
+        <h1 className="text-2xl font-bold font-headline">{t('dashboardReviewsPage.accessDenied', 'Access denied')}</h1>
+        <p className="text-muted-foreground">{profileError || t('dashboardReviewsPage.unknownError', 'Unknown error')}</p>
         <Button asChild>
-          <Link href="/pour-les-pros">Revendiquer une entreprise</Link>
+          <Link href="/pour-les-pros">{t('dashboardReviewsPage.claimBusiness', 'Claim a business')}</Link>
         </Button>
       </div>
     );
@@ -197,35 +188,35 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-8 pb-10 animate-in fade-in duration-500">
       <section>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Gestion des avis</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('dashboardReviewsPage.pageTitle', 'Review management')}</h1>
         <p className="text-lg text-muted-foreground">
-          Consultez et repondez aux avis pour <span className="font-semibold text-foreground">{business.name}</span>.
+          {tf('dashboardReviewsPage.pageSubtitle', 'View and reply to reviews for {name}.', { name: business.name })}
         </p>
         {totalReviews > 0 && (
           <Card className="mt-6 border border-primary/20 bg-gradient-to-r from-primary/10 via-background to-sky-500/5">
             <CardContent className="p-4 md:p-5">
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                  <p className="text-xs text-muted-foreground">Total avis</p>
+                  <p className="text-xs text-muted-foreground">{t('dashboardReviewsPage.totalReviews', 'Total reviews')}</p>
                   <p className="text-xl font-bold">{totalReviews}</p>
                 </div>
                 <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                  <p className="text-xs text-muted-foreground">Avis en attente</p>
+                  <p className="text-xs text-muted-foreground">{t('dashboardReviewsPage.pendingReviews', 'Pending reviews')}</p>
                   <p className="text-xl font-bold">{pendingReviews}</p>
                 </div>
                 <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Percent className="h-3.5 w-3.5 text-primary" />
-                    Taux de reponse
+                    {t('dashboardReviewsPage.responseRate', 'Response rate')}
                   </p>
                   <p className="text-xl font-bold text-primary">{responseRate}%</p>
                 </div>
               </div>
               {pendingReviews > 0 && (
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-muted-foreground">Priorite: traiter les avis sans reponse pour renforcer la confiance.</p>
+                  <p className="text-xs text-muted-foreground">{t('dashboardReviewsPage.priorityHint', 'Priority: respond to pending reviews to strengthen trust.')}</p>
                   <Button size="sm" variant="outline" onClick={() => setReplyFilter('pending')}>
-                    Voir les avis en attente
+                    {t('dashboardReviewsPage.viewPending', 'View pending reviews')}
                   </Button>
                 </div>
               )}
@@ -237,35 +228,17 @@ export default function ReviewsPage() {
       <section className="space-y-6">
         {totalReviews > 0 && (
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h3 className="text-xl font-bold">Avis ({filteredReviews.length})</h3>
+            <h3 className="text-xl font-bold">{tf('dashboardReviewsPage.reviewsCount', 'Reviews ({count})', { count: filteredReviews.length })}</h3>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <div className="flex rounded-lg border border-border/60 p-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={replyFilter === 'all' ? 'default' : 'ghost'}
-                  className="h-8"
-                  onClick={() => setReplyFilter('all')}
-                >
-                  Tous
+                <Button type="button" size="sm" variant={replyFilter === 'all' ? 'default' : 'ghost'} className="h-8" onClick={() => setReplyFilter('all')}>
+                  {t('dashboardReviewsPage.filter.all', 'All')}
                 </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={replyFilter === 'pending' ? 'default' : 'ghost'}
-                  className="h-8"
-                  onClick={() => setReplyFilter('pending')}
-                >
-                  En attente
+                <Button type="button" size="sm" variant={replyFilter === 'pending' ? 'default' : 'ghost'} className="h-8" onClick={() => setReplyFilter('pending')}>
+                  {t('dashboardReviewsPage.filter.pending', 'Pending')}
                 </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={replyFilter === 'replied' ? 'default' : 'ghost'}
-                  className="h-8"
-                  onClick={() => setReplyFilter('replied')}
-                >
-                  Repondus
+                <Button type="button" size="sm" variant={replyFilter === 'replied' ? 'default' : 'ghost'} className="h-8" onClick={() => setReplyFilter('replied')}>
+                  {t('dashboardReviewsPage.filter.replied', 'Replied')}
                 </Button>
               </div>
 
@@ -274,10 +247,10 @@ export default function ReviewsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Plus recents</SelectItem>
-                  <SelectItem value="oldest">Plus anciens</SelectItem>
-                  <SelectItem value="rating">Meilleure note</SelectItem>
-                  <SelectItem value="helpful">Plus utiles</SelectItem>
+                  <SelectItem value="newest">{t('dashboardReviewsPage.sort.newest', 'Newest')}</SelectItem>
+                  <SelectItem value="oldest">{t('dashboardReviewsPage.sort.oldest', 'Oldest')}</SelectItem>
+                  <SelectItem value="rating">{t('dashboardReviewsPage.sort.rating', 'Best rating')}</SelectItem>
+                  <SelectItem value="helpful">{t('dashboardReviewsPage.sort.helpful', 'Most helpful')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -289,14 +262,16 @@ export default function ReviewsPage() {
             <div className="mb-4 inline-flex rounded-full bg-muted p-4">
               <MessageSquare className="h-8 w-8 text-muted-foreground" />
             </div>
-            <CardTitle className="mb-2 font-headline text-xl">Aucun avis pour le moment</CardTitle>
-            <CardDescription>Les avis de vos clients apparaitront ici.</CardDescription>
+            <CardTitle className="mb-2 font-headline text-xl">{t('dashboardReviewsPage.emptyTitle', 'No reviews yet')}</CardTitle>
+            <CardDescription>{t('dashboardReviewsPage.emptyDesc', 'Your customer reviews will appear here.')}</CardDescription>
           </Card>
         ) : filteredReviews.length === 0 ? (
           <Card className="border-dashed bg-card/40 p-10 text-center">
-            <CardTitle className="mb-2 font-headline text-lg">Aucun resultat pour ce filtre</CardTitle>
-            <CardDescription className="mb-4">Changez le filtre pour afficher d'autres avis.</CardDescription>
-            <Button variant="outline" onClick={() => setReplyFilter('all')}>Revenir a tous les avis</Button>
+            <CardTitle className="mb-2 font-headline text-lg">{t('dashboardReviewsPage.noFilterResult', 'No result for this filter')}</CardTitle>
+            <CardDescription className="mb-4">{t('dashboardReviewsPage.noFilterResultDesc', 'Change filter to display other reviews.')}</CardDescription>
+            <Button variant="outline" onClick={() => setReplyFilter('all')}>
+              {t('dashboardReviewsPage.backAll', 'Back to all reviews')}
+            </Button>
           </Card>
         ) : (
           filteredReviews.map((review) => (
@@ -304,15 +279,11 @@ export default function ReviewsPage() {
               <CardHeader>
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
                   <div className="space-y-1">
-                    <CardTitle className="text-lg font-bold font-headline leading-tight">
-                      {review.title || 'Avis sans titre'}
-                    </CardTitle>
+                    <CardTitle className="text-lg font-bold font-headline leading-tight">{review.title || t('dashboardReviewsPage.untitled', 'Untitled review')}</CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">
-                        {getAuthorDisplayName(review, 'pro', null, null)}
-                      </span>
-                      <span>â€¢</span>
-                      <span>{new Date(review.date).toLocaleDateString('fr-FR')}</span>
+                      <span className="font-medium text-foreground">{getAuthorDisplayName(review, 'pro', null, null)}</span>
+                      <span>•</span>
+                      <span>{new Date(review.date).toLocaleDateString(dateLocale)}</span>
                     </div>
                   </div>
                   <StarRating rating={review.rating} readOnly />
@@ -320,20 +291,16 @@ export default function ReviewsPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <p className="text-sm leading-relaxed text-foreground/90 lg:text-base">
-                  "{review.content || 'Pas de commentaire.'}"
-                </p>
+                <p className="text-sm leading-relaxed text-foreground/90 lg:text-base">"{review.content || t('dashboardReviewsPage.noComment', 'No comment.')}"</p>
 
                 {review.owner_reply && (
                   <div className="ml-2 rounded-xl border-l-2 border-primary bg-primary/5 p-4">
                     <div className="mb-2 flex items-center gap-2">
                       <CornerDownRight className="h-4 w-4 text-primary" />
-                      <h4 className="text-sm font-bold text-primary">Votre reponse</h4>
+                      <h4 className="text-sm font-bold text-primary">{t('dashboardReviewsPage.yourReply', 'Your reply')}</h4>
                     </div>
                     <p className="text-sm italic text-foreground/80">{review.owner_reply}</p>
-                    <p className="mt-2 text-right text-xs text-muted-foreground/70">
-                      {review.owner_reply_date ? new Date(review.owner_reply_date).toLocaleDateString('fr-FR') : ''}
-                    </p>
+                    <p className="mt-2 text-right text-xs text-muted-foreground/70">{review.owner_reply_date ? new Date(review.owner_reply_date).toLocaleDateString(dateLocale) : ''}</p>
                   </div>
                 )}
               </CardContent>
@@ -351,28 +318,28 @@ export default function ReviewsPage() {
                     <div className="w-full space-y-3">
                       <Label htmlFor={`reply-${review.id}`} className="flex items-center gap-2 font-semibold text-primary">
                         <MessageSquare className="h-4 w-4" />
-                        Votre reponse
+                        {t('dashboardReviewsPage.yourReply', 'Your reply')}
                       </Label>
                       <Textarea
                         id={`reply-${review.id}`}
-                        placeholder="Remerciez l'auteur pour son avis..."
+                        placeholder={t('dashboardReviewsPage.replyPlaceholder', 'Thank the author for their review...')}
                         value={replyText}
                         onChange={(event) => setReplyText(event.target.value)}
                         className="min-h-[100px] bg-background/80"
                       />
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" onClick={() => setReplyingTo(null)}>Annuler</Button>
-                        <Button onClick={() => handleReplySubmit(review.id)} className="font-bold">Publier</Button>
+                        <Button variant="ghost" onClick={() => setReplyingTo(null)}>
+                          {t('common.cancel', 'Cancel')}
+                        </Button>
+                        <Button onClick={() => handleReplySubmit(review.id)} className="font-bold">
+                          {t('dashboardReviewsPage.publish', 'Publish')}
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full border-primary/20 transition-colors hover:bg-primary/10 hover:text-primary sm:w-auto"
-                      onClick={() => setReplyingTo(review.id)}
-                    >
+                    <Button variant="outline" className="w-full border-primary/20 transition-colors hover:bg-primary/10 hover:text-primary sm:w-auto" onClick={() => setReplyingTo(review.id)}>
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      Repondre
+                      {t('dashboardReviewsPage.reply', 'Reply')}
                     </Button>
                   )}
                 </CardFooter>

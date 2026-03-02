@@ -522,5 +522,886 @@
     "submit": "????? ???????",
     "sentTitle": "?? ????? ???????!",
     "sentDesc": "???? ?????? ??????."
+  },
+  "platformContactPage": {
+    "title": "Contact us",
+    "subtitle": "Questions or suggestions? Get in touch with us.",
+    "fullName": "Full name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "you@email.com",
+    "subjectPlaceholder": "What would you like to discuss?",
+    "messagePlaceholder": "Your message...",
+    "sending": "Sending...",
+    "submit": "Send message",
+    "sentTitle": "Message sent",
+    "errorTitle": "Error",
+    "successDefault": "Your message has been sent successfully.",
+    "errorDefault": "An error occurred while sending your message."
+  },
+  "auth": {
+    "signup": {
+      "title": "Create an account",
+      "loginPrompt": "Already have an account?",
+      "loginCta": "Log in",
+      "continueWith": "Continue with",
+      "linkedinLoading": "LinkedIn signup...",
+      "continueWithLinkedin": "Continue with LinkedIn",
+      "orEmail": "Or with your email",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Ex: John Doe",
+      "submitting": "Creating account...",
+      "submit": "Create my account",
+      "successTitle": "Success",
+      "successDesc": "Account created successfully. Please check your email.",
+      "errorTitle": "Error",
+      "errorDesc": "An error occurred while creating your account.",
+      "linkedinError": "Unable to start LinkedIn signup.",
+      "closedTitle1": "Registrations",
+      "closedTitle2": "Paused",
+      "closedSubtitle": "We are currently unable to accept new members.",
+      "closedBody": "Registrations are temporarily closed by administration. Thank you for your patience.",
+      "backHome": "Back to home"
+    },
+    "proSignup": {
+      "title": "Create your pro account",
+      "subtitle": "Access free tools to manage your business reputation.",
+      "loginPrompt": "Already have an account?",
+      "loginCta": "Log in",
+      "loading": "Checking authentication state...",
+      "successTitle": "Success",
+      "successDesc": "Pro account created. Redirecting...",
+      "errorTitle": "Error",
+      "errorDesc": "Failed to create pro account. Please check your information.",
+      "fullNamePlaceholder": "Ex: First Last",
+      "jobTitleLabel": "Current role",
+      "jobTitlePlaceholder": "Ex: Manager, Marketing Lead",
+      "businessNameLabel": "Business name",
+      "businessNamePlaceholder": "Ex: Company LLC",
+      "businessEmailLabel": "Work email",
+      "businessEmailPlaceholder": "name@company.com",
+      "submit": "Create my professional account",
+      "termsPrefix": "By clicking",
+      "termsMiddle": "you agree to our",
+      "termsLink": "Terms of Use",
+      "and": "and our",
+      "privacyLink": "Privacy Policy"
+    },
+    "login": {
+      "title": "Log in",
+      "signupPrompt": "Or",
+      "signupCta": "create an account",
+      "continueWith": "Continue with",
+      "linkedinLoading": "LinkedIn login...",
+      "continueWithLinkedin": "Continue with LinkedIn",
+      "orEmail": "Or with your email",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "forgotPassword": "Forgot password?",
+      "submitting": "Logging in...",
+      "submit": "Log in",
+      "successTitle": "Success",
+      "successDesc": "Login successful. Redirecting...",
+      "errorTitle": "Error",
+      "errorDesc": "Login failed. Please check your credentials.",
+      "linkedinError": "Unable to start LinkedIn login."
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitleIdle": "Enter your email to receive a reset link",
+      "subtitleSent": "Check your inbox",
+      "sending": "Sending...",
+      "submit": "Send reset link",
+      "sentTitle": "Email sent",
+      "sentToastDefault": "Reset instructions were sent to your email.",
+      "errorTitle": "Error",
+      "errorDesc": "Unable to send reset email. Please try again.",
+      "tipTitle": "Tip:",
+      "tipBody": "If you do not see the email, check your spam folder.",
+      "expiryHint": "The link expires in 1 hour.",
+      "tryAnother": "Try another address",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "updating": "Updating...",
+      "submit": "Update password",
+      "errorTitle": "Error",
+      "errorDesc": "Unable to update password. Please try again.",
+      "titleExpired": "Expired link",
+      "expiredSubtitle": "This reset link is no longer valid",
+      "expiredHint": "Reset links expire after 1 hour. Please request a new link.",
+      "requestNewLink": "Request a new link",
+      "titleUpdated": "Password updated",
+      "titleNew": "New password",
+      "subtitleUpdated": "You will be redirected to login",
+      "subtitleNew": "Choose a secure new password",
+      "updatedSuccess": "Password updated successfully.",
+      "redirecting": "Redirecting to login...",
+      "goLogin": "Go to login",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Confirm password",
+      "passwordMin": "Minimum 6 characters"
+    }
+  },
+  "profileSettingsPage": {
+    "title": "Account settings",
+    "subtitle": "Update your personal information and return quickly to key actions.",
+    "savedTitle": "Changes saved",
+    "savedDesc": "Your profile has been updated.",
+    "errorTitle": "Error",
+    "errorDesc": "Unable to update your profile.",
+    "recommended": "Recommended action",
+    "recommendedDesc": "Update your details then return to your profile.",
+    "viewProfile": "View my profile",
+    "goDashboard": "Go to dashboard",
+    "personalTitle": "Personal information",
+    "personalDesc": "This information is used for your account and notifications.",
+    "reset": "Reset",
+    "save": "Save changes",
+    "quickNav": "Quick navigation",
+    "quickNavDesc": "Access your most-used spaces quickly.",
+    "profile": "My profile",
+    "favorites": "My favorites",
+    "businessDashboard": "Business dashboard",
+    "footerPrefix": "To manage your business, go to the",
+    "footerLink": "dashboard"
+  },
+  "supportPage": {
+    "title": "Customer support",
+    "subtitle": "Contact our support team for any question or issue.",
+    "errorTitle": "Error",
+    "successTitle": "Success",
+    "loadTicketsError": "Unable to load your support tickets.",
+    "requiredFields": "Please fill in all required fields.",
+    "loginRequiredTitle": "Login required",
+    "loginRequiredDesc": "You must be logged in to send a support ticket.",
+    "ticketCreated": "Support ticket created successfully.",
+    "createTicketError": "Unable to create support ticket.",
+    "newTicketTab": "New ticket",
+    "myTicketsTab": "My tickets",
+    "newTicketTitle": "New support ticket",
+    "newTicketDesc": "Fill in the form below to submit a new support ticket.",
+    "subject": "Subject",
+    "subjectPlaceholder": "Briefly describe your issue",
+    "category": "Category",
+    "message": "Message",
+    "messagePlaceholder": "Describe your issue in detail...",
+    "sending": "Sending...",
+    "sendTicket": "Send ticket",
+    "myTicketsTitle": "Your support tickets",
+    "emptyTitle": "No support tickets",
+    "emptyDesc": "You have no active support tickets.",
+    "createNew": "Create a new ticket",
+    "supportReply": "Support reply:",
+    "categoryLabel": "Category",
+    "channels": {
+      "email": "Email",
+      "phone": "Phone",
+      "chat": "Chat",
+      "live": "Live",
+      "faq": "FAQ",
+      "faqDesc": "Frequently asked questions"
+    },
+    "status": {
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "categories": {
+      "account": "Account and login",
+      "billing": "Billing and subscription",
+      "business": "Business management",
+      "reviews": "Reviews and comments",
+      "technical": "Technical issue",
+      "other": "Other question"
+    }
+  },
+  "forProsPage": {
+    "hero": {
+      "badge": "Professional area",
+      "titlePrefix": "Boost your {siteName}",
+      "titleHighlight": "business",
+      "subtitle": "Take control of your online reputation, engage your employees, and improve your talent attractiveness.",
+      "ctaStart": "Start for free",
+      "ctaPremium": "Discover Premium"
+    },
+    "stats": {
+      "1": "Registered businesses",
+      "2": "Authentic reviews",
+      "3": "Monthly views",
+      "4": "Covered cities"
+    },
+    "pricing": {
+      "titlePrefix": "Choose your",
+      "titleHighlight": "plan",
+      "subtitle": "From growth to excellence, find the perfect plan for your business.",
+      "perYear": "/ year",
+      "perMonth": "or {amount} MAD/month",
+      "basic": {
+        "badge": "FREE",
+        "name": "Basic",
+        "desc": "Essential to start your digital transition.",
+        "cta": "Start Basic"
+      },
+      "growth": {
+        "badge": "POPULAR",
+        "name": "Business Growth",
+        "desc": "Perfect to boost your visibility.",
+        "cta": "Choose Growth"
+      },
+      "gold": {
+        "badge": "RECOMMENDED",
+        "name": "Business Gold",
+        "desc": "Complete pack: salary benchmark, reporting and acquisition.",
+        "cta": "Choose Gold"
+      }
+    },
+    "features": {
+      "basic": {
+        "1": "Claim your business",
+        "2": "Update your information",
+        "3": "Reply to employee reviews",
+        "4": "Basic analytics (views)",
+        "5": "Receive messages (limited)"
+      },
+      "growth": {
+        "1": "GOLD trust badge",
+        "2": "Priority visibility",
+        "3": "Unlimited review replies",
+        "4": "Detailed analytics",
+        "5": "Remove competitor ads"
+      },
+      "gold": {
+        "1": "Everything in Growth",
+        "2": "Direct communication with candidates",
+        "3": "Pinned content for your offers",
+        "4": "Priority support",
+        "5": "Salary benchmark (Gold only)",
+        "6": "Monthly salary barometer",
+        "7": "Advanced analytics",
+        "8": "Premium lead generation"
+      }
+    },
+    "premium": {
+      "badge": "PREMIUM BENEFITS",
+      "title": "Exclusive premium features",
+      "subtitle": "Powerful tools to transform your online presence and attract top talent."
+    },
+    "multi": {
+      "badge": "MULTI-BUSINESS",
+      "title": "Manage multiple businesses",
+      "subtitle": "Perfect for groups and owners of several businesses.",
+      "basic": {
+        "title": "Basic plan",
+        "count": "1 business",
+        "f1": "Complete management of one business",
+        "f2": "Personalized dashboard",
+        "f3": "Basic analytics",
+        "price": "Free",
+        "priceDesc": "Included with your account"
+      },
+      "premium": {
+        "title": "Premium plan",
+        "count": "Up to 5 businesses",
+        "f1": "Multi-business management",
+        "f2": "Unified dashboard",
+        "f3": "Comparative analytics",
+        "f4": "Quick business switching",
+        "priceDesc": "For all your businesses"
+      },
+      "card": {
+        "title": "Ideal for groups",
+        "desc": "Manage multiple businesses from one unified dashboard. Switch instantly and track global performance at a glance.",
+        "kpi1": "Businesses",
+        "kpi2": "Unified",
+        "kpi3": "Priority"
+      }
+    },
+    "how": {
+      "title": "How to join Pro?",
+      "subtitle": "Simple and fast to activate your premium features.",
+      "step1": {
+        "title": "Make the payment",
+        "desc": "Transfer the agreed amount via bank account or secure payment partners."
+      },
+      "step2": {
+        "title": "Send proof",
+        "desc": "Submit your transaction reference from dashboard or contact dedicated support."
+      },
+      "step3": {
+        "title": "Activate premium",
+        "desc": "Once verified, your pro badge and premium features are activated immediately."
+      }
+    },
+    "cta": {
+      "title": "Ready to dominate your local market?",
+      "start": "Start my pro account",
+      "subscribe": "Subscribe to premium",
+      "subtitle": "Join companies turning attractiveness into success."
+    }
+  },
+  "dashboardMessagesPage": {
+    "title": "Messages for {name}",
+    "yourBusiness": "your business",
+    "subtitlePremium": "Manage your conversations in real time.",
+    "subtitleLocked": "Premium messaging allows direct communication with candidates.",
+    "businessSender": "Business",
+    "replySent": "Reply sent",
+    "errorTitle": "Error",
+    "replyError": "Unable to send reply.",
+    "lockedTitle": "Premium messaging",
+    "lockedDesc": "Direct messaging is exclusive to Premium members to help you engage candidates and talent.",
+    "lockedCta": "Upgrade to Premium",
+    "nextUnread": "Go to next unread",
+    "currentTarget": "Current target",
+    "candidate": "Candidate",
+    "candidateLower": "this candidate",
+    "loadingConversations": "Loading conversations...",
+    "emptyTitle": "No messages",
+    "emptyDesc": "Encourage candidates to contact you through your public page.",
+    "replyPlaceholder": "Reply to {name}...",
+    "noTargetPlaceholder": "No candidate to reply to",
+    "targetedReply": "Targeted reply to",
+    "stats": {
+      "total": "Total: {count}",
+      "inbound": "Inbound: {count}",
+      "unread": "Unread: {count}",
+      "sent": "Sent replies: {count}"
+    }
+  },
+  "dashboardReviewsPage": {
+    "errorTitle": "Error",
+    "replyError": "Unable to send reply.",
+    "replySentTitle": "Reply sent",
+    "replySentDesc": "Your reply is now visible on your page.",
+    "accessDenied": "Access denied",
+    "unknownError": "Unknown error",
+    "claimBusiness": "Claim a business",
+    "pageTitle": "Review management",
+    "pageSubtitle": "View and reply to reviews for {name}.",
+    "totalReviews": "Total reviews",
+    "pendingReviews": "Pending reviews",
+    "responseRate": "Response rate",
+    "priorityHint": "Priority: respond to pending reviews to strengthen trust.",
+    "viewPending": "View pending reviews",
+    "reviewsCount": "Reviews ({count})",
+    "emptyTitle": "No reviews yet",
+    "emptyDesc": "Your customer reviews will appear here.",
+    "noFilterResult": "No result for this filter",
+    "noFilterResultDesc": "Change filter to display other reviews.",
+    "backAll": "Back to all reviews",
+    "untitled": "Untitled review",
+    "noComment": "No comment.",
+    "yourReply": "Your reply",
+    "replyPlaceholder": "Thank the author for their review...",
+    "publish": "Publish",
+    "reply": "Reply",
+    "filter": {
+      "all": "All",
+      "pending": "Pending",
+      "replied": "Replied"
+    },
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "rating": "Best rating",
+      "helpful": "Most helpful"
+    }
+  },
+  "dashboardSupportPage": {
+    "pageTitle": "Support center",
+    "pageSubtitle": "Need help? Open a support ticket and our team will reply quickly.",
+    "newCount": "{count} new",
+    "errorTitle": "Error",
+    "loadError": "Unable to load your tickets.",
+    "requiredTitle": "Required fields",
+    "requiredDesc": "Please complete all required fields.",
+    "ticketCreated": "Ticket created",
+    "ticketCreatedDesc": "Your support request has been submitted.",
+    "submitError": "Unable to submit your request.",
+    "channelEmail": "Email",
+    "channelPhone": "Phone",
+    "backToList": "Back to list",
+    "createdOn": "Created on",
+    "initialDescription": "Initial description",
+    "linkedBusiness": "Linked business",
+    "conversationTitle": "Conversation with support",
+    "newTicket": "New ticket",
+    "newTicketDesc": "We are here to help.",
+    "category": "Category",
+    "select": "Select",
+    "linkedBusinessOptional": "Linked business (optional)",
+    "chooseBusiness": "Choose a business",
+    "noneGeneral": "None (General account)",
+    "subject": "Subject",
+    "subjectPlaceholder": "What is this about?",
+    "message": "Message",
+    "messagePlaceholder": "Describe your request...",
+    "sending": "Sending...",
+    "openTicket": "Open ticket",
+    "myTickets": "My tickets",
+    "noTicket": "No ticket",
+    "faqTitle": "Frequently asked questions",
+    "faqDesc": "Read answers to common questions",
+    "status": {
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "categories": {
+      "account": "Account and login",
+      "billing": "Billing and subscription",
+      "business": "Business management",
+      "reviews": "Reviews and comments",
+      "technical": "Technical issue",
+      "other": "Other question"
+    },
+    "faq": {
+      "q1": "How can I update my business hours?",
+      "a1": "Go to Business in your dashboard, then Services tab. You can edit opening hours for each day there.",
+      "q2": "How can I reply to reviews?",
+      "a2": "Go to My Reviews in your dashboard, open a review, then click Reply to publish your public response.",
+      "q3": "What is the difference between Growth and PRO?",
+      "a3": "Growth supports one business with core features. PRO supports up to 5 businesses with advanced analytics and communication features."
+    }
+  },
+  "dashboardPage": {
+    "errors": {
+      "profileLoad": "Unable to load profile.",
+      "noBusiness": "No associated business found.",
+      "businessLoad": "Error while loading business data.",
+      "businessMissing": "Business data not found (invalid or deleted ID).",
+      "technical": "Technical error while loading dashboard."
+    },
+    "fields": {
+      "description": "description",
+      "website": "website",
+      "phone": "phone",
+      "address": "address",
+      "logo": "logo",
+      "cover": "cover",
+      "city": "city",
+      "category": "category"
+    },
+    "alerts": {
+      "volatility": "High volatility ({score}) in recent reviews.",
+      "salary": "Salary positioning is below market: attrition risk to monitor.",
+      "replySla": "{count} reviews without reply: reputation risk."
+    }
+  },
+  "profilePage": {
+    "toasts": {
+      "profileUpdated": "Profile updated",
+      "errorTitle": "Error",
+      "exportSuccessTitle": "Export successful",
+      "exportSuccessDesc": "Your data has been downloaded.",
+      "deletionRequested": "Request recorded",
+      "appealSubmitted": "Appeal submitted"
+    },
+    "confirmDelete": "Are you sure you want to request account deletion? This action will be effective in 30 days.",
+    "authRequired": {
+      "title": "Login required",
+      "description": "Join the community to manage your profile, reviews and favorites.",
+      "cta": "Log in"
+    },
+    "fallbackUserName": "User",
+    "levels": {
+      "expert": "Expert",
+      "confirmed": "Confirmed",
+      "beginner": "Beginner"
+    },
+    "stats": {
+      "reviewsWritten": "Reviews written",
+      "helpfulVotes": "Helpful votes",
+      "level": "Level"
+    },
+    "memberSince": "Since {date}",
+    "businessConsole": "My Business Console",
+    "recommended": {
+      "title": "Recommended next action",
+      "subtitle": "Share a new review to increase your impact",
+      "writeReview": "Write a review",
+      "viewFavorites": "View my favorites"
+    },
+    "tabs": {
+      "reviews": "My Reviews",
+      "saved": "Favorites",
+      "referrals": "Referrals",
+      "account": "Account"
+    },
+    "reviews": {
+      "title": "My Reviews ({count})",
+      "loadedCount": "Showing {count} loaded reviews.",
+      "sortBy": "Sort by:",
+      "sortNewest": "Newest",
+      "sortOldest": "Oldest",
+      "sortHelpful": "Most helpful",
+      "sortRating": "Best rating",
+      "emptyTitle": "No reviews yet",
+      "emptyDescription": "Share your experience and help others find the best places in Morocco!",
+      "emptyCta": "Start my first search",
+      "untitled": "Company review",
+      "businessLabel": "Business:",
+      "proReply": "Pro reply",
+      "replyDate": "on {date}",
+      "edit": "Edit",
+      "appeal": "Appeal",
+      "loadingMore": "Loading...",
+      "loadMore": "Load more reviews",
+      "appealPrompt": "Explain your appeal (minimum 10 characters):",
+      "appealTooShort": "Message is too short."
+    },
+    "saved": {
+      "count": "Showing {visible} favorites out of {total}.",
+      "viewAll": "View all my favorites",
+      "emptyTitle": "Your favorites are empty",
+      "emptyDescription": "Keep track of places you love or plan to visit in Morocco.",
+      "emptyCta": "Explore places",
+      "loadMore": "Load more favorites"
+    },
+    "referrals": {
+      "title": "My referrals",
+      "description": "Manage your published offers and track your referral requests.",
+      "offers": "Published offers",
+      "requests": "Sent requests",
+      "myOffers": "My referral offers",
+      "myRequests": "My referral requests",
+      "publishNew": "Publish a new offer"
+    },
+    "account": {
+      "personalTitle": "Personal Information",
+      "personalDescription": "Manage your account information and your public profile display.",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "Your full name",
+      "emailLabel": "Email address",
+      "reset": "Reset",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "preferencesTitle": "Communication preferences",
+      "preferencesDescription": "Choose which emails you want to receive.",
+      "prefMarketingTitle": "News & Offers",
+      "prefMarketingDescription": "Receive our latest updates and special offers.",
+      "prefRepliesTitle": "Review replies",
+      "prefRepliesDescription": "Get notified when a business replies to your review.",
+      "prefSystemTitle": "System notifications",
+      "prefSystemDescription": "Alerts about account security and system activity.",
+      "prefClaimsTitle": "Claim updates",
+      "prefClaimsDescription": "Track the status of your business management claims.",
+      "exportTitle": "Data export",
+      "exportDescription": "Download a copy of your personal data",
+      "exportHint": "You will receive a JSON file containing your profile, reviews, and favorite businesses.",
+      "exportAction": "Export my data",
+      "deletionScheduledTitle": "Deletion scheduled",
+      "dangerTitle": "Danger zone",
+      "deletionScheduledDescription": "Your account will be deleted on {date}",
+      "deletionPermanentDescription": "Permanent account deletion",
+      "deletionScheduledHint": "Your account is currently pending deletion. You can cancel this request by contacting support or updating your settings (coming soon).",
+      "cancelDeletion": "Cancel deletion",
+      "deleteWarning": "This action will delete all your reviews, favorites, and personal data. A 30-day delay is applied before permanent deletion.",
+      "deleteAction": "Delete my account",
+      "emailPlaceholder": "you@email.com"
+    }
+  },
+  "dashboardWidgetPage": {
+    "titleGeneric": "Widget for your website",
+    "titleWithBusiness": "Widget for {name}",
+    "defaultSiteName": "your website",
+    "subtitle": "Display your rating and reviews directly on your website to build trust.",
+    "errors": {
+      "businessNotFound": "Business not found."
+    },
+    "toasts": {
+      "copySuccessTitle": "Success",
+      "copySuccessDesc": "Code copied to clipboard!",
+      "errorTitle": "Error",
+      "copyErrorDesc": "Unable to copy the code."
+    },
+    "customization": {
+      "title": "Advanced customization",
+      "description": "Configure your widget appearance according to your preferences.",
+      "sizeLabel": "Widget size",
+      "sizeSmall": "Small",
+      "sizeMedium": "Medium",
+      "sizeLarge": "Large",
+      "themeLabel": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "displayOptions": "Display options",
+      "showName": "Show business name",
+      "showCategory": "Show category",
+      "showLocation": "Show location",
+      "showRating": "Show rating",
+      "extraOptions": "Additional options",
+      "showReviewsCount": "Show number of reviews",
+      "showHours": "Show opening hours",
+      "showCta": "Show \"View reviews\" button"
+    },
+    "embed": {
+      "title": "Copy code",
+      "description": "Copy and paste this HTML code where you want the widget to appear on your website.",
+      "codeLabel": "Embed code",
+      "copyButtonTitle": "Copy code",
+      "copiedInline": "Code copied successfully!",
+      "footerHint": "The widget is fully responsive and adapts to its container width. Height is fixed."
+    },
+    "preview": {
+      "title": "Widget preview"
+    }
+  },
+  "blogPage": {
+    "metaTitle": "Blog | Reviewly MA",
+    "metaDescription": "Editorial guides and referral execution playbooks.",
+    "badge": "Editorial Hub",
+    "title": "Blog and playbooks",
+    "subtitle": "Guides and playbooks that connect referral-demand signals, salary intelligence, company targeting, and monthly reports.",
+    "empty": "No article has been published yet.",
+    "pillarBadge": "Pillar guide",
+    "published": "Published: {date}",
+    "readTime": "Read time: {minutes} min",
+    "readPillarCta": "Read pillar guide",
+    "guidesTitle": "How-to guides",
+    "guideMeta": "{date} | {minutes} min",
+    "readGuideCta": "Read guide",
+    "reportsCta": "View reports",
+    "topRolesCta": "Top demand roles",
+    "topCitiesCta": "Top demand cities",
+    "referralDashboardCta": "View referral demand dashboard",
+    "cards": {
+      "howToTitle": "How-to guides",
+      "howToDesc": "Referral request tactics and actionable templates.",
+      "dataTitle": "Data insights",
+      "dataDesc": "Interpreted analysis from demand and salary signals.",
+      "reportsTitle": "Reports linking",
+      "reportsDesc": "Direct links to monthly reports to strengthen topical authority."
+    }
+  },
+  "referralMyRequestsPage": {
+    "title": "My referral requests",
+    "subtitle": "Track your request status and withdraw if needed.",
+    "kpis": {
+      "total": "Total",
+      "pending": "Pending",
+      "activeReferrals": "Active referrals",
+      "hires": "Hires"
+    },
+    "empty": "No requests yet.",
+    "fallback": {
+      "offer": "Offer",
+      "company": "Company"
+    },
+    "status": {
+      "pending": "Sent",
+      "inReview": "In review",
+      "referred": "Referred",
+      "interview": "Interview",
+      "hired": "Hired",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    },
+    "submittedOn": "Submitted on {date}",
+    "responseEta": "Expected response within 72h",
+    "actions": {
+      "viewOffer": "View offer",
+      "viewCv": "View my CV",
+      "withdraw": "Withdraw my request",
+      "blockRecruiter": "Block recruiter"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "empty": "No messages yet.",
+      "you": "You",
+      "recruiter": "Recruiter",
+      "placeholder": "Send a message to the recruiter...",
+      "send": "Send"
+    }
+  },
+  "referralMyPublicDemandsPage": {
+    "title": "My public requests",
+    "subtitle": "Manage your request listings on the demand board.",
+    "empty": "No public request published yet.",
+    "publishedOn": "Published on {date}",
+    "expiresOn": "Expires on {date}",
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "closed": "Closed"
+    },
+    "actions": {
+      "viewBoard": "View board",
+      "publish": "Publish request",
+      "viewPublicPage": "View public page",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  },
+  "referralPublicDemandEditPage": {
+    "title": "Edit my public request",
+    "subtitle": "Update your request while keeping content compliant.",
+    "toasts": {
+      "success": "Success",
+      "error": "Error"
+    },
+    "form": {
+      "title": "Title",
+      "targetRole": "Target role",
+      "cityOptional": "City (optional)",
+      "contract": "Contract",
+      "notSpecified": "Not specified",
+      "internship": "Internship",
+      "apprenticeship": "Apprenticeship",
+      "other": "Other",
+      "workMode": "Mode",
+      "onsite": "On-site",
+      "hybrid": "Hybrid",
+      "seniority": "Seniority",
+      "confirmed": "Confirmed",
+      "publicSummary": "Public summary",
+      "extraDetailsOptional": "Additional details (optional)",
+      "expirationOptional": "Expiration (optional)"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "referralMyOffersPage": {
+    "title": "My referral offers",
+    "subtitle": "Manage your offers and received requests.",
+    "errors": {
+      "requestsLoad": "Unable to load received requests for now."
+    },
+    "kpis": {
+      "receivedRequests": "Received requests",
+      "responseRate": "Response rate",
+      "hiredCandidates": "Hired candidates"
+    },
+    "emptyOffers": "No published offer yet.",
+    "emptyOfferRequests": "No request received for this offer.",
+    "offerStatus": {
+      "active": "Active",
+      "paused": "Paused",
+      "closed": "Closed"
+    },
+    "requestStatus": {
+      "pending": "Received",
+      "inReview": "In review",
+      "referred": "Referred",
+      "interview": "Interview",
+      "hired": "Hired",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    },
+    "offerMeta": {
+      "publishedOn": "Published on {date}",
+      "requestsCount": "- {count} request(s)"
+    },
+    "candidateLabel": "Candidate {id}",
+    "slaTarget": "Response SLA target: {date}",
+    "noCvLinkedin": "No CV or LinkedIn link provided by candidate.",
+    "actions": {
+      "publishOffer": "Publish an offer",
+      "viewOfferPage": "View offer page",
+      "downloadCv": "Download CV",
+      "block": "Block"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "empty": "No message yet.",
+      "you": "You",
+      "candidate": "Candidate",
+      "placeholder": "Send a message to candidate...",
+      "send": "Send"
+    }
+  },
+  "referralDemandBoardPage": {
+    "metaTitle": "Referral requests | Reviewly MA",
+    "metaDescription": "Browse public requests from candidates looking for a referral.",
+    "badge": "Demand board",
+    "title": "Referral requests",
+    "subtitle": "Candidates publish their needs. Employees can identify profiles to refer.",
+    "actions": {
+      "myPrivateRequests": "My private requests",
+      "myPublicRequests": "My public requests",
+      "publish": "Publish a request",
+      "viewRequest": "View request"
+    },
+    "filters": {
+      "searchPlaceholder": "Role, keywords...",
+      "cityPlaceholder": "City",
+      "submit": "Filter",
+      "resultsCount": "{count} result(s)"
+    },
+    "empty": "No public request at the moment."
+  },
+  "referralDemandCreatePage": {
+    "metaTitle": "Publish a referral request | Reviewly MA",
+    "metaDescription": "Publish your referral request and get contacted by employees who can refer you.",
+    "title": "Publish a request",
+    "subtitle": "This listing is public. Do not include direct email or phone number in the text.",
+    "toasts": {
+      "success": "Success",
+      "error": "Error"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Ex: Looking for referral - Data Analyst in Casablanca",
+      "targetRole": "Target role",
+      "targetRolePlaceholder": "Data Analyst",
+      "cityOptional": "City (optional)",
+      "cityPlaceholder": "Casablanca",
+      "contract": "Contract",
+      "notSpecified": "Not specified",
+      "internship": "Internship",
+      "apprenticeship": "Apprenticeship",
+      "other": "Other",
+      "workMode": "Mode",
+      "onsite": "On-site",
+      "hybrid": "Hybrid",
+      "seniority": "Seniority",
+      "confirmed": "Confirmed",
+      "publicSummary": "Public summary",
+      "publicSummaryPlaceholder": "Describe your profile, strengths, and target company type.",
+      "extraDetailsOptional": "Additional details (optional)",
+      "extraDetailsPlaceholder": "Availability, stack, certifications, context...",
+      "expirationOptional": "Expiration (optional)"
+    },
+    "actions": {
+      "publish": "Publish my request"
+    }
+  },
+  "referralCityPage": {
+    "metaTitle": "Referrals in {city} | Reviewly MA",
+    "metaDescription": "Active internal referral offers in {city} on Reviewly MA.",
+    "title": "Referrals in {city}",
+    "activeCount": "{count} active offer(s)",
+    "empty": "No active offer for this city.",
+    "slots": "Slots: {count}",
+    "publishedOn": "Published on {date}",
+    "viewOffer": "View offer"
+  },
+  "referralRolePage": {
+    "metaTitle": "Referrals role | {role} | Reviewly MA",
+    "metaDescription": "Active referral offers for role {role} on Reviewly MA.",
+    "title": "Referrals for {role}",
+    "activeCount": "{count} active offer(s)",
+    "empty": "No active offer for this role.",
+    "cityUnknown": "City not specified",
+    "slots": "Slots: {count}",
+    "viewOffer": "View offer"
+  },
+  "referralCompanyPage": {
+    "metaTitle": "Referrals company | {company} | Reviewly MA",
+    "metaDescription": "Active referral offers for company {company} on Reviewly MA.",
+    "title": "Referrals at {company}",
+    "activeCount": "{count} active offer(s)",
+    "empty": "No active offer for this company.",
+    "cityUnknown": "City not specified",
+    "slots": "Slots: {count}",
+    "viewOffer": "View offer"
   }
 }

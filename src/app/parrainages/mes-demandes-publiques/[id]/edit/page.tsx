@@ -1,12 +1,14 @@
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { EditDemandListingForm } from './EditDemandListingForm';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 type Params = { id: string };
 
 export default async function EditPublicDemandListingPage({ params }: { params: Promise<Params> }) {
+  const { t } = await getServerTranslator();
   const { id } = await params;
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -26,8 +28,8 @@ export default async function EditPublicDemandListingPage({ params }: { params: 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold font-headline">Modifier ma demande publique</h1>
-        <p className="text-sm text-muted-foreground">Mettez a jour votre demande tout en gardant un contenu conforme.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('referralPublicDemandEditPage.title', 'Edit my public request')}</h1>
+        <p className="text-sm text-muted-foreground">{t('referralPublicDemandEditPage.subtitle', 'Update your request while keeping content compliant.')}</p>
       </div>
       <EditDemandListingForm item={data} />
     </div>
