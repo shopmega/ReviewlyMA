@@ -45,6 +45,7 @@ export default async function ForProsPage() {
     t('forProsPage.features.gold.6', 'Monthly salary barometer'),
     t('forProsPage.features.gold.7', 'Advanced analytics'),
     t('forProsPage.features.gold.8', 'Premium lead generation'),
+    t('forProsPage.features.gold.9', 'Multi-business management (up to 5)'),
   ];
 
   return (
@@ -80,28 +81,7 @@ export default async function ForProsPage() {
         </div>
       </section>
 
-      <section className="py-12 bg-card border-y border-border">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white tracking-tight">10k+</div>
-              <div className="text-muted-foreground text-sm font-medium">{t('forProsPage.stats.1', 'Registered businesses')}</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white tracking-tight">500k+</div>
-              <div className="text-muted-foreground text-sm font-medium">{t('forProsPage.stats.2', 'Authentic reviews')}</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white tracking-tight">2.5M</div>
-              <div className="text-muted-foreground text-sm font-medium">{t('forProsPage.stats.3', 'Monthly views')}</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white tracking-tight">150+</div>
-              <div className="text-muted-foreground text-sm font-medium">{t('forProsPage.stats.4', 'Covered cities')}</div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       <section className="py-24 lg:py-32 bg-secondary/20 rounded-[2rem] lg:rounded-[3rem] mx-4 overflow-hidden relative" id="pricing">
         <div className="absolute top-0 right-0 p-12 opacity-5">
@@ -139,7 +119,7 @@ export default async function ForProsPage() {
 
             <div className="bg-card p-8 rounded-2xl border border-warning/30 space-y-6 shadow-none relative overflow-hidden group h-full flex flex-col">
               <div className="absolute -top-8 -right-8 p-6 opacity-10 transition-transform group-hover:rotate-12">
-                <Star className="w-24 h-24 fill-white" />
+                <Star className="w-24 h-24 fill-foreground" />
               </div>
 
               <div className="space-y-3 flex-grow">
@@ -148,15 +128,15 @@ export default async function ForProsPage() {
                 <p className="text-muted-foreground text-sm">{t('forProsPage.pricing.growth.desc', 'Perfect to boost your visibility.')}</p>
               </div>
               <div className="text-center py-3 bg-secondary/20 rounded-md border border-border my-4">
-                <div className="text-3xl font-black text-white">
+                <div className="text-3xl font-black text-foreground">
                   {growthAnnual} MAD <span className="text-base font-medium opacity-70">{t('forProsPage.pricing.perYear', '/ year')}</span>
                 </div>
                 <div className="text-xs font-bold text-muted-foreground mt-1">{tf('forProsPage.pricing.perMonth', 'or {amount} MAD/month', { amount: growthMonthly })}</div>
               </div>
               <ul className="space-y-3 flex-grow">
                 {growthFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm font-medium text-white">
-                    <Star className="w-4 h-4 text-yellow-300 fill-current" /> {f}
+                  <li key={i} className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" /> {f}
                   </li>
                 ))}
               </ul>
@@ -169,7 +149,7 @@ export default async function ForProsPage() {
 
             <div className="bg-card p-8 rounded-2xl border border-info/20 space-y-6 shadow-none relative overflow-hidden group h-full flex flex-col">
               <div className="absolute -top-8 -right-8 p-6 opacity-20 transition-transform group-hover:rotate-12">
-                <Zap className="w-24 h-24 fill-white" />
+                <Zap className="w-24 h-24 fill-foreground" />
               </div>
 
               <div className="space-y-3 flex-grow">
@@ -178,14 +158,14 @@ export default async function ForProsPage() {
                 <p className="text-muted-foreground text-sm">{t('forProsPage.pricing.gold.desc', 'Complete pack: salary benchmark, reporting and acquisition.')}</p>
               </div>
               <div className="text-center py-3 bg-secondary/20 rounded-md border border-border my-4">
-                <div className="text-3xl font-black text-white">
+                <div className="text-3xl font-black text-foreground">
                   {goldAnnual} MAD <span className="text-base font-medium opacity-70">{t('forProsPage.pricing.perYear', '/ year')}</span>
                 </div>
                 <div className="text-xs font-bold text-muted-foreground mt-1">{tf('forProsPage.pricing.perMonth', 'or {amount} MAD/month', { amount: goldMonthly })}</div>
               </div>
               <ul className="space-y-3 flex-grow">
                 {goldFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm font-bold text-white">
+                  <li key={i} className="flex items-center gap-2 text-sm font-bold text-foreground">
                     <Zap className="w-4 h-4 text-warning" /> {f}
                   </li>
                 ))}
@@ -395,10 +375,10 @@ export default async function ForProsPage() {
         </div>
 
         <div className="container mx-auto px-4 text-center space-y-10 relative z-10">
-          <div className="w-20 h-20 bg-info rounded-2xl flex items-center justify-center text-white mx-auto transform rotate-12 shadow-none">
+          <div className="w-20 h-20 bg-info rounded-2xl flex items-center justify-center text-primary-foreground mx-auto transform rotate-12 shadow-none">
             <Target className="w-10 h-10" />
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-white max-w-4xl mx-auto leading-tight tracking-tight">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-foreground max-w-4xl mx-auto leading-tight tracking-tight">
             {t('forProsPage.cta.title', 'Ready to dominate your local market?')}
           </h2>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
