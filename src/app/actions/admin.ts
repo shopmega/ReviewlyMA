@@ -11,6 +11,7 @@ import {
 } from './email';
 import { logAuditAction } from '@/lib/audit-logger';
 import { logger } from '@/lib/logger';
+import sanitizer from '@/lib/sanitizer';
 import {
   bulkUpdateReviews as bulkUpdateReviewsV2,
   bulkDeleteReviews as bulkDeleteReviewsV2,
@@ -405,15 +406,20 @@ export async function createBusiness(data: {
 
     const businessId = buildDeterministicBusinessId(data.name, data.city);
 
+    // Sanitize
+    const safeName = sanitizer.stripHTML(data.name);
+    const safeDescription = sanitizer.sanitizeBusinessContent(data.description || '');
+    const safeAddress = sanitizer.stripHTML(data.address);
+
     const { data: business, error } = await serviceClient
       .from('businesses')
       .upsert({
         id: businessId,
-        name: data.name,
+        name: safeName,
         category: data.category,
         city: data.city,
-        address: data.address,
-        description: data.description || '',
+        address: safeAddress,
+        description: safeDescription,
         is_premium: isPremium,
         tier: data.tier || 'standard',
         status: 'active',
@@ -787,6 +793,10 @@ export async function editUpdate(
       };
     }
 
+    // Sanitize
+    const safeTitle = sanitizer.stripHTML(title);
+    const safeContent = sanitizer.sanitizeBusinessContent(content);
+
     const supabase = await createAuthClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -819,7 +829,10 @@ export async function editUpdate(
     // Update the record
     const { error } = await supabase
       .from('updates')
-      .update({ title, content })
+      .update({
+        title: safeTitle,
+        content: safeContent
+      })
       .eq('id', updateId);
 
     if (error) {

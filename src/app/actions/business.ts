@@ -9,6 +9,7 @@ import { logger, LogLevel } from '@/lib/logger';
 import { notifyAdmins } from '@/lib/notifications';
 import { isPaidTier } from '@/lib/tier-utils';
 import { sanitizeBusinessGalleryUrls, sanitizeBusinessMediaPath } from '@/lib/business-media';
+import sanitizer from '@/lib/sanitizer';
 
 export async function suggestBusiness(formData: FormData): Promise<ActionState> {
     const cookieStore = await cookies();
@@ -48,15 +49,20 @@ export async function suggestBusiness(formData: FormData): Promise<ActionState> 
     }
 
     try {
+        // Sanitize inputs
+        const safeName = sanitizer.stripHTML(name);
+        const safeDescription = sanitizer.sanitizeBusinessContent(description);
+        const safeLocation = sanitizer.stripHTML(location);
+
         // Insert into business_suggestions table instead of directly creating businesses
         const { error } = await supabase
             .from('business_suggestions')
             .insert({
-                name,
-                category,
-                city,
-                description: description || '',
-                location: location || '',
+                name: safeName,
+                category: category,
+                city: city,
+                description: safeDescription || '',
+                location: safeLocation || '',
                 suggested_by: user.id
             });
 
@@ -359,8 +365,8 @@ export async function submitUpdate(
             return { status: 'error', message: 'Fonctionnalite reservee aux comptes Premium.' };
         }
 
-        const title = formData.get('updateTitle') as string;
-        const content = formData.get('updateText') as string;
+        const title = sanitizer.stripHTML(formData.get('updateTitle') as string);
+        const content = sanitizer.sanitizeBusinessContent(formData.get('updateText') as string);
         const isPinned = formData.get('isPinned') === 'on';
 
         if (!title || !content) {
@@ -498,7 +504,24 @@ export async function updateBusinessProfile(
         }
 
         // Use filtered data from schema validation to prevent unauthorized field updates (like is_premium)
-        const updateData = validatedFields.data;
+        const updateData: any = { ...validatedFields.data };
+
+        // Sanitize multi-line fields and strings
+        if (updateData.description) {
+            updateData.description = sanitizer.sanitizeBusinessContent(updateData.description);
+        }
+        if (updateData.name) {
+            updateData.name = sanitizer.stripHTML(updateData.name);
+        }
+        if (updateData.location) {
+            updateData.location = sanitizer.stripHTML(updateData.location);
+        }
+        if (updateData.website) {
+            updateData.website = sanitizer.sanitizeURL(updateData.website);
+        }
+        if (updateData.affiliate_link) {
+            updateData.affiliate_link = sanitizer.sanitizeURL(updateData.affiliate_link);
+        }
         logger.server(LogLevel.DEBUG, '[DEBUG] Business update details', { businessId: businessIdToUpdate, updateData });
 
         // CRITICAL FIX: Use service client to bypass RLS policies

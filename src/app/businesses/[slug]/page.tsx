@@ -1,4 +1,5 @@
 import { getBusinessById, getFilteredBusinesses, getSiteSettings } from '@/lib/data';
+import sanitizer from '@/lib/sanitizer';
 import { LazyBusinessHero, LazyPhotoGallery } from '@/components/shared/performance';
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
 import { BusinessSidebar } from '@/components/business/BusinessSidebar';
@@ -35,7 +36,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = `${business.name} | Avis, Horaires et Contact à ${business.city}`;
-  const description = business.description?.substring(0, 160) || `Découvrez les avis, horaires, photos et informations de contact de ${business.name} à ${business.city}.`;
+  const cleanDescription = sanitizer.stripHTML(business.description || '');
+  const description = cleanDescription.substring(0, 160) || `Découvrez les avis, horaires, photos et informations de contact de ${business.name} à ${business.city}.`;
   const logoImage = business.logo?.imageUrl;
   const hasRealLogo = !!logoImage && !logoImage.includes('/placeholders/');
   const siteUrl = getServerSiteUrl();

@@ -19,6 +19,7 @@ import {
 } from '@/lib/errors';
 import { createServiceClient } from '@/lib/supabase/server';
 import { notifyAdmins } from '@/lib/notifications';
+import sanitizer from '@/lib/sanitizer';
 
 const LEGACY_REVIEW_REPORT_REASON_MAP: Record<string, string> = {
   spam: 'spam_or_promotional',
@@ -71,7 +72,11 @@ export async function submitReview(
     ) as ReviewFormState;
   }
 
-  const { title, text, businessId, isAnonymous } = validatedFields.data;
+  const { title: rawTitle, text: rawText, businessId, isAnonymous } = validatedFields.data;
+
+  // Sanitize user content
+  const title = sanitizer.sanitizeText(rawTitle);
+  const text = sanitizer.sanitizeReviewContent(rawText);
 
   // Rate limiting (by businessId + user IP or just user if logged in)
   // For now, let's use a combination or just user ID if available, otherwise businessId (to prevent spamming a single business)
@@ -420,7 +425,11 @@ export async function updateReview(
     ) as ReviewFormState;
   }
 
-  const { title, text } = validatedFields.data;
+  const { title: rawTitle, text: rawText } = validatedFields.data;
+
+  // Sanitize user content
+  const title = sanitizer.sanitizeText(rawTitle);
+  const text = sanitizer.sanitizeReviewContent(rawText);
 
   try {
     const supabase = await createClient();
