@@ -5,16 +5,7 @@
  * Security: CRITICAL - Use for all user-generated content
  */
 
-'use client';
-
-// DOMPurify import - optional, falls back to basic sanitization if not available
-let DOMPurify: any = null;
-
-try {
-  DOMPurify = require('isomorphic-dompurify').default || require('isomorphic-dompurify');
-} catch (e) {
-  // DOMPurify not installed - will use basic regex sanitization
-}
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Sanitization configuration
@@ -42,7 +33,10 @@ export function sanitizeHTML(dirty: string): string {
   if (!dirty) return '';
 
   try {
-    return DOMPurify.sanitize(dirty, SANITIZE_CONFIG);
+    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+      return (DOMPurify.sanitize(dirty, SANITIZE_CONFIG) as unknown as string);
+    }
+    return encodeHTML(dirty);
   } catch (error) {
     console.error('Error sanitizing HTML:', error);
     // Fallback to plain text encoding
@@ -122,12 +116,12 @@ export function stripHTML(html: string): string {
 
   try {
     // If DOMPurify is available, use it for super-safe stripping
-    if (DOMPurify) {
-      return DOMPurify.sanitize(html, {
+    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+      return (DOMPurify.sanitize(html, {
         ALLOWED_TAGS: [],
         ALLOWED_ATTR: [],
         KEEP_CONTENT: true,
-      }).trim();
+      }) as unknown as string).trim();
     }
   } catch (error) {
     console.error('Error stripping HTML with DOMPurify:', error);
@@ -152,12 +146,17 @@ export function sanitizeReviewContent(content: string): string {
   if (!content) return '';
 
   // Allow basic formatting
-  const allowed = ['<b>', '<i>', '<em>', '<strong>', '<br>', '<p>'];
-  let sanitized = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
-    ALLOWED_ATTR: [],
-    KEEP_CONTENT: true,
-  });
+  let sanitized = '';
+
+  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+    sanitized = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
+      ALLOWED_ATTR: [],
+      KEEP_CONTENT: true,
+    }) as unknown as string;
+  } else {
+    sanitized = encodeHTML(content);
+  }
 
   // Ensure length limits
   if (sanitized.length > 5000) {
@@ -176,15 +175,21 @@ export function sanitizeReviewContent(content: string): string {
 export function sanitizeBusinessContent(content: string): string {
   if (!content) return '';
 
-  const sanitized = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: [
-      'b', 'i', 'em', 'strong', 'u', 'p', 'br',
-      'ul', 'ol', 'li', 'a', 'blockquote',
-      'h1', 'h2', 'h3'
-    ],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
-    KEEP_CONTENT: true,
-  });
+  let sanitized = '';
+
+  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+    sanitized = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: [
+        'b', 'i', 'em', 'strong', 'u', 'p', 'br',
+        'ul', 'ol', 'li', 'a', 'blockquote',
+        'h1', 'h2', 'h3'
+      ],
+      ALLOWED_ATTR: ['href', 'target', 'rel'],
+      KEEP_CONTENT: true,
+    }) as unknown as string;
+  } else {
+    sanitized = encodeHTML(content);
+  }
 
   // Ensure length limits
   if (sanitized.length > 10000) {
