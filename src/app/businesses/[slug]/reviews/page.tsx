@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { getBusinessBySlug } from '@/lib/data/businesses';
 import { ReviewsPageClient } from '@/components/business/ReviewsPageClient';
 import { Metadata } from 'next';
@@ -93,7 +93,7 @@ export default async function BusinessReviewsPage({ params }: PageProps) {
   const business = await getBusinessBySlug(slug);
 
   if (!business) {
-    notFound();
+    redirect('/businesses');
   }
 
   return <ReviewsPageClient business={business} />;

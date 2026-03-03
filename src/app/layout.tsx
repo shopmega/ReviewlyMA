@@ -7,7 +7,6 @@ import { ConditionalFooter } from '@/components/layout/ConditionalFooter';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { BusinessProvider } from '@/contexts/BusinessContext';
-import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { getCachedSiteSettings } from '@/lib/cache';
 import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
@@ -98,37 +97,35 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", plexSans.variable, plexHeadline.variable, plexMono.variable)} suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col')}>
-        <ErrorBoundary>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <I18nProvider locale={locale} messages={messages}>
-              <BusinessProvider>
-                <Header settings={settings} />
-                <main className="flex-grow">{children}</main>
-                <ConditionalFooter>
-                  <Footer settings={settings} />
-                </ConditionalFooter>
-                <Toaster />
-                <AnalyticsConfig
-                  gaId={settings.google_analytics_id || undefined}
-                  metaPixelId={settings.facebook_pixel_id || undefined}
-                  nonce={cspNonce}
-                />
-                <TrackingConsentBridge />
-                <AnalyticsPageTracker />
-                <AdSense
-                  enabled={settings.adsense_enabled ?? false}
-                  pubId={settings.adsense_client_id || undefined}
-                  autoAdsEnabled={settings.adsense_auto_ads_enabled ?? false}
-                />
-              </BusinessProvider>
-            </I18nProvider>
-          </ThemeProvider>
-        </ErrorBoundary>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <I18nProvider locale={locale} messages={messages}>
+            <BusinessProvider>
+              <Header settings={settings} />
+              <main className="flex-grow">{children}</main>
+              <ConditionalFooter>
+                <Footer settings={settings} />
+              </ConditionalFooter>
+              <Toaster />
+              <AnalyticsConfig
+                gaId={settings.google_analytics_id || undefined}
+                metaPixelId={settings.facebook_pixel_id || undefined}
+                nonce={cspNonce}
+              />
+              <TrackingConsentBridge />
+              <AnalyticsPageTracker />
+              <AdSense
+                enabled={settings.adsense_enabled ?? false}
+                pubId={settings.adsense_client_id || undefined}
+                autoAdsEnabled={settings.adsense_auto_ads_enabled ?? false}
+              />
+            </BusinessProvider>
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

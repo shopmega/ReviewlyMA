@@ -1,40 +1,22 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md mx-auto text-center">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-destructive">404 - Page non trouvée</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            La page que vous recherchez n'existe pas ou a été déplacée.
-          </p>
-          
-          <div className="pt-4 flex flex-col gap-2">
-            <Button asChild className="w-full">
-              <Link href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                </svg>
-                Retour à l'accueil
-              </Link>
-            </Button>
-            
-            <Button variant="outline" asChild className="w-full">
-              <Link href="/businesses">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                </svg>
-                Explorer les entreprises
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+      <section className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+        <h1 className="text-3xl font-bold">404 - Page non trouvee</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          La page demandee est introuvable ou a ete deplacee.
+        </p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/" className="rounded-lg bg-primary px-4 py-2 text-primary-foreground font-semibold">
+            Retour a l'accueil
+          </Link>
+          <Link href="/businesses" className="rounded-lg border border-border px-4 py-2 font-semibold">
+            Explorer les entreprises
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { getBusinessBySlug } from '@/lib/data/businesses';
 import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function BusinessSalariesPage({ params }: PageProps) {
   const { slug } = await params;
   const business = await getBusinessBySlug(slug);
-  if (!business) notFound();
+  if (!business) redirect('/businesses');
 
   const [stats, salaries] = await Promise.all([
     getSalaryStatsByBusiness(business.id),

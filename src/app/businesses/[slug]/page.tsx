@@ -9,7 +9,7 @@ import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
 import CompetitorAds from '@/components/business/CompetitorAds';
 import { BusinessInsightsTabs } from '@/components/business/BusinessInsightsTabs';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { Business } from '@/lib/types';
@@ -106,7 +106,7 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
   const settings = await getSiteSettings();
 
   if (!business) {
-    notFound();
+    redirect('/businesses');
   }
 
   const [salaryStats, salaryEntries] = settings.enable_salaries

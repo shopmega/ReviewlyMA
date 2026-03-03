@@ -1,5 +1,5 @@
 import { getBusinessById } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { ReviewForm } from '@/components/forms/ReviewForm';
 import { getServerTranslator } from '@/lib/i18n/server';
 
@@ -15,7 +15,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   const { t, tf } = await getServerTranslator();
 
   if (!business) {
-    notFound();
+    redirect('/businesses');
   }
 
   return (

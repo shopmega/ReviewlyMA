@@ -1,5 +1,5 @@
 import { getBusinessById } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { BusinessWidget } from '@/components/shared/BusinessWidget';
 
 export type WidgetPageProps = {
@@ -16,7 +16,7 @@ export default async function WidgetPage({ params, searchParams }: WidgetPagePro
   const business = await getBusinessById(resolvedParams.slug);
 
   if (!business) {
-    notFound();
+    redirect('/businesses');
   }
 
   // Parse customization options from query parameters
