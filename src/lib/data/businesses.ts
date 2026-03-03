@@ -165,22 +165,65 @@ export const getFilteredBusinesses = async (filters: BusinessFilters = {}): Prom
 export const getBusinessById = async (id: string): Promise<Business | null> => {
     const supabase = getPublicClient();
 
-    const { data, error } = await supabase
-        .from('businesses')
-        .select(`
+    const selectQuery = `
       *,
       reviews (*),
       updates (*),
       business_hours (*)
-    `)
-        .eq('id', id)
-        .single();
+    `;
+    const isNoRowError = (error: any) =>
+        !!error && (error.code === 'PGRST116' || String(error.message || '').toLowerCase().includes('no rows'));
+    const sanitizeRouteKey = (value: string): string =>
+        value
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+    const candidates = Array.from(new Set([
+        String(id || ''),
+        String(id || '').trim(),
+        sanitizeRouteKey(String(id || '')),
+    ].filter(Boolean)));
 
-    if (error || !data) {
-        return null;
+    const queryByField = async (field: 'id' | 'slug', value: string) => {
+        return supabase
+            .from('businesses')
+            .select(selectQuery)
+            .eq(field, value)
+            .single();
+    };
+
+    for (const candidate of candidates) {
+        const { data, error } = await queryByField('id', candidate);
+        if (data && !error) {
+            return mapBusinessFromDB(data);
+        }
+        if (error && !isNoRowError(error)) {
+            return null;
+        }
     }
 
-    return mapBusinessFromDB(data);
+    // Backward-compatible fallback: some datasets now route with `slug` while legacy routes use `id`.
+    for (const candidate of candidates) {
+        const { data, error } = await queryByField('slug', candidate);
+        if (data && !error) {
+            return mapBusinessFromDB(data);
+        }
+        if (error && !isNoRowError(error)) {
+            // If slug column is unavailable in an environment, keep behavior as "not found".
+            const message = String(error.message || '').toLowerCase();
+            if (error.code === '42703' || message.includes('column') && message.includes('slug')) {
+                return null;
+            }
+            return null;
+        }
+    }
+
+    return null;
 };
 
 /**
