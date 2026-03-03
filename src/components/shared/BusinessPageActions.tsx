@@ -3,7 +3,7 @@
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Pencil, MessageSquare, Briefcase, MessageCircle, ExternalLink, Flag, ShieldCheck, Wallet } from 'lucide-react';
+import { Pencil, MessageSquare, Briefcase, MessageCircle, ExternalLink, Flag, ShieldCheck, Wallet, Star, BarChart3 } from 'lucide-react';
 import { ContactBusinessDialog } from '@/components/shared/ContactBusinessDialog';
 import { ShareButton } from '@/components/shared/ShareButton';
 import { FollowButton } from '@/components/shared/FollowButton';
@@ -59,6 +59,20 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                         <Link href={`/businesses/${business.id}?tab=salaries&shareSalary=1#salaries`} className="flex items-center gap-2" onClick={() => trackBusinessCta('share_salary', 'action_bar_secondary')}>
                             <Wallet className="w-4 h-4" />
                             <span>Partager salaire</span>
+                        </Link>
+                    </Button>
+
+                    <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
+                        <Link href={`/businesses/${business.id}/reviews`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_reviews', 'action_bar_secondary')}>
+                            <Star className="w-4 h-4" />
+                            <span>Voir avis</span>
+                        </Link>
+                    </Button>
+
+                    <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
+                        <Link href={`/businesses/${business.id}/salaries`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_salaries', 'action_bar_secondary')}>
+                            <BarChart3 className="w-4 h-4" />
+                            <span>Voir salaires</span>
                         </Link>
                     </Button>
 

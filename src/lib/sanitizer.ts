@@ -1,11 +1,14 @@
 /**
  * HTML Content Sanitization Utility
  * Prevents XSS attacks by sanitizing user-generated content
- * 
+ *
  * Security: CRITICAL - Use for all user-generated content
+ *
+ * NOTE:
+ * We intentionally avoid server-side DOMPurify runtime imports here because
+ * some deployment environments throw ERR_REQUIRE_ESM through transitive deps.
+ * This utility must stay synchronous and SSR-safe.
  */
-
-import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Sanitization configuration
@@ -24,6 +27,64 @@ const SANITIZE_CONFIG: any = {
   KEEP_CONTENT: true,
 };
 
+const URL_ATTRS = new Set(['href', 'src']);
+
+function removeDangerousBlocks(input: string): string {
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+}
+
+function sanitizeTagAttributes(rawAttrs: string): string {
+  if (!rawAttrs) return '';
+
+  const attrs: string[] = [];
+  const attrRegex = /([a-zA-Z_:][\w:.-]*)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = attrRegex.exec(rawAttrs)) !== null) {
+    const name = match[1].toLowerCase();
+    const value = (match[3] ?? match[4] ?? match[5] ?? '').trim();
+
+    if (!name || !value) continue;
+    if (name.startsWith('on')) continue;
+
+    // Keep only configured attributes.
+    if (!SANITIZE_CONFIG.ALLOWED_ATTR.includes(name)) continue;
+
+    if (URL_ATTRS.has(name)) {
+      const safeUrl = sanitizeURL(value);
+      if (!safeUrl) continue;
+      attrs.push(`${name}="${encodeHTML(safeUrl)}"`);
+      continue;
+    }
+
+    attrs.push(`${name}="${encodeHTML(value)}"`);
+  }
+
+  return attrs.length > 0 ? ` ${attrs.join(' ')}` : '';
+}
+
+function sanitizeAllowedHtml(input: string, allowedTags: string[]): string {
+  const allowed = new Set(allowedTags.map((t) => t.toLowerCase()));
+  const stripped = removeDangerousBlocks(input);
+
+  return stripped.replace(/<\/?([a-zA-Z0-9-]+)([^>]*)>/g, (full, tagName: string, attrs: string) => {
+    const tag = String(tagName || '').toLowerCase();
+    if (!allowed.has(tag)) {
+      return '';
+    }
+
+    const isClosing = full.startsWith('</');
+    if (isClosing) {
+      return `</${tag}>`;
+    }
+
+    const safeAttrs = sanitizeTagAttributes(attrs || '');
+    return `<${tag}${safeAttrs}>`;
+  });
+}
+
 /**
  * Sanitize user-generated HTML content
  * @param dirty - Raw HTML content from user
@@ -33,10 +94,7 @@ export function sanitizeHTML(dirty: string): string {
   if (!dirty) return '';
 
   try {
-    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
-      return (DOMPurify.sanitize(dirty, SANITIZE_CONFIG) as unknown as string);
-    }
-    return encodeHTML(dirty);
+    return sanitizeAllowedHtml(dirty, SANITIZE_CONFIG.ALLOWED_TAGS);
   } catch (error) {
     console.error('Error sanitizing HTML:', error);
     // Fallback to plain text encoding
@@ -115,25 +173,14 @@ export function stripHTML(html: string): string {
   if (!html) return '';
 
   try {
-    // If DOMPurify is available, use it for super-safe stripping
-    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
-      return (DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: [],
-        ALLOWED_ATTR: [],
-        KEEP_CONTENT: true,
-      }) as unknown as string).trim();
-    }
+    return removeDangerousBlocks(html)
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   } catch (error) {
-    console.error('Error stripping HTML with DOMPurify:', error);
+    console.error('Error stripping HTML:', error);
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
-
-  // Fallback to regex
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts entirely
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')   // Remove styles entirely
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 /**
@@ -146,17 +193,7 @@ export function sanitizeReviewContent(content: string): string {
   if (!content) return '';
 
   // Allow basic formatting
-  let sanitized = '';
-
-  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
-    sanitized = DOMPurify.sanitize(content, {
-      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
-      ALLOWED_ATTR: [],
-      KEEP_CONTENT: true,
-    }) as unknown as string;
-  } else {
-    sanitized = encodeHTML(content);
-  }
+  let sanitized = sanitizeAllowedHtml(content, ['b', 'i', 'em', 'strong', 'br', 'p']);
 
   // Ensure length limits
   if (sanitized.length > 5000) {
@@ -175,21 +212,11 @@ export function sanitizeReviewContent(content: string): string {
 export function sanitizeBusinessContent(content: string): string {
   if (!content) return '';
 
-  let sanitized = '';
-
-  if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
-    sanitized = DOMPurify.sanitize(content, {
-      ALLOWED_TAGS: [
-        'b', 'i', 'em', 'strong', 'u', 'p', 'br',
-        'ul', 'ol', 'li', 'a', 'blockquote',
-        'h1', 'h2', 'h3'
-      ],
-      ALLOWED_ATTR: ['href', 'target', 'rel'],
-      KEEP_CONTENT: true,
-    }) as unknown as string;
-  } else {
-    sanitized = encodeHTML(content);
-  }
+  let sanitized = sanitizeAllowedHtml(content, [
+    'b', 'i', 'em', 'strong', 'u', 'p', 'br',
+    'ul', 'ol', 'li', 'a', 'blockquote',
+    'h1', 'h2', 'h3'
+  ]);
 
   // Ensure length limits
   if (sanitized.length > 10000) {
