@@ -76,9 +76,9 @@ async function seed() {
             overall_rating: business.overallRating,
             logo_url: business.logo.imageUrl,
             logo_hint: business.logo.imageHint,
-            cover_url: business.photos && business.photos.length > 0 ? business.photos[0].imageUrl : null,
-            cover_hint: business.photos && business.photos.length > 0 ? business.photos[0].imageHint : null,
-            gallery_urls: business.photos && business.photos.length > 1 ? business.photos.slice(1).map((p: any) => p.imageUrl) : [],
+            cover_url: null,
+            cover_hint: null,
+            gallery_urls: business.photos ? business.photos.map((p: any) => p.imageUrl) : [],
             tags: business.tags || [],
             benefits: business.benefits || [],
         };

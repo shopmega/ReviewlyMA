@@ -52,9 +52,9 @@ function mapBusinessForInsert(business: Business) {
     review_count: 0,
     logo_url: business.logo?.imageUrl || null,
     logo_hint: business.logo?.imageHint || null,
-    cover_url: business.photos?.[0]?.imageUrl || null,
-    cover_hint: business.photos?.[0]?.imageHint || null,
-    gallery_urls: business.photos && business.photos.length > 1 ? business.photos.slice(1).map((p: any) => p.imageUrl) : [],
+    cover_url: null,
+    cover_hint: null,
+    gallery_urls: business.photos ? business.photos.map((p: any) => p.imageUrl) : [],
     tags: business.tags || [],
     benefits: business.benefits || [],
   };

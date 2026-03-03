@@ -331,11 +331,11 @@ export default function EditProfilePage() {
         const objectUrl = URL.createObjectURL(file);
 
         img.onload = () => {
-          const valid = img.width >= 1200 && img.height >= 400;
+          const valid = img.width >= 400 && img.height >= 200;
           if (!valid) {
             toast({
               title: 'Image trop petite',
-              description: 'La photo de couverture doit faire au moins 1200x400 pixels.',
+              description: 'La photo de couverture doit faire au moins 400x200 pixels (1200x400 recommandé).',
               variant: 'destructive',
             });
           }

@@ -25,6 +25,9 @@ export type CSVBusinessData = {
     is_premium?: string; // "true", "false", "1", "0"
     tags?: string; // comma separated
     tier?: string; // "none", "growth", "gold" (legacy "pro" is mapped to "gold")
+    logo_url?: string;
+    cover_url?: string;
+    gallery_urls?: string; // comma separated
 };
 
 function canonicalKey(value?: string | null): string {
@@ -178,6 +181,10 @@ export async function bulkImportBusinesses(data: CSVBusinessData[]): Promise<Imp
                 is_premium: isPremium,
                 tier: tier,
                 tags: tags,
+                // Media
+                logo_url: row.logo_url?.trim() || null,
+                cover_url: row.cover_url?.trim() || null,
+                gallery_urls: row.gallery_urls ? row.gallery_urls.split(',').map(u => u.trim()).filter(Boolean) : [],
                 // Defaults
                 type: 'company',
                 is_featured: false,

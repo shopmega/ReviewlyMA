@@ -26,7 +26,7 @@ export function BusinessCover({
     height,
     priority = false,
     sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
-    fallbackToGallery = true
+    fallbackToGallery = false
 }: BusinessCoverProps) {
     const [imageError, setImageError] = useState(false);
 

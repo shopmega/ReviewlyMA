@@ -50,15 +50,19 @@ export function PhotoGallery({ photos, businessName, businessId }: PhotoGalleryP
     setLightboxOpen(true);
   };
 
-  <div className="relative w-full h-full bg-slate-100 dark:bg-slate-900 overflow-hidden flex flex-col items-center justify-center p-8 text-center group">
-    <div className="absolute inset-0 opacity-10 bg-[url('/grid-pattern.svg')] bg-[length:40px_40px]" />
-    <div className="relative z-10 space-y-4">
-      <div className="w-16 h-16 mx-auto rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center">
-        <MapPin className="w-8 h-8 text-slate-400" />
+  if (!photos || photos.length === 0) {
+    return (
+      <div className="relative w-full h-full bg-slate-100 dark:bg-slate-900 overflow-hidden flex flex-col items-center justify-center p-8 text-center group">
+        <div className="absolute inset-0 opacity-10 bg-[url('/grid-pattern.svg')] bg-[length:40px_40px]" />
+        <div className="relative z-10 space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center">
+            <MapPin className="w-8 h-8 text-slate-400" />
+          </div>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Aucune photo disponible</p>
+        </div>
       </div>
-      <p className="text-slate-500 dark:text-slate-400 font-medium">Aucune photo disponible</p>
-    </div>
-  </div>
+    );
+  }
 
   return (
     <>

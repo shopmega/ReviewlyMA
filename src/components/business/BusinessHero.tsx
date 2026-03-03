@@ -11,6 +11,10 @@ import { cn, isValidImageUrl } from '@/lib/utils';
 import { useI18n } from '@/components/providers/i18n-provider';
 import Link from 'next/link';
 
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import Image from 'next/image';
+
 interface BusinessHeroProps {
   business: Business;
 }
@@ -25,7 +29,7 @@ export function BusinessHero({ business }: BusinessHeroProps) {
     const hasHoursData = business.hours && business.hours.length > 0;
     const hasMedia =
       Boolean(business.cover_url && isValidImageUrl(business.cover_url)) ||
-      Boolean(Array.isArray(business.photos) && business.photos[0]?.imageUrl && isValidImageUrl(business.photos[0].imageUrl));
+      Boolean(Array.isArray(business.photos) && business.photos.length > 0 && business.photos[0]?.imageUrl && isValidImageUrl(business.photos[0].imageUrl));
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const opened = !!todayHours?.isOpen && todayHours.open <= currentTime && todayHours.close > currentTime;
@@ -39,14 +43,38 @@ export function BusinessHero({ business }: BusinessHeroProps) {
   return (
     <div className={cn('relative flex w-full items-end group', heroSizeClass)}>
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <BusinessCover
-          business={business}
-          alt={business.name}
-          fill
-          fallbackToGallery
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-          priority
-        />
+        {business.cover_url && isValidImageUrl(business.cover_url) ? (
+          <BusinessCover
+            business={business}
+            alt={business.name}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            priority
+          />
+        ) : business.photos && business.photos.length > 0 ? (
+          <Carousel
+            opts={{ loop: true }}
+            plugins={[Autoplay({ delay: 5000 })]}
+            className="h-full w-full"
+          >
+            <CarouselContent className="h-full -ml-0">
+              {business.photos.map((photo, index) => (
+                <CarouselItem key={index} className="h-full pl-0">
+                  <Image
+                    src={photo.imageUrl}
+                    alt={`${business.name} - Photo ${index + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    priority={index === 0}
+                    sizes="100vw"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        ) : (
+          <div className="absolute inset-0 bg-slate-100 dark:bg-slate-900/50" />
+        )}
         <div className="absolute inset-0 z-10 bg-background/65" />
       </div>
 
