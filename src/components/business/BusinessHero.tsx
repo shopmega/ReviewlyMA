@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
+import { getStoragePublicUrl } from '@/lib/data';
 
 interface BusinessHeroProps {
   business: Business;
@@ -21,53 +22,77 @@ interface BusinessHeroProps {
 
 export function BusinessHero({ business }: BusinessHeroProps) {
   const { t, tf } = useI18n();
-  const { isOpen, hasHours, hasHeroMedia } = useMemo(() => {
+
+  // Combine cover and gallery photos into a single array for the carousel
+  const allMedia = useMemo(() => {
+    const media: { url: string; isCover: boolean }[] = [];
+
+    // Add cover if it exists
+    if (business.cover_url) {
+      const resolvedCover = getStoragePublicUrl(business.cover_url);
+      if (resolvedCover && isValidImageUrl(resolvedCover)) {
+        media.push({ url: resolvedCover, isCover: true });
+      }
+    }
+
+    // Add gallery photos, avoiding duplicate of cover if they happen to be the same
+    if (Array.isArray(business.photos)) {
+      business.photos.forEach(photo => {
+        const resolvedUrl = getStoragePublicUrl(photo.imageUrl) || photo.imageUrl;
+        // Simple check to avoid duplicating cover as a gallery item if they are the same path
+        if (resolvedUrl && isValidImageUrl(resolvedUrl) && !media.some(m => m.url === resolvedUrl)) {
+          media.push({ url: resolvedUrl, isCover: false });
+        }
+      });
+    }
+
+    return media;
+  }, [business.cover_url, business.photos]);
+
+  const { isOpen, hasHours, hasMedia } = useMemo(() => {
     const daysFr = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
     const todayIndex = new Date().getDay();
     const today = daysFr[todayIndex];
     const todayHours = business.hours?.find((h) => h.day.toLowerCase() === today);
     const hasHoursData = business.hours && business.hours.length > 0;
-    const hasMedia =
-      Boolean(business.cover_url && isValidImageUrl(business.cover_url)) ||
-      Boolean(Array.isArray(business.photos) && business.photos.length > 0 && business.photos[0]?.imageUrl && isValidImageUrl(business.photos[0].imageUrl));
+
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const opened = !!todayHours?.isOpen && todayHours.open <= currentTime && todayHours.close > currentTime;
-    return { isOpen: opened, hasHours: hasHoursData, hasHeroMedia: hasMedia };
-  }, [business.hours, business.cover_url, business.photos]);
 
-  const heroSizeClass = hasHeroMedia
+    return {
+      isOpen: opened,
+      hasHours: hasHoursData,
+      hasMedia: allMedia.length > 0
+    };
+  }, [business.hours, allMedia]);
+
+  const heroSizeClass = hasMedia
     ? 'h-[38vh] md:h-[48vh] min-h-[340px] md:min-h-[420px]'
     : 'h-auto min-h-[240px] md:min-h-[280px] py-8 md:py-10';
 
   return (
     <div className={cn('relative flex w-full items-end group', heroSizeClass)}>
       <div className="absolute inset-0 z-0 overflow-hidden">
-        {business.cover_url && isValidImageUrl(business.cover_url) ? (
-          <BusinessCover
-            business={business}
-            alt={business.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            priority
-          />
-        ) : business.photos && business.photos.length > 0 ? (
+        {allMedia.length > 0 ? (
           <Carousel
-            opts={{ loop: true }}
-            plugins={[Autoplay({ delay: 5000 })]}
+            opts={{ loop: allMedia.length > 1 }}
+            plugins={allMedia.length > 1 ? [Autoplay({ delay: 5000 })] : []}
             className="h-full w-full"
           >
             <CarouselContent className="h-full -ml-0">
-              {business.photos.map((photo, index) => (
+              {allMedia.map((media, index) => (
                 <CarouselItem key={index} className="h-full pl-0">
-                  <Image
-                    src={photo.imageUrl}
-                    alt={`${business.name} - Photo ${index + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    priority={index === 0}
-                    sizes="100vw"
-                  />
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={media.url}
+                      alt={`${business.name} - ${media.isCover ? 'Couverture' : `Photo ${index + 1}`}`}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      priority={index === 0}
+                      sizes="100vw"
+                    />
+                  </div>
                 </CarouselItem>
               ))}
             </CarouselContent>

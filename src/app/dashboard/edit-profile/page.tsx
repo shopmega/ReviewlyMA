@@ -300,21 +300,29 @@ export default function EditProfilePage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'cover' | 'gallery') => {
     const file = e.target.files?.[0];
-    if (!file || !businessId) return;
-
-    // Type validation
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
+    if (!file) return;
+    if (!businessId) {
       toast({
-        title: 'Format non supporté',
-        description: 'Veuillez utiliser du JPG, PNG, WEBP ou GIF.',
+        title: 'Erreur',
+        description: 'ID de l\'établissement manquant. Veuillez rafraîchir la page.',
         variant: 'destructive',
       });
       return;
     }
 
-    // Limit size: 5MB for logo/cover, 10MB for gallery
-    const maxSize = type === 'gallery' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    // Type validation
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Format non supporté',
+        description: 'Veuillez utiliser du JPG, PNG, WEBP, AVIF ou GIF.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Limit size: 10MB (aligned with storage bucket limit)
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
         title: 'Fichier trop volumineux',
@@ -344,6 +352,11 @@ export default function EditProfilePage() {
         };
 
         img.onerror = () => {
+          toast({
+            title: 'Image invalide',
+            description: 'Impossible de lire le fichier image. Le fichier est peut-être corrompu.',
+            variant: 'destructive',
+          });
           URL.revokeObjectURL(objectUrl);
           resolve(false);
         };
@@ -352,6 +365,7 @@ export default function EditProfilePage() {
       });
 
       if (!isValidCover) {
+        setIsUploading(null);
         e.target.value = '';
         return;
       }

@@ -2,6 +2,7 @@
 
 import { Business } from '@/lib/types';
 import { isValidImageUrl } from '@/lib/utils';
+import { getStoragePublicUrl } from '@/lib/data';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
@@ -36,11 +37,20 @@ export function BusinessCover({
     }, [business.cover_url, business.photos]);
 
     // Determine the best available image
-    const hasCover = !imageError && business.cover_url && isValidImageUrl(business.cover_url);
-    const hasGalleryFallback = !imageError && fallbackToGallery && business.photos && business.photos.length > 0 && isValidImageUrl(business.photos[0].imageUrl);
+    const coverUrlRaw = business.cover_url;
+    const galleryFirstUrlRaw = (fallbackToGallery && business.photos && business.photos.length > 0)
+        ? business.photos[0].imageUrl
+        : null;
+
+    const resolvedCoverUrl = getStoragePublicUrl(coverUrlRaw || null);
+    const resolvedGalleryUrl = getStoragePublicUrl(galleryFirstUrlRaw || null);
+
+    const hasCover = !imageError && resolvedCoverUrl && isValidImageUrl(resolvedCoverUrl);
+    const hasGalleryFallback = !imageError && fallbackToGallery && resolvedGalleryUrl && isValidImageUrl(resolvedGalleryUrl);
+
     const coverUrl = hasCover
-        ? business.cover_url
-        : (hasGalleryFallback ? business.photos[0].imageUrl : null);
+        ? resolvedCoverUrl
+        : (hasGalleryFallback ? resolvedGalleryUrl : null);
 
     if (coverUrl) {
         if (fill) {
