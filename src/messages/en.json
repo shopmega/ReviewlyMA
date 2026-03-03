@@ -1178,7 +1178,8 @@
       "dataDesc": "Interpreted analysis from demand and salary signals.",
       "reportsTitle": "Reports linking",
       "reportsDesc": "Direct links to monthly reports to strengthen topical authority."
-    }
+    },
+    "shareLabel": "Share"
   },
   "referralMyRequestsPage": {
     "title": "My referral requests",

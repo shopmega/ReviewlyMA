@@ -5,6 +5,7 @@ import { BarChart3, BriefcaseBusiness, CalendarDays, LineChart, MapPin, Users2 }
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { slugify } from '@/lib/utils';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { MIN_INDEXABLE_MONTHLY_REPORT_RECORDS } from '@/lib/seo-ia';
 import { formatReportMonthLabel, parseMonthlyReferralReportSlug } from '@/lib/report-period';
 import { Badge } from '@/components/ui/badge';
@@ -166,13 +167,22 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
           Snapshot of referral demand and offer-side activity for this month. Data source mode:{' '}
           {usingServiceRole ? 'full historical (service role)' : 'public active scope'}.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button asChild>
             <Link href="/referral-demand">Open referral-demand dashboard</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/reports">Back to reports hub</Link>
           </Button>
+          <ContentShareButton
+            url={`${getServerSiteUrl()}/reports/${reportSlug}`}
+            title={`Monthly referral report: ${monthLabel} | Reviewly MA`}
+            text={`Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`}
+            contentType="report"
+            contentId={reportSlug}
+            cardType="report_detail"
+            label="Share report"
+          />
         </div>
       </section>
 

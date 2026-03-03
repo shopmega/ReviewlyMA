@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Link2 } from 'lucide-react';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { getMergedBlogPostBySlug, getMergedBlogPostSlugs, getMergedBlogPosts } from '@/lib/data';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,12 +116,24 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
           <span>Mis a jour le : {new Date(post.updatedAt).toLocaleDateString('fr-MA')}</span>
           <span>Temps de lecture : {post.readTimeMinutes} min</span>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/blog" className="inline-flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Retour au blog
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button asChild variant="outline">
+            <Link href="/blog" className="inline-flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Retour au blog
+            </Link>
+          </Button>
+
+          <ContentShareButton
+            url={`${getServerSiteUrl()}/blog/${post.slug}`}
+            title={`${post.title} | Reviewly MA`}
+            text={post.description}
+            contentType="blog_post"
+            contentId={post.slug}
+            cardType="blog_detail"
+            label="Partager cet article"
+          />
+        </div>
       </section>
 
       <Card className="rounded-2xl">

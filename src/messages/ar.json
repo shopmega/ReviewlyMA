@@ -1177,8 +1177,9 @@
       "dataTitle": "Data insights",
       "dataDesc": "Interpreted analysis from demand and salary signals.",
       "reportsTitle": "Reports linking",
-      "reportsDesc": "Direct links to monthly reports to strengthen topical authority."
-    }
+      "reportsDesc": "Editorial guides and referral execution playbooks."
+    },
+    "shareLabel": "مشاركة"
   },
   "referralMyRequestsPage": {
     "title": "My referral requests",

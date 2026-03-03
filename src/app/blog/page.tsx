@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { ContentShareButton } from '@/components/shared/ContentShareButton';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getServerTranslator();
@@ -69,12 +70,23 @@ export default async function BlogHubPage() {
             </span>
             <span>{tf('blogPage.readTime', 'Read time: {minutes} min', { minutes: pillar.readTimeMinutes })}</span>
           </div>
-          <Button asChild>
-            <Link href={`/blog/${pillar.slug}`} className="inline-flex items-center gap-2">
-              {t('blogPage.readPillarCta', 'Read pillar guide')}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild>
+              <Link href={`/blog/${pillar.slug}`} className="inline-flex items-center gap-2">
+                {t('blogPage.readPillarCta', 'Read pillar guide')}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <ContentShareButton
+              url={`${getServerSiteUrl()}/blog/${pillar.slug}`}
+              title={`${pillar.title} | Reviewly MA`}
+              text={pillar.description}
+              contentType="blog_post"
+              contentId={pillar.slug}
+              cardType="blog_hub_pillar"
+              label={t('blogPage.shareLabel', 'Share')}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -124,12 +136,23 @@ export default async function BlogHubPage() {
                     minutes: post.readTimeMinutes,
                   })}
                 </p>
-                <Button asChild variant="outline">
-                  <Link href={`/blog/${post.slug}`} className="inline-flex items-center gap-2">
-                    {t('blogPage.readGuideCta', 'Read guide')}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button asChild variant="outline">
+                    <Link href={`/blog/${post.slug}`} className="inline-flex items-center gap-2">
+                      {t('blogPage.readGuideCta', 'Read guide')}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <ContentShareButton
+                    url={`${getServerSiteUrl()}/blog/${post.slug}`}
+                    title={`${post.title} | Reviewly MA`}
+                    text={post.description}
+                    contentType="blog_post"
+                    contentId={post.slug}
+                    cardType="blog_hub_card"
+                    label={t('blogPage.shareLabel', 'Share')}
+                  />
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -1178,7 +1178,8 @@
       "dataDesc": "Analyses interpretees a partir des signaux de demande et de salaires.",
       "reportsTitle": "Liaison rapports",
       "reportsDesc": "Connexions directes avec les rapports mensuels pour renforcer l autorite topique."
-    }
+    },
+    "shareLabel": "Partager"
   },
   "referralMyRequestsPage": {
     "title": "Mes demandes de parrainage",
