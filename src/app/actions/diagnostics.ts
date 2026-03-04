@@ -52,11 +52,15 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
     details: adsenseEnv ? maskSecret(adsenseEnv) : undefined,
   });
 
-  const gaEnv = process.env.NEXT_PUBLIC_GA_ID;
+  const gaEnvPrimary = process.env.NEXT_PUBLIC_GA_ID;
+  const gaEnvLegacy = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+  const gaEnv = gaEnvPrimary || gaEnvLegacy;
   checks.push({
-    name: 'Env: NEXT_PUBLIC_GA_ID',
+    name: 'Env: GA ID',
     status: gaEnv ? 'ok' : 'warn',
-    message: gaEnv ? 'Configured' : 'Not set (GA uses DB fallback if provided)',
+    message: gaEnv
+      ? `Configured via ${gaEnvPrimary ? 'NEXT_PUBLIC_GA_ID' : 'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID'}`
+      : 'Not set in env (GA may still be configured via DB fallback)',
     details: gaEnv ? maskSecret(gaEnv) : undefined,
   });
 
@@ -113,6 +117,17 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
         name: 'Schema: analytics columns',
         status: settings && Object.hasOwn(settings, 'google_analytics_id') && Object.hasOwn(settings, 'facebook_pixel_id') ? 'ok' : 'error',
         message: settings && Object.hasOwn(settings, 'google_analytics_id') && Object.hasOwn(settings, 'facebook_pixel_id') ? 'Present' : 'Missing analytics columns',
+      });
+
+      const dbGaId = settings?.google_analytics_id;
+      const effectiveGaId = gaEnv || dbGaId || null;
+      checks.push({
+        name: 'GA effective configuration',
+        status: effectiveGaId ? 'ok' : 'warn',
+        message: effectiveGaId
+          ? `Configured via ${gaEnv ? 'environment variable' : 'site_settings.google_analytics_id'}`
+          : 'Not configured (env + DB empty)',
+        details: effectiveGaId ? maskSecret(effectiveGaId) : undefined,
       });
     }
 

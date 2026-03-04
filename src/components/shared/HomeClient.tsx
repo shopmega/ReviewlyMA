@@ -301,14 +301,14 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 </Badge>
 
                                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline text-foreground leading-[1.08] tracking-tight drop-shadow-sm">
-                                    {t('home.hero.titleLine1', 'Decouvrez et comparez les entreprises au Maroc')}
+                                    {t('home.hero.titleLine1', 'Comprendre une entreprise')}
                                     <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-sky-600">
-                                        {t('home.hero.titleLine2', 'avis reels, salaires et guides ville/salaire.')}
+                                        {t('home.hero.titleLine2', 'avant d\u2019y entrer.')}
                                     </span>
                                 </h1>
 
                                 <p className="text-lg md:text-xl text-muted-foreground font-body max-w-2xl mx-auto leading-relaxed">
-                                    {t('home.hero.subtitle', 'Trouvez des informations verifiees sur les entreprises, meme avant vos entretiens.')}
+                                    {t('home.hero.subtitle', 'Avis, salaires et r\u00e9putation des entreprises marocaines.')}
                                 </p>
                             </div>
 
