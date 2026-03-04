@@ -21,30 +21,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { MAIN_CATEGORIES, SUBCATEGORIES, ALL_CITIES, getQuartiersForCity, BENEFITS } from '@/lib/location-discovery';
-
-const PROOF_METHODS = [
-  { value: 'email', label: '📧 Email professionnel', description: 'Recevez un code sur votre email professionnel' },
-  { value: 'phone', label: '📱 Téléphone', description: 'Recevez un SMS au numéro de l\'entreprise' },
-  { value: 'document', label: '📄 Document officiel', description: 'Téléchargez un extrait registre de commerce ou facture' },
-  { value: 'video', label: '🎥 Vidéo rapide', description: 'Enregistrez une vidéo 10s montrant l\'enseigne' },
-];
-
-const CLAIMER_TYPE_OPTIONS = [
-  { value: 'owner', label: 'Propriétaire' },
-  { value: 'co_owner', label: 'Co-propriétaire' },
-  { value: 'legal_representative', label: 'Représentant légal' },
-  { value: 'manager', label: 'Gérant / Manager' },
-  { value: 'marketing_manager', label: 'Responsable marketing' },
-  { value: 'agency_representative', label: 'Agence mandatée' },
-  { value: 'employee_delegate', label: 'Délégué interne' },
-  { value: 'other', label: 'Autre' },
-];
+import { useI18n } from '@/components/providers/i18n-provider';
 
 function NewClaimContent() {
   const searchParams = useSearchParams();
   const existingBusinessId = searchParams.get('businessId');
   const router = useRouter();
   const { toast } = useToast();
+  const { t, tf } = useI18n();
   const [isPending, startTransition] = useTransition();
   const [state, formAction] = useActionState(submitClaim, { status: 'idle', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,8 +49,8 @@ function NewClaimContent() {
 
           if (claimed) {
             toast({
-              title: 'Établissement déjà revendiqué',
-              description: 'Cette entreprise a déjà été revendiquée par un autre utilisateur.',
+              title: t('claimNew.toast.alreadyClaimedTitle', 'Etablissement deja revendique'),
+              description: t('claimNew.toast.alreadyClaimedDesc', 'Cette entreprise a deja ete revendiquee par un autre utilisateur.'),
               variant: 'destructive',
             });
           }
@@ -115,8 +99,8 @@ function NewClaimContent() {
           if (isVerified) {
             setUserClaimStatus('approved');
             toast({
-              title: "Accès refusé",
-              description: "Vous gérez déjà un établissement validé. Redirection vers votre tableau de bord...",
+              title: t('claimNew.toast.accessDeniedTitle', 'Acces refuse'),
+              description: t('claimNew.toast.accessDeniedDesc', 'Vous gerez deja un etablissement valide. Redirection vers votre tableau de bord...'),
               variant: "destructive",
             });
             setTimeout(() => router.push('/dashboard'), 2500);
@@ -124,8 +108,8 @@ function NewClaimContent() {
           } else if (isPending) {
             setUserClaimStatus('pending');
             toast({
-              title: "Demande en cours",
-              description: "Vous avez déjà une revendication en attente de validation.",
+              title: t('claimNew.toast.requestPendingTitle', 'Demande en cours'),
+              description: t('claimNew.toast.requestPendingDesc', 'Vous avez deja une revendication en attente de validation.'),
             });
             setTimeout(() => router.push('/dashboard/pending'), 2500);
             return;
@@ -172,6 +156,38 @@ function NewClaimContent() {
     documentFile: null as File | null,
     videoFile: null as File | null,
   });
+  const proofMethods = useMemo(() => ([
+    {
+      value: 'email',
+      label: t('claimNew.proof.email.label', 'Email professionnel'),
+      description: t('claimNew.proof.email.description', 'Recevez un code sur votre email professionnel'),
+    },
+    {
+      value: 'phone',
+      label: t('claimNew.proof.phone.label', 'Telephone'),
+      description: t('claimNew.proof.phone.description', "Recevez un SMS au numero de l'entreprise"),
+    },
+    {
+      value: 'document',
+      label: t('claimNew.proof.document.label', 'Document officiel'),
+      description: t('claimNew.proof.document.description', 'Telechargez un extrait registre de commerce ou facture'),
+    },
+    {
+      value: 'video',
+      label: t('claimNew.proof.video.label', 'Video rapide'),
+      description: t('claimNew.proof.video.description', "Enregistrez une video 10s montrant l'enseigne"),
+    },
+  ]), [t]);
+  const claimerTypeOptions = useMemo(() => ([
+    { value: 'owner', label: t('claimNew.claimerType.owner', 'Proprietaire') },
+    { value: 'co_owner', label: t('claimNew.claimerType.coOwner', 'Co-proprietaire') },
+    { value: 'legal_representative', label: t('claimNew.claimerType.legalRepresentative', 'Representant legal') },
+    { value: 'manager', label: t('claimNew.claimerType.manager', 'Gerant / Manager') },
+    { value: 'marketing_manager', label: t('claimNew.claimerType.marketingManager', 'Responsable marketing') },
+    { value: 'agency_representative', label: t('claimNew.claimerType.agencyRepresentative', 'Agence mandatee') },
+    { value: 'employee_delegate', label: t('claimNew.claimerType.employeeDelegate', 'Delegue interne') },
+    { value: 'other', label: t('claimNew.claimerType.other', 'Autre') },
+  ]), [t]);
 
   const syncFormDataFromDOM = useCallback(() => {
     const form = formRef.current;
@@ -228,8 +244,8 @@ function NewClaimContent() {
         setStep(draftData.step || 1);
 
         toast({
-          title: 'Brouillon récupéré',
-          description: 'Vos données sauvegardées ont été restaurées.',
+          title: t('claimNew.toast.draftRestoredTitle', 'Brouillon recupere'),
+          description: t('claimNew.toast.draftRestoredDesc', 'Vos donnees sauvegardees ont ete restaurees.'),
         });
       } catch (error) {
         console.error('Error loading draft:', error);
@@ -299,7 +315,7 @@ function NewClaimContent() {
 
     if (state.status === 'success') {
       toast({
-        title: 'Succès',
+        title: t('common.success', 'Succes'),
         description: state.message,
       });
 
@@ -325,16 +341,16 @@ function NewClaimContent() {
         if (keys.length > 0) {
           const firstErrorField = keys[0];
           const messages = errors[firstErrorField];
-          const firstErrorMessage = messages?.[0] || 'Erreur de validation';
+          const firstErrorMessage = messages?.[0] || t('claimNew.toast.validationErrorTitle', 'Erreur de validation');
           toast({
-            title: 'Erreur de validation',
+            title: t('claimNew.toast.validationErrorTitle', 'Erreur de validation'),
             description: `${firstErrorField}: ${firstErrorMessage}`,
             variant: 'destructive',
           });
         }
       } else {
         toast({
-          title: 'Erreur',
+          title: t('common.error', 'Erreur'),
           description: state.message,
           variant: 'destructive',
         });
@@ -431,21 +447,21 @@ function NewClaimContent() {
   const handleDocumentUpload = useCallback((file: File) => {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      toast({ title: 'Erreur', description: 'Fichier trop volumineux (max 10MB)', variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: t('claimNew.toast.fileTooLargeDoc', 'Fichier trop volumineux (max 10MB)'), variant: 'destructive' });
       return;
     }
     setProofData(prev => ({ ...prev, documentFile: file }));
-    toast({ title: 'Succès', description: 'Document téléchargé' });
+    toast({ title: t('common.success', 'Succes'), description: t('claimNew.toast.documentUploaded', 'Document telecharge') });
   }, [toast]);
 
   const handleVideoUpload = useCallback((file: File) => {
     if (!file) return;
     if (file.size > 100 * 1024 * 1024) { // 100MB limit for video
-      toast({ title: 'Erreur', description: 'Vidéo trop volumineuse (max 100MB)', variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: t('claimNew.toast.fileTooLargeVideo', 'Video trop volumineuse (max 100MB)'), variant: 'destructive' });
       return;
     }
     setProofData(prev => ({ ...prev, videoFile: file }));
-    toast({ title: 'Succès', description: 'Vidéo téléchargée' });
+    toast({ title: t('common.success', 'Succes'), description: t('claimNew.toast.videoUploaded', 'Video telechargee') });
   }, [toast]);
 
   // Business image handlers
@@ -494,8 +510,8 @@ function NewClaimContent() {
     } catch (error: any) {
       console.error('Error during client-side upload:', error);
       toast({
-        title: 'Erreur de téléchargement',
-        description: error.message || 'Une erreur est survenue lors de l\'envoi des fichiers.',
+        title: t('claimNew.toast.uploadErrorTitle', 'Erreur de telechargement'),
+        description: error.message || t('claimNew.toast.uploadErrorDesc', 'Une erreur est survenue lors de envoi des fichiers.'),
         variant: 'destructive',
       });
       setIsSubmitting(false);
@@ -527,32 +543,32 @@ function NewClaimContent() {
 
   // Enhanced validation for better user feedback
   const missingStep1Fields: string[] = [];
-  if (!formData.businessName) missingStep1Fields.push('Nom de l\'entreprise');
-  if (!formData.category) missingStep1Fields.push('Catégorie');
-  if (!formData.subcategory) missingStep1Fields.push('Sous-catégorie');
-  if (!formData.address) missingStep1Fields.push('Adresse');
-  if (!formData.city) missingStep1Fields.push('Ville');
-  if (!formData.quartier) missingStep1Fields.push('Quartier');
+  if (!formData.businessName) missingStep1Fields.push(t('claimNew.fields.businessName', 'Nom commercial'));
+  if (!formData.category) missingStep1Fields.push(t('claimNew.fields.category', 'Categorie principale'));
+  if (!formData.subcategory) missingStep1Fields.push(t('claimNew.fields.subcategory', 'Specialite'));
+  if (!formData.address) missingStep1Fields.push(t('claimNew.fields.address', 'Adresse exacte'));
+  if (!formData.city) missingStep1Fields.push(t('claimNew.fields.city', 'Ville'));
+  if (!formData.quartier) missingStep1Fields.push(t('claimNew.fields.quartier', 'Quartier'));
 
   const missingStep3Fields: string[] = [];
-  if (!formData.fullName) missingStep3Fields.push('Votre nom complet');
-  if (!formData.position) missingStep3Fields.push('Votre poste/fonction');
-  if (!formData.claimerType) missingStep3Fields.push('Type de représentant');
-  if (formData.claimerType === 'other' && !formData.claimerTitle.trim()) missingStep3Fields.push('Précision du rôle');
-  if (!formData.email) missingStep3Fields.push('Email professionnel');
-  if (!formData.personalPhone) missingStep3Fields.push('Téléphone personnel');
+  if (!formData.fullName) missingStep3Fields.push(t('claimNew.fields.fullName', 'Votre nom complet'));
+  if (!formData.position) missingStep3Fields.push(t('claimNew.fields.position', 'Votre poste/fonction'));
+  if (!formData.claimerType) missingStep3Fields.push(t('claimNew.fields.claimerType', 'Type de representant'));
+  if (formData.claimerType === 'other' && !formData.claimerTitle.trim()) missingStep3Fields.push(t('claimNew.fields.claimerTitle', 'Precision du role'));
+  if (!formData.email) missingStep3Fields.push(t('claimNew.fields.email', 'Email professionnel'));
+  if (!formData.personalPhone) missingStep3Fields.push(t('claimNew.fields.personalPhone', 'Telephone personnel'));
   if (!existingBusinessId && !formData.phone.trim() && !formData.website.trim()) {
-    missingStep3Fields.push('Téléphone professionnel ou site web');
+    missingStep3Fields.push(t('claimNew.fields.businessContact', 'Telephone professionnel ou site web'));
   }
-  if (selectedProofMethods.length === 0) missingStep3Fields.push('Méthode de vérification');
+  if (selectedProofMethods.length === 0) missingStep3Fields.push(t('claimNew.fields.verificationMethod', 'Methode de verification'));
 
-  const missingStep1Message = missingStep1Fields.length > 0 ? `Champs manquants: ${missingStep1Fields.join(', ')}` : '';
-  const missingStep3Message = missingStep3Fields.length > 0 ? `Champs manquants: ${missingStep3Fields.join(', ')}` : '';
+  const missingStep1Message = missingStep1Fields.length > 0 ? tf('claimNew.missingFields', 'Champs manquants: {fields}', { fields: missingStep1Fields.join(', ') }) : '';
+  const missingStep3Message = missingStep3Fields.length > 0 ? tf('claimNew.missingFields', 'Champs manquants: {fields}', { fields: missingStep3Fields.join(', ') }) : '';
 
   // Memoize filtered proof methods to prevent re-renders
   const filteredProofMethods = useMemo(() => {
-    return PROOF_METHODS.filter(method => activeProofMethods.includes(method.value));
-  }, [activeProofMethods]);
+    return proofMethods.filter(method => activeProofMethods.includes(method.value));
+  }, [activeProofMethods, proofMethods]);
 
   // Memoize filtered amenities to prevent re-renders
   const filteredAmenities = useMemo(() => {
@@ -565,24 +581,22 @@ function NewClaimContent() {
         {isBusinessAlreadyClaimed ? (
           <Card className="max-w-lg mx-auto mt-12">
             <CardHeader>
-              <CardTitle className="text-center text-destructive">Établissement déjà revendiqué</CardTitle>
+              <CardTitle className="text-center text-destructive">{t('claimNew.blocked.title', 'Etablissement deja revendique')}</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <Alert className="bg-destructive/10 border-destructive/30">
                 <AlertCircle className="h-4 w-4 text-destructive" />
-                <AlertDescription className="text-destructive">
-                  Cette entreprise a déjà été revendiquée par un autre utilisateur.
-                </AlertDescription>
+                <AlertDescription className="text-destructive">{t('claimNew.blocked.desc', 'Cette entreprise a deja ete revendiquee par un autre utilisateur.')}</AlertDescription>
               </Alert>
               <p className="text-muted-foreground">
-                Si vous êtes le propriétaire légitime de cette entreprise, veuillez nous contacter pour résoudre ce problème.
+                {t('claimNew.blocked.help', 'Si vous etes le proprietaire legitime de cette entreprise, veuillez nous contacter pour resoudre ce probleme.')}
               </p>
               <div className="flex flex-col sm:flex-row gap-2 pt-4">
                 <Button variant="outline" asChild>
-                  <Link href="/claim">Retour à la recherche</Link>
+                  <Link href="/claim">{t('claimNew.backToSearch', 'Retour a la recherche')}</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/contact">Contacter l'équipe</Link>
+                  <Link href="/contact">{t('claimNew.contactTeam', "Contacter l'equipe")}</Link>
                 </Button>
               </div>
             </CardContent>
@@ -593,15 +607,15 @@ function NewClaimContent() {
             <div className="mb-10 text-center md:text-left">
               <Link href="/claim" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-4 group">
                 <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                Retour à la recherche
+                {t('claimNew.backToSearch', 'Retour a la recherche')}
               </Link>
               <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Revendiquez votre établissement
+                {t('claimNew.hero.title', 'Revendiquez votre etablissement')}
               </h1>
               <p className="text-muted-foreground mt-2 text-lg italic">
-                {step === 1 && "Commençons par les détails de votre activité"}
-                {step === 2 && "Dites-nous qui vous êtes"}
-                {step === 3 && "Vérifiez vos informations avant de soumettre"}
+                {step === 1 && t('claimNew.hero.step1', 'Commencons par les details de votre activite')}
+                {step === 2 && t('claimNew.hero.step2', 'Dites-nous qui vous etes')}
+                {step === 3 && t('claimNew.hero.step3', 'Verifiez vos informations avant de soumettre')}
               </p>
             </div>
 
@@ -614,10 +628,10 @@ function NewClaimContent() {
               />
               <div className="flex justify-between">
                 {[
-                  { s: 1, label: 'Établissement', icon: Store },
-                  { s: 2, label: 'Avantages', icon: Sparkles },
-                  { s: 3, label: 'Identité', icon: Users },
-                  { s: 4, label: 'Validation', icon: CheckCircle2 }
+                  { s: 1, label: t('claimNew.stepper.business', 'Etablissement'), icon: Store },
+                  { s: 2, label: t('claimNew.stepper.benefits', 'Avantages'), icon: Sparkles },
+                  { s: 3, label: t('claimNew.stepper.identity', 'Identite'), icon: Users },
+                  { s: 4, label: t('claimNew.stepper.validation', 'Validation'), icon: CheckCircle2 }
                 ].map((item) => (
                   <div key={item.s} className="flex flex-col items-center gap-3">
                     <div
@@ -648,8 +662,8 @@ function NewClaimContent() {
                   {step === 1 && (
                     <Card>
                       <CardHeader>
-                        <CardTitle>Informations de l'entreprise</CardTitle>
-                        <CardDescription>Remplissez les détails de votre entreprise</CardDescription>
+                        <CardTitle>{t('claimNew.step1.title', "Informations de l entreprise")}</CardTitle>
+                        <CardDescription>{t('claimNew.step1.desc', 'Remplissez les details de votre entreprise')}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         {/* General Info Section */}
@@ -659,18 +673,18 @@ function NewClaimContent() {
                               <MapPin className="h-5 w-5" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg">Détails de l'établissement</h3>
-                              <p className="text-xs text-muted-foreground">Ces informations seront visibles par les clients.</p>
+                              <h3 className="font-bold text-lg">{t('claimNew.step1.detailsTitle', 'Details de etablissement')}</h3>
+                              <p className="text-xs text-muted-foreground">{t('claimNew.step1.detailsDesc', 'Ces informations seront visibles par les clients.')}</p>
                             </div>
                           </div>
 
                           <div className="grid gap-5">
                             <div className="space-y-2">
-                              <Label htmlFor="businessName" className="text-sm font-semibold">Nom commercial *</Label>
+                              <Label htmlFor="businessName" className="text-sm font-semibold">{t('claimNew.fields.businessName', 'Nom commercial')} *</Label>
                               <Input
                                 id="businessName"
                                 name="businessName"
-                                placeholder="Ex: Le Petit Bistro"
+                                placeholder={t('claimNew.placeholders.businessName', 'Ex: Le Petit Bistro')}
                                 value={formData.businessName}
                                 onChange={handleInputChange}
                                 onInput={handleInputChange}
@@ -681,14 +695,14 @@ function NewClaimContent() {
 
                             <div className="grid md:grid-cols-2 gap-5">
                               <div className="space-y-2">
-                                <Label htmlFor="category" className="text-sm font-semibold">Catégorie principale *</Label>
+                                <Label htmlFor="category" className="text-sm font-semibold">{t('claimNew.fields.category', 'Categorie principale')} *</Label>
                                 <Select
                                   name="category"
                                   value={formData.category}
                                   onValueChange={(val) => handleSelectChange('category', val)}
                                 >
                                   <SelectTrigger className="bg-white/50">
-                                    <SelectValue placeholder="Choisir une catégorie" />
+                                    <SelectValue placeholder={t('claimNew.placeholders.category', 'Choisir une categorie')} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {MAIN_CATEGORIES.map((cat) => (
@@ -701,7 +715,7 @@ function NewClaimContent() {
                               </div>
 
                               <div className="space-y-2">
-                                <Label htmlFor="subcategory" className="text-sm font-semibold">Spécialité *</Label>
+                                <Label htmlFor="subcategory" className="text-sm font-semibold">{t('claimNew.fields.subcategory', 'Specialite')} *</Label>
                                 <Select
                                   name="subcategory"
                                   value={formData.subcategory}
@@ -709,7 +723,7 @@ function NewClaimContent() {
                                   disabled={!formData.category}
                                 >
                                   <SelectTrigger className="bg-white/50">
-                                    <SelectValue placeholder="Précisez votre activité" />
+                                    <SelectValue placeholder={t('claimNew.placeholders.subcategory', 'Precisez votre activite')} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {formData.category && SUBCATEGORIES[formData.category]?.map((sub) => (
@@ -724,14 +738,14 @@ function NewClaimContent() {
 
                             <div className="grid md:grid-cols-2 gap-5">
                               <div className="space-y-2">
-                                <Label htmlFor="city" className="text-sm font-semibold">Ville *</Label>
+                                <Label htmlFor="city" className="text-sm font-semibold">{t('claimNew.fields.city', 'Ville')} *</Label>
                                 <Select
                                   name="city"
                                   value={formData.city}
                                   onValueChange={(val) => handleSelectChange('city', val)}
                                 >
                                   <SelectTrigger className="bg-white/50">
-                                    <SelectValue placeholder="Ex: Casablanca" />
+                                    <SelectValue placeholder={t('claimNew.placeholders.city', 'Ex: Casablanca')} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {ALL_CITIES.map((city) => (
@@ -744,7 +758,7 @@ function NewClaimContent() {
                               </div>
 
                               <div className="space-y-2">
-                                <Label htmlFor="quartier" className="text-sm font-semibold">Quartier *</Label>
+                                <Label htmlFor="quartier" className="text-sm font-semibold">{t('claimNew.fields.quartier', 'Quartier')} *</Label>
                                 <Select
                                   name="quartier"
                                   value={formData.quartier}
@@ -752,7 +766,7 @@ function NewClaimContent() {
                                   disabled={!formData.city}
                                 >
                                   <SelectTrigger className="bg-white/50">
-                                    <SelectValue placeholder="Quartier" />
+                                    <SelectValue placeholder={t('claimNew.placeholders.quartier', 'Quartier')} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {formData.city && getQuartiersForCity(formData.city).map((q) => (
@@ -766,11 +780,11 @@ function NewClaimContent() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="address" className="text-sm font-semibold">Adresse exacte *</Label>
+                              <Label htmlFor="address" className="text-sm font-semibold">{t('claimNew.fields.address', 'Adresse exacte')} *</Label>
                               <Input
                                 id="address"
                                 name="address"
-                                placeholder="Rue, N°, Immeuble..."
+                                placeholder={t('claimNew.placeholders.address', 'Rue, N?, Immeuble...')}
                                 value={formData.address}
                                 onChange={handleInputChange}
                                 required
@@ -780,22 +794,22 @@ function NewClaimContent() {
 
                             <div className="grid md:grid-cols-2 gap-5">
                               <div className="space-y-2">
-                                <Label htmlFor="phone" className="text-sm font-semibold text-muted-foreground">Tél. Professionnel (Optionnel)</Label>
+                                <Label htmlFor="phone" className="text-sm font-semibold text-muted-foreground">{t('claimNew.fields.phoneOptional', 'Tel. Professionnel (Optionnel)')}</Label>
                                 <Input
                                   id="phone"
                                   name="phone"
-                                  placeholder="+212 5XX XXX XXX"
+                                  placeholder={t('claimNew.placeholders.phone', '+212 5XX XXX XXX')}
                                   value={formData.phone}
                                   onChange={handleInputChange}
                                   className="bg-white/50"
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="website" className="text-sm font-semibold text-muted-foreground">Site Web (Optionnel)</Label>
+                                <Label htmlFor="website" className="text-sm font-semibold text-muted-foreground">{t('claimNew.fields.websiteOptional', 'Site Web (Optionnel)')}</Label>
                                 <Input
                                   id="website"
                                   name="website"
-                                  placeholder="https://..."
+                                  placeholder={t('claimNew.placeholders.website', 'https://...')}
                                   value={formData.website}
                                   onChange={handleInputChange}
                                   className="bg-white/50"
@@ -809,14 +823,14 @@ function NewClaimContent() {
                         <div className="space-y-4 border-t pt-6">
                           <div className="flex items-center gap-2">
                             <Store className="h-5 w-5 text-primary" />
-                            <h3 className="font-bold">Présentation</h3>
+                            <h3 className="font-bold">{t('claimNew.step1.presentation', 'Presentation')}</h3>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="description" className="text-sm font-semibold">À propos de l'établissement</Label>
+                            <Label htmlFor="description" className="text-sm font-semibold">{t('claimNew.fields.description', 'A propos de etablissement')}</Label>
                             <Textarea
                               id="description"
                               name="description"
-                              placeholder="Décrivez votre activité, vos spécialités, votre ambiance..."
+                              placeholder={t('claimNew.placeholders.description', 'Decrivez votre activite, vos specialites, votre ambiance...')}
                               value={formData.description}
                               onChange={handleInputChange}
                               className="min-h-[120px] bg-white/50"
@@ -828,7 +842,7 @@ function NewClaimContent() {
                         <div className="flex flex-col sm:flex-row justify-between pt-6 gap-4">
                           <div className="flex gap-2">
                             <Button variant="ghost" asChild className="text-muted-foreground">
-                              <Link href="/claim">Annuler</Link>
+                              <Link href="/claim">{t('claimNew.cancel', 'Annuler')}</Link>
                             </Button>
                           </div>
                           <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
@@ -836,7 +850,7 @@ function NewClaimContent() {
                               <div className="flex flex-col items-end gap-1">
                                 <div className="flex items-center gap-2 text-[10px] text-amber-600 font-medium">
                                   <Info className="h-3 w-3" />
-                                  Veuillez remplir les informations obligatoires (*) pour continuer
+                                  {t('claimNew.step1.requiredHint', 'Veuillez remplir les informations obligatoires (*) pour continuer')}
                                 </div>
                                 {missingStep1Fields.length > 0 && (
                                   <p className="text-[9px] text-amber-500/80 font-bold max-w-[250px] text-right">
@@ -846,7 +860,7 @@ function NewClaimContent() {
                               </div>
                             )}
                             <Button onClick={() => setStep(2)} disabled={!canProceedToStep2} size="lg" className="w-full sm:w-auto group">
-                              Suivant : Vos Avantages
+                              {t('claimNew.step1.next', 'Suivant : Vos Avantages')}
                               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                             </Button>
                           </div>
@@ -859,14 +873,14 @@ function NewClaimContent() {
                   {step === 2 && (
                     <Card>
                       <CardHeader>
-                        <CardTitle>Marque Employeur (Optionnel)</CardTitle>
-                        <CardDescription>Affichez les avantages que vous offrez à vos employés pour attirer les meilleurs talents.</CardDescription>
+                        <CardTitle>{t('claimNew.step2.title', 'Marque Employeur (Optionnel)')}</CardTitle>
+                        <CardDescription>{t('claimNew.step2.desc', 'Affichez les avantages que vous offrez a vos employes pour attirer les meilleurs talents.')}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="space-y-4 pt-2">
                           <div className="flex items-center gap-2 mb-2">
                             <Sparkles className="h-5 w-5 text-amber-500" />
-                            <h3 className="font-bold">Avantages & Services</h3>
+                            <h3 className="font-bold">{t('claimNew.step2.benefitsTitle', 'Avantages & Services')}</h3>
                           </div>
                           <div className="grid gap-6">
                             {BENEFITS.map(group => (
@@ -916,10 +930,10 @@ function NewClaimContent() {
                         {/* Navigation */}
                         <div className="flex flex-col sm:flex-row justify-between pt-6 gap-4 border-t">
                           <Button variant="ghost" onClick={() => setStep(1)} className="text-muted-foreground">
-                            Retour
+                            {t('claimNew.back', 'Retour')}
                           </Button>
                           <Button onClick={() => setStep(3)} size="lg" className="w-full sm:w-auto group">
-                            Suivant : Votre Identité
+                            {t('claimNew.step2.next', 'Suivant : Votre Identite')}
                             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                           </Button>
                         </div>
@@ -931,8 +945,8 @@ function NewClaimContent() {
                   {step === 3 && (
                     <Card>
                       <CardHeader>
-                        <CardTitle>Votre identité & Preuve de propriété</CardTitle>
-                        <CardDescription>Vérifiez votre identité et prouvez votre propriété</CardDescription>
+                        <CardTitle>{t('claimNew.step3.title', 'Votre identite & Preuve de propriete')}</CardTitle>
+                        <CardDescription>{t('claimNew.step3.desc', 'Verifiez votre identite et prouvez votre propriete')}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         {/* Personal Info */}
@@ -942,18 +956,18 @@ function NewClaimContent() {
                               <Users className="h-5 w-5" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg">Informations Représentant</h3>
-                              <p className="text-xs text-muted-foreground">Qui effectue la revendication ?</p>
+                              <h3 className="font-bold text-lg">{t('claimNew.step3.representativeTitle', 'Informations Representant')}</h3>
+                              <p className="text-xs text-muted-foreground">{t('claimNew.step3.representativeDesc', 'Qui effectue la revendication ?')}</p>
                             </div>
                           </div>
 
                           <div className="grid gap-5">
                             <div className="space-y-2">
-                              <Label htmlFor="fullName" className="text-sm font-semibold">Nom complet *</Label>
+                              <Label htmlFor="fullName" className="text-sm font-semibold">{t('claimNew.fields.fullNameLabel', 'Nom complet')} *</Label>
                               <Input
                                 id="fullName"
                                 name="fullName"
-                                placeholder="Ex: Mohammed Alami"
+                                placeholder={t('claimNew.placeholders.fullName', 'Ex: Mohammed Alami')}
                                 value={formData.fullName}
                                 onChange={handleInputChange}
                                 onInput={handleInputChange}
@@ -963,11 +977,11 @@ function NewClaimContent() {
                             </div>
                             <div className="grid md:grid-cols-2 gap-5">
                               <div className="space-y-2">
-                                <Label htmlFor="position" className="text-sm font-semibold">Poste / Fonction *</Label>
+                                <Label htmlFor="position" className="text-sm font-semibold">{t('claimNew.fields.positionLabel', 'Poste / Fonction')} *</Label>
                                 <Input
                                   id="position"
                                   name="position"
-                                  placeholder="Gérant, Propriétaire..."
+                                  placeholder={t('claimNew.placeholders.position', 'Gerant, Proprietaire...')}
                                   value={formData.position}
                                   onChange={handleInputChange}
                                   onInput={handleInputChange}
@@ -976,17 +990,17 @@ function NewClaimContent() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="claimerType" className="text-sm font-semibold">Vous êtes *</Label>
+                                <Label htmlFor="claimerType" className="text-sm font-semibold">{t('claimNew.fields.claimerTypeLabel', 'Vous etes')} *</Label>
                                 <Select
                                   name="claimerType"
                                   value={formData.claimerType}
                                   onValueChange={(val) => handleSelectChange('claimerType', val)}
                                 >
                                   <SelectTrigger className="bg-white/50">
-                                    <SelectValue placeholder="Sélectionnez votre rôle" />
+                                    <SelectValue placeholder={t('claimNew.placeholders.claimerType', 'Selectionnez votre role')} />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {CLAIMER_TYPE_OPTIONS.map((opt) => (
+                                    {claimerTypeOptions.map((opt) => (
                                       <SelectItem key={opt.value} value={opt.value}>
                                         {opt.label}
                                       </SelectItem>
@@ -996,11 +1010,11 @@ function NewClaimContent() {
                               </div>
                               {formData.claimerType === 'other' && (
                                 <div className="space-y-2 md:col-span-2">
-                                  <Label htmlFor="claimerTitle" className="text-sm font-semibold">Précisez votre rôle *</Label>
+                                  <Label htmlFor="claimerTitle" className="text-sm font-semibold">{t('claimNew.fields.claimerTitleLabel', 'Precisez votre role')} *</Label>
                                   <Input
                                     id="claimerTitle"
                                     name="claimerTitle"
-                                    placeholder="Ex: Consultant mandaté"
+                                    placeholder={t('claimNew.placeholders.claimerTitle', 'Ex: Consultant mandate')}
                                     value={formData.claimerTitle}
                                     onChange={handleInputChange}
                                     onInput={handleInputChange}
@@ -1010,12 +1024,12 @@ function NewClaimContent() {
                                 </div>
                               )}
                               <div className="space-y-2">
-                                <Label htmlFor="email" className="text-sm font-semibold">Email Professionnel *</Label>
+                                <Label htmlFor="email" className="text-sm font-semibold">{t('claimNew.fields.emailLabel', 'Email Professionnel')} *</Label>
                                 <Input
                                   id="email"
                                   name="email"
                                   type="email"
-                                  placeholder="contact@entreprise.ma"
+                                  placeholder={t('claimNew.placeholders.email', 'contact@entreprise.ma')}
                                   value={formData.email}
                                   onChange={handleInputChange}
                                   onInput={handleInputChange}
@@ -1025,11 +1039,11 @@ function NewClaimContent() {
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="personalPhone" className="text-sm font-semibold">Téléphone direct *</Label>
+                              <Label htmlFor="personalPhone" className="text-sm font-semibold">{t('claimNew.fields.personalPhoneLabel', 'Telephone direct')} *</Label>
                               <Input
                                 id="personalPhone"
                                 name="personalPhone"
-                                placeholder="+212 6XX XXX XXX"
+                                placeholder={t('claimNew.placeholders.personalPhone', '+212 6XX XXX XXX')}
                                 value={formData.personalPhone}
                                 onChange={handleInputChange}
                                 onInput={handleInputChange}
@@ -1047,8 +1061,8 @@ function NewClaimContent() {
                               <Crown className="h-5 w-5" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-lg">Méthodes de Vérification</h3>
-                              <p className="text-xs text-muted-foreground">Sélectionnez comment vous souhaitez prouver votre identité.</p>
+                              <h3 className="font-bold text-lg">{t('claimNew.step3.verificationTitle', 'Methodes de Verification')}</h3>
+                              <p className="text-xs text-muted-foreground">{t('claimNew.step3.verificationDesc', 'Selectionnez comment vous souhaitez prouver votre identite.')}</p>
                             </div>
                           </div>
 
@@ -1099,11 +1113,11 @@ function NewClaimContent() {
                           <div className="grid gap-4 mt-4">
                             {documentMethodSelected && (
                               <div className="border rounded-lg p-5 bg-white shadow-sm border-blue-200">
-                                <Label className="font-bold text-sm block mb-3">📄 Importez un document officiel</Label>
+                                <Label className="font-bold text-sm block mb-3">{t('claimNew.upload.document.title', 'Importez un document officiel')}</Label>
                                 <label className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50/50 transition-all block border-blue-200 mb-2">
                                   <Upload className="h-8 w-8 mx-auto mb-2 text-blue-400" />
-                                  <p className="text-sm font-semibold">Cliquez pour ajouter un fichier</p>
-                                  <p className="text-[10px] text-muted-foreground mt-1">Registre de commerce, Patente ou Facture (Max 10MB)</p>
+                                  <p className="text-sm font-semibold">{t('claimNew.upload.document.cta', 'Cliquez pour ajouter un fichier')}</p>
+                                  <p className="text-[10px] text-muted-foreground mt-1">{t('claimNew.upload.document.hint', 'Registre de commerce, Patente ou Facture (Max 10MB)')}</p>
                                   <input
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png"
@@ -1114,7 +1128,7 @@ function NewClaimContent() {
                                 {proofData.documentFile && (
                                   <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded border border-green-100">
                                     <CheckCircle2 className="h-3 w-3" />
-                                    <span>Fichier prêt : {proofData.documentFile.name}</span>
+                                    <span>{tf('claimNew.upload.document.ready', 'Fichier pret : {name}', { name: proofData.documentFile.name })}</span>
                                   </div>
                                 )}
                               </div>
@@ -1122,11 +1136,11 @@ function NewClaimContent() {
 
                             {videoMethodSelected && (
                               <div className="border rounded-lg p-5 bg-white shadow-sm border-blue-200">
-                                <Label className="font-bold text-sm block mb-3">🎥 Vidéo de preuve (Obligatoire si sélectionnée)</Label>
+                                <Label className="font-bold text-sm block mb-3">{t('claimNew.upload.video.title', 'Video de preuve (Obligatoire si selectionnee)')}</Label>
                                 <label className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50/50 transition-all block border-blue-200 mb-2">
                                   <Loader2 className="h-8 w-8 mx-auto mb-2 text-blue-400" />
-                                  <p className="text-sm font-semibold">Cliquez pour ajouter une vidéo</p>
-                                  <p className="text-[10px] text-muted-foreground mt-1">Filmez l'enseigne de votre établissement (Max 10s, 100MB)</p>
+                                  <p className="text-sm font-semibold">{t('claimNew.upload.video.cta', 'Cliquez pour ajouter une video')}</p>
+                                  <p className="text-[10px] text-muted-foreground mt-1">{t('claimNew.upload.video.hint', "Filmez l'enseigne de votre etablissement (Max 10s, 100MB)")}</p>
                                   <input
                                     type="file"
                                     accept="video/*"
@@ -1137,7 +1151,7 @@ function NewClaimContent() {
                                 {proofData.videoFile && (
                                   <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded border border-green-100">
                                     <CheckCircle2 className="h-3 w-3" />
-                                    <span>Vidéo prête : {proofData.videoFile.name}</span>
+                                    <span>{tf('claimNew.upload.video.ready', 'Video prete : {name}', { name: proofData.videoFile.name })}</span>
                                   </div>
                                 )}
                               </div>
@@ -1148,14 +1162,14 @@ function NewClaimContent() {
                         {/* Navigation */}
                         <div className="flex flex-col sm:flex-row justify-between pt-6 gap-4">
                           <Button variant="ghost" onClick={() => setStep(2)} className="text-muted-foreground">
-                            Retour
+                            {t('claimNew.back', 'Retour')}
                           </Button>
                           <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
                             {!canSubmit && (
                               <div className="flex flex-col items-end gap-1">
                                 <div className="flex items-center gap-2 text-[10px] text-amber-600 font-medium max-w-[250px] text-right">
                                   <Info className="h-3 w-3 shrink-0" />
-                                  <span>Veuillez compléter vos infos et sélectionner une méthode de validation.</span>
+                                  <span>{t('claimNew.step3.submitHint', 'Veuillez completer vos infos et selectionner une methode de validation.')}</span>
                                 </div>
                                 {missingStep3Fields.length > 0 && (
                                   <p className="text-[9px] text-amber-500/80 font-bold max-w-[250px] text-right">
@@ -1165,7 +1179,7 @@ function NewClaimContent() {
                               </div>
                             )}
                             <Button onClick={() => setStep(4)} disabled={!canSubmit} size="lg" className="w-full sm:w-auto group">
-                              Récapitulatif
+                              {t('claimNew.step3.next', 'Recapitulatif')}
                               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                             </Button>
                           </div>
@@ -1178,14 +1192,14 @@ function NewClaimContent() {
                   {step === 4 && (
                     <Card className="border-primary/20 shadow-xl overflow-hidden">
                       <div className="bg-primary p-6 text-white">
-                        <CardTitle className="text-2xl">Récapitulatif Final</CardTitle>
-                        <CardDescription className="text-primary-foreground/80">Lisez attentivement avant de valider votre demande.</CardDescription>
+                        <CardTitle className="text-2xl">{t('claimNew.step4.title', 'Recapitulatif Final')}</CardTitle>
+                        <CardDescription className="text-primary-foreground/80">{t('claimNew.step4.desc', 'Lisez attentivement avant de valider votre demande.')}</CardDescription>
                       </div>
                       <CardContent className="p-8 space-y-8">
                         <div className="grid md:grid-cols-2 gap-8">
                           <div className="space-y-6">
                             <div className="space-y-1">
-                              <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Établissement</p>
+                              <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('claimNew.step4.business', 'Etablissement')}</p>
                               <div className="p-3 bg-gray-50 rounded-lg border">
                                 <p className="font-bold text-lg">{formData.businessName}</p>
                                 <p className="text-sm text-muted-foreground">{formData.address}, {formData.city}</p>
@@ -1198,12 +1212,12 @@ function NewClaimContent() {
 
                           <div className="space-y-6">
                             <div className="space-y-1">
-                              <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Représentant</p>
+                              <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('claimNew.step4.representative', 'Representant')}</p>
                               <div className="p-3 bg-gray-50 rounded-lg border">
                                 <p className="font-bold">{formData.fullName}</p>
                                 <p className="text-sm text-muted-foreground">{formData.position}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {CLAIMER_TYPE_OPTIONS.find((opt) => opt.value === formData.claimerType)?.label}
+                                  {claimerTypeOptions.find((opt) => opt.value === formData.claimerType)?.label}
                                   {formData.claimerType === 'other' && formData.claimerTitle ? ` - ${formData.claimerTitle}` : ''}
                                 </p>
                                 <p className="text-sm font-medium mt-1">{formData.email}</p>
@@ -1214,7 +1228,7 @@ function NewClaimContent() {
 
                         {selectedAmenities.length > 0 && (
                           <div className="space-y-3">
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Avantages Sélectionnés</p>
+                            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('claimNew.step4.selectedBenefits', 'Avantages Selectionnes')}</p>
                             <div className="flex flex-wrap gap-2 text-sm italic">
                               {selectedAmenities.map(a => (
                                 <Badge key={a} variant="outline" className="px-2 py-0.5 bg-blue-50/30">
@@ -1226,12 +1240,12 @@ function NewClaimContent() {
                         )}
 
                         <div className="space-y-3">
-                          <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Méthodes de Validation choisies</p>
+                          <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{t('claimNew.step4.selectedMethods', 'Methodes de Validation choisies')}</p>
                           <div className="flex flex-wrap gap-2 text-sm italic">
                             {selectedProofMethods.map(m => (
                               <Badge key={m} variant="secondary" className="px-3 py-1 bg-green-50 text-green-700 border-green-100">
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
-                                {PROOF_METHODS.find(pm => pm.value === m)?.label.split(' ')[1] || m}
+                                {proofMethods.find(pm => pm.value === m)?.label || m}
                               </Badge>
                             ))}
                           </div>
@@ -1240,7 +1254,7 @@ function NewClaimContent() {
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-3 shadow-sm">
                           <p className="font-bold text-amber-900 flex items-center gap-2">
                             <Info className="h-5 w-5" />
-                            Engagement de responsabilité
+                            {t('claimNew.step4.commitmentTitle', 'Engagement de responsabilite')}
                           </p>
                           <p className="text-xs text-amber-800 leading-relaxed">
                             En cliquant sur soumettre, vous certifiez être le représentant légal ou dûment autorisé de cet établissement.
@@ -1273,7 +1287,7 @@ function NewClaimContent() {
                         {/* Navigation */}
                         <div className="flex flex-col sm:flex-row justify-between pt-6 border-t gap-4">
                           <Button variant="ghost" onClick={() => setStep(3)} disabled={isSubmitting || state.status === 'success'} className="text-muted-foreground font-semibold">
-                            Retour
+                            {t('claimNew.back', 'Retour')}
                           </Button>
                           <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
                             {state.status === 'error' && (
@@ -1290,17 +1304,17 @@ function NewClaimContent() {
                               {isSubmitting ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Soumission...
+                                  {t('claimNew.submit.submitting', 'Soumission...')}
                                 </>
                               ) : state.status === 'success' ? (
                                 <>
                                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                                  Envoyé !
+                                  {t('claimNew.submit.sent', 'Envoye !')}
                                 </>
                               ) : (
                                 <>
                                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                                  Confirmer la Revendication
+                                  {t('claimNew.submit.confirm', 'Confirmer la Revendication')}
                                 </>
                               )}
                             </Button>
@@ -1318,7 +1332,7 @@ function NewClaimContent() {
                   <div className="bg-primary/5 p-4 border-b border-primary/10">
                     <h3 className="font-bold flex items-center gap-2 text-primary">
                       <Sparkles className="h-5 w-5" />
-                      Pourquoi revendiquer ?
+                      {t('claimNew.sidebar.whyClaim', 'Pourquoi revendiquer ?')}
                     </h3>
                   </div>
                   <CardContent className="p-6 space-y-6">
@@ -1327,8 +1341,8 @@ function NewClaimContent() {
                         <CheckCircle2 className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-bold text-sm">Badge Certifié</p>
-                        <p className="text-xs text-muted-foreground">Obtenez le badge de confiance bleu sur votre profil public.</p>
+                        <p className="font-bold text-sm">{t('claimNew.sidebar.badgeTitle', 'Badge Certifie')}</p>
+                        <p className="text-xs text-muted-foreground">{t('claimNew.sidebar.badgeDesc', 'Obtenez le badge de confiance bleu sur votre profil public.')}</p>
                       </div>
                     </div>
 
@@ -1337,8 +1351,8 @@ function NewClaimContent() {
                         <MapPin className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-bold text-sm">Contrôlez vos Infos</p>
-                        <p className="text-xs text-muted-foreground">Mettez à jour vos horaires, photos et services en temps réel.</p>
+                        <p className="font-bold text-sm">{t('claimNew.sidebar.controlTitle', 'Controlez vos Infos')}</p>
+                        <p className="text-xs text-muted-foreground">{t('claimNew.sidebar.controlDesc', 'Mettez a jour vos horaires, photos et services en temps reel.')}</p>
                       </div>
                     </div>
 
@@ -1347,25 +1361,25 @@ function NewClaimContent() {
                         <Store className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-bold text-sm">Convertissez Plus</p>
-                        <p className="text-xs text-muted-foreground">Répondez aux avis et interagissez avec vos futurs clients.</p>
+                        <p className="font-bold text-sm">{t('claimNew.sidebar.convertTitle', 'Convertissez Plus')}</p>
+                        <p className="text-xs text-muted-foreground">{t('claimNew.sidebar.convertDesc', 'Repondez aux avis et interagissez avec vos futurs clients.')}</p>
                       </div>
                     </div>
 
                     <div className="pt-4 border-t">
                       <div className="bg-blue-900 rounded-xl p-4 text-white shadow-inner">
-                        <p className="text-[10px] uppercase font-bold tracking-widest text-blue-200 mb-1">Offre Lancement</p>
-                        <p className="text-sm font-bold">1 mois de visibilité PRO offert après approbation.</p>
+                        <p className="text-[10px] uppercase font-bold tracking-widest text-blue-200 mb-1">{t('claimNew.sidebar.launchOffer', 'Offre Lancement')}</p>
+                        <p className="text-sm font-bold">{t('claimNew.sidebar.launchOfferDesc', '1 mois de visibilite PRO offert apres approbation.')}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <div className="p-4 rounded-xl border border-dashed text-center space-y-2">
-                  <p className="text-[10px] text-muted-foreground">Besoin d'aide ?</p>
-                  <p className="text-xs font-bold">Support Premium 7j/7</p>
+                  <p className="text-[10px] text-muted-foreground">{t('claimNew.sidebar.needHelp', 'Besoin aide ?')}</p>
+                  <p className="text-xs font-bold">{t('claimNew.sidebar.support24', 'Support Premium 7j/7')}</p>
                   <Button variant="link" size="sm" asChild>
-                    <Link href="/contact">Support Center</Link>
+                    <Link href="/contact">{t('claimNew.sidebar.supportCenter', 'Support Center')}</Link>
                   </Button>
                 </div>
               </div>
@@ -1380,15 +1394,21 @@ function NewClaimContent() {
 export default function NewClaimPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Chargement du formulaire...</p>
-        </div>
-      </div>
+      <ClaimLoadingFallback />
     }>
       <NewClaimContent />
     </Suspense>
   );
 }
 
+function ClaimLoadingFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+        <p className="text-muted-foreground">{t('claimNew.loadingForm', 'Chargement du formulaire...')}</p>
+      </div>
+    </div>
+  );
+}

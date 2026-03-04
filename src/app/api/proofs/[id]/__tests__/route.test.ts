@@ -58,17 +58,17 @@ vi.mock('@/lib/api-rate-limiter', () => ({
 }));
 
 vi.mock('@supabase/ssr', () => ({
-  createServerClient: (...args: unknown[]) => createServerClientMock(...args),
+  createServerClient: (...args: any[]) => createServerClientMock(...(args as any)),
 }));
 
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: (...args: unknown[]) => createClientMock(...args),
+  createClient: (...args: any[]) => createClientMock(...(args as any)),
 }));
 
 vi.mock('next/headers', () => ({
   cookies: async () => ({
     getAll: () => [],
-    set: (...args: unknown[]) => setCookieMock(...args),
+    set: (...args: any[]) => setCookieMock(...(args as any)),
   }),
 }));
 
@@ -77,9 +77,9 @@ import { GET } from '../route';
 describe('proofs [id] route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
-    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key';
+    (process.env as any).NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    (process.env as any).NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
+    (process.env as any).SUPABASE_SERVICE_ROLE_KEY = 'service-key';
 
     getUserMock.mockResolvedValue({
       data: { user: { id: 'admin-1' } },

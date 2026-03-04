@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 type SiteSettings = {
     id: string;
@@ -134,7 +135,7 @@ const defaultSettings: SiteSettings = {
     tier_gold_monthly_price: 299.00,
     tier_gold_annual_price: 2900.00,
     premium_enabled: true,
-    premium_description: 'Devenez membre Premium et bénéficiez de fonctionnalités exclusives pour propulser votre entreprise.',
+    premium_description: 'Devenez membre Premium et beneficiez de fonctionnalites exclusives pour propulser votre entreprise.',
     site_logo_url: '',
     google_analytics_id: '',
     facebook_pixel_id: '',
@@ -222,6 +223,7 @@ export default function SettingsPage() {
     const [salaryDepartmentsText, setSalaryDepartmentsText] = useState((defaultSettings.salary_departments || []).join('\n'));
     const [salaryIntervalsText, setSalaryIntervalsText] = useState(JSON.stringify(defaultSettings.salary_intervals || [], null, 2));
     const { toast } = useToast();
+    const { t } = useI18n();
 
     useEffect(() => {
         async function fetchSettings() {
@@ -235,8 +237,8 @@ export default function SettingsPage() {
             if (error) {
                 setLoadFailed(true);
                 toast({
-                    title: 'Erreur',
-                    description: "Impossible de charger les paramètres actuels. Le formulaire affiche des valeurs par défaut.",
+                    title: t('common.error', 'Erreur'),
+                    description: t('adminSettings.toast.loadError', 'Impossible de charger les parametres actuels. Le formulaire affiche des valeurs par defaut.'),
                     variant: 'destructive'
                 });
             } else if (data) {
@@ -248,8 +250,8 @@ export default function SettingsPage() {
             } else {
                 setLoadFailed(true);
                 toast({
-                    title: 'Erreur',
-                    description: "Aucun enregistrement site_settings (id='main') n'a été trouvé.",
+                    title: t('common.error', 'Erreur'),
+                    description: t('adminSettings.toast.notFound', 'Aucun enregistrement site_settings (id=main) n a ete trouve.'),
                     variant: 'destructive'
                 });
             }
@@ -261,8 +263,8 @@ export default function SettingsPage() {
     const handleSave = async () => {
         if (loadFailed) {
             toast({
-                title: 'Sauvegarde bloquée',
-                description: "Rechargez la page après avoir résolu le chargement des paramètres pour éviter d'écraser les données existantes.",
+                title: t('adminSettings.toast.saveBlockedTitle', 'Sauvegarde bloquee'),
+                description: t('adminSettings.toast.saveBlockedDesc', 'Rechargez la page apres avoir resolu le chargement des parametres pour eviter ecrasement des donnees existantes.'),
                 variant: 'destructive'
             });
             return;
@@ -305,8 +307,8 @@ export default function SettingsPage() {
                 }
             } catch {
                 toast({
-                    title: 'Erreur',
-                    description: 'Intervalles salariaux invalides. Utilisez un JSON valide.',
+                    title: t('common.error', 'Erreur'),
+                    description: t('adminSettings.toast.invalidSalaryIntervals', 'Intervalles salariaux invalides. Utilisez un JSON valide.'),
                     variant: 'destructive'
                 });
                 setSaving(false);
@@ -321,16 +323,16 @@ export default function SettingsPage() {
             });
 
             if (result.status === 'error') {
-                toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+                toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
             } else {
                 toast({
-                    title: 'Configuration sauvegardée',
+                    title: t('adminSettings.toast.savedTitle', 'Configuration sauvegardee'),
                     description: result.message,
                     className: "bg-emerald-500 text-white border-0 font-bold"
                 });
             }
         } catch (err: any) {
-            toast({ title: 'Erreur', description: 'Une erreur imprévue est survenue.', variant: 'destructive' });
+            toast({ title: t('common.error', 'Erreur'), description: t('adminSettings.toast.unexpectedError', 'Une erreur imprevue est survenue.'), variant: 'destructive' });
         } finally {
             setSaving(false);
         }
@@ -344,7 +346,7 @@ export default function SettingsPage() {
         return (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
                 <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-                <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Loading System...</p>
+                <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminSettings.loading', 'Loading System...')}</p>
             </div>
         );
     }
@@ -353,13 +355,12 @@ export default function SettingsPage() {
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
                 <div className="space-y-2">
-                    <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">Configuration Noyau</Badge>
+                    <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminSettings.badge', 'Configuration Noyau')}</Badge>
                     <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                        Paramètres <span className="text-primary italic">Système</span>
+                        {t('adminSettings.titlePrefix', 'Parametres')} <span className="text-primary italic">{t('adminSettings.titleAccent', 'Systeme')}</span>
                     </h1>
                     <p className="text-muted-foreground font-medium flex items-center gap-2">
-                        <Settings className="h-4 w-4" /> Contrôle global des modules et de l'aspect de la plateforme
-                    </p>
+                        <Settings className="h-4 w-4" /> {t('adminSettings.subtitle', 'Controle global des modules et de aspect de la plateforme')}</p>
                 </div>
 
                 <Button
@@ -368,7 +369,7 @@ export default function SettingsPage() {
                     className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
                 >
                     {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                    Enregistrer les modifications
+                    {t('adminSettings.saveButton', 'Enregistrer les modifications')}
                 </Button>
             </div>
 
@@ -381,32 +382,32 @@ export default function SettingsPage() {
                         </TabsTrigger>
                         <TabsTrigger value="features" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Cpu className="h-4 w-4 mr-3" />
-                            Modules Applicatifs
+                            {t('adminSettings.tabs.features', 'Modules Applicatifs')}
                         </TabsTrigger>
                         <TabsTrigger value="premium" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Zap className="h-4 w-4 mr-3 text-amber-500 fill-amber-500" />
-                            Abonnements
+                            {t('adminSettings.tabs.subscriptions', 'Abonnements')}
                         </TabsTrigger>
                         <TabsTrigger value="payments" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <CreditCard className="h-4 w-4 mr-3 text-green-500" />
-                            Paiements
+                            {t('adminSettings.tabs.payments', 'Paiements')}
                         </TabsTrigger>
                         <TabsTrigger value="salary-config" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <DollarSign className="h-4 w-4 mr-3 text-primary" />
-                            Salaires
+                            {t('adminSettings.tabs.salaries', 'Salaires')}
                         </TabsTrigger>
 
                         <TabsTrigger value="home" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Layout className="h-4 w-4 mr-3" />
-                            Accueil
+                            {t('adminSettings.tabs.home', 'Accueil')}
                         </TabsTrigger>
                         <TabsTrigger value="contact" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Mail className="h-4 w-4 mr-3" />
-                            Communication
+                            {t('adminSettings.tabs.communication', 'Communication')}
                         </TabsTrigger>
                         <TabsTrigger value="email" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Mail className="h-4 w-4 mr-3" />
-                            Configuration Email
+                            {t('adminSettings.tabs.email', 'Configuration Email')}
                         </TabsTrigger>
                         <TabsTrigger value="social" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <Share2 className="h-4 w-4 mr-3" />
@@ -414,7 +415,7 @@ export default function SettingsPage() {
                         </TabsTrigger>
                         <TabsTrigger value="partner" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
                             <LinkIcon className="h-4 w-4 mr-3" />
-                            Partenaire RH
+                            {t('adminSettings.tabs.partner', 'Partenaire RH')}
                         </TabsTrigger>
                         <TabsTrigger value="security" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px]">
                             <Lock className="h-4 w-4 mr-3" />
@@ -425,25 +426,25 @@ export default function SettingsPage() {
                     <div className="mt-8 p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-4">
                         <div className="flex items-center gap-2">
                             <Activity className="h-4 w-4 text-indigo-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">Statut Système</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">{t('adminSettings.systemStatus', 'Statut Systeme')}</span>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">Maintenance</span>
+                                <span className="text-muted-foreground uppercase opacity-60">{t('adminSettings.status.maintenance', 'Maintenance')}</span>
                                 <span className={settings.maintenance_mode ? 'text-rose-500' : 'text-emerald-500'}>
-                                    {settings.maintenance_mode ? 'ACTIVÉ' : 'OFF'}
+                                    {settings.maintenance_mode ? t('adminSettings.status.activeMaintenance', 'ACTIVE') : t('adminSettings.status.off', 'OFF')}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">Inscriptions</span>
+                                <span className="text-muted-foreground uppercase opacity-60">{t('adminSettings.status.registrations', 'Inscriptions')}</span>
                                 <span className={settings.allow_new_registrations ? 'text-emerald-500' : 'text-amber-500'}>
-                                    {settings.allow_new_registrations ? 'OUVERTES' : 'FERMÉES'}
+                                    {settings.allow_new_registrations ? t('adminSettings.status.open', 'OUVERTES') : t('adminSettings.status.closed', 'FERMEES')}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">Premium</span>
+                                <span className="text-muted-foreground uppercase opacity-60">{t('adminSettings.status.premium', 'Premium')}</span>
                                 <span className={settings.premium_enabled ? 'text-amber-500' : 'text-slate-400'}>
-                                    {settings.premium_enabled ? 'ACTIF' : 'OFF'}
+                                    {settings.premium_enabled ? t('adminSettings.status.active', 'ACTIF') : t('adminSettings.status.off', 'OFF')}
                                 </span>
                             </div>
                         </div>
@@ -454,8 +455,8 @@ export default function SettingsPage() {
                     <TabsContent value="home" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Agencement de l'Accueil</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium text-lg">Gérez la visibilité et l'ordre des sections de votre page d'accueil.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.homeLayout.title', 'Agencement de Accueil')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium text-lg">{t('adminSettings.sections.homeLayout.desc', 'Gerez la visibilite et ordre des sections de votre page accueil.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-10 space-y-8">
                                 <div className="space-y-4">
@@ -492,13 +493,13 @@ export default function SettingsPage() {
                                                 </div>
                                                 <div>
                                                     <h4 className="font-black text-lg capitalize">{section.id.replace('_', ' ')}</h4>
-                                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter opacity-70">Bloc Section #{index + 1}</p>
+                                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter opacity-70">{t('adminSettings.homeLayout.sectionBlock', 'Bloc Section')} #{index + 1}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <div className="flex items-center gap-2 mr-4">
                                                     <span className={cn("text-[10px] font-black uppercase", section.visible ? "text-emerald-500" : "text-slate-400")}>
-                                                        {section.visible ? 'Actif' : 'Masqué'}
+                                                        {section.visible ? t('adminSettings.homeLayout.state.active', 'Actif') : t('adminSettings.homeLayout.state.hidden', 'Masque')}
                                                     </span>
                                                     <Switch
                                                         checked={section.visible}
@@ -519,9 +520,9 @@ export default function SettingsPage() {
                                         <AlertTriangle className="h-5 w-5 text-primary" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">Note Importante</p>
+                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.homeLayout.note.title', 'Note importante')}</p>
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            L'ordre défini ici sera appliqué instantanément sur le site après avoir cliqué sur "Enregistrer les modifications". Certains blocs comme "Hero" sont recommandés en première position.
+                                            {t('adminSettings.homeLayout.note.desc', 'Ordre applique instantanement apres enregistrement. Certains blocs comme Hero sont recommandes en premiere position.')}
                                         </p>
                                     </div>
                                 </div>
@@ -532,16 +533,16 @@ export default function SettingsPage() {
                             <CardHeader className="p-8 border-b border-border/10">
                                 <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3">
                                     <Zap className="h-6 w-6 text-primary" />
-                                    Recherches Populaires
+                                    {t('adminSettings.popularSearches.title', 'Recherches Populaires')}
                                 </CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Gérez les raccourcis de recherche affichés sous la barre de recherche principale.</CardDescription>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.popularSearches.desc', 'Gerez les raccourcis affiches sous la barre de recherche principale.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-10 space-y-6">
                                 <div className="space-y-4">
                                     {settings.popular_searches_config?.map((search, index) => (
                                         <div key={index} className="flex flex-col md:flex-row gap-4 p-6 bg-white/50 dark:bg-slate-800/50 border border-border/10 rounded-[2rem] shadow-sm transform transition-all group">
                                             <div className="flex-1 space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 text-primary">Libellé du tag</Label>
+                                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 text-primary">{t('adminSettings.popularSearches.tagLabel', 'Libelle du tag')}</Label>
                                                 <Input
                                                     value={search.label}
                                                     onChange={(e) => {
@@ -549,12 +550,12 @@ export default function SettingsPage() {
                                                         newConfig[index].label = e.target.value;
                                                         setSettings({ ...settings, popular_searches_config: newConfig });
                                                     }}
-                                                    placeholder="ex: Restaurants à Casablanca"
+                                                    placeholder={t('adminSettings.popularSearches.tagPlaceholder', 'Ex: Restaurants a Casablanca')}
                                                     className="h-12 rounded-xl bg-white/50 dark:bg-slate-950/50 border-border/10 font-bold"
                                                 />
                                             </div>
                                             <div className="flex-[2] space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Lien vers les résultats (Href)</Label>
+                                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">{t('adminSettings.popularSearches.hrefLabel', 'Lien vers les resultats (Href)')}</Label>
                                                 <Input
                                                     value={search.href}
                                                     onChange={(e) => {
@@ -591,7 +592,7 @@ export default function SettingsPage() {
                                         setSettings({ ...settings, popular_searches_config: newConfig });
                                     }}
                                 >
-                                    + Ajouter un tag de recherche
+                                    + {t('adminSettings.popularSearches.add', 'Ajouter un tag de recherche')}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -600,33 +601,33 @@ export default function SettingsPage() {
                     <TabsContent value="general" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Identité de Plateforme</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Définissez le nom et les métadonnées SEO globales du service.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.platformIdentity.title', 'Identite de Plateforme')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.platformIdentity.desc', 'Definissez le nom et les metadonnees SEO globales du service.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
                                 <div className="space-y-3">
-                                    <Label htmlFor="site_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom public du service</Label>
+                                    <Label htmlFor="site_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.siteNameLabel', 'Nom public du service')}</Label>
                                     <Input
                                         id="site_name"
                                         value={settings.site_name}
                                         onChange={(e) => updateSetting('site_name', e.target.value)}
-                                        placeholder="Nom du site"
+                                        placeholder={t('adminSettings.platformIdentity.siteNamePlaceholder', 'Nom du site')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 font-black text-lg"
                                     />
                                 </div>
                                 <div className="space-y-3">
-                                    <Label htmlFor="site_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Balise Meta Description (SEO)</Label>
+                                    <Label htmlFor="site_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.metaDescriptionLabel', 'Balise Meta Description (SEO)')}</Label>
                                     <Textarea
                                         id="site_description"
                                         value={settings.site_description || ''}
                                         onChange={(e) => updateSetting('site_description', e.target.value)}
-                                        placeholder="Décrivez votre plateforme en 160 caractères..."
+                                        placeholder={t('adminSettings.platformIdentity.metaDescriptionPlaceholder', 'Decrivez votre plateforme en 160 caracteres...')}
                                         rows={4}
                                         className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 p-6 font-medium leading-relaxed"
                                     />
                                     <div className="flex items-center gap-2 p-3 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
                                         <Globe className="h-4 w-4 text-indigo-500" />
-                                        <p className="text-[10px] font-bold text-muted-foreground italic">Cette description sera utilisée par Google et Bing pour l'indexation de votre page d'accueil.</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground italic">{t('adminSettings.platformIdentity.metaDescriptionHint', 'Cette description sera utilisee par Google et Bing pour indexation de votre page accueil.')}</p>
                                     </div>
                                 </div>
 
@@ -634,11 +635,11 @@ export default function SettingsPage() {
 
                                 <div className="space-y-6">
                                     <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Palette className="h-4 w-4" /> Branding & Media
+                                        <Palette className="h-4 w-4" /> {t('adminSettings.platformIdentity.brandingMedia', 'Branding & Media')}
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <Label htmlFor="site_logo_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">URL du Logo (SVG ou PNG)</Label>
+                                            <Label htmlFor="site_logo_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.logoUrlLabel', 'URL du Logo (SVG ou PNG)')}</Label>
                                             <Input
                                                 id="site_logo_url"
                                                 value={settings.site_logo_url || ''}
@@ -658,41 +659,41 @@ export default function SettingsPage() {
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <Label htmlFor="google_analytics_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Google Analytics (G-XXXXXXX)</Label>
+                                            <Label htmlFor="google_analytics_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.gaLabel', 'Google Analytics (G-XXXXXXX)')}</Label>
                                             <Input
                                                 id="google_analytics_id"
                                                 value={settings.google_analytics_id || ''}
                                                 onChange={(e) => updateSetting('google_analytics_id', e.target.value)}
-                                                placeholder="G-XXXXXXXXXX"
+                                                placeholder={t('adminSettings.platformIdentity.gaPlaceholder', 'G-XXXXXXXXXX')}
                                                 className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                             />
                                         </div>
                                         <div className="space-y-3">
-                                            <Label htmlFor="facebook_pixel_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Meta Pixel ID</Label>
+                                            <Label htmlFor="facebook_pixel_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.pixelLabel', 'Meta Pixel ID')}</Label>
                                             <Input
                                                 id="facebook_pixel_id"
                                                 value={settings.facebook_pixel_id || ''}
                                                 onChange={(e) => updateSetting('facebook_pixel_id', e.target.value)}
-                                                placeholder="ID de votre pixel..."
+                                                placeholder={t('adminSettings.platformIdentity.pixelPlaceholder', 'ID de votre pixel...')}
                                                 className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                             />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <Label htmlFor="adsense_client_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Google AdSense Client ID</Label>
+                                            <Label htmlFor="adsense_client_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.adsenseClientLabel', 'Google AdSense Client ID')}</Label>
                                             <Input
                                                 id="adsense_client_id"
                                                 value={settings.adsense_client_id || ''}
                                                 onChange={(e) => updateSetting('adsense_client_id', e.target.value)}
-                                                placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+                                                placeholder={t('adminSettings.platformIdentity.adsenseClientPlaceholder', 'ca-pub-XXXXXXXXXXXXXXXX')}
                                                 className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                             />
                                         </div>
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-950/50 border border-border/20">
                                                 <div>
-                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Activer AdSense</Label>
+                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('adminSettings.platformIdentity.enableAdsenseLabel', 'Activer AdSense')}</Label>
                                                 </div>
                                                 <Switch
                                                     checked={settings.adsense_enabled}
@@ -702,7 +703,7 @@ export default function SettingsPage() {
                                             </div>
                                             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-950/50 border border-border/20">
                                                 <div>
-                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Auto Ads</Label>
+                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('adminSettings.platformIdentity.autoAdsLabel', 'Auto Ads')}</Label>
                                                 </div>
                                                 <Switch
                                                     checked={settings.adsense_auto_ads_enabled}
@@ -720,16 +721,16 @@ export default function SettingsPage() {
                     <TabsContent value="features" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Gestion des Modules</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Activez ou désactivez les fonctionnalités applicatives majeures en un clic.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.modules.title', 'Gestion des Modules')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.modules.desc', 'Activez ou desactivez les fonctionnalites applicatives majeures en un clic.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {[
-                                    { id: 'enable_reviews', label: 'Moteur d\'avis', desc: 'Gestion des notes et commentaires utilisateurs', icon: <Layers className="h-5 w-5" /> },
-                                    { id: 'enable_salaries', label: 'Section Salaires', desc: 'Base de données anonyme des rémunérations', icon: <DollarSign className="h-5 w-5" /> },
-                                    { id: 'enable_claims', label: 'Claims Engine', desc: 'Système de revendication d\'entreprises', icon: <ShieldCheck className="h-5 w-5" /> },
-                                    { id: 'enable_competitor_ads', label: 'Annonces concurrentes', desc: 'Réseau publicitaire entre pages entreprises', icon: <Activity className="h-5 w-5" /> },
-                                    { id: 'enable_competitor_ads_tracking', label: 'Tracking annonces concurrentes', desc: 'Collecte des impressions et clics des annonces', icon: <Database className="h-5 w-5" /> },
+                                    { id: 'enable_reviews', label: t('adminSettings.modules.reviews.label', 'Moteur avis'), desc: t('adminSettings.modules.reviews.desc', 'Gestion des notes et commentaires utilisateurs'), icon: <Layers className="h-5 w-5" /> },
+                                    { id: 'enable_salaries', label: t('adminSettings.modules.salaries.label', 'Section Salaires'), desc: t('adminSettings.modules.salaries.desc', 'Base anonyme des remunerations'), icon: <DollarSign className="h-5 w-5" /> },
+                                    { id: 'enable_claims', label: t('adminSettings.modules.claims.label', 'Claims Engine'), desc: t('adminSettings.modules.claims.desc', 'Systeme de revendication entreprises'), icon: <ShieldCheck className="h-5 w-5" /> },
+                                    { id: 'enable_competitor_ads', label: t('adminSettings.modules.competitorAds.label', 'Annonces concurrentes'), desc: t('adminSettings.modules.competitorAds.desc', 'Reseau publicitaire entre pages entreprises'), icon: <Activity className="h-5 w-5" /> },
+                                    { id: 'enable_competitor_ads_tracking', label: t('adminSettings.modules.competitorAdsTracking.label', 'Tracking annonces concurrentes'), desc: t('adminSettings.modules.competitorAdsTracking.desc', 'Collecte des impressions et clics annonces'), icon: <Database className="h-5 w-5" /> },
                                 ].map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-6 rounded-[2rem] border border-border/10 bg-white/40 dark:bg-slate-950/20 hover:bg-white/70 dark:hover:bg-slate-950/40 transition-all group">
                                         <div className="flex gap-4 items-center">
@@ -757,8 +758,8 @@ export default function SettingsPage() {
                     <TabsContent value="premium" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Configuration Commerciale</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Gérez les prix des abonnements et le contenu du pack Premium.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.commercial.title', 'Configuration Commerciale')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.commercial.desc', 'Gerez les prix des abonnements et le contenu du pack Premium.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-10">
                                 <div className="flex items-center justify-between p-6 bg-gradient-to-r from-amber-500/10 to-transparent rounded-[2rem] border border-amber-500/20">
@@ -767,8 +768,8 @@ export default function SettingsPage() {
                                             <Crown className="h-6 w-6" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest text-[10px]">Abonnements Premium</h4>
-                                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Permettre aux entreprises de passer au forfait supérieur</p>
+                                            <h4 className="font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest text-[10px]">{t('adminSettings.commercial.subscriptionsTitle', 'Abonnements Premium')}</h4>
+                                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('adminSettings.commercial.subscriptionsDesc', 'Permettre aux entreprises de passer au forfait superieur')}</p>
                                         </div>
                                     </div>
                                     <Switch
@@ -781,7 +782,7 @@ export default function SettingsPage() {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <Label htmlFor="tier_growth_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Growth Mensuel (MAD)</Label>
+                                            <Label htmlFor="tier_growth_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.growthMonthlyLabel', 'Growth Mensuel (MAD)')}</Label>
                                             <div className="relative">
                                                 <Input
                                                     id="tier_growth_monthly_price"
@@ -790,11 +791,11 @@ export default function SettingsPage() {
                                                     onChange={(e) => updateSetting('tier_growth_monthly_price', parseFloat(e.target.value) || 0)}
                                                     className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
                                             </div>
                                         </div>
                                         <div className="space-y-3">
-                                            <Label htmlFor="tier_growth_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Growth Annuel (MAD)</Label>
+                                            <Label htmlFor="tier_growth_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.growthAnnualLabel', 'Growth Annuel (MAD)')}</Label>
                                             <div className="relative">
                                                 <Input
                                                     id="tier_growth_annual_price"
@@ -803,7 +804,7 @@ export default function SettingsPage() {
                                                     onChange={(e) => updateSetting('tier_growth_annual_price', parseFloat(e.target.value) || 0)}
                                                     className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -812,7 +813,7 @@ export default function SettingsPage() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <Label htmlFor="tier_gold_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Gold Mensuel (MAD)</Label>
+                                            <Label htmlFor="tier_gold_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.goldMonthlyLabel', 'Gold Mensuel (MAD)')}</Label>
                                             <div className="relative">
                                                 <Input
                                                     id="tier_gold_monthly_price"
@@ -821,11 +822,11 @@ export default function SettingsPage() {
                                                     onChange={(e) => updateSetting('tier_gold_monthly_price', parseFloat(e.target.value) || 0)}
                                                     className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
                                             </div>
                                         </div>
                                         <div className="space-y-3">
-                                            <Label htmlFor="tier_gold_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Gold Annuel (MAD)</Label>
+                                            <Label htmlFor="tier_gold_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.goldAnnualLabel', 'Gold Annuel (MAD)')}</Label>
                                             <div className="relative">
                                                 <Input
                                                     id="tier_gold_annual_price"
@@ -834,20 +835,20 @@ export default function SettingsPage() {
                                                     onChange={(e) => updateSetting('tier_gold_annual_price', parseFloat(e.target.value) || 0)}
                                                     className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
                                                 />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">MAD</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
                                             </div>
-                                            <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest text-right px-2">Économie suggérée: 20%</p>
+                                            <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest text-right px-2">{t('adminSettings.commercial.suggestedSavings', 'Economie suggeree: 20%')}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="premium_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Argumentaire de Vente</Label>
+                                    <Label htmlFor="premium_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.salesPitchLabel', 'Argumentaire de Vente')}</Label>
                                     <Textarea
                                         id="premium_description"
                                         value={settings.premium_description}
                                         onChange={(e) => updateSetting('premium_description', e.target.value)}
-                                        placeholder="Pourquoi passer à Premium ?..."
+                                        placeholder={t('adminSettings.commercial.salesPitchPlaceholder', 'Pourquoi passer a Premium ?...')}
                                         rows={4}
                                         className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-6 font-medium leading-relaxed"
                                     />
@@ -859,57 +860,57 @@ export default function SettingsPage() {
                     <TabsContent value="payments" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Configuration des Paiements</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Détails bancaires affichés aux utilisateurs pour les paiements hors-ligne.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.payments.title', 'Configuration des Paiements')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.payments.desc', 'Details bancaires affiches aux utilisateurs pour paiements hors-ligne.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <Label htmlFor="payment_bank_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom de la Banque</Label>
+                                        <Label htmlFor="payment_bank_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.bankNameLabel', 'Nom de la Banque')}</Label>
                                         <Input
                                             id="payment_bank_name"
                                             value={settings.payment_bank_name || ''}
                                             onChange={(e) => updateSetting('payment_bank_name', e.target.value)}
-                                            placeholder="Ex: BMCE Bank"
+                                            placeholder={t('adminSettings.payments.bankNamePlaceholder', 'Ex: BMCE Bank')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label htmlFor="payment_rib_number" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Numéro de Compte (RIB)</Label>
+                                        <Label htmlFor="payment_rib_number" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.ribLabel', 'Numero de Compte (RIB)')}</Label>
                                         <Input
                                             id="payment_rib_number"
                                             value={settings.payment_rib_number || ''}
                                             onChange={(e) => updateSetting('payment_rib_number', e.target.value)}
-                                            placeholder="Ex: 011 780 0000 1234567890 12 34"
+                                            placeholder={t('adminSettings.payments.ribPlaceholder', 'Ex: 011 780 0000 1234567890 12 34')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold font-mono"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="payment_beneficiary" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Bénéficiaire</Label>
+                                    <Label htmlFor="payment_beneficiary" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.beneficiaryLabel', 'Beneficiaire')}</Label>
                                     <Input
                                         id="payment_beneficiary"
                                         value={settings.payment_beneficiary || ''}
                                         onChange={(e) => updateSetting('payment_beneficiary', e.target.value)}
-                                        placeholder="Ex: Platform SARL"
+                                        placeholder={t('adminSettings.payments.beneficiaryPlaceholder', 'Ex: Platform SARL')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="payment_chari_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Lien Chari.ma</Label>
+                                    <Label htmlFor="payment_chari_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.chariUrlLabel', 'Lien Chari.ma')}</Label>
                                     <Input
                                         id="payment_chari_url"
                                         value={settings.payment_chari_url || ''}
                                         onChange={(e) => updateSetting('payment_chari_url', e.target.value)}
-                                        placeholder="Ex: https://chari.ma/avis"
+                                        placeholder={t('adminSettings.payments.chariUrlPlaceholder', 'Ex: https://chari.ma/avis')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Méthodes de Paiement Activées</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.methodsEnabledLabel', 'Methodes de Paiement Activees')}</Label>
                                     <div className="flex flex-wrap gap-3 pt-2">
                                         {['bank_transfer', 'chari_ma', 'paypal', 'stripe'].map((method) => (
                                             <div key={method} className="flex items-center space-x-2">
@@ -945,9 +946,9 @@ export default function SettingsPage() {
                                         <AlertTriangle className="h-5 w-5 text-green-500" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">Information</p>
+                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.salaryValidation.infoTitle', 'Information')}</p>
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            Ces coordonnées seront affichées aux utilisateurs sur la page d'abonnement Premium.
+                                            Ces coordonnées seront affichées aux utilisateurs sur la page d'abonnement {t('adminSettings.status.premium', 'Premium')}.
                                             Elles leur permettront d'effectuer les virements bancaires pour activer leurs abonnements.
                                         </p>
                                     </div>
@@ -959,7 +960,7 @@ export default function SettingsPage() {
                     <TabsContent value="salary-config" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Validation des salaires</CardTitle>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.salaryValidation.title', 'Validation des salaires')}</CardTitle>
                                 <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">
                                     Gerez les postes, departements et intervalles autorises dans le formulaire public.
                                 </CardDescription>
@@ -967,29 +968,29 @@ export default function SettingsPage() {
                             <CardContent className="p-8 space-y-8">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Postes autorises (1 par ligne)</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.salaryValidation.rolesLabel', 'Postes autorises (1 par ligne)')}</Label>
                                         <Textarea
                                             value={salaryRolesText}
                                             onChange={(e) => setSalaryRolesText(e.target.value)}
                                             rows={14}
                                             className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-medium"
-                                            placeholder="Ingenieur logiciel"
+                                        placeholder={t('adminSettings.salaryValidation.rolesPlaceholder', 'Ingenieur logiciel')}
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Departements autorises (1 par ligne)</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.salaryValidation.departmentsLabel', 'Departements autorises (1 par ligne)')}</Label>
                                         <Textarea
                                             value={salaryDepartmentsText}
                                             onChange={(e) => setSalaryDepartmentsText(e.target.value)}
                                             rows={14}
                                             className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-medium"
-                                            placeholder="Ingenierie"
+                                        placeholder={t('adminSettings.salaryValidation.departmentsPlaceholder', 'Ingenierie')}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Intervalles salariaux (JSON)</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.salaryValidation.intervalsLabel', 'Intervalles salariaux (JSON)')}</Label>
                                     <Textarea
                                         value={salaryIntervalsText}
                                         onChange={(e) => setSalaryIntervalsText(e.target.value)}
@@ -1007,52 +1008,52 @@ export default function SettingsPage() {
                     <TabsContent value="contact" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Support Technique</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Coordonnées utilisées pour les emails automatiques et le footer.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.support.title', 'Support Technique')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.support.desc', 'Coordonnees utilisees pour les emails automatiques et le footer.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <Label htmlFor="contact_email" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Email de relation client</Label>
+                                        <Label htmlFor="contact_email" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.contactEmailLabel', 'Email de relation client')}</Label>
                                         <Input
                                             id="contact_email"
                                             type="email"
                                             value={settings.contact_email || ''}
                                             onChange={(e) => updateSetting('contact_email', e.target.value)}
-                                            placeholder="hello@platform.com"
+                                            placeholder={t('adminSettings.support.contactEmailPlaceholder', 'hello@platform.com')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label htmlFor="support_phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Ligne Directe Support</Label>
+                                        <Label htmlFor="support_phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.supportPhoneLabel', 'Ligne Directe Support')}</Label>
                                         <Input
                                             id="support_phone"
                                             value={settings.support_phone || ''}
                                             onChange={(e) => updateSetting('support_phone', e.target.value)}
-                                            placeholder="+212 5XX XX XX XX"
+                                            placeholder={t('adminSettings.support.supportPhonePlaceholder', '+212 5XX XX XX XX')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="office_address" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Adresse des bureaux (Footer)</Label>
+                                    <Label htmlFor="office_address" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.officeAddressLabel', 'Adresse des bureaux (Footer)')}</Label>
                                     <Input
                                         id="office_address"
                                         value={settings.office_address || ''}
                                         onChange={(e) => updateSetting('office_address', e.target.value)}
-                                        placeholder="Ex: 123 Boulevard d'Anfa, Casablanca"
+                                        placeholder={t('adminSettings.support.officeAddressPlaceholder', "Ex: 123 Boulevard d'Anfa, Casablanca")}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="copyright_text" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Texte de Copyright</Label>
+                                    <Label htmlFor="copyright_text" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.copyrightLabel', 'Texte de Copyright')}</Label>
                                     <Input
                                         id="copyright_text"
                                         value={settings.copyright_text || ''}
                                         onChange={(e) => updateSetting('copyright_text', e.target.value)}
-                                        placeholder="&copy; 2024 Platform. Tous droits réservés."
+                                        placeholder={t('adminSettings.support.copyrightPlaceholder', '&copy; 2024 Platform. Tous droits reserves.')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
@@ -1063,47 +1064,47 @@ export default function SettingsPage() {
                     <TabsContent value="email" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Configuration Email</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Paramètres de configuration pour l'envoi d'emails transactionnels.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.email.title', 'Configuration Email')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.email.desc', 'Parametres de configuration pour envoi emails transactionnels.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
                                 <div className="space-y-3">
-                                    <Label htmlFor="email_provider" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Fournisseur Email</Label>
+                                    <Label htmlFor="email_provider" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.providerLabel', 'Fournisseur Email')}</Label>
                                     <Select value={settings.email_provider || 'console'} onValueChange={(value) => updateSetting('email_provider', value)}>
                                         <SelectTrigger className="w-full h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold">
-                                            <SelectValue placeholder="Choisir un fournisseur" />
+                                            <SelectValue placeholder={t('adminSettings.email.providerPlaceholder', 'Choisir un fournisseur')} />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
-                                            <SelectItem value="console">Console (Développement)</SelectItem>
-                                            <SelectItem value="resend">Resend</SelectItem>
-                                            <SelectItem value="sendgrid">SendGrid</SelectItem>
-                                            <SelectItem value="mailjet">Mailjet</SelectItem>
-                                            <SelectItem value="ses">Amazon SES</SelectItem>
+                                            <SelectItem value="console">{t('adminSettings.email.providers.console', 'Console (Developpement)')}</SelectItem>
+                                            <SelectItem value="resend">{t('adminSettings.email.providers.resend', 'Resend')}</SelectItem>
+                                            <SelectItem value="sendgrid">{t('adminSettings.email.providers.sendgrid', 'SendGrid')}</SelectItem>
+                                            <SelectItem value="mailjet">{t('adminSettings.email.providers.mailjet', 'Mailjet')}</SelectItem>
+                                            <SelectItem value="ses">{t('adminSettings.email.providers.ses', 'Amazon SES')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="email_from" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Adresse Expéditeur</Label>
+                                    <Label htmlFor="email_from" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.fromLabel', 'Adresse Expediteur')}</Label>
                                     <Input
                                         id="email_from"
                                         type="email"
                                         value={settings.email_from || ''}
                                         onChange={(e) => updateSetting('email_from', e.target.value)}
-                                        placeholder="noreply@example.com"
+                                        placeholder={t('adminSettings.email.fromPlaceholder', 'noreply@example.com')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
 
                                 {(settings.email_provider === 'resend') && (
                                     <div className="space-y-3">
-                                        <Label htmlFor="resend_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Clé API Resend</Label>
+                                        <Label htmlFor="resend_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.resendKeyLabel', 'Cle API Resend')}</Label>
                                         <Input
                                             id="resend_api_key"
                                             type="password"
                                             value={settings.resend_api_key || ''}
                                             onChange={(e) => updateSetting('resend_api_key', e.target.value)}
-                                            placeholder="red_..."
+                                            placeholder={t('adminSettings.email.resendPlaceholder', 'red_...')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                         <p className="text-xs text-muted-foreground font-medium">
@@ -1114,13 +1115,13 @@ export default function SettingsPage() {
 
                                 {(settings.email_provider === 'sendgrid') && (
                                     <div className="space-y-3">
-                                        <Label htmlFor="sendgrid_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Clé API SendGrid</Label>
+                                        <Label htmlFor="sendgrid_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.sendgridKeyLabel', 'Cle API SendGrid')}</Label>
                                         <Input
                                             id="sendgrid_api_key"
                                             type="password"
                                             value={settings.sendgrid_api_key || ''}
                                             onChange={(e) => updateSetting('sendgrid_api_key', e.target.value)}
-                                            placeholder="SG."
+                                            placeholder={t('adminSettings.email.sendgridPlaceholder', 'SG.')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                         <p className="text-xs text-muted-foreground font-medium">
@@ -1131,13 +1132,13 @@ export default function SettingsPage() {
 
                                 {(settings.email_provider === 'mailjet') && (
                                     <div className="space-y-3">
-                                        <Label htmlFor="mailjet_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Clé API Mailjet</Label>
+                                        <Label htmlFor="mailjet_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.mailjetKeyLabel', 'Cle API Mailjet')}</Label>
                                         <Input
                                             id="mailjet_api_key"
                                             type="password"
                                             value={settings.mailjet_api_key || ''}
                                             onChange={(e) => updateSetting('mailjet_api_key', e.target.value)}
-                                            placeholder="API Key..."
+                                            placeholder={t('adminSettings.email.mailjetKeyPlaceholder', 'API Key...')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                         <p className="text-xs text-muted-foreground font-medium">
@@ -1148,13 +1149,13 @@ export default function SettingsPage() {
 
                                 {(settings.email_provider === 'mailjet') && (
                                     <div className="space-y-3">
-                                        <Label htmlFor="mailjet_api_secret" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Clé Secrète Mailjet</Label>
+                                        <Label htmlFor="mailjet_api_secret" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.mailjetSecretLabel', 'Cle Secrete Mailjet')}</Label>
                                         <Input
                                             id="mailjet_api_secret"
                                             type="password"
                                             value={settings.mailjet_api_secret || ''}
                                             onChange={(e) => updateSetting('mailjet_api_secret', e.target.value)}
-                                            placeholder="API Secret..."
+                                            placeholder={t('adminSettings.email.mailjetSecretPlaceholder', 'API Secret...')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                         <p className="text-xs text-muted-foreground font-medium">
@@ -1168,7 +1169,7 @@ export default function SettingsPage() {
                                         <AlertTriangle className="h-5 w-5 text-blue-500" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">Important</p>
+                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.email.importantTitle', 'Important')}</p>
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
                                             Les clés API sont stockées dans la base de données. Assurez-vous que votre environnement est sécurisé.
                                             En production, il est préférable d'utiliser les variables d'environnement.
@@ -1182,8 +1183,8 @@ export default function SettingsPage() {
                     <TabsContent value="social" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Écosystème Social</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Connectez vos profils officiels pour la réassurance utilisateur.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.social.title', 'Ecosysteme Social')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.social.desc', 'Connectez vos profils officiels pour reassurance utilisateur.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {[
@@ -1217,29 +1218,29 @@ export default function SettingsPage() {
                             <CardHeader className="p-8 border-b border-border/10">
                                 <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3 text-indigo-600">
                                     <LinkIcon className="h-7 w-7" />
-                                    Gestion du Partenaire RH
+                                    {t('adminSettings.sections.partner.title', 'Gestion du Partenaire RH')}
                                 </CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Configurez l'application partenaire (ex: MOR RH) affichée sur la plateforme.</CardDescription>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.partner.desc', 'Configurez application partenaire affichee sur la plateforme.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <Label htmlFor="partner_app_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nom du Partenaire</Label>
+                                        <Label htmlFor="partner_app_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.partner.nameLabel', 'Nom du Partenaire')}</Label>
                                         <Input
                                             id="partner_app_name"
                                             value={settings.partner_app_name || ''}
                                             onChange={(e) => updateSetting('partner_app_name', e.target.value)}
-                                            placeholder="Ex: MOR RH"
+                                            placeholder={t('adminSettings.partner.namePlaceholder', 'Ex: MOR RH')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-black text-lg"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label htmlFor="partner_app_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">URL de l'Application</Label>
+                                        <Label htmlFor="partner_app_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.partner.urlLabel', "URL de l'Application")}</Label>
                                         <Input
                                             id="partner_app_url"
                                             value={settings.partner_app_url || ''}
                                             onChange={(e) => updateSetting('partner_app_url', e.target.value)}
-                                            placeholder="https://..."
+                                            placeholder={t('adminSettings.partner.urlPlaceholder', 'https://...')}
                                             className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                         />
                                     </div>
@@ -1249,7 +1250,7 @@ export default function SettingsPage() {
                                         <Globe className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">Configuration des outils</p>
+                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.partner.toolsTitle', 'Configuration des outils')}</p>
                                         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
                                             Ces paramètres contrôlent le branding et les liens dans la section "Employee Toolkit" de la page d'accueil et le widget dans la barre latérale des entreprises.
                                         </p>
@@ -1262,13 +1263,22 @@ export default function SettingsPage() {
                     <TabsContent value="security" className="mt-0 space-y-8">
                         <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
                             <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">Politiques de Sécurité</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">Contrôlez l'exposition publique et les flux d'inscription.</CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.security.title', 'Politiques de Securite')}</CardTitle>
+                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.security.desc', 'Controlez exposition publique et flux inscription.')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-6">
                                 {[
-                                    { id: 'maintenance_mode', label: 'Mode Maintenance Actif', desc: 'Le site sera inaccessible pour les visiteurs. Utile pour les mises à jour critiques.', warning: true },
-                                    { id: 'allow_new_registrations', label: 'Ouverture des Inscriptions', desc: 'Permettre à de nouveaux utilisateurs de rejoindre la plateforme.' },
+                                    {
+                                        id: 'maintenance_mode',
+                                        label: t('adminSettings.security.maintenanceLabel', 'Mode Maintenance Actif'),
+                                        desc: t('adminSettings.security.maintenanceDesc', 'Le site sera inaccessible pour les visiteurs. Utile pour les mises a jour critiques.'),
+                                        warning: true
+                                    },
+                                    {
+                                        id: 'allow_new_registrations',
+                                        label: t('adminSettings.security.registrationsLabel', 'Ouverture des Inscriptions'),
+                                        desc: t('adminSettings.security.registrationsDesc', 'Permettre a de nouveaux utilisateurs de rejoindre la plateforme.'),
+                                    },
                                 ].map((item) => (
                                     <div key={item.id} className={cn(
                                         "flex items-center justify-between p-8 rounded-[2rem] border transition-all cursor-pointer",

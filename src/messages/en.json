@@ -17,7 +17,11 @@
     "admin": "Admin",
     "suggestPlace": "Suggest a place",
     "navigation": "Navigation",
-    "more": "More"
+    "more": "More",
+    "mobileMenuTitle": "Navigation menu",
+    "mobileMenuDesc": "Access the different site sections from this mobile menu.",
+    "mobileTagline": "Company Guide & Reviews",
+    "mobileGuestHint": "Explore the best places in Morocco."
   },
   "common": {
     "ok": "OK",
@@ -26,7 +30,8 @@
     "success": "Success",
     "error": "Error",
     "hide": "Hide",
-    "add": "Add"
+    "add": "Add",
+    "import": "Import"
   },
   "footer": {
     "defaultDescription": "The reference platform to discover and rate the best companies in Morocco.",
@@ -1423,5 +1428,805 @@
     "cityUnknown": "City not specified",
     "slots": "Slots: {count}",
     "viewOffer": "View offer"
+  },
+  "adminLayout": {
+    "group": {
+      "insights": "Insights",
+      "management": "Management",
+      "moderation": "Moderation",
+      "platform": "Platform"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "analyticsHub": "Analytics Hub",
+      "stats": "Statistics",
+      "auditLogs": "Audit Logs",
+      "businesses": "Businesses",
+      "users": "Users",
+      "categories": "Categories",
+      "claims": "Claims",
+      "suggestions": "Suggestions",
+      "businessAssignment": "Business Assignment",
+      "allReviews": "All reviews",
+      "salaries": "Salaries",
+      "referrals": "Referrals",
+      "reviewReports": "Review reports",
+      "reviewAppeals": "Review appeals",
+      "businessReports": "Business reports",
+      "reportedMedia": "Reported media",
+      "homepage": "Homepage",
+      "blogCms": "Blog CMS",
+      "payments": "Payments",
+      "support": "Customer support",
+      "diagnostics": "Diagnostics",
+      "settings": "Settings"
+    },
+    "suite": "Admin Suite",
+    "backToSite": "Back to site",
+    "mobileMenu": "Admin menu"
+  },
+  "adminBusinesses": {
+    "toast": {
+      "loadErrorTitle": "Loading error",
+      "loadErrorDesc": "Unable to fetch businesses.",
+      "bulkDeleteSuccess": "Deletion successful",
+      "bulkUpdateSuccess": "Update successful",
+      "bulkActionError": "An error occurred during bulk action",
+      "requiredFields": "Please fill in all required fields.",
+      "createSuccess": "Business added successfully."
+    },
+    "badge": "Directory & CRM",
+    "filter": {
+      "allCities": "All cities",
+      "allStatuses": "All statuses",
+      "claimed": "Claimed",
+      "unclaimed": "Unclaimed",
+      "clear": "Clear filters"
+    },
+    "loadingSync": "Syncing CRM...",
+    "emptyTitle": "No results",
+    "table": {
+      "business": "Business",
+      "identity": "Identity",
+      "ownership": "Ownership",
+      "engagement": "Engagement",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "createDialog": {
+      "titlePrefix": "Add a",
+      "titleAccent": "Business",
+      "desc": "Enter the basic information to create a new record.",
+      "fields": {
+        "name": "Business name",
+        "category": "Category",
+        "city": "City",
+        "address": "Address",
+        "description": "Description"
+      },
+      "premiumLabel": "Premium status",
+      "premiumDesc": "Enable Premium benefits immediately.",
+      "placeholders": {
+        "name": "Ex: Cafe de Paris",
+        "category": "Ex: Restaurant",
+        "city": "Ex: Casablanca",
+        "address": "Ex: 123 Liberty Street",
+        "description": "Short description..."
+      }
+    },
+    "titlePrefix": "Manage",
+    "titleAccent": "Businesses",
+    "kpi": {
+      "premiumBadge": "Premium",
+      "featured": "Featured businesses",
+      "engagedBadge": "Engaged",
+      "proAccounts": "Active Pro accounts",
+      "satisfactionBadge": "Satisfaction",
+      "averageRating": "Average platform rating",
+      "identityBadge": "Identity",
+      "missingLogo": "Without professional logo"
+    },
+    "emptyDesc": "Try reducing filters or run a new search.",
+    "identity": {
+      "logoOk": "LOGO OK",
+      "pending": "PENDING",
+      "noLogo": "NO LOGO"
+    },
+    "ownership": {
+      "claimed": "Claimed",
+      "free": "Free",
+      "unclaimed": "Unclaimed"
+    },
+    "bulk": {
+      "title": "Bulk Processing",
+      "subtitle": "Action on directory selection"
+    },
+    "deleteDialog": {
+      "confirmText": "Are you sure you want to ban",
+      "irreversible": "This action is permanent.",
+      "deletedData": "Deleted data:",
+      "deletedItems": {
+        "reviewsHistory": "Reviews history",
+        "updatesPhotos": "Updates & photos",
+        "relatedClaims": "Related claims",
+        "ownerAccess": "Owner access"
+      }
+    },
+    "metrics": {
+      "reviews": "reviews"
+    },
+    "actions": {
+      "businessDetails": "Business details"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next",
+      "perPage": "page"
+    },
+    "totalCountSuffix": "businesses in database",
+    "searchPlaceholder": "Search by name, category..."
+  },
+  "adminSettings": {
+    "toast": {
+      "loadError": "Impossible de charger les parametres actuels. Le formulaire affiche des valeurs par defaut.",
+      "notFound": "Aucun enregistrement site_settings (id=main) n a ete trouve.",
+      "saveBlockedTitle": "Sauvegarde bloquee",
+      "saveBlockedDesc": "Rechargez la page apres avoir resolu le chargement des parametres pour eviter ecrasement des donnees existantes.",
+      "invalidSalaryIntervals": "Intervalles salariaux invalides. Utilisez un JSON valide.",
+      "savedTitle": "Configuration sauvegardee",
+      "unexpectedError": "Une erreur imprevue est survenue."
+    },
+    "loading": "Loading System...",
+    "badge": "Configuration Noyau",
+    "titlePrefix": "Parametres",
+    "titleAccent": "Systeme",
+    "subtitle": "Controle global des modules et de aspect de la plateforme",
+    "saveButton": "Enregistrer les modifications",
+    "tabs": {
+      "general": "General & SEO",
+      "features": "Modules Applicatifs",
+      "subscriptions": "Abonnements",
+      "payments": "Paiements",
+      "salaries": "Salaires",
+      "home": "Accueil",
+      "communication": "Communication",
+      "email": "Configuration Email",
+      "social": "Reseaux Sociaux",
+      "partner": "Partenaire RH",
+      "security": "Acces & Securite"
+    },
+    "systemStatus": "Statut Systeme",
+    "status": {
+      "maintenance": "Maintenance",
+      "registrations": "Inscriptions",
+      "premium": "Premium",
+      "activeMaintenance": "ACTIVE",
+      "open": "OUVERTES",
+      "closed": "FERMEES",
+      "active": "ACTIF",
+      "off": "OFF"
+    },
+    "sections": {
+      "homeLayout": {
+        "title": "Agencement de Accueil",
+        "desc": "Gerez la visibilite et ordre des sections de votre page accueil."
+      },
+      "platformIdentity": {
+        "title": "Identite de Plateforme",
+        "desc": "Definissez le nom et les metadonnees SEO globales du service."
+      },
+      "modules": {
+        "title": "Gestion des Modules",
+        "desc": "Activez ou desactivez les fonctionnalites applicatives majeures en un clic."
+      },
+      "commercial": {
+        "title": "Configuration Commerciale",
+        "desc": "Gerez les prix des abonnements et le contenu du pack Premium."
+      },
+      "payments": {
+        "title": "Configuration des Paiements",
+        "desc": "Details bancaires affiches aux utilisateurs pour les paiements hors-ligne."
+      },
+      "salaryValidation": {
+        "title": "Validation des salaires"
+      },
+      "support": {
+        "title": "Support Technique",
+        "desc": "Coordonnees utilisees pour les emails automatiques et le footer."
+      },
+      "email": {
+        "title": "Configuration Email",
+        "desc": "Parametres de configuration pour envoi emails transactionnels."
+      },
+      "social": {
+        "title": "Ecosysteme Social",
+        "desc": "Connectez vos profils officiels pour la reassurance utilisateur."
+      },
+      "partner": {
+        "title": "Gestion du Partenaire RH",
+        "desc": "Configurez application partenaire affichee sur la plateforme."
+      },
+      "security": {
+        "title": "Politiques de Securite",
+        "desc": "Controlez exposition publique et flux inscription."
+      }
+    },
+    "homeLayout": {
+      "sectionBlock": "Section Block",
+      "state": {
+        "active": "Active",
+        "hidden": "Hidden"
+      },
+      "note": {
+        "title": "Important note",
+        "desc": "Order is applied immediately after save. Blocks like Hero are recommended first."
+      }
+    },
+    "popularSearches": {
+      "title": "Popular Searches",
+      "desc": "Manage quick search shortcuts shown under the main search bar.",
+      "tagLabel": "Tag label",
+      "tagPlaceholder": "Ex: Restaurants in Casablanca",
+      "hrefLabel": "Results link (Href)",
+      "add": "Add search tag"
+    },
+    "platformIdentity": {
+      "siteNameLabel": "Public service name",
+      "siteNamePlaceholder": "Site name",
+      "metaDescriptionLabel": "Meta Description Tag (SEO)",
+      "metaDescriptionPlaceholder": "Describe your platform in 160 characters...",
+      "metaDescriptionHint": "This description is used by Google and Bing for homepage indexing.",
+      "brandingMedia": "Branding & Media",
+      "logoUrlLabel": "Logo URL (SVG or PNG)",
+      "gaLabel": "Google Analytics (G-XXXXXXX)",
+      "gaPlaceholder": "G-XXXXXXXXXX",
+      "pixelLabel": "Meta Pixel ID",
+      "pixelPlaceholder": "Your pixel ID...",
+      "adsenseClientLabel": "Google AdSense Client ID",
+      "adsenseClientPlaceholder": "ca-pub-XXXXXXXXXXXXXXXX",
+      "enableAdsenseLabel": "Enable AdSense",
+      "autoAdsLabel": "Auto Ads"
+    },
+    "modules": {
+      "reviews": {
+        "label": "Reviews engine",
+        "desc": "Manage user ratings and comments"
+      },
+      "salaries": {
+        "label": "Salaries section",
+        "desc": "Anonymous compensation database"
+      },
+      "claims": {
+        "label": "Claims Engine",
+        "desc": "Business claim workflow"
+      },
+      "competitorAds": {
+        "label": "Competitor ads",
+        "desc": "Ad network across business pages"
+      },
+      "competitorAdsTracking": {
+        "label": "Competitor ads tracking",
+        "desc": "Collect ad impressions and clicks"
+      }
+    },
+    "commercial": {
+      "subscriptionsTitle": "Premium subscriptions",
+      "subscriptionsDesc": "Allow businesses to upgrade to higher plans",
+      "growthMonthlyLabel": "Growth Monthly (MAD)",
+      "growthAnnualLabel": "Growth Annual (MAD)",
+      "goldMonthlyLabel": "Gold Monthly (MAD)",
+      "goldAnnualLabel": "Gold Annual (MAD)",
+      "currency": "MAD",
+      "suggestedSavings": "Suggested savings: 20%",
+      "salesPitchLabel": "Sales pitch",
+      "salesPitchPlaceholder": "Why switch to Premium?..."
+    },
+    "payments": {
+      "bankNameLabel": "Bank name",
+      "bankNamePlaceholder": "Ex: BMCE Bank",
+      "ribLabel": "Account number (RIB)",
+      "ribPlaceholder": "Ex: 011 780 0000 1234567890 12 34",
+      "beneficiaryLabel": "Beneficiary",
+      "beneficiaryPlaceholder": "Ex: Platform LLC",
+      "chariUrlLabel": "Chari.ma link",
+      "chariUrlPlaceholder": "Ex: https://chari.ma/avis",
+      "methodsEnabledLabel": "Enabled payment methods"
+    },
+    "salaryValidation": {
+      "infoTitle": "Information",
+      "rolesLabel": "Allowed roles (1 per line)",
+      "rolesPlaceholder": "Software engineer",
+      "departmentsLabel": "Allowed departments (1 per line)",
+      "departmentsPlaceholder": "Engineering",
+      "intervalsLabel": "Salary intervals (JSON)"
+    },
+    "support": {
+      "contactEmailLabel": "Customer contact email",
+      "contactEmailPlaceholder": "hello@platform.com",
+      "supportPhoneLabel": "Support direct line",
+      "supportPhonePlaceholder": "+212 5XX XX XX XX",
+      "officeAddressLabel": "Office address (Footer)",
+      "officeAddressPlaceholder": "Ex: 123 Boulevard d'Anfa, Casablanca",
+      "copyrightLabel": "Copyright text",
+      "copyrightPlaceholder": "&copy; 2024 Platform. All rights reserved."
+    },
+    "email": {
+      "providerLabel": "Email provider",
+      "providerPlaceholder": "Choose a provider",
+      "providers": {
+        "console": "Console (Development)",
+        "resend": "Resend",
+        "sendgrid": "SendGrid",
+        "mailjet": "Mailjet",
+        "ses": "Amazon SES"
+      },
+      "fromLabel": "Sender address",
+      "fromPlaceholder": "noreply@example.com",
+      "resendKeyLabel": "Resend API key",
+      "resendPlaceholder": "red_...",
+      "sendgridKeyLabel": "SendGrid API key",
+      "sendgridPlaceholder": "SG.",
+      "mailjetKeyLabel": "Mailjet API key",
+      "mailjetKeyPlaceholder": "API Key...",
+      "mailjetSecretLabel": "Mailjet secret key",
+      "mailjetSecretPlaceholder": "API Secret...",
+      "importantTitle": "Important"
+    },
+    "partner": {
+      "nameLabel": "Partner name",
+      "namePlaceholder": "Ex: MOR RH",
+      "urlLabel": "Application URL",
+      "urlPlaceholder": "https://...",
+      "toolsTitle": "Tools configuration"
+    }
+  },
+  "claimNew": {
+    "toast": {
+      "alreadyClaimedTitle": "Etablissement deja revendique",
+      "alreadyClaimedDesc": "Cette entreprise a deja ete revendiquee par un autre utilisateur.",
+      "accessDeniedTitle": "Acces refuse",
+      "accessDeniedDesc": "Vous gerez deja un etablissement valide. Redirection vers votre tableau de bord...",
+      "requestPendingTitle": "Demande en cours",
+      "requestPendingDesc": "Vous avez deja une revendication en attente de validation.",
+      "draftRestoredTitle": "Brouillon recupere",
+      "draftRestoredDesc": "Vos donnees sauvegardees ont ete restaurees.",
+      "validationErrorTitle": "Erreur de validation",
+      "fileTooLargeDoc": "Fichier trop volumineux (max 10MB)",
+      "documentUploaded": "Document telecharge",
+      "fileTooLargeVideo": "Video trop volumineuse (max 100MB)",
+      "videoUploaded": "Video telechargee",
+      "uploadErrorTitle": "Erreur de telechargement",
+      "uploadErrorDesc": "Une erreur est survenue lors de envoi des fichiers."
+    },
+    "fields": {
+      "fullName": "Votre nom complet",
+      "position": "Votre poste/fonction",
+      "businessName": "Nom commercial",
+      "category": "Categorie principale",
+      "subcategory": "Specialite",
+      "city": "Ville",
+      "quartier": "Quartier",
+      "address": "Adresse exacte",
+      "phoneOptional": "Tel. Professionnel (Optionnel)",
+      "websiteOptional": "Site Web (Optionnel)",
+      "description": "A propos de etablissement",
+      "claimerType": "Representative type",
+      "claimerTitle": "Role details",
+      "email": "Business email",
+      "personalPhone": "Personal phone",
+      "businessContact": "Business phone or website",
+      "verificationMethod": "Verification method",
+      "fullNameLabel": "Full name",
+      "positionLabel": "Role / Position",
+      "claimerTypeLabel": "You are",
+      "claimerTitleLabel": "Specify your role",
+      "emailLabel": "Business Email",
+      "personalPhoneLabel": "Direct phone"
+    },
+    "missingFields": "Champs manquants: {fields}",
+    "blocked": {
+      "title": "Etablissement deja revendique",
+      "desc": "Cette entreprise a deja ete revendiquee par un autre utilisateur.",
+      "help": "If you are the legitimate owner of this business, please contact us to resolve this issue."
+    },
+    "backToSearch": "Retour a la recherche",
+    "hero": {
+      "title": "Revendiquez votre etablissement",
+      "step1": "Commencons par les details de votre activite",
+      "step2": "Dites-nous qui vous etes",
+      "step3": "Verifiez vos informations avant de soumettre"
+    },
+    "contactTeam": "Contacter equipe",
+    "stepper": {
+      "business": "Etablissement",
+      "benefits": "Avantages",
+      "identity": "Identite",
+      "validation": "Validation"
+    },
+    "step1": {
+      "title": "Informations de l entreprise",
+      "desc": "Remplissez les details de votre entreprise",
+      "detailsTitle": "Details de etablissement",
+      "detailsDesc": "Ces informations seront visibles par les clients.",
+      "requiredHint": "Veuillez remplir les informations obligatoires (*) pour continuer",
+      "next": "Suivant : Vos Avantages"
+    },
+    "cancel": "Annuler",
+    "step2": {
+      "title": "Marque Employeur (Optionnel)",
+      "desc": "Affichez les avantages que vous offrez a vos employes pour attirer les meilleurs talents.",
+      "benefitsTitle": "Avantages & Services",
+      "next": "Suivant : Votre Identite"
+    },
+    "back": "Retour",
+    "step3": {
+      "title": "Votre identite & Preuve de propriete",
+      "desc": "Verifiez votre identite et prouvez votre propriete",
+      "representativeTitle": "Informations Representant",
+      "representativeDesc": "Qui effectue la revendication ?",
+      "verificationTitle": "Methodes de Verification",
+      "verificationDesc": "Selectionnez comment vous souhaitez prouver votre identite.",
+      "submitHint": "Veuillez completer vos infos et selectionner une methode de validation.",
+      "next": "Recapitulatif"
+    },
+    "step4": {
+      "title": "Recapitulatif Final",
+      "desc": "Lisez attentivement avant de valider votre demande.",
+      "business": "Etablissement",
+      "representative": "Representant",
+      "selectedBenefits": "Avantages Selectionnes",
+      "selectedMethods": "Methodes de Validation choisies",
+      "commitmentTitle": "Engagement de responsabilite"
+    },
+    "submit": {
+      "submitting": "Soumission...",
+      "sent": "Envoye !",
+      "confirm": "Confirmer la Revendication"
+    },
+    "sidebar": {
+      "whyClaim": "Pourquoi revendiquer ?",
+      "supportCenter": "Support Center",
+      "badgeTitle": "Badge Certifie",
+      "badgeDesc": "Obtenez le badge de confiance bleu sur votre profil public.",
+      "controlTitle": "Controlez vos Infos",
+      "controlDesc": "Mettez a jour vos horaires, photos et services en temps reel.",
+      "convertTitle": "Convertissez Plus",
+      "convertDesc": "Repondez aux avis et interagissez avec vos futurs clients.",
+      "launchOffer": "Offre Lancement",
+      "launchOfferDesc": "1 mois de visibilite PRO offert apres approbation.",
+      "needHelp": "Besoin aide ?",
+      "support24": "Support Premium 7j/7"
+    },
+    "loadingForm": "Chargement du formulaire...",
+    "placeholders": {
+      "businessName": "Ex: Le Petit Bistro",
+      "category": "Choisir une categorie",
+      "subcategory": "Precisez votre activite",
+      "city": "Ex: Casablanca",
+      "quartier": "Quartier",
+      "address": "Rue, N?, Immeuble...",
+      "description": "Decrivez votre activite, vos specialites, votre ambiance...",
+      "phone": "+212 5XX XXX XXX",
+      "website": "https://...",
+      "fullName": "Ex: Mohammed Alami",
+      "position": "Manager, Owner...",
+      "claimerType": "Select your role",
+      "claimerTitle": "Ex: Authorized consultant",
+      "email": "contact@business.com",
+      "personalPhone": "+212 6XX XXX XXX"
+    },
+    "proof": {
+      "email": {
+        "label": "Business email",
+        "description": "Receive a code on your business email"
+      },
+      "phone": {
+        "label": "Phone",
+        "description": "Receive an SMS at the business number"
+      },
+      "document": {
+        "label": "Official document",
+        "description": "Upload a trade register extract or invoice"
+      },
+      "video": {
+        "label": "Quick video",
+        "description": "Record a 10s video showing your storefront sign"
+      }
+    },
+    "claimerType": {
+      "owner": "Owner",
+      "coOwner": "Co-owner",
+      "legalRepresentative": "Legal representative",
+      "manager": "Manager",
+      "marketingManager": "Marketing manager",
+      "agencyRepresentative": "Authorized agency",
+      "employeeDelegate": "Internal delegate",
+      "other": "Other"
+    },
+    "upload": {
+      "document": {
+        "title": "Upload an official document",
+        "cta": "Click to add a file",
+        "hint": "Trade register, tax certificate, or invoice (Max 10MB)",
+        "ready": "File ready: {name}"
+      },
+      "video": {
+        "title": "Proof video (Required if selected)",
+        "cta": "Click to add a video",
+        "hint": "Record your storefront sign (Max 10s, 100MB)",
+        "ready": "Video ready: {name}"
+      }
+    }
+  },
+  "adminPayments": {
+    "badge": "Billing & Revenue",
+    "titlePrefix": "Payments",
+    "titleAccent": "GOLD",
+    "pendingTransfers": "transfers pending verification",
+    "allUpToDate": "All payments are up to date",
+    "status": {
+      "pending": "Pending",
+      "verified": "Verified",
+      "rejected": "Rejected"
+    },
+    "method": {
+      "notProvided": "Method not provided"
+    },
+    "toast": {
+      "verifiedTitle": "Great news!",
+      "verifiedDesc": "Payment verified and Premium status activated.",
+      "warningTitle": "Warning",
+      "rejectReasonRequired": "Please provide a rejection reason.",
+      "actionDoneTitle": "Action completed",
+      "rejectedDesc": "Payment rejected.",
+      "missingFieldsTitle": "Missing fields",
+      "missingFieldsDesc": "Email and reference are required.",
+      "manualSuccess": "Manual subscription activated successfully.",
+      "technicalErrorTitle": "Technical error"
+    },
+    "manual": {
+      "activateButton": "Activate Premium",
+      "title": "Manual Activation",
+      "desc": "Register an offline payment to activate a gold account.",
+      "ownerEmail": "Owner email",
+      "ownerEmailPlaceholder": "example@business.com",
+      "amountLabel": "Amount (MAD)",
+      "durationLabel": "Pack duration",
+      "choose": "Choose",
+      "duration": {
+        "1": "1 Month",
+        "6": "6 Months",
+        "12": "12 Months (1 year)",
+        "24": "24 Months (2 years)"
+      },
+      "planTypeLabel": "Plan type",
+      "choosePlan": "Choose a plan",
+      "planGrowth": "Business GROWTH (99/mo)",
+      "planGold": "Business GOLD (299/mo)",
+      "referenceLabel": "Transaction reference",
+      "referencePlaceholder": "Ex: TRF-55421-MOROCCO",
+      "confirmActivation": "Activate subscription"
+    },
+    "kpi": {
+      "revenue": "Revenue",
+      "totalVerified": "Total verified lifetime",
+      "pendingActions": "Pending actions",
+      "avgBasket": "Average basket (MAD)",
+      "conversion": "Premium conversion"
+    },
+    "searchPlaceholder": "Email, reference or business...",
+    "filters": {
+      "all": "All flows",
+      "pending": "Pending",
+      "verified": "Verified",
+      "rejected": "Rejected"
+    },
+    "clear": "Clear",
+    "sync": {
+      "title": "Stripe/Manual Sync",
+      "subtitle": "Live Gateway Feed"
+    },
+    "loading": "Processing Gateway...",
+    "empty": "No payments found",
+    "table": {
+      "client": "Client & Account",
+      "transaction": "Transaction",
+      "period": "Period",
+      "status": "Status",
+      "decision": "Decision"
+    },
+    "userFallback": "User",
+    "emailUnavailable": "Email unavailable",
+    "verificationInProgress": "Verification in progress",
+    "businessUnlinked": "Business not linked",
+    "referenceMissing": "Missing reference",
+    "actions": {
+      "validate": "Validate"
+    },
+    "rejectDialog": {
+      "title": "Reject transaction",
+      "desc": "Why is this transfer not validated?",
+      "placeholder": "Ex: Reference not found, lower amount...",
+      "confirm": "Confirm rejection"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "perPage": "page",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "adminUsers": {
+    "badge": "Users & Access",
+    "titlePrefix": "Member",
+    "titleAccent": "Base",
+    "registeredAccounts": "registered accounts",
+    "managePremiumOffer": "Manage Premium offer",
+    "loadingSync": "Syncing Members...",
+    "serverOperational": "Operational Server",
+    "emptyTitle": "No users",
+    "emptyDesc": "Reduce filters or run a new search.",
+    "searchPlaceholder": "Search by name or email...",
+    "noName": "No name",
+    "status": {
+      "suspended": "Suspended",
+      "premium": "Premium"
+    },
+    "role": {
+      "admin": "Admin",
+      "adminFull": "Administrator",
+      "pro": "Professional",
+      "user": "User"
+    },
+    "kpi": {
+      "totalUsers": "Total users",
+      "premiumUsers": "Premium users",
+      "proAccounts": "Professional accounts",
+      "suspendedProfiles": "Suspended profiles"
+    },
+    "filters": {
+      "allRoles": "All roles",
+      "users": "Users",
+      "pros": "Professionals",
+      "admins": "Administrators",
+      "allStatuses": "All statuses",
+      "active": "Active",
+      "suspended": "Suspended",
+      "clear": "Clear filters"
+    },
+    "table": {
+      "user": "User",
+      "roleStatus": "Role & Status",
+      "registeredOn": "Registered on",
+      "uniqueId": "Unique ID",
+      "actions": "Actions"
+    },
+    "actions": {
+      "privilegesRoles": "Privileges & Roles",
+      "cancelPremium": "Cancel Premium",
+      "giftPremium": "Gift Premium",
+      "reactivateAccount": "Reactivate account",
+      "suspendAccess": "Suspend access"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "perPage": "page",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "dialog": {
+      "reactivateMember": "Reactivate member",
+      "suspendAccess": "Suspend access",
+      "removePremium": "Remove Premium",
+      "activatePremiumGift": "Activate Premium Gift",
+      "roleChange": "Role change",
+      "plan": "Plan",
+      "choosePlan": "Choose a plan",
+      "period": "Period",
+      "choosePeriod": "Choose a period",
+      "confirmAction": "Confirm Action",
+      "periods": {
+        "1": "1 month",
+        "3": "3 months",
+        "6": "6 months",
+        "12": "12 months",
+        "24": "24 months",
+        "unlimited": "Unlimited"
+      },
+      "tier": {
+        "growth": "Growth",
+        "gold": "Gold"
+      }
+    },
+    "latency": "LATENCY: 42ms"
+  },
+  "adminReviews": {
+    "badge": "Content Moderation",
+    "titlePrefix": "Manage",
+    "titleAccent": "Reviews",
+    "totalSuffix": "reviews on the platform",
+    "loading": "Loading reviews...",
+    "emptyTitle": "No reviews found",
+    "emptyDesc": "Adjust filters or wait for new reviews.",
+    "searchPlaceholder": "Search by author or title...",
+    "clear": "Clear",
+    "kpi": {
+      "queueBadge": "Queue",
+      "activeQueue": "Active moderation queue",
+      "urgentBadge": "Urgent",
+      "slaBreached": "SLA breached",
+      "attentionBadge": "Attention",
+      "slaAtRisk": "SLA at risk (<12h)",
+      "avgQueueAge": "Average queue age"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "atRisk": "At risk",
+      "breached": "SLA breached"
+    },
+    "status": {
+      "pending": "Pending",
+      "toReview": "To review",
+      "validated": "Validated",
+      "published": "Published",
+      "investigation": "Investigation",
+      "rejected": "Rejected",
+      "removed": "Removed"
+    },
+    "table": {
+      "business": "Business",
+      "author": "Author",
+      "rating": "Rating",
+      "subratings": "Sub-ratings",
+      "review": "Review",
+      "status": "Status",
+      "sla": "SLA",
+      "actions": "Actions"
+    },
+    "subrating": {
+      "workLife": "Balance",
+      "management": "Mgmt",
+      "career": "Career",
+      "culture": "Culture"
+    },
+    "sla": {
+      "ok": "OK",
+      "atRisk": "At risk",
+      "breached": "Breached",
+      "due": "Due"
+    },
+    "actions": {
+      "publish": "Publish",
+      "ok": "OK",
+      "reject": "Reject",
+      "remove": "Remove"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "perPage": "page",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "prompt": {
+      "rejectReason": "Reason required to reject this review:",
+      "deleteReason": "Reason required to remove this review:",
+      "confirmDelete": "Confirm removal of this review?"
+    },
+    "toast": {
+      "rejectReasonRequired": "Reason is required to reject a review.",
+      "deleteReasonRequired": "Reason is required to remove a review.",
+      "statusUpdated": "Status updated:",
+      "reviewRemoved": "Review removed."
+    }
   }
 }

@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { AlertCircle, CornerDownRight, Loader2, MessageSquare, Percent } from 'lucide-react';
+import { AlertCircle, CornerDownRight, Loader2, MessageSquare, Percent, Undo } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,6 +19,7 @@ import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { createClient } from '@/lib/supabase/client';
 import { getAuthorDisplayName } from '@/lib/utils/anonymous-reviews';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { submitReviewAppeal } from '@/app/actions/review';
 
 type Review = {
   id: number;
@@ -32,11 +34,19 @@ type Review = {
   dislikes: number;
   owner_reply: string | null;
   owner_reply_date: string | null;
+  status?: string | null;
 };
 
 type Business = {
   id: string;
   name: string;
+};
+
+type ReviewAppeal = {
+  review_id: number;
+  status: 'open' | 'in_review' | 'accepted' | 'rejected';
+  created_at: string;
+  resolved_at: string | null;
 };
 
 function ReviewCardSkeleton() {
@@ -68,6 +78,7 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [appealsByReview, setAppealsByReview] = useState<Record<number, ReviewAppeal>>({});
   const { toast } = useToast();
   const { t, tf, locale } = useI18n();
 
@@ -96,6 +107,30 @@ export default function ReviewsPage() {
     return sortedReviews;
   }, [sortedReviews, replyFilter]);
 
+  const fetchAppealsForReviews = async (reviewIds: number[]) => {
+    if (!reviewIds.length) {
+      setAppealsByReview({});
+      return;
+    }
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('review_appeals')
+      .select('review_id,status,created_at,resolved_at')
+      .in('review_id', reviewIds)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return;
+
+    const byReview: Record<number, ReviewAppeal> = {};
+    for (const appeal of data as ReviewAppeal[]) {
+      if (!byReview[appeal.review_id]) {
+        byReview[appeal.review_id] = appeal;
+      }
+    }
+    setAppealsByReview(byReview);
+  };
+
   useEffect(() => {
     if (profileLoading || !businessId) return;
     if (profileError) {
@@ -117,11 +152,12 @@ export default function ReviewsPage() {
 
       const { data: reviewsData } = await supabase
         .from('reviews')
-        .select('id, rating, title, content, author_name, is_anonymous, user_id, date, likes, dislikes, owner_reply, owner_reply_date')
+        .select('id, rating, title, content, author_name, is_anonymous, user_id, date, likes, dislikes, owner_reply, owner_reply_date, status')
         .eq('business_id', businessId)
         .order('date', { ascending: false });
 
       setReviews(reviewsData || []);
+      await fetchAppealsForReviews((reviewsData || []).map((review) => review.id));
       setLoading(false);
     }
 
@@ -157,6 +193,62 @@ export default function ReviewsPage() {
       setReplyingTo(null);
       setReplyText('');
     }
+  };
+
+  const handleReviewAppeal = async (reviewId: number) => {
+    const existing = appealsByReview[reviewId];
+    if (existing && (existing.status === 'open' || existing.status === 'in_review')) {
+      toast({
+        title: t('dashboardReviewsPage.errorTitle', 'Error'),
+        description: t('dashboardReviewsPage.appealAlreadyActive', 'An appeal is already active for this review.'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const message = window.prompt(t('dashboardReviewsPage.appealPrompt', 'Explain your appeal (minimum 10 characters):'));
+    if (message === null) return;
+    const cleaned = message.trim();
+    if (cleaned.length < 10) {
+      toast({
+        title: t('dashboardReviewsPage.errorTitle', 'Error'),
+        description: t('dashboardReviewsPage.appealTooShort', 'Message is too short.'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const result = await submitReviewAppeal({ review_id: reviewId, message: cleaned });
+    if (result.status === 'success') {
+      toast({
+        title: t('dashboardReviewsPage.appealSubmittedTitle', 'Appeal submitted'),
+        description: result.message,
+      });
+      await fetchAppealsForReviews(reviews.map((review) => review.id));
+    } else {
+      toast({
+        title: t('dashboardReviewsPage.errorTitle', 'Error'),
+        description: result.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getAppealBadge = (reviewId: number) => {
+    const appeal = appealsByReview[reviewId];
+    if (!appeal) return null;
+    if (appeal.status === 'open') return <Badge variant="outline">{t('dashboardReviewsPage.appealStatusOpen', 'Appeal open')}</Badge>;
+    if (appeal.status === 'in_review') return <Badge variant="outline" className="border-orange-500 text-orange-600">{t('dashboardReviewsPage.appealStatusInReview', 'Appeal in review')}</Badge>;
+    if (appeal.status === 'accepted') return <Badge className="bg-emerald-600 text-white">{t('dashboardReviewsPage.appealStatusAccepted', 'Appeal accepted')}</Badge>;
+    return <Badge variant="secondary">{t('dashboardReviewsPage.appealStatusRejected', 'Appeal rejected')}</Badge>;
+  };
+
+  const isModeratedStatus = (status?: string | null) => status === 'rejected' || status === 'hidden' || status === 'deleted';
+  const getModerationBadge = (status?: string | null) => {
+    if (!isModeratedStatus(status)) return null;
+    if (status === 'rejected') return <Badge variant="secondary">{t('dashboardReviewsPage.reviewStatusRejected', 'Rejected')}</Badge>;
+    if (status === 'hidden') return <Badge variant="secondary">{t('dashboardReviewsPage.reviewStatusHidden', 'Hidden')}</Badge>;
+    return <Badge variant="secondary">{t('dashboardReviewsPage.reviewStatusDeleted', 'Deleted')}</Badge>;
   };
 
   const totalReviews = reviews.length;
@@ -284,6 +376,7 @@ export default function ReviewsPage() {
                       <span className="font-medium text-foreground">{getAuthorDisplayName(review, 'pro', null, null)}</span>
                       <span>•</span>
                       <span>{new Date(review.date).toLocaleDateString(dateLocale)}</span>
+                      {getModerationBadge(review.status)}
                     </div>
                   </div>
                   <StarRating rating={review.rating} readOnly />
@@ -307,8 +400,27 @@ export default function ReviewsPage() {
 
               <CardContent className="rounded-b-xl border-t border-border/40 bg-secondary/10 py-2">
                 <div className="flex items-center justify-between">
-                  <VoteButtons reviewId={review.id} initialLikes={review.likes} initialDislikes={review.dislikes} />
-                  <ReviewReportDialog reviewId={review.id} businessId={businessId || ''} />
+                  <div className="flex items-center gap-2">
+                    <VoteButtons reviewId={review.id} initialLikes={review.likes} initialDislikes={review.dislikes} />
+                    {getAppealBadge(review.id)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isModeratedStatus(review.status) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'}
+                        onClick={() => handleReviewAppeal(review.id)}
+                      >
+                        <Undo className="mr-2 h-4 w-4" />
+                        {appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'
+                          ? t('dashboardReviewsPage.appealInProgress', 'Appeal in progress')
+                          : t('dashboardReviewsPage.appeal', 'Appeal')}
+                      </Button>
+                    )}
+                    <ReviewReportDialog reviewId={review.id} businessId={businessId || ''} />
+                  </div>
                 </div>
               </CardContent>
 

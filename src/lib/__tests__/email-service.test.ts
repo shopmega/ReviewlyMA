@@ -11,14 +11,14 @@ vi.mock('../data', () => ({
 describe('Email Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.EMAIL_PROVIDER = 'console';
-    process.env.NODE_ENV = 'development';
+    (process.env as any).EMAIL_PROVIDER = 'console';
+    (process.env as any).NODE_ENV = 'development';
   });
 
   describe('sendEmail', () => {
     it('should send email with console provider', async () => {
       const consoleSpy = vi.spyOn(console, 'log');
-      
+
       const result = await sendEmail({
         to: 'test@example.com',
         subject: 'Test Email',
@@ -33,8 +33,8 @@ describe('Email Service', () => {
     it('should handle errors gracefully', async () => {
       // Test with a provider that will fail
       process.env.EMAIL_PROVIDER = 'resend';
-      process.env.RESEND_API_KEY = undefined; // No key = will fallback to console
-      
+      (process.env as any).RESEND_API_KEY = undefined; // No key = will fallback to console
+
       // Mock fetch to throw error for resend
       const originalFetch = global.fetch;
       global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
@@ -47,9 +47,9 @@ describe('Email Service', () => {
 
       // Should fallback to console or return error
       expect(['success', 'error']).toContain(result.status);
-      
+
       global.fetch = originalFetch;
-      process.env.EMAIL_PROVIDER = 'console';
+      (process.env as any).EMAIL_PROVIDER = 'console';
     });
   });
 

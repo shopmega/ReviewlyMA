@@ -32,6 +32,7 @@ import { BulkActions } from "@/components/admin/BulkActions";
 import { createClient } from "@/lib/supabase/client";
 import { bulkDeleteReviews, bulkUpdateReviews } from "@/app/actions/admin-bulk";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 type Review = {
   id: number;
@@ -92,6 +93,7 @@ export default function AllReviewsPage() {
     avgAgeHours: 0,
   });
   const { toast } = useToast();
+  const { t } = useI18n();
   const now = Date.now();
 
   // Debounce search
@@ -183,44 +185,44 @@ export default function AllReviewsPage() {
     let reason: string | undefined;
 
     if (status === 'rejected') {
-      const input = window.prompt('Raison obligatoire pour rejeter cet avis:');
+      const input = window.prompt(t('adminReviews.prompt.rejectReason', 'Raison obligatoire pour rejeter cet avis:'));
       if (input === null) return;
       reason = input.trim();
       if (!reason) {
-        toast({ title: 'Erreur', description: 'La raison est obligatoire pour rejeter un avis.', variant: 'destructive' });
+        toast({ title: t('common.error', 'Erreur'), description: t('adminReviews.toast.rejectReasonRequired', 'La raison est obligatoire pour rejeter un avis.'), variant: 'destructive' });
         return;
       }
     }
 
     const result = await bulkUpdateReviews([id], { status, reason });
     if (!result.success) {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
       return;
     }
 
-    toast({ title: 'Succès', description: `Statut mis à jour : ${status}` });
+    toast({ title: t('common.success', 'Succes'), description: `${t('adminReviews.toast.statusUpdated', 'Statut mis a jour :')} ${status}` });
     fetchReviews();
     fetchStats();
   };
 
   const deleteReview = async (id: number) => {
-    const input = window.prompt('Raison obligatoire pour retirer cet avis:');
+    const input = window.prompt(t('adminReviews.prompt.deleteReason', 'Raison obligatoire pour retirer cet avis:'));
     if (input === null) return;
     const reason = input.trim();
     if (!reason) {
-      toast({ title: 'Erreur', description: 'La raison est obligatoire pour retirer un avis.', variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: t('adminReviews.toast.deleteReasonRequired', 'La raison est obligatoire pour retirer un avis.'), variant: 'destructive' });
       return;
     }
 
-    if (!confirm('Confirmer le retrait de cet avis ?')) return;
+    if (!confirm(t('adminReviews.prompt.confirmDelete', 'Confirmer le retrait de cet avis ?'))) return;
 
     const result = await bulkDeleteReviews([id], reason);
     if (!result.success) {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
       return;
     }
 
-    toast({ title: 'Succès', description: 'Avis retiré.' });
+    toast({ title: t('common.success', 'Succes'), description: t('adminReviews.toast.reviewRemoved', 'Avis retire.') });
     fetchReviews();
     fetchStats();
   };
@@ -228,24 +230,24 @@ export default function AllReviewsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Clock3 className="mr-1 h-3 w-3" /> En attente</Badge>;
+        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Clock3 className="mr-1 h-3 w-3" /> {t('adminReviews.status.pending', 'En attente')}</Badge>;
       case 'draft':
       case 'submitted':
       case 'edited_requires_review':
       case 'appealed':
-        return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Eye className="mr-1 h-3 w-3" /> À revoir</Badge>;
+        return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Eye className="mr-1 h-3 w-3" /> {t('adminReviews.status.toReview', 'A revoir')}</Badge>;
       case 'approved':
       case 'restored':
-        return <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Check className="mr-1 h-3 w-3" /> Validé</Badge>;
+        return <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Check className="mr-1 h-3 w-3" /> {t('adminReviews.status.validated', 'Valide')}</Badge>;
       case 'published':
-        return <Badge className="bg-green-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-green-500/20"><Check className="mr-1 h-3 w-3" /> Publié</Badge>;
+        return <Badge className="bg-green-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-green-500/20"><Check className="mr-1 h-3 w-3" /> {t('adminReviews.status.published', 'Publie')}</Badge>;
       case 'hidden':
       case 'under_investigation':
-        return <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><ShieldAlert className="mr-1 h-3 w-3" /> Investigation</Badge>;
+        return <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><ShieldAlert className="mr-1 h-3 w-3" /> {t('adminReviews.status.investigation', 'Investigation')}</Badge>;
       case 'rejected':
-        return <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><X className="mr-1 h-3 w-3" /> Rejeté</Badge>;
+        return <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><X className="mr-1 h-3 w-3" /> {t('adminReviews.status.rejected', 'Rejete')}</Badge>;
       case 'deleted':
-        return <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-widest">Retiré</Badge>;
+        return <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-widest">{t('adminReviews.status.removed', 'Retire')}</Badge>;
       default:
         return <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-widest">{status}</Badge>;
     }
@@ -281,12 +283,12 @@ export default function AllReviewsPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div className="space-y-2">
-          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">Modération Contenu</Badge>
+          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminReviews.badge', 'Moderation Contenu')}</Badge>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            Gestion des <span className="text-primary italic">Avis</span>
+            {t('adminReviews.titlePrefix', 'Gestion des')} <span className="text-primary italic">{t('adminReviews.titleAccent', 'Avis')}</span>
           </h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" /> {stats.total} avis au total sur la plateforme
+            <MessageSquare className="h-4 w-4" /> {stats.total} {t('adminReviews.totalSuffix', 'avis au total sur la plateforme')}
           </p>
         </div>
       </div>
@@ -299,10 +301,10 @@ export default function AllReviewsPage() {
               <div className="h-12 w-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Activity className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-blue-500/20 text-blue-600">File</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-blue-500/20 text-blue-600">{t('adminReviews.kpi.queueBadge', 'File')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.active}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">File active modération</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.activeQueue', 'File active moderation')}</p>
           </CardContent>
         </Card>
 
@@ -312,10 +314,10 @@ export default function AllReviewsPage() {
               <div className="h-12 w-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ShieldAlert className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-rose-500/20 text-rose-600">Urgent</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-rose-500/20 text-rose-600">{t('adminReviews.kpi.urgentBadge', 'Urgent')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.breached}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">SLA dépassés</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.slaBreached', 'SLA depasses')}</p>
           </CardContent>
         </Card>
 
@@ -325,10 +327,10 @@ export default function AllReviewsPage() {
               <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <AlertTriangle className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-amber-500/20 text-amber-600">Attention</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-amber-500/20 text-amber-600">{t('adminReviews.kpi.attentionBadge', 'Attention')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.atRisk}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">SLA à risque (&lt;12h)</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.slaAtRisk', 'SLA a risque (<12h)')}</p>
           </CardContent>
         </Card>
 
@@ -340,7 +342,7 @@ export default function AllReviewsPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.avgAgeHours}h</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Âge moyen file</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.avgQueueAge', 'Age moyen file')}</p>
           </CardContent>
         </Card>
       </div>
@@ -353,7 +355,7 @@ export default function AllReviewsPage() {
               <div className="relative w-full lg:w-96 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
-                  placeholder="Rechercher par auteur ou titre..."
+                  placeholder={t('adminReviews.searchPlaceholder', 'Rechercher par auteur ou titre...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-11 h-12 bg-white/50 dark:bg-slate-950/50 border-border/20 rounded-2xl focus:ring-primary/20 transition-all font-medium"
@@ -362,10 +364,10 @@ export default function AllReviewsPage() {
 
               <div className="flex flex-wrap items-center gap-2">
                 {([
-                  { value: 'all' as const, label: `Tous (${stats.total})` },
-                  { value: 'active' as const, label: `Actifs (${stats.active})` },
-                  { value: 'at_risk' as const, label: `À risque (${stats.atRisk})` },
-                  { value: 'breached' as const, label: `SLA dépassés (${stats.breached})` },
+                  { value: 'all' as const, label: `${t('adminReviews.filters.all', 'Tous')} (${stats.total})` },
+                  { value: 'active' as const, label: `${t('adminReviews.filters.active', 'Actifs')} (${stats.active})` },
+                  { value: 'at_risk' as const, label: `${t('adminReviews.filters.atRisk', 'A risque')} (${stats.atRisk})` },
+                  { value: 'breached' as const, label: `${t('adminReviews.filters.breached', 'SLA depasses')} (${stats.breached})` },
                 ] as const).map((f) => (
                   <Button
                     key={f.value}
@@ -382,7 +384,7 @@ export default function AllReviewsPage() {
                 ))}
 
                 {searchQuery !== '' && (
-                  <Button variant="link" size="sm" onClick={() => setSearchQuery('')} className="text-[10px] font-bold text-muted-foreground uppercase px-2">Effacer</Button>
+                  <Button variant="link" size="sm" onClick={() => setSearchQuery('')} className="text-[10px] font-bold text-muted-foreground uppercase px-2">{t('adminReviews.clear', 'Effacer')}</Button>
                 )}
               </div>
             </div>
@@ -400,29 +402,29 @@ export default function AllReviewsPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Chargement des avis...</p>
+              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminReviews.loading', 'Chargement des avis...')}</p>
             </div>
           ) : displayReviews.length === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
                 <MessageSquare className="h-12 w-12 text-muted-foreground/30" />
               </div>
-              <p className="text-2xl font-black">Aucun avis trouvé</p>
-              <p className="text-muted-foreground font-medium">Modifiez vos filtres ou attendez de nouveaux avis.</p>
+              <p className="text-2xl font-black">{t('adminReviews.emptyTitle', 'Aucun avis trouve')}</p>
+              <p className="text-muted-foreground font-medium">{t('adminReviews.emptyDesc', 'Modifiez vos filtres ou attendez de nouveaux avis.')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/10">
-                    <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">Établissement</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Auteur</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Note</TableHead>
-                    <TableHead className="hidden lg:table-cell font-bold uppercase tracking-widest text-[10px]">Sous-notes</TableHead>
-                    <TableHead className="hidden md:table-cell font-bold uppercase tracking-widest text-[10px]">Avis</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Statut</TableHead>
-                    <TableHead className="hidden lg:table-cell font-bold uppercase tracking-widest text-[10px]">SLA</TableHead>
-                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
+                    <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.business', 'Etablissement')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.author', 'Auteur')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.rating', 'Note')}</TableHead>
+                    <TableHead className="hidden lg:table-cell font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.subratings', 'Sous-notes')}</TableHead>
+                    <TableHead className="hidden md:table-cell font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.review', 'Avis')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.status', 'Statut')}</TableHead>
+                    <TableHead className="hidden lg:table-cell font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.sla', 'SLA')}</TableHead>
+                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">{t('adminReviews.table.actions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -458,25 +460,25 @@ export default function AllReviewsPage() {
                             <div className="text-[10px] space-y-0.5">
                               {review.sub_ratings.work_life_balance != null && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">Équilibre</span>
+                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.workLife', 'Equilibre')}</span>
                                   <StarRating rating={review.sub_ratings.work_life_balance} size={10} readOnly />
                                 </div>
                               )}
                               {review.sub_ratings.management != null && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">Mgmt</span>
+                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.management', 'Mgmt')}</span>
                                   <StarRating rating={review.sub_ratings.management} size={10} readOnly />
                                 </div>
                               )}
                               {review.sub_ratings.career_growth != null && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">Carrière</span>
+                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.career', 'Carriere')}</span>
                                   <StarRating rating={review.sub_ratings.career_growth} size={10} readOnly />
                                 </div>
                               )}
                               {review.sub_ratings.culture != null && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">Culture</span>
+                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.culture', 'Culture')}</span>
                                   <StarRating rating={review.sub_ratings.culture} size={10} readOnly />
                                 </div>
                               )}
@@ -498,35 +500,35 @@ export default function AllReviewsPage() {
                             );
                             if (sla === 'at_risk') return (
                               <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse">
-                                <Clock3 className="h-3 w-3 mr-1" /> À risque
+                                <Clock3 className="h-3 w-3 mr-1" /> {t('adminReviews.sla.atRisk', 'A risque')}
                               </Badge>
                             );
                             return (
                               <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                <ShieldAlert className="h-3 w-3 mr-1" /> Dépassé
+                                <ShieldAlert className="h-3 w-3 mr-1" /> {t('adminReviews.sla.breached', 'Depasse')}
                               </Badge>
                             );
                           })()}
                           {review.moderation_sla_due_at && (
                             <div className="text-[9px] text-muted-foreground mt-1 font-bold tabular-nums">
-                              Éch: {new Date(review.moderation_sla_due_at).toLocaleDateString('fr-FR')}
+                              {t('adminReviews.sla.due', 'Ech')}: {new Date(review.moderation_sla_due_at).toLocaleDateString('fr-FR')}
                             </div>
                           )}
                         </TableCell>
                         <TableCell className="text-right pr-8">
                           <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
                             {review.status !== 'published' && review.status !== 'deleted' && (
-                              <Button size="sm" className="h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] uppercase shadow-lg shadow-emerald-500/10" onClick={() => updateStatus(review.id, 'published')} title="Publier">
-                                <Check className="mr-1 h-3 w-3" /> OK
+                              <Button size="sm" className="h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] uppercase shadow-lg shadow-emerald-500/10" onClick={() => updateStatus(review.id, 'published')} title={t('adminReviews.actions.publish', 'Publier')}>
+                                <Check className="mr-1 h-3 w-3" /> {t('adminReviews.actions.ok', 'OK')}
                               </Button>
                             )}
                             {review.status !== 'rejected' && review.status !== 'deleted' && (
-                              <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl text-amber-600 hover:bg-amber-500/10" onClick={() => updateStatus(review.id, 'rejected')} title="Rejeter">
+                              <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl text-amber-600 hover:bg-amber-500/10" onClick={() => updateStatus(review.id, 'rejected')} title={t('adminReviews.actions.reject', 'Rejeter')}>
                                 <X className="h-4 w-4" />
                               </Button>
                             )}
                             {review.status !== 'deleted' && (
-                              <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl text-rose-500 hover:bg-rose-500/10" onClick={() => deleteReview(review.id)} title="Retirer">
+                              <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl text-rose-500 hover:bg-rose-500/10" onClick={() => deleteReview(review.id)} title={t('adminReviews.actions.remove', 'Retirer')}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             )}
@@ -544,7 +546,7 @@ export default function AllReviewsPage() {
           {!loading && totalCount > 0 && (
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+                {t('adminReviews.pagination.showing', 'Affichage')} {pageStart + 1}-{Math.min(pageEnd, totalCount)} {t('adminReviews.pagination.of', 'sur')} {totalCount}
               </div>
 
               <div className="flex items-center gap-3">
@@ -553,14 +555,14 @@ export default function AllReviewsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10">
-                    <SelectItem value="20">20 / page</SelectItem>
-                    <SelectItem value="50">50 / page</SelectItem>
-                    <SelectItem value="100">100 / page</SelectItem>
+                    <SelectItem value="20">20 / {t('adminReviews.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="50">50 / {t('adminReviews.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="100">100 / {t('adminReviews.pagination.perPage', 'page')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <div className="text-xs font-black tabular-nums px-2">
-                  Page {currentPage} / {totalPages}
+                  {t('adminReviews.pagination.page', 'Page')} {currentPage} / {totalPages}
                 </div>
 
                 <Button
@@ -571,7 +573,7 @@ export default function AllReviewsPage() {
                   disabled={currentPage <= 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Précédent
+                  {t('adminReviews.pagination.previous', 'Precedent')}
                 </Button>
                 <Button
                   variant="outline"
@@ -580,7 +582,7 @@ export default function AllReviewsPage() {
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage >= totalPages}
                 >
-                  Suivant
+                  {t('adminReviews.pagination.next', 'Suivant')}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>

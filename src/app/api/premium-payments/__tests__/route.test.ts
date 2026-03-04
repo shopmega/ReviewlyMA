@@ -32,7 +32,7 @@ const fromMock = vi.fn((table: string) => {
 });
 
 const createAdminClientMock = vi.fn(async () => ({ from: fromMock }));
-const notifyAdminsMock = vi.fn(async () => undefined);
+const notifyAdminsMock = vi.fn(async (_input: any) => undefined);
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () => createAuthClientMock(),
@@ -41,7 +41,7 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => createAdminClientMock(),
 }));
 vi.mock('@/lib/notifications', () => ({
-  notifyAdmins: (...args: unknown[]) => notifyAdminsMock(...args),
+  notifyAdmins: (input: any) => notifyAdminsMock(input),
 }));
 
 import { POST } from '../route';

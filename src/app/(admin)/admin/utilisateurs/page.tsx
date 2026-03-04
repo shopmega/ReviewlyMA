@@ -41,6 +41,7 @@ import { changeUserRole, toggleUserSuspension, toggleUserPremium } from "@/app/a
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 interface Profile {
   id: string;
@@ -89,6 +90,7 @@ export default function UsersPage() {
   });
 
   const { toast } = useToast();
+  const { t } = useI18n();
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
@@ -140,7 +142,7 @@ export default function UsersPage() {
       setUsers((data || []) as Profile[]);
       setTotalCount(count || 0);
     } else {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: error.message, variant: 'destructive' });
     }
     setLoading(false);
   }
@@ -167,11 +169,11 @@ export default function UsersPage() {
     const result = await changeUserRole(userId, newRole);
 
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
       fetchUsers();
       fetchStats();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     }
 
     setActionLoading(null);
@@ -183,11 +185,11 @@ export default function UsersPage() {
     const result = await toggleUserSuspension(userId, suspend);
 
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
       fetchUsers();
       fetchStats();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     }
 
     setActionLoading(null);
@@ -208,11 +210,11 @@ export default function UsersPage() {
     );
 
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
       fetchUsers();
       fetchStats();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     }
 
     setActionLoading(null);
@@ -233,7 +235,7 @@ export default function UsersPage() {
     if (suspended) {
       return (
         <Badge className="bg-rose-500/10 text-rose-500 border-none font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-          <XCircle className="mr-1 h-3 w-3" /> Suspendu
+          <XCircle className="mr-1 h-3 w-3" /> {t('adminUsers.status.suspended', 'Suspendu')}
         </Badge>
       );
     }
@@ -241,7 +243,7 @@ export default function UsersPage() {
     if (premium) {
       return (
         <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest animate-pulse">
-          <Crown className="mr-1 h-3 w-3 fill-white" /> Premium
+          <Crown className="mr-1 h-3 w-3 fill-white" /> {t('adminUsers.status.premium', 'Premium')}
         </Badge>
       );
     }
@@ -250,19 +252,19 @@ export default function UsersPage() {
       case 'admin':
         return (
           <Badge className="bg-indigo-600 text-white border-0 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <Shield className="mr-1 h-3 w-3" /> Admin
+            <Shield className="mr-1 h-3 w-3" /> {t('adminUsers.role.admin', 'Admin')}
           </Badge>
         );
       case 'pro':
         return (
           <Badge className="bg-emerald-500 text-white border-0 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <Briefcase className="mr-1 h-3 w-3" /> Professionnel
+            <Briefcase className="mr-1 h-3 w-3" /> {t('adminUsers.role.pro', 'Professionnel')}
           </Badge>
         );
       default:
         return (
           <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-500 border-none font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <UserIcon className="mr-1 h-3 w-3" /> Utilisateur
+            <UserIcon className="mr-1 h-3 w-3" /> {t('adminUsers.role.user', 'Utilisateur')}
           </Badge>
         );
     }
@@ -270,9 +272,9 @@ export default function UsersPage() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'admin': return 'Administrateur';
-      case 'pro': return 'Professionnel';
-      default: return 'Utilisateur';
+      case 'admin': return t('adminUsers.role.adminFull', 'Administrateur');
+      case 'pro': return t('adminUsers.role.pro', 'Professionnel');
+      default: return t('adminUsers.role.user', 'Utilisateur');
     }
   };
 
@@ -280,12 +282,12 @@ export default function UsersPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 pb-2">
         <div className="space-y-2">
-          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">Utilisateurs & Accès</Badge>
+          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminUsers.badge', 'Utilisateurs & Acces')}</Badge>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            Base <span className="text-primary italic">Membres</span>
+            {t('adminUsers.titlePrefix', 'Base')} <span className="text-primary italic">{t('adminUsers.titleAccent', 'Membres')}</span>
           </h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2 text-sm">
-            <UsersIcon className="h-4 w-4" /> {stats.totalUsers} comptes enregistrés
+            <UsersIcon className="h-4 w-4" /> {stats.totalUsers} {t('adminUsers.registeredAccounts', 'comptes enregistres')}
           </p>
         </div>
 
@@ -295,7 +297,7 @@ export default function UsersPage() {
           </Button>
           <Button className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto" asChild>
             <Link href="/admin/parametres#premium">
-              <Crown size={18} className="mr-2" /> Gérer l'offre Premium
+              <Crown size={18} className="mr-2" /> {t('adminUsers.managePremiumOffer', "Gerer l'offre Premium")}
             </Link>
           </Button>
         </div>
@@ -310,7 +312,7 @@ export default function UsersPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.totalUsers}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Total Utilisateurs</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminUsers.kpi.totalUsers', 'Total Utilisateurs')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -321,7 +323,7 @@ export default function UsersPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.premiumUsers}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Utilisateurs Premium</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminUsers.kpi.premiumUsers', 'Utilisateurs Premium')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -332,7 +334,7 @@ export default function UsersPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.proUsers}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Comptes Professionnels</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminUsers.kpi.proAccounts', 'Comptes Professionnels')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -343,7 +345,7 @@ export default function UsersPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.suspendedUsers}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Profils Suspendus</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminUsers.kpi.suspendedProfiles', 'Profils Suspendus')}</p>
           </CardContent>
         </Card>
       </div>
@@ -355,7 +357,7 @@ export default function UsersPage() {
               <div className="relative w-full lg:w-96 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
-                  placeholder="Rechercher par nom ou email..."
+                  placeholder={t('adminUsers.searchPlaceholder', 'Rechercher par nom ou email...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-11 h-12 bg-white/50 dark:bg-slate-950/50 border-border/20 rounded-2xl focus:ring-primary/20 transition-all font-medium"
@@ -365,31 +367,31 @@ export default function UsersPage() {
                 <Select value={filterRole} onValueChange={setFilterRole}>
                   <SelectTrigger className="w-[180px] h-10 rounded-xl bg-white/50 border-border/20 transition-all">
                     <Filter className="h-3 w-3 mr-2 opacity-50" />
-                    <SelectValue placeholder="Tous les rôles" />
+                    <SelectValue placeholder={t('adminUsers.filters.allRoles', 'Tous les roles')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
-                    <SelectItem value="all">Tous les rôles</SelectItem>
-                    <SelectItem value="user">Utilisateurs</SelectItem>
-                    <SelectItem value="pro">Professionnels</SelectItem>
-                    <SelectItem value="admin">Administrateurs</SelectItem>
+                    <SelectItem value="all">{t('adminUsers.filters.allRoles', 'Tous les roles')}</SelectItem>
+                    <SelectItem value="user">{t('adminUsers.filters.users', 'Utilisateurs')}</SelectItem>
+                    <SelectItem value="pro">{t('adminUsers.filters.pros', 'Professionnels')}</SelectItem>
+                    <SelectItem value="admin">{t('adminUsers.filters.admins', 'Administrateurs')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-[180px] h-10 rounded-xl bg-white/50 border-border/20 transition-all">
                     <Activity className="h-3 w-3 mr-2 opacity-50" />
-                    <SelectValue placeholder="Tous les statuts" />
+                    <SelectValue placeholder={t('adminUsers.filters.allStatuses', 'Tous les statuts')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="active">Actifs</SelectItem>
-                    <SelectItem value="suspended">Suspendus</SelectItem>
+                    <SelectItem value="all">{t('adminUsers.filters.allStatuses', 'Tous les statuts')}</SelectItem>
+                    <SelectItem value="active">{t('adminUsers.filters.active', 'Actifs')}</SelectItem>
+                    <SelectItem value="suspended">{t('adminUsers.filters.suspended', 'Suspendus')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {(filterRole !== 'all' || filterStatus !== 'all' || searchQuery !== '') && (
                   <Button variant="ghost" size="sm" onClick={() => { setFilterRole('all'); setFilterStatus('all'); setSearchQuery(''); }} className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
-                    Effacer les filtres
+                    {t('adminUsers.filters.clear', 'Effacer les filtres')}
                   </Button>
                 )}
               </div>
@@ -398,9 +400,9 @@ export default function UsersPage() {
             <div className="hidden lg:flex flex-col items-end gap-1">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest antialiased">Serveur Opérationnel</span>
+                <span className="text-[10px] font-black uppercase tracking-widest antialiased">{t('adminUsers.serverOperational', 'Serveur Operationnel')}</span>
               </div>
-              <span className="text-[9px] font-bold text-muted-foreground">LATENCY: 42ms</span>
+              <span className="text-[9px] font-bold text-muted-foreground">{t('adminUsers.latency', 'LATENCY: 42ms')}</span>
             </div>
           </div>
         </CardHeader>
@@ -409,7 +411,7 @@ export default function UsersPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Syncing Members...</p>
+              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminUsers.loadingSync', 'Syncing Members...')}</p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-40 space-y-6">
@@ -417,8 +419,8 @@ export default function UsersPage() {
                 <UserIcon className="h-12 w-12 text-muted-foreground/30" />
               </div>
               <div className="max-w-xs mx-auto space-y-2">
-                <p className="text-2xl font-black">Aucun utilisateur</p>
-                <p className="text-muted-foreground font-medium">Réduisez vos filtres ou effectuez une nouvelle recherche.</p>
+                <p className="text-2xl font-black">{t('adminUsers.emptyTitle', 'Aucun utilisateur')}</p>
+                <p className="text-muted-foreground font-medium">{t('adminUsers.emptyDesc', 'Reduisez vos filtres ou effectuez une nouvelle recherche.')}</p>
               </div>
             </div>
           ) : (
@@ -426,11 +428,11 @@ export default function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/10">
-                    <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">Utilisateur</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Rôle & Statut</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Inscrit le</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">ID Unique</TableHead>
-                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
+                    <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">{t('adminUsers.table.user', 'Utilisateur')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminUsers.table.roleStatus', 'Role & Statut')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminUsers.table.registeredOn', 'Inscrit le')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminUsers.table.uniqueId', 'ID Unique')}</TableHead>
+                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">{t('adminUsers.table.actions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -455,7 +457,7 @@ export default function UsersPage() {
                             )}
                           </div>
                           <div>
-                            <p className="font-black text-slate-800 dark:text-white group-hover:text-primary transition-colors">{user.full_name || 'Sans Nom'}</p>
+                            <p className="font-black text-slate-800 dark:text-white group-hover:text-primary transition-colors">{user.full_name || t('adminUsers.noName', 'Sans Nom')}</p>
                             <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-0.5 uppercase tracking-tight">
                               <Mail className="h-3 w-3" /> {user.email}
                             </p>
@@ -488,7 +490,7 @@ export default function UsersPage() {
                               <DropdownMenuSub>
                                 <DropdownMenuSubTrigger className="rounded-xl py-3 font-bold">
                                   <UserCog className="mr-2 h-4 w-4" />
-                                  Privilèges & Rôles
+                                  {t('adminUsers.actions.privilegesRoles', 'Privileges & Roles')}
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent className="rounded-2xl border-border/10 ml-2 p-2 w-48 shadow-xl">
                                   {(['admin', 'pro', 'user'] as const).map((role) => (
@@ -530,7 +532,7 @@ export default function UsersPage() {
                                 }}
                               >
                                 <Zap className={cn("mr-2 h-4 w-4", user.is_premium ? "fill-amber-500 text-amber-500" : "")} />
-                                {user.is_premium ? 'Résilier Premium' : 'Gifting Premium'}
+                                {user.is_premium ? t('adminUsers.actions.cancelPremium', 'Resilier Premium') : t('adminUsers.actions.giftPremium', 'Gifting Premium')}
                               </DropdownMenuItem>
 
                               <DropdownMenuSeparator className="bg-border/10 my-1" />
@@ -549,7 +551,7 @@ export default function UsersPage() {
                                 })}
                               >
                                 {user.suspended ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <Ban className="mr-2 h-4 w-4" />}
-                                {user.suspended ? 'Réactiver le compte' : 'Suspendre l\'accès'}
+                                {user.suspended ? t('adminUsers.actions.reactivateAccount', 'Reactiver le compte') : t('adminUsers.actions.suspendAccess', "Suspendre l'acces")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -564,7 +566,7 @@ export default function UsersPage() {
           {!loading && totalCount > 0 && (
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+                {t('adminUsers.pagination.showing', 'Affichage')} {pageStart + 1}-{Math.min(pageEnd, totalCount)} {t('adminUsers.pagination.of', 'sur')} {totalCount}
               </div>
 
               <div className="flex items-center gap-3">
@@ -573,14 +575,14 @@ export default function UsersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10">
-                    <SelectItem value="20">20 / page</SelectItem>
-                    <SelectItem value="50">50 / page</SelectItem>
-                    <SelectItem value="100">100 / page</SelectItem>
+                    <SelectItem value="20">20 / {t('adminUsers.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="50">50 / {t('adminUsers.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="100">100 / {t('adminUsers.pagination.perPage', 'page')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <div className="text-xs font-black tabular-nums px-2">
-                  Page {currentPage} / {totalPages}
+                  {t('adminUsers.pagination.page', 'Page')} {currentPage} / {totalPages}
                 </div>
 
                 <Button
@@ -591,7 +593,7 @@ export default function UsersPage() {
                   disabled={currentPage <= 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Précédent
+                  {t('adminUsers.pagination.previous', 'Precedent')}
                 </Button>
                 <Button
                   variant="outline"
@@ -600,7 +602,7 @@ export default function UsersPage() {
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage >= totalPages}
                 >
-                  Suivant
+                  {t('adminUsers.pagination.next', 'Suivant')}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -621,10 +623,10 @@ export default function UsersPage() {
             </div>
             <DialogTitle className="text-2xl font-black tracking-tight">
               {confirmDialog.type === 'suspend'
-                ? (confirmDialog.currentSuspended ? 'Réactiver le membre' : 'Suspendre l\'accès')
+                  ? (confirmDialog.currentSuspended ? t('adminUsers.dialog.reactivateMember', 'Reactiver le membre') : t('adminUsers.dialog.suspendAccess', "Suspendre l'acces"))
                 : confirmDialog.type === 'premium'
-                  ? (confirmDialog.currentPremium ? 'Retirer Premium' : 'Activer Premium Gift')
-                  : 'Changement de rôle'
+                  ? (confirmDialog.currentPremium ? t('adminUsers.dialog.removePremium', 'Retirer Premium') : t('adminUsers.dialog.activatePremiumGift', 'Activer Premium Gift'))
+                  : t('adminUsers.dialog.roleChange', 'Changement de role')
               }
             </DialogTitle>
             <DialogDescription asChild>
@@ -647,7 +649,7 @@ export default function UsersPage() {
           {confirmDialog.type === 'premium' && !confirmDialog.currentPremium && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
               <div className="space-y-2">
-                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Plan</p>
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('adminUsers.dialog.plan', 'Plan')}</p>
                 <Select
                   value={premiumConfig.tier}
                   onValueChange={(value) =>
@@ -655,16 +657,16 @@ export default function UsersPage() {
                   }
                 >
                   <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Choisir un plan" />
+                    <SelectValue placeholder={t('adminUsers.dialog.choosePlan', 'Choisir un plan')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
-                    <SelectItem value="growth">Growth</SelectItem>
-                    <SelectItem value="gold">Gold</SelectItem>
+                    <SelectItem value="growth">{t('adminUsers.dialog.tier.growth', 'Growth')}</SelectItem>
+                    <SelectItem value="gold">{t('adminUsers.dialog.tier.gold', 'Gold')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Periode</p>
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('adminUsers.dialog.period', 'Periode')}</p>
                 <Select
                   value={premiumConfig.periodMonths === null ? 'unlimited' : String(premiumConfig.periodMonths)}
                   onValueChange={(value) =>
@@ -675,15 +677,15 @@ export default function UsersPage() {
                   }
                 >
                   <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Choisir une periode" />
+                    <SelectValue placeholder={t('adminUsers.dialog.choosePeriod', 'Choisir une periode')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
-                    <SelectItem value="1">1 mois</SelectItem>
-                    <SelectItem value="3">3 mois</SelectItem>
-                    <SelectItem value="6">6 mois</SelectItem>
-                    <SelectItem value="12">12 mois</SelectItem>
-                    <SelectItem value="24">24 mois</SelectItem>
-                    <SelectItem value="unlimited">Illimite</SelectItem>
+                    <SelectItem value="1">{t('adminUsers.dialog.periods.1', '1 mois')}</SelectItem>
+                    <SelectItem value="3">{t('adminUsers.dialog.periods.3', '3 mois')}</SelectItem>
+                    <SelectItem value="6">{t('adminUsers.dialog.periods.6', '6 mois')}</SelectItem>
+                    <SelectItem value="12">{t('adminUsers.dialog.periods.12', '12 mois')}</SelectItem>
+                    <SelectItem value="24">{t('adminUsers.dialog.periods.24', '24 mois')}</SelectItem>
+                    <SelectItem value="unlimited">{t('adminUsers.dialog.periods.unlimited', 'Illimite')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -691,7 +693,7 @@ export default function UsersPage() {
           )}
           <DialogFooter className="mt-8 gap-3">
             <Button variant="outline" className="rounded-2xl border-border/40 font-bold px-8 h-12" onClick={() => setConfirmDialog({ open: false, type: null, userId: '', userName: '' })}>
-              Annuler
+              {t('common.cancel', 'Annuler')}
             </Button>
             <Button
               className={cn(
@@ -717,7 +719,7 @@ export default function UsersPage() {
               disabled={actionLoading === confirmDialog.userId}
             >
               {actionLoading === confirmDialog.userId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Confirmer l'Action
+              {t('adminUsers.dialog.confirmAction', "Confirmer l'Action")}
             </Button>
           </DialogFooter>
         </DialogContent>

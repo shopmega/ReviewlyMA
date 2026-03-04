@@ -262,7 +262,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
             <select
               value={locale}
               onChange={(e) => setLocale(e.target.value as any)}
-              className="hidden md:block h-9 rounded-md border bg-background px-2 text-xs font-semibold"
+              className="h-9 rounded-md border bg-background px-2 text-xs font-semibold"
               aria-label="Language"
             >
               {locales.map((localeOption) => (
@@ -281,8 +281,8 @@ export function Header({ settings }: { settings: SiteSettings }) {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[310px] sm:w-[350px] border-l border-white/10 glass p-0 overflow-hidden">
-                <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
-                <SheetDescription className="sr-only">Accedez aux differentes sections du site depuis ce menu mobile.</SheetDescription>
+                <SheetTitle className="sr-only">{t('nav.mobileMenuTitle', 'Menu de navigation')}</SheetTitle>
+                <SheetDescription className="sr-only">{t('nav.mobileMenuDesc', 'Accedez aux differentes sections du site depuis ce menu mobile.')}</SheetDescription>
 
                 <div className="flex flex-col h-full bg-background/95 backdrop-blur-xl">
                   {/* Drawer Header */}
@@ -293,7 +293,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                       </div>
                       <div>
                         <h2 className="text-xl font-bold font-headline text-foreground leading-none">{siteName}</h2>
-                        <p className="text-xs text-muted-foreground mt-1.5 font-medium">Guide & Avis Entreprises</p>
+                        <p className="text-xs text-muted-foreground mt-1.5 font-medium">{t('nav.mobileTagline', 'Guide & Avis Entreprises')}</p>
                       </div>
                     </div>
 
@@ -314,7 +314,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                         </Button>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground font-medium px-1 italic">Explorez les meilleures adresses du Maroc.</p>
+                      <p className="text-sm text-muted-foreground font-medium px-1 italic">{t('nav.mobileGuestHint', 'Explorez les meilleures adresses du Maroc.')}</p>
                     )}
                   </div>
 

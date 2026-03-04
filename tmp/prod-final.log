@@ -1,0 +1,10 @@
+
+> nextn@0.1.0 start
+> next start -p 10026
+
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:10026
+   - Network:      http://192.168.0.163:10026
+
+ ✓ Starting...
+ ✓ Ready in 834ms

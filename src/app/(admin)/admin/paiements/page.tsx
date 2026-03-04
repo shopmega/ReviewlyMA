@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 type Payment = {
   id: string;
@@ -84,6 +85,7 @@ export default function PaiementsPage() {
   });
 
   const { toast } = useToast();
+  const { t } = useI18n();
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
@@ -132,7 +134,7 @@ export default function PaiementsPage() {
       setPayments((data || []) as unknown as Payment[]);
       setTotalCount(count || 0);
     } else {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: error.message, variant: 'destructive' });
     }
     setLoading(false);
   }
@@ -160,37 +162,37 @@ export default function PaiementsPage() {
     setIsSubmitting(true);
     const result = await verifyOfflinePayment(id);
     if (result.status === 'success') {
-      toast({ title: 'Bonne nouvelle !', description: 'Paiement vérifié et statut Premium activé.' });
+      toast({ title: t('adminPayments.toast.verifiedTitle', 'Bonne nouvelle !'), description: t('adminPayments.toast.verifiedDesc', 'Paiement verifie et statut Premium active.') });
       loadPayments();
       loadStats();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
 
   const handleReject = async (id: string) => {
     if (!rejectionReason) {
-      toast({ title: 'Attention', description: 'Veuillez fournir une raison pour le rejet.', variant: 'destructive' });
+      toast({ title: t('adminPayments.toast.warningTitle', 'Attention'), description: t('adminPayments.toast.rejectReasonRequired', 'Veuillez fournir une raison pour le rejet.'), variant: 'destructive' });
       return;
     }
     setIsSubmitting(true);
     const result = await rejectOfflinePayment(id, rejectionReason);
     if (result.status === 'success') {
-      toast({ title: 'Action effectuée', description: 'Paiement rejeté.' });
+      toast({ title: t('adminPayments.toast.actionDoneTitle', 'Action effectuee'), description: t('adminPayments.toast.rejectedDesc', 'Paiement rejete.') });
       setRejectingId(null);
       setRejectionReason('');
       loadPayments();
       loadStats();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
 
   const handleAddManual = async () => {
     if (!manualData.userEmail || !manualData.reference) {
-      toast({ title: 'Champs manquants', description: 'Email et Référence sont obligatoires.', variant: 'destructive' });
+      toast({ title: t('adminPayments.toast.missingFieldsTitle', 'Champs manquants'), description: t('adminPayments.toast.missingFieldsDesc', 'Email et Reference sont obligatoires.'), variant: 'destructive' });
       return;
     }
 
@@ -208,7 +210,7 @@ export default function PaiementsPage() {
     });
 
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: 'Abonnement manuel activé avec succès.' });
+      toast({ title: t('common.success', 'Succes'), description: t('adminPayments.toast.manualSuccess', 'Abonnement manuel active avec succes.') });
       setShowManualModal(false);
       setManualData({
         userEmail: '',
@@ -222,7 +224,7 @@ export default function PaiementsPage() {
       loadPayments();
       loadStats();
     } else {
-      toast({ title: 'Erreur technique', description: result.message, variant: 'destructive' });
+      toast({ title: t('adminPayments.toast.technicalErrorTitle', 'Erreur technique'), description: result.message, variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
@@ -232,19 +234,19 @@ export default function PaiementsPage() {
       case 'pending':
         return (
           <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest animate-pulse">
-            <Clock className="mr-1 h-3 w-3" /> En attente
+            <Clock className="mr-1 h-3 w-3" /> {t('adminPayments.status.pending', 'En attente')}
           </Badge>
         );
       case 'verified':
         return (
           <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">
-            <Check className="mr-1 h-3 w-3" /> Vérifié
+            <Check className="mr-1 h-3 w-3" /> {t('adminPayments.status.verified', 'Verifie')}
           </Badge>
         );
       case 'rejected':
         return (
           <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <X className="mr-1 h-3 w-3" /> Rejeté
+            <X className="mr-1 h-3 w-3" /> {t('adminPayments.status.rejected', 'Rejete')}
           </Badge>
         );
       default:
@@ -253,7 +255,7 @@ export default function PaiementsPage() {
   };
 
   const formatPaymentMethod = (method?: string | null) => {
-    if (!method) return 'Methode non renseignee';
+    if (!method) return t('adminPayments.method.notProvided', 'Methode non renseignee');
     return method
       .split('_')
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -305,12 +307,12 @@ export default function PaiementsPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
         <div className="space-y-2">
-          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">Facturation & Chiffre d'affaires</Badge>
+          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminPayments.badge', 'Facturation & Chiffre affaires')}</Badge>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            Paiements <span className="text-primary italic">GOLD</span>
+            {t('adminPayments.titlePrefix', 'Paiements')} <span className="text-primary italic">{t('adminPayments.titleAccent', 'GOLD')}</span>
           </h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2">
-            <CreditCard className="h-4 w-4" /> {pendingCount > 0 ? `${pendingCount} virements en attente de vérification` : 'Tous les paiements sont à jour'}
+            <CreditCard className="h-4 w-4" /> {pendingCount > 0 ? `${pendingCount} ${t('adminPayments.pendingTransfers', 'virements en attente de verification')}` : t('adminPayments.allUpToDate', 'Tous les paiements sont a jour')}
           </p>
         </div>
 
@@ -329,7 +331,7 @@ export default function PaiementsPage() {
           <Dialog open={showManualModal} onOpenChange={setShowManualModal}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-                <Plus size={18} className="mr-2" /> Activer un Premium
+                <Plus size={18} className="mr-2" /> {t('adminPayments.manual.activateButton', 'Activer un Premium')}
               </Button>
             </DialogTrigger>
             <DialogContent className="rounded-[2.5rem] border-0 bg-white dark:bg-slate-950 p-8 shadow-2xl overflow-y-auto max-w-lg max-h-[90vh]">
@@ -337,17 +339,17 @@ export default function PaiementsPage() {
                 <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 mb-2">
                   <CreditCard className="h-8 w-8 text-primary" />
                 </div>
-                <DialogTitle className="text-2xl font-black tracking-tight">Activation Manuelle</DialogTitle>
+                <DialogTitle className="text-2xl font-black tracking-tight">{t('adminPayments.manual.title', 'Activation Manuelle')}</DialogTitle>
                 <DialogDescription className="text-slate-600 dark:text-slate-400 font-medium">
-                  Enregistrez un paiement reçu hors-ligne pour activer un compte gold.
+                  {t('adminPayments.manual.desc', 'Enregistrez un paiement recu hors-ligne pour activer un compte gold.')}
                 </DialogDescription>
               </DialogHeader>
 
               <div className="grid gap-6 py-4">
                 <div className="grid gap-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email du Propriétaire</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.ownerEmail', 'Email du Proprietaire')}</Label>
                   <Input
-                    placeholder="exemple@entreprise.com"
+                    placeholder={t('adminPayments.manual.ownerEmailPlaceholder', 'exemple@entreprise.com')}
                     className="h-12 rounded-xl bg-slate-50 border-border/10 focus:ring-primary/20 font-bold"
                     value={manualData.userEmail}
                     onChange={(e) => setManualData({ ...manualData, userEmail: e.target.value })}
@@ -355,7 +357,7 @@ export default function PaiementsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Montant (MAD)</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.amountLabel', 'Montant (MAD)')}</Label>
                     <Input
                       type="number"
                       className="h-12 rounded-xl bg-slate-50 border-border/10 focus:ring-primary/20 font-black tabular-nums"
@@ -364,43 +366,43 @@ export default function PaiementsPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Durée Pack</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.durationLabel', 'Duree Pack')}</Label>
                     <Select
                       value={manualData.duration}
                       onValueChange={(val) => setManualData({ ...manualData, duration: val })}
                     >
                       <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-border/10">
-                        <SelectValue placeholder="Choisir" />
+                        <SelectValue placeholder={t('adminPayments.manual.choose', 'Choisir')} />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="1">1 Mois</SelectItem>
-                        <SelectItem value="6">6 Mois</SelectItem>
-                        <SelectItem value="12">12 Mois (1 an)</SelectItem>
-                        <SelectItem value="24">24 Mois (2 ans)</SelectItem>
+                        <SelectItem value="1">{t('adminPayments.manual.duration.1', '1 Mois')}</SelectItem>
+                        <SelectItem value="6">{t('adminPayments.manual.duration.6', '6 Mois')}</SelectItem>
+                        <SelectItem value="12">{t('adminPayments.manual.duration.12', '12 Mois (1 an)')}</SelectItem>
+                        <SelectItem value="24">{t('adminPayments.manual.duration.24', '24 Mois (2 ans)')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="grid gap-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Type d'abonnement</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.planTypeLabel', "Type d'abonnement")}</Label>
                   <Select
                     value={manualData.tier}
                     onValueChange={(val: any) => setManualData({ ...manualData, tier: val })}
                   >
                     <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-border/10">
-                      <SelectValue placeholder="Choisir un plan" />
+                      <SelectValue placeholder={t('adminPayments.manual.choosePlan', 'Choisir un plan')} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
-                      <SelectItem value="growth">Business GROWTH (99/mo)</SelectItem>
-                      <SelectItem value="gold">Business GOLD (299/mo)</SelectItem>
+                      <SelectItem value="growth">{t('adminPayments.manual.planGrowth', 'Business GROWTH (99/mo)')}</SelectItem>
+                      <SelectItem value="gold">{t('adminPayments.manual.planGold', 'Business GOLD (299/mo)')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Référence Transaction</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.referenceLabel', 'Reference Transaction')}</Label>
                   <Input
-                    placeholder="Ex: VIR-55421-MAROC"
+                    placeholder={t('adminPayments.manual.referencePlaceholder', 'Ex: VIR-55421-MAROC')}
                     className="h-12 rounded-xl bg-slate-50 border-border/10 focus:ring-primary/20 font-mono"
                     value={manualData.reference}
                     onChange={(e) => setManualData({ ...manualData, reference: e.target.value })}
@@ -409,9 +411,9 @@ export default function PaiementsPage() {
               </div>
 
               <DialogFooter className="mt-8 gap-3">
-                <Button variant="ghost" className="rounded-2xl font-bold px-8 h-12" onClick={() => setShowManualModal(false)}>Annuler</Button>
+                <Button variant="ghost" className="rounded-2xl font-bold px-8 h-12" onClick={() => setShowManualModal(false)}>{t('common.cancel', 'Annuler')}</Button>
                 <Button className="bg-primary hover:bg-primary/90 text-white rounded-2xl font-black px-10 h-12 shadow-xl shadow-primary/20" onClick={handleAddManual} disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />} Activer l'abonnement
+                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />} {t('adminPayments.manual.confirmActivation', "Activer l'abonnement")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -426,10 +428,10 @@ export default function PaiementsPage() {
               <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/20 text-emerald-600">Revenu</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/20 text-emerald-600">{t('adminPayments.kpi.revenue', 'Revenu')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{totalRevenue.toLocaleString()} MAD</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Total vérifié à vie</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminPayments.kpi.totalVerified', 'Total verifie a vie')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -440,7 +442,7 @@ export default function PaiementsPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{pendingCount}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Actions en attente</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminPayments.kpi.pendingActions', 'Actions en attente')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -451,7 +453,7 @@ export default function PaiementsPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">500</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Panier Moyen (MAD)</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminPayments.kpi.avgBasket', 'Panier Moyen (MAD)')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -462,7 +464,7 @@ export default function PaiementsPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">12%</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Conversion Premium</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminPayments.kpi.conversion', 'Conversion Premium')}</p>
           </CardContent>
         </Card>
       </div>
@@ -474,7 +476,7 @@ export default function PaiementsPage() {
               <div className="relative w-full lg:w-96 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
-                  placeholder="Email, référence ou entreprise..."
+                  placeholder={t('adminPayments.searchPlaceholder', 'Email, reference ou entreprise...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-11 h-12 bg-white/50 dark:bg-slate-950/50 border-border/20 rounded-2xl focus:ring-primary/20 transition-all font-medium"
@@ -492,12 +494,12 @@ export default function PaiementsPage() {
                       statusFilter === s ? "shadow-primary/20" : "text-muted-foreground hover:bg-white/50"
                     )}
                   >
-                    {s === 'all' ? 'Tous les flux' : s === 'pending' ? 'Attente' : s === 'verified' ? 'Vérifiés' : 'Refusés'}
+                    {s === 'all' ? t('adminPayments.filters.all', 'Tous les flux') : s === 'pending' ? t('adminPayments.filters.pending', 'Attente') : s === 'verified' ? t('adminPayments.filters.verified', 'Verifies') : t('adminPayments.filters.rejected', 'Refuses')}
                   </Button>
                 ))}
 
                 {searchTerm !== '' && (
-                  <Button variant="link" size="sm" onClick={() => setSearchTerm('')} className="text-[10px] font-bold text-muted-foreground uppercase px-2">Effacer</Button>
+                  <Button variant="link" size="sm" onClick={() => setSearchTerm('')} className="text-[10px] font-bold text-muted-foreground uppercase px-2">{t('adminPayments.clear', 'Effacer')}</Button>
                 )}
               </div>
             </div>
@@ -505,9 +507,9 @@ export default function PaiementsPage() {
             <div className="hidden lg:flex flex-col items-end gap-1">
               <div className="flex items-center gap-2">
                 <Wallet className="h-4 w-4 text-indigo-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest antialiased">Stripe/Manual Sync</span>
+                <span className="text-[10px] font-black uppercase tracking-widest antialiased">{t('adminPayments.sync.title', 'Stripe/Manual Sync')}</span>
               </div>
-              <span className="text-[9px] font-bold text-muted-foreground uppercase animate-pulse">Live Gateway Feed</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase animate-pulse">{t('adminPayments.sync.subtitle', 'Live Gateway Feed')}</span>
             </div>
           </div>
         </CardHeader>
@@ -516,25 +518,25 @@ export default function PaiementsPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Processing Gateway...</p>
+              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminPayments.loading', 'Processing Gateway...')}</p>
             </div>
           ) : payments.length === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
                 <CreditCard className="h-12 w-12 text-muted-foreground/30" />
               </div>
-              <p className="text-2xl font-black">Aucun paiement trouvé</p>
+              <p className="text-2xl font-black">{t('adminPayments.empty', 'Aucun paiement trouve')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/10">
-                    <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">Client & Compte</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Transaction</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Période</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Statut</TableHead>
-                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">Décision</TableHead>
+                    <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">{t('adminPayments.table.client', 'Client & Compte')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminPayments.table.transaction', 'Transaction')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminPayments.table.period', 'Periode')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminPayments.table.status', 'Statut')}</TableHead>
+                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">{t('adminPayments.table.decision', 'Decision')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -542,10 +544,10 @@ export default function PaiementsPage() {
                     <TableRow key={payment.id} className="group border-b border-border/10 hover:bg-muted/40 transition-all duration-300">
                       <TableCell className="py-6 pl-8">
                         <div className="flex flex-col">
-                          <span className="font-black text-slate-800 dark:text-white text-sm group-hover:text-primary transition-colors">{payment.profiles?.full_name?.trim() || payment.profiles?.email?.split('@')?.[0] || 'Utilisateur'}</span>
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight opacity-70">{payment.profiles?.email || 'Email indisponible'}</span>
+                          <span className="font-black text-slate-800 dark:text-white text-sm group-hover:text-primary transition-colors">{payment.profiles?.full_name?.trim() || payment.profiles?.email?.split('@')?.[0] || t('adminPayments.userFallback', 'Utilisateur')}</span>
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight opacity-70">{payment.profiles?.email || t('adminPayments.emailUnavailable', 'Email indisponible')}</span>
                           <span className="text-[9px] font-black text-indigo-500 mt-1 uppercase tracking-widest flex items-center gap-1">
-                            <History className="h-2 w-2" /> {payment.businesses?.name || (payment.status === 'pending' ? 'Verification en cours' : 'Entreprise non associee')}
+                            <History className="h-2 w-2" /> {payment.businesses?.name || (payment.status === 'pending' ? t('adminPayments.verificationInProgress', 'Verification en cours') : t('adminPayments.businessUnlinked', 'Entreprise non associee'))}
                           </span>
                         </div>
                       </TableCell>
@@ -563,7 +565,7 @@ export default function PaiementsPage() {
                               </Badge>
                             )}
                           </div>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase mt-1 tracking-widest">{formatPaymentMethod(payment.payment_method)} • {payment.payment_reference || 'Reference manquante'}</span>
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase mt-1 tracking-widest">{formatPaymentMethod(payment.payment_method)} • {payment.payment_reference || t('adminPayments.referenceMissing', 'Reference manquante')}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -594,7 +596,7 @@ export default function PaiementsPage() {
                               onClick={() => handleVerify(payment.id)}
                               disabled={isSubmitting}
                             >
-                              <Check className="mr-1 h-3 w-3" /> Valider
+                              <Check className="mr-1 h-3 w-3" /> {t('adminPayments.actions.validate', 'Valider')}
                             </Button>
 
                             <Dialog open={rejectingId === payment.id} onOpenChange={(open) => {
@@ -613,27 +615,27 @@ export default function PaiementsPage() {
                               </DialogTrigger>
                               <DialogContent className="rounded-[2rem] p-8 overflow-y-auto max-h-[90vh]">
                                 <DialogHeader>
-                                  <DialogTitle className="text-2xl font-black">Refus de transaction</DialogTitle>
+                                  <DialogTitle className="text-2xl font-black">{t('adminPayments.rejectDialog.title', 'Refus de transaction')}</DialogTitle>
                                   <DialogDescription className="text-slate-600 font-medium">
-                                    Pourquoi ce virement n'est-il pas validé ?
+                                    {t('adminPayments.rejectDialog.desc', "Pourquoi ce virement n'est-il pas valide ?")}
                                   </DialogDescription>
                                 </DialogHeader>
                                 <div className="py-6">
                                   <Textarea
-                                    placeholder="Ex: Référence introuvable, montant inférieur..."
+                                    placeholder={t('adminPayments.rejectDialog.placeholder', 'Ex: Reference introuvable, montant inferieur...')}
                                     className="min-h-32 rounded-2xl bg-slate-50 border-border/10 p-4 font-bold"
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}
                                   />
                                 </div>
                                 <DialogFooter className="gap-2">
-                                  <Button variant="ghost" className="rounded-xl h-12" onClick={() => setRejectingId(null)}>Annuler</Button>
+                                  <Button variant="ghost" className="rounded-xl h-12" onClick={() => setRejectingId(null)}>{t('common.cancel', 'Annuler')}</Button>
                                   <Button
                                     className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl h-12 px-8 font-black shadow-xl shadow-rose-500/20"
                                     onClick={() => handleReject(payment.id)}
                                     disabled={isSubmitting || !rejectionReason}
                                   >
-                                    Confirmer le Refus
+                                    {t('adminPayments.rejectDialog.confirm', 'Confirmer le Refus')}
                                   </Button>
                                 </DialogFooter>
                               </DialogContent>
@@ -654,7 +656,7 @@ export default function PaiementsPage() {
           {!loading && totalCount > 0 && (
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+                {t('adminPayments.pagination.showing', 'Affichage')} {pageStart + 1}-{Math.min(pageEnd, totalCount)} {t('adminPayments.pagination.of', 'sur')} {totalCount}
               </div>
 
               <div className="flex items-center gap-3">
@@ -663,14 +665,14 @@ export default function PaiementsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10">
-                    <SelectItem value="20">20 / page</SelectItem>
-                    <SelectItem value="50">50 / page</SelectItem>
-                    <SelectItem value="100">100 / page</SelectItem>
+                    <SelectItem value="20">20 / {t('adminPayments.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="50">50 / {t('adminPayments.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="100">100 / {t('adminPayments.pagination.perPage', 'page')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <div className="text-xs font-black tabular-nums px-2">
-                  Page {currentPage} / {totalPages}
+                  {t('adminPayments.pagination.page', 'Page')} {currentPage} / {totalPages}
                 </div>
 
                 <Button
@@ -681,7 +683,7 @@ export default function PaiementsPage() {
                   disabled={currentPage <= 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Précédent
+                  {t('adminPayments.pagination.previous', 'Precedent')}
                 </Button>
                 <Button
                   variant="outline"
@@ -690,7 +692,7 @@ export default function PaiementsPage() {
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage >= totalPages}
                 >
-                  Suivant
+                  {t('adminPayments.pagination.next', 'Suivant')}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>

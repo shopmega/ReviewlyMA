@@ -83,6 +83,13 @@ type UserReview = {
   moderation_reason_code?: string | null;
 };
 
+type ReviewAppeal = {
+  review_id: number;
+  status: 'open' | 'in_review' | 'accepted' | 'rejected';
+  created_at: string;
+  resolved_at: string | null;
+};
+
 type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'account';
 
 function ProfileSkeleton() {
@@ -124,6 +131,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [appealsByReview, setAppealsByReview] = useState<Record<number, ReviewAppeal>>({});
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const { t, tf, locale } = useI18n();
@@ -187,13 +195,43 @@ export default function ProfilePage() {
 
     if (!reviewsError && reviewsData) {
       const mapped = reviewsData.map(mapReviewRow);
-      setReviews((prev) => (append ? [...prev, ...mapped] : mapped));
+      let nextReviews: UserReview[] = mapped;
+      setReviews((prev) => {
+        nextReviews = append ? [...prev, ...mapped] : mapped;
+        return nextReviews;
+      });
+      await fetchAppealsForReviews(nextReviews.map((review) => review.id));
       setReviewsPage(page);
       setHasMoreReviews(reviewsData.length === REVIEWS_PAGE_SIZE);
     } else if (!append) {
       setReviews([]);
       setHasMoreReviews(false);
+      setAppealsByReview({});
     }
+  };
+
+  const fetchAppealsForReviews = async (reviewIds: number[]) => {
+    if (!reviewIds.length) {
+      setAppealsByReview({});
+      return;
+    }
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('review_appeals')
+      .select('review_id,status,created_at,resolved_at')
+      .in('review_id', reviewIds)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return;
+
+    const byReview: Record<number, ReviewAppeal> = {};
+    for (const appeal of data as ReviewAppeal[]) {
+      if (!byReview[appeal.review_id]) {
+        byReview[appeal.review_id] = appeal;
+      }
+    }
+    setAppealsByReview(byReview);
   };
 
   const initialState: ActionState = { status: 'idle', message: '' };
@@ -371,6 +409,16 @@ export default function ProfilePage() {
   };
 
   const handleReviewAppeal = async (reviewId: number) => {
+    const existing = appealsByReview[reviewId];
+    if (existing && (existing.status === 'open' || existing.status === 'in_review')) {
+      toast({
+        title: t('profilePage.toasts.errorTitle', 'Error'),
+        description: t('profilePage.reviews.appealAlreadyActive', 'An appeal is already active for this review.'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const message = window.prompt(t('profilePage.reviews.appealPrompt', 'Explain your appeal (minimum 10 characters):'));
     if (message === null) return;
     const cleaned = message.trim();
@@ -386,9 +434,19 @@ export default function ProfilePage() {
     const result = await submitReviewAppeal({ review_id: reviewId, message: cleaned });
     if (result.status === 'success') {
       toast({ title: t('profilePage.toasts.appealSubmitted', 'Appeal submitted'), description: result.message });
+      await fetchAppealsForReviews(reviews.map((review) => review.id));
     } else {
       toast({ title: t('profilePage.toasts.errorTitle', 'Error'), description: result.message, variant: 'destructive' });
     }
+  };
+
+  const getAppealBadge = (reviewId: number) => {
+    const appeal = appealsByReview[reviewId];
+    if (!appeal) return null;
+    if (appeal.status === 'open') return <Badge variant="outline">{t('profilePage.reviews.appealStatusOpen', 'Appeal open')}</Badge>;
+    if (appeal.status === 'in_review') return <Badge variant="outline" className="border-orange-500 text-orange-600">{t('profilePage.reviews.appealStatusInReview', 'Appeal in review')}</Badge>;
+    if (appeal.status === 'accepted') return <Badge className="bg-emerald-600 text-white">{t('profilePage.reviews.appealStatusAccepted', 'Appeal accepted')}</Badge>;
+    return <Badge variant="secondary">{t('profilePage.reviews.appealStatusRejected', 'Appeal rejected')}</Badge>;
   };
 
   const handleLoadMoreSaved = () => {
@@ -647,12 +705,16 @@ export default function ProfilePage() {
                                   variant="outline"
                                   size="sm"
                                   className="rounded-full"
+                                  disabled={appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'}
                                   onClick={() => handleReviewAppeal(review.id)}
                                 >
                                   <Undo className="mr-2 h-4 w-4" />
-                                  {t('profilePage.reviews.appeal', 'Appeal')}
+                                  {appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'
+                                    ? t('profilePage.reviews.appealInProgress', 'Appeal in progress')
+                                    : t('profilePage.reviews.appeal', 'Appeal')}
                                 </Button>
                               )}
+                              {getAppealBadge(review.id)}
                               <VoteButtons
                                 reviewId={review.id}
                                 initialLikes={review.likes}
@@ -992,6 +1054,5 @@ export default function ProfilePage() {
     </div>
   );
 }
-
 
 

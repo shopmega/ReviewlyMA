@@ -60,6 +60,7 @@ import { isValidImageUrl } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 type Business = {
   id: string;
@@ -113,6 +114,7 @@ export default function BusinessesAdminPage() {
   });
 
   const { toast } = useToast();
+  const { t } = useI18n();
 
   useEffect(() => {
     fetchCities();
@@ -193,8 +195,8 @@ export default function BusinessesAdminPage() {
       if (error) {
         console.error('Error fetching businesses:', error);
         toast({
-          title: 'Erreur de chargement',
-          description: error.message || 'Impossible de récupérer les entreprises.',
+          title: t('adminBusinesses.toast.loadErrorTitle', 'Erreur de chargement'),
+          description: error.message || t('adminBusinesses.toast.loadErrorDesc', 'Impossible de recuperer les entreprises.'),
           variant: 'destructive',
         });
       } else {
@@ -214,10 +216,10 @@ export default function BusinessesAdminPage() {
     const result = await toggleBusinessSponsored(id, !currentStatus);
 
     if (result.status === 'error') {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     } else {
       setBusinesses(prev => prev.map(b => b.id === id ? { ...b, is_sponsored: !currentStatus } : b));
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
     }
     setActionLoading(null);
   };
@@ -227,10 +229,10 @@ export default function BusinessesAdminPage() {
     const result = await toggleBusinessFeatured(id, !currentStatus);
 
     if (result.status === 'error') {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     } else {
       setBusinesses(prev => prev.map(b => b.id === id ? { ...b, is_featured: !currentStatus } : b));
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
     }
     setActionLoading(null);
   };
@@ -243,20 +245,20 @@ export default function BusinessesAdminPage() {
       if (action === 'delete') {
         const result = await bulkDeleteBusinesses(selectedIds);
         if (result.success) {
-          toast({ title: 'Suppression réussie', description: result.message });
+          toast({ title: t('adminBusinesses.toast.bulkDeleteSuccess', 'Suppression reussie'), description: result.message });
           setBusinesses(prev => prev.filter(b => !selectedIds.includes(b.id)));
           setSelectedIds([]);
         }
       } else {
         const result = await bulkUpdateBusinesses(selectedIds, { featured: action === 'feature' });
         if (result.success) {
-          toast({ title: 'Mise à jour réussie', description: result.message });
+          toast({ title: t('adminBusinesses.toast.bulkUpdateSuccess', 'Mise a jour reussie'), description: result.message });
           setBusinesses(prev => prev.map(b => selectedIds.includes(b.id) ? { ...b, is_featured: action === 'feature' } : b));
           setSelectedIds([]);
         }
       }
     } catch (error) {
-      toast({ title: 'Erreur', description: 'Une erreur est survenue lors de l\'action groupée', variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: t('adminBusinesses.toast.bulkActionError', 'Une erreur est survenue lors de action groupee'), variant: 'destructive' });
     }
     setIsProcessingBulk(false);
   };
@@ -265,7 +267,7 @@ export default function BusinessesAdminPage() {
     setActionLoading(id);
     const result = await requestLogo(id);
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
       setBusinesses(prev => prev.map(b => b.id === id ? { ...b, logo_requested: true } : b));
     }
     setActionLoading(null);
@@ -276,7 +278,7 @@ export default function BusinessesAdminPage() {
     setActionLoading(deleteDialog.businessId);
     const result = await deleteBusiness(deleteDialog.businessId);
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: result.message });
+      toast({ title: t('common.success', 'Succes'), description: result.message });
       setBusinesses(prev => prev.filter(b => b.id !== deleteDialog.businessId));
     }
     setActionLoading(null);
@@ -285,7 +287,7 @@ export default function BusinessesAdminPage() {
 
   const handleCreateBusiness = async () => {
     if (!newBusiness.name || !newBusiness.category || !newBusiness.city || !newBusiness.address) {
-      toast({ title: 'Erreur', description: 'Veuillez remplir tous les champs obligatoires.', variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: t('adminBusinesses.toast.requiredFields', 'Veuillez remplir tous les champs obligatoires.'), variant: 'destructive' });
       return;
     }
 
@@ -300,12 +302,12 @@ export default function BusinessesAdminPage() {
     });
 
     if (result.status === 'success') {
-      toast({ title: 'Succès', description: 'Établissement ajouté avec succès.' });
+      toast({ title: t('common.success', 'Succes'), description: t('adminBusinesses.toast.createSuccess', 'Etablissement ajoute avec succes.') });
       setCreateDialog(false);
       setNewBusiness({ name: '', category: '', city: '', address: '', description: '', isPremium: false });
       fetchBusinesses();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
     }
     setIsProcessingBulk(false);
   };
@@ -329,13 +331,13 @@ export default function BusinessesAdminPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 pb-2">
         <div className="space-y-2">
-          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">Annuaire & CRM</Badge>
+          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminBusinesses.badge', 'Annuaire & CRM')}</Badge>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            Gestion <span className="text-primary italic">Établissements</span>
+            {t('adminBusinesses.titlePrefix', 'Gestion')} <span className="text-primary italic">{t('adminBusinesses.titleAccent', 'Etablissements')}</span>
           </h1>
-          <p className="text-muted-foreground font-medium flex items-center gap-2 text-sm">
-            <Building className="h-4 w-4" /> {totalCount} entreprises dans la base de données
-          </p>
+            <p className="text-muted-foreground font-medium flex items-center gap-2 text-sm">
+              <Building className="h-4 w-4" /> {totalCount} {t('adminBusinesses.totalCountSuffix', 'entreprises dans la base de donnees')}
+            </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
@@ -362,7 +364,7 @@ export default function BusinessesAdminPage() {
               className="bg-primary hover:bg-primary/90 text-white font-black px-6 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
               onClick={() => setCreateDialog(true)}
             >
-              <Plus className="mr-2 h-5 w-5" /> Ajouter
+              <Plus className="mr-2 h-5 w-5" /> {t('common.add', 'Ajouter')}
             </Button>
             <Button
               variant="outline"
@@ -370,7 +372,7 @@ export default function BusinessesAdminPage() {
               asChild
             >
               <Link href="/admin/etablissements/import">
-                <Upload className="mr-2 h-5 w-5" /> Importer
+                <Upload className="mr-2 h-5 w-5" /> {t('common.import', 'Importer')}
               </Link>
             </Button>
           </div>
@@ -384,10 +386,10 @@ export default function BusinessesAdminPage() {
               <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ShieldCheck className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-indigo-500/20 text-indigo-600">Premium</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-indigo-500/20 text-indigo-600">{t('adminBusinesses.kpi.premiumBadge', 'Premium')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{businesses.filter(b => b.is_featured).length}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Établissements à la une</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminBusinesses.kpi.featured', 'Etablissements a la une')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -396,10 +398,10 @@ export default function BusinessesAdminPage() {
               <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <UserIcon className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/20 text-emerald-600">Engagé</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/20 text-emerald-600">{t('adminBusinesses.kpi.engagedBadge', 'Engage')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{businesses.filter(b => b.user_id).length}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Comptes Pro activés</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminBusinesses.kpi.proAccounts', 'Comptes Pro actives')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -408,10 +410,10 @@ export default function BusinessesAdminPage() {
               <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Star className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-amber-500/20 text-amber-600">Satisfaction</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-amber-500/20 text-amber-600">{t('adminBusinesses.kpi.satisfactionBadge', 'Satisfaction')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{(businesses.reduce((acc, b) => acc + b.overall_rating, 0) / (businesses.length || 1)).toFixed(1)}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Note moyenne plateforme</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminBusinesses.kpi.averageRating', 'Note moyenne plateforme')}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
@@ -420,10 +422,10 @@ export default function BusinessesAdminPage() {
               <div className="h-12 w-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <AlertTriangle className="h-6 w-6" />
               </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-rose-500/20 text-rose-600">Identité</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-rose-500/20 text-rose-600">{t('adminBusinesses.kpi.identityBadge', 'Identite')}</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{businesses.filter(b => !b.logo_url).length}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Sans logo professionnel</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminBusinesses.kpi.missingLogo', 'Sans logo professionnel')}</p>
           </CardContent>
         </Card>
       </div>
@@ -435,7 +437,7 @@ export default function BusinessesAdminPage() {
               <div className="relative w-full lg:w-96 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
-                  placeholder="Rechercher par nom, catégorie..."
+                  placeholder={t('adminBusinesses.searchPlaceholder', 'Rechercher par nom, categorie...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-11 h-12 bg-white/50 dark:bg-slate-950/50 border-border/20 rounded-2xl focus:ring-primary/20 transition-all font-medium"
@@ -445,10 +447,10 @@ export default function BusinessesAdminPage() {
                 <Select value={filterCity} onValueChange={setFilterCity}>
                   <SelectTrigger className="w-[180px] h-10 rounded-xl bg-white/50 border-border/20 transition-all">
                     <Filter className="h-3 w-3 mr-2 opacity-50" />
-                    <SelectValue placeholder="Toutes les villes" />
+                    <SelectValue placeholder={t('adminBusinesses.filter.allCities', 'Toutes les villes')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
-                    <SelectItem value="all">Toutes les villes</SelectItem>
+                    <SelectItem value="all">{t('adminBusinesses.filter.allCities', 'Toutes les villes')}</SelectItem>
                     {cities.map(city => (
                       <SelectItem key={city} value={city}>{city}</SelectItem>
                     ))}
@@ -458,18 +460,18 @@ export default function BusinessesAdminPage() {
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-[180px] h-10 rounded-xl bg-white/50 border-border/20 transition-all">
                     <Activity className="h-3 w-3 mr-2 opacity-50" />
-                    <SelectValue placeholder="Tous les statuts" />
+                    <SelectValue placeholder={t('adminBusinesses.filter.allStatuses', 'Tous les statuts')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="claimed">Revendiqués</SelectItem>
-                    <SelectItem value="unclaimed">Non revendiqués</SelectItem>
+                    <SelectItem value="all">{t('adminBusinesses.filter.allStatuses', 'Tous les statuts')}</SelectItem>
+                    <SelectItem value="claimed">{t('adminBusinesses.filter.claimed', 'Revendiques')}</SelectItem>
+                    <SelectItem value="unclaimed">{t('adminBusinesses.filter.unclaimed', 'Non revendiques')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {(filterCity !== 'all' || filterStatus !== 'all' || searchQuery !== '') && (
                   <Button variant="ghost" size="sm" onClick={() => { setFilterCity('all'); setFilterStatus('all'); setSearchQuery(''); }} className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
-                    Effacer les filtres
+                    {t('adminBusinesses.filter.clear', 'Effacer les filtres')}
                   </Button>
                 )}
               </div>
@@ -487,7 +489,7 @@ export default function BusinessesAdminPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Syncing CRM...</p>
+              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminBusinesses.loadingSync', 'Syncing CRM...')}</p>
             </div>
           ) : totalCount === 0 ? (
             <div className="text-center py-40 space-y-6">
@@ -495,8 +497,8 @@ export default function BusinessesAdminPage() {
                 <Building className="h-12 w-12 text-muted-foreground/30" />
               </div>
               <div className="max-w-xs mx-auto space-y-2">
-                <p className="text-2xl font-black">Aucun résultat</p>
-                <p className="text-muted-foreground font-medium">Réduisez vos filtres ou effectuez une nouvelle recherche.</p>
+                <p className="text-2xl font-black">{t('adminBusinesses.emptyTitle', 'Aucun resultat')}</p>
+                <p className="text-muted-foreground font-medium">{t('adminBusinesses.emptyDesc', 'Reduisez vos filtres ou effectuez une nouvelle recherche.')}</p>
               </div>
             </div>
           ) : viewMode === 'table' ? (
@@ -511,12 +513,12 @@ export default function BusinessesAdminPage() {
                         className="rounded-lg border-2 border-primary/20 data-[state=checked]:bg-primary"
                       />
                     </TableHead>
-                    <TableHead className="py-6 font-bold uppercase tracking-widest text-[10px]">Entreprise</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Identité</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Propriété</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Engagement</TableHead>
-                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">Statut</TableHead>
-                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
+                    <TableHead className="py-6 font-bold uppercase tracking-widest text-[10px]">{t('adminBusinesses.table.business', 'Entreprise')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminBusinesses.table.identity', 'Identite')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminBusinesses.table.ownership', 'Propriete')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminBusinesses.table.engagement', 'Engagement')}</TableHead>
+                    <TableHead className="font-bold uppercase tracking-widest text-[10px]">{t('adminBusinesses.table.status', 'Statut')}</TableHead>
+                    <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">{t('adminBusinesses.table.actions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -561,11 +563,11 @@ export default function BusinessesAdminPage() {
                             {business.category}
                           </Badge>
                           {business.logo_url ? (
-                            <span className="text-[9px] font-black text-emerald-500 flex items-center gap-1 ml-1"><Check className="h-2 w-2" /> LOGO OK</span>
+                            <span className="text-[9px] font-black text-emerald-500 flex items-center gap-1 ml-1"><Check className="h-2 w-2" /> {t('adminBusinesses.identity.logoOk', 'LOGO OK')}</span>
                           ) : business.logo_requested ? (
-                            <span className="text-[9px] font-black text-amber-500 flex items-center gap-1 ml-1"><Clock className="h-2 w-2" /> EN ATTENTE</span>
+                            <span className="text-[9px] font-black text-amber-500 flex items-center gap-1 ml-1"><Clock className="h-2 w-2" /> {t('adminBusinesses.identity.pending', 'EN ATTENTE')}</span>
                           ) : (
-                            <span className="text-[9px] font-black text-rose-500 flex items-center gap-1 ml-1"><X className="h-2 w-2" /> PAS DE LOGO</span>
+                            <span className="text-[9px] font-black text-rose-500 flex items-center gap-1 ml-1"><X className="h-2 w-2" /> {t('adminBusinesses.identity.noLogo', 'PAS DE LOGO')}</span>
                           )}
                         </div>
                       </TableCell>
@@ -574,14 +576,14 @@ export default function BusinessesAdminPage() {
                           <div className="flex items-center gap-2 text-indigo-500 animate-in fade-in zoom-in duration-500">
                             <ShieldCheck className="h-5 w-5" />
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-tight">Revendiqué</p>
+                              <p className="text-[10px] font-black uppercase tracking-tight">{t('adminBusinesses.ownership.claimed', 'Revendique')}</p>
                               <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter line-clamp-1 max-w-[80px]">#{business.user_id.substring(0, 8)}</p>
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-muted-foreground opacity-50">
                             <ShieldAlert className="h-5 w-5" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">Libre</span>
+                            <span className="text-[10px] font-black uppercase tracking-tight">{t('adminBusinesses.ownership.free', 'Libre')}</span>
                           </div>
                         )}
                       </TableCell>
@@ -742,16 +744,16 @@ export default function BusinessesAdminPage() {
                     <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
                       <div className="flex items-center gap-2">
                         {business.user_id ? <ShieldCheck className="h-4 w-4 text-indigo-500" /> : <ShieldAlert className="h-4 w-4" />}
-                        {business.user_id ? "Revendiqué" : "Non réclamé"}
+                        {business.user_id ? t('adminBusinesses.ownership.claimed', 'Revendique') : t('adminBusinesses.ownership.unclaimed', 'Non reclame')}
                       </div>
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4 text-primary" />
-                        {business.review_count || 0} avis
+                        {business.review_count || 0} {t('adminBusinesses.metrics.reviews', 'avis')}
                       </div>
                     </div>
                     <Button asChild variant="outline" className="w-full rounded-2xl h-10 border-border/40 font-bold hover:bg-primary/10 transition-all">
                       <Link href={`/businesses/${business.id}`} target="_blank">
-                        Détails entreprise <ChevronRight className="ml-2 h-4 w-4" />
+                        {t('adminBusinesses.actions.businessDetails', 'Details entreprise')} <ChevronRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
                   </CardContent>
@@ -765,7 +767,7 @@ export default function BusinessesAdminPage() {
             !loading && totalCount > 0 && (
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Affichage {pageStart + 1}-{Math.min(pageEnd, totalCount)} sur {totalCount}
+                  {t('adminBusinesses.pagination.showing', 'Affichage')} {pageStart + 1}-{Math.min(pageEnd, totalCount)} {t('adminBusinesses.pagination.of', 'sur')} {totalCount}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -774,15 +776,15 @@ export default function BusinessesAdminPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-border/10">
-                      <SelectItem value="12">12 / page</SelectItem>
-                      <SelectItem value="24">24 / page</SelectItem>
-                      <SelectItem value="48">48 / page</SelectItem>
-                      <SelectItem value="96">96 / page</SelectItem>
+                      <SelectItem value="12">12 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                      <SelectItem value="24">24 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                      <SelectItem value="48">48 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                      <SelectItem value="96">96 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <div className="text-xs font-black tabular-nums px-2">
-                    Page {currentPage} / {totalPages}
+                    {t('adminBusinesses.pagination.page', 'Page')} {currentPage} / {totalPages}
                   </div>
 
                   <Button
@@ -792,7 +794,7 @@ export default function BusinessesAdminPage() {
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage <= 1}
                   >
-                    Précédent
+                    {t('adminBusinesses.pagination.previous', 'Precedent')}
                   </Button>
                   <Button
                     variant="outline"
@@ -801,7 +803,7 @@ export default function BusinessesAdminPage() {
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage >= totalPages}
                   >
-                    Suivant
+                    {t('adminBusinesses.pagination.next', 'Suivant')}
                   </Button>
                 </div>
               </div>
@@ -822,14 +824,14 @@ export default function BusinessesAdminPage() {
                   {selectedIds.length}
                 </div>
                 <div>
-                  <p className="text-white font-black text-sm md:text-base uppercase tracking-tight">Traitement en Lot</p>
-                  <p className="text-muted-foreground text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Action sur la sélection annuaire</p>
+                  <p className="text-white font-black text-sm md:text-base uppercase tracking-tight">{t('adminBusinesses.bulk.title', 'Traitement en Lot')}</p>
+                  <p className="text-muted-foreground text-[9px] md:text-[10px] font-bold uppercase tracking-widest">{t('adminBusinesses.bulk.subtitle', 'Action sur la selection annuaire')}</p>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pr-0 md:pr-2">
                 <Button variant="ghost" className="rounded-xl md:rounded-2xl text-white hover:bg-white/10 font-bold px-4 h-10 md:h-12 text-xs md:text-sm" onClick={() => setSelectedIds([])} disabled={isProcessingBulk}>
-                  Annuler
+                  {t('common.cancel', 'Annuler')}
                 </Button>
                 <Button
                   variant="outline"
@@ -865,14 +867,14 @@ export default function BusinessesAdminPage() {
             </DialogTitle>
             <DialogDescription asChild>
               <div className="text-slate-600 dark:text-slate-400 pt-2 space-y-4 font-medium">
-                <p>Êtes-vous sûr de vouloir bannir <strong>"{deleteDialog.businessName}"</strong> ? Cette action est définitive.</p>
+                <p>{t('adminBusinesses.deleteDialog.confirmText', 'Etes-vous sur de vouloir bannir')} <strong>"{deleteDialog.businessName}"</strong> ? {t('adminBusinesses.deleteDialog.irreversible', 'Cette action est definitive.')}</p>
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 space-y-2 border border-border/10">
-                  <p className="text-rose-500 font-black text-xs uppercase tracking-widest flex items-center gap-1">Données supprimées :</p>
+                  <p className="text-rose-500 font-black text-xs uppercase tracking-widest flex items-center gap-1">{t('adminBusinesses.deleteDialog.deletedData', 'Donnees supprimees :')}</p>
                   <ul className="text-sm space-y-1">
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> Historique des avis</li>
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> Mises à jour & Photos</li>
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> Revendications liées</li>
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> Accès propriétaire</li>
+                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.reviewsHistory', 'Historique des avis')}</li>
+                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.updatesPhotos', 'Mises a jour & Photos')}</li>
+                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.relatedClaims', 'Revendications liees')}</li>
+                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.ownerAccess', 'Acces proprietaire')}</li>
                   </ul>
                 </div>
               </div>
@@ -880,7 +882,7 @@ export default function BusinessesAdminPage() {
           </DialogHeader>
           <DialogFooter className="mt-8 gap-3">
             <Button variant="outline" className="rounded-2xl border-border/40 font-bold px-8 h-12" onClick={() => setDeleteDialog({ open: false, businessId: '', businessName: '' })}>
-              Annuler
+              {t('common.cancel', 'Annuler')}
             </Button>
             <Button
               className="bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black px-10 h-12 shadow-xl shadow-rose-500/20"
@@ -901,42 +903,42 @@ export default function BusinessesAdminPage() {
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
               <Plus className="h-8 w-8" />
             </div>
-            <DialogTitle className="text-2xl font-black tracking-tight">Ajouter un <span className="text-primary italic">Établissement</span></DialogTitle>
-            <DialogDescription className="font-medium">Saisissez les informations de base pour créer une nouvelle fiche.</DialogDescription>
+            <DialogTitle className="text-2xl font-black tracking-tight">{t('adminBusinesses.createDialog.titlePrefix', 'Ajouter un')} <span className="text-primary italic">{t('adminBusinesses.createDialog.titleAccent', 'Etablissement')}</span></DialogTitle>
+            <DialogDescription className="font-medium">{t('adminBusinesses.createDialog.desc', 'Saisissez les informations de base pour creer une nouvelle fiche.')}</DialogDescription>
           </DialogHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest ml-1">Nom de l'entreprise *</Label>
-              <Input id="name" placeholder="ex: Café de Paris" className="rounded-xl" value={newBusiness.name} onChange={e => setNewBusiness({ ...newBusiness, name: e.target.value })} />
+              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.name', "Nom de l'entreprise")} *</Label>
+              <Input id="name" placeholder={t('adminBusinesses.createDialog.placeholders.name', 'Ex: Cafe de Paris')} className="rounded-xl" value={newBusiness.name} onChange={e => setNewBusiness({ ...newBusiness, name: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest ml-1">Catégorie *</Label>
-              <Input id="category" placeholder="ex: Restaurant" className="rounded-xl" value={newBusiness.category} onChange={e => setNewBusiness({ ...newBusiness, category: e.target.value })} />
+              <Label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.category', 'Categorie')} *</Label>
+              <Input id="category" placeholder={t('adminBusinesses.createDialog.placeholders.category', 'Ex: Restaurant')} className="rounded-xl" value={newBusiness.category} onChange={e => setNewBusiness({ ...newBusiness, category: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest ml-1">Ville *</Label>
-              <Input id="city" placeholder="ex: Casablanca" className="rounded-xl" value={newBusiness.city} onChange={e => setNewBusiness({ ...newBusiness, city: e.target.value })} />
+              <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.city', 'Ville')} *</Label>
+              <Input id="city" placeholder={t('adminBusinesses.createDialog.placeholders.city', 'Ex: Casablanca')} className="rounded-xl" value={newBusiness.city} onChange={e => setNewBusiness({ ...newBusiness, city: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest ml-1">Adresse *</Label>
-              <Input id="address" placeholder="ex: 123 Rue de la Liberté" className="rounded-xl" value={newBusiness.address} onChange={e => setNewBusiness({ ...newBusiness, address: e.target.value })} />
+              <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.address', 'Adresse')} *</Label>
+              <Input id="address" placeholder={t('adminBusinesses.createDialog.placeholders.address', 'Ex: 123 Rue de la Liberte')} className="rounded-xl" value={newBusiness.address} onChange={e => setNewBusiness({ ...newBusiness, address: e.target.value })} />
             </div>
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="desc" className="text-[10px] font-black uppercase tracking-widest ml-1">Description</Label>
-              <Textarea id="desc" placeholder="Courte description..." className="rounded-xl min-h-[100px]" value={newBusiness.description} onChange={e => setNewBusiness({ ...newBusiness, description: e.target.value })} />
+              <Label htmlFor="desc" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.description', 'Description')}</Label>
+              <Textarea id="desc" placeholder={t('adminBusinesses.createDialog.placeholders.description', 'Courte description...')} className="rounded-xl min-h-[100px]" value={newBusiness.description} onChange={e => setNewBusiness({ ...newBusiness, description: e.target.value })} />
             </div>
             <div className="md:col-span-2 flex items-center justify-between p-4 bg-muted/30 rounded-2xl border border-border/50">
               <div>
-                <Label className="font-black text-sm block">Statut Premium</Label>
-                <p className="text-xs text-muted-foreground font-medium">Activer directement les avantages Premium.</p>
+              <Label className="font-black text-sm block">{t('adminBusinesses.createDialog.premiumLabel', 'Statut Premium')}</Label>
+              <p className="text-xs text-muted-foreground font-medium">{t('adminBusinesses.createDialog.premiumDesc', 'Activer directement les avantages Premium.')}</p>
               </div>
               <Switch checked={newBusiness.isPremium} onCheckedChange={checked => setNewBusiness({ ...newBusiness, isPremium: checked })} />
             </div>
           </div>
 
           <DialogFooter className="gap-3">
-            <Button variant="ghost" className="rounded-xl font-bold px-6 h-12" onClick={() => setCreateDialog(false)}>Annuler</Button>
+            <Button variant="ghost" className="rounded-xl font-bold px-6 h-12" onClick={() => setCreateDialog(false)}>{t('common.cancel', 'Annuler')}</Button>
             <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black px-10 h-12 shadow-lg shadow-primary/20" onClick={handleCreateBusiness} disabled={isProcessingBulk}>
               {isProcessingBulk ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
               Créer la fiche
