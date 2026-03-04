@@ -125,6 +125,20 @@ function formatRefreshedDate(value: string | null | undefined) {
   return new Date(ts).toLocaleDateString('fr-MA', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function valueTone(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(value)) return 'text-foreground';
+  if (value > 0) return 'text-emerald-600';
+  if (value < 0) return 'text-rose-600';
+  return 'text-foreground';
+}
+
+function leaderLabel(value: number | null | undefined, leftLabel: string, rightLabel: string) {
+  if (value === null || value === undefined || Number.isNaN(value)) return 'Egalite';
+  if (value > 0) return `Avantage ${leftLabel}`;
+  if (value < 0) return `Avantage ${rightLabel}`;
+  return 'Egalite';
+}
+
 export default async function SalaryComparisonPage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const supabase = await createClient();
@@ -223,6 +237,25 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
     cityBLabel: cityB?.city || '',
   });
   const roleComparisonUrl = `${siteUrl}/salaires/comparaison?${roleComparisonSearch.toString()}`;
+  const companySalaryDeltaDisplay = companyAHasData && companyBHasData
+    ? (isUnlocked ? `${companyGap >= 0 ? '+' : ''}${companyGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
+    : 'Donnees insuffisantes';
+  const companyRatingDeltaDisplay = isUnlocked
+    ? (reviewRatingGap === null ? 'Non defini' : `${reviewRatingGap >= 0 ? '+' : ''}${reviewRatingGap.toFixed(1)} / 5`)
+    : 'Connectez-vous';
+  const companyVolumeDeltaDisplay = isUnlocked
+    ? `${reviewVolumeGap >= 0 ? '+' : ''}${reviewVolumeGap.toLocaleString('fr-MA')}`
+    : 'Connectez-vous';
+  const roleSalaryDeltaDisplay = roleAHasData && roleBHasData
+    ? (isUnlocked ? `${roleGap >= 0 ? '+' : ''}${roleGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
+    : 'Donnees insuffisantes';
+  const companySalaryLeader = (isUnlocked && companyAHasData && companyBHasData)
+    ? leaderLabel(companyGap, 'A', 'B')
+    : 'Donnees verrouillees';
+  const companyRatingLeader = isUnlocked ? leaderLabel(reviewRatingGap, 'A', 'B') : 'Donnees verrouillees';
+  const roleSalaryLeader = (isUnlocked && roleAHasData && roleBHasData)
+    ? leaderLabel(roleGap, cityA?.city || 'A', cityB?.city || 'B')
+    : 'Donnees verrouillees';
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
@@ -236,7 +269,7 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
       <InternalAdsSlot placement="salary_compare_top_banner" />
 
-      <Card>
+      <Card className="border-primary/20 shadow-sm">
         <CardHeader>
           <CardTitle>Entreprise vs entreprise</CardTitle>
           <CardDescription>Comparez les salaires publies et la reputation basee sur les avis.</CardDescription>
@@ -266,58 +299,77 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
           {companyA && companyB && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader><CardTitle className="text-base">{companyA.business_name}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Mediane: <strong>{companyAHasData ? (isUnlocked ? formatMoney(companyA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                    <p>Moyenne: <strong>{companyAHasData ? (isUnlocked ? formatMoney(companyA.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                    <p>Vs ville: <strong>{companyAHasData ? (isUnlocked ? formatPct(companyA.pct_above_city_avg) : 'Connectez-vous') : '-'}</strong></p>
-                    <p>Maj: <strong>{formatRefreshedDate(companyA.refreshed_at)}</strong></p>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <Card className="lg:col-span-2 border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent shadow-sm">
+                  <CardContent className="pt-5">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span>{companyA.business_name}</span>
+                      <span>vs</span>
+                      <span>{companyB.business_name}</span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">Vue comparee des salaires et de la reputation.</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle className="text-base">{companyB.business_name}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Mediane: <strong>{companyBHasData ? (isUnlocked ? formatMoney(companyB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                    <p>Moyenne: <strong>{companyBHasData ? (isUnlocked ? formatMoney(companyB.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                    <p>Vs ville: <strong>{companyBHasData ? (isUnlocked ? formatPct(companyB.pct_above_city_avg) : 'Connectez-vous') : '-'}</strong></p>
-                    <p>Maj: <strong>{formatRefreshedDate(companyB.refreshed_at)}</strong></p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader><CardTitle className="text-base">Ecart median</CardTitle></CardHeader>
-                  <CardContent className="text-2xl font-bold">
-                    {companyAHasData && companyBHasData
-                      ? (isUnlocked ? `${companyGap >= 0 ? '+' : ''}${companyGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
-                      : 'Donnees insuffisantes'}
+                  <CardContent className="pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Delta median salaire</p>
+                    <p className={`mt-2 text-2xl font-black ${valueTone(isUnlocked && companyAHasData && companyBHasData ? companyGap : null)}`}>
+                      {companySalaryDeltaDisplay}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-muted-foreground">{companySalaryLeader}</p>
                   </CardContent>
                 </Card>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader><CardTitle className="text-base">Reputation - {companyA.business_name}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Note moyenne: <strong>{isUnlocked ? formatRating(companyARating) : 'Connectez-vous'}</strong></p>
-                    <p>Volume avis: <strong>{isUnlocked ? companyAReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</strong></p>
-                    <p>Confiance: <strong>{isUnlocked ? getConfidenceLabel(companyAReviewCount) : 'Connectez-vous'}</strong></p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader><CardTitle className="text-base">Reputation - {companyB.business_name}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Note moyenne: <strong>{isUnlocked ? formatRating(companyBRating) : 'Connectez-vous'}</strong></p>
-                    <p>Volume avis: <strong>{isUnlocked ? companyBReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</strong></p>
-                    <p>Confiance: <strong>{isUnlocked ? getConfidenceLabel(companyBReviewCount) : 'Connectez-vous'}</strong></p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader><CardTitle className="text-base">Ecart reputation</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Note: <strong>{isUnlocked ? (reviewRatingGap === null ? 'Non defini' : `${reviewRatingGap >= 0 ? '+' : ''}${reviewRatingGap.toFixed(1)} / 5`) : 'Connectez-vous'}</strong></p>
-                    <p>Volume avis: <strong>{isUnlocked ? `${reviewVolumeGap >= 0 ? '+' : ''}${reviewVolumeGap.toLocaleString('fr-MA')}` : 'Connectez-vous'}</strong></p>
-                  </CardContent>
-                </Card>
+
+              <div className="rounded-2xl border border-primary/15 overflow-hidden shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/20 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="px-4 py-3">Indicateur</div>
+                  <div className="px-4 py-3">{companyA.business_name}</div>
+                  <div className="px-4 py-3">{companyB.business_name}</div>
+                  <div className="px-4 py-3">Delta A-B</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t">
+                  <div className="px-4 py-3 text-sm font-medium">Salaire median</div>
+                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatMoney(companyA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
+                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatMoney(companyB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
+                  <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked && companyAHasData && companyBHasData ? companyGap : null)}`}>{companySalaryDeltaDisplay}</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
+                  <div className="px-4 py-3 text-sm font-medium">Salaire moyen</div>
+                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatMoney(companyA.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
+                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatMoney(companyB.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t">
+                  <div className="px-4 py-3 text-sm font-medium">Position vs ville</div>
+                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatPct(companyA.pct_above_city_avg) : 'Connectez-vous') : '-'}</div>
+                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatPct(companyB.pct_above_city_avg) : 'Connectez-vous') : '-'}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
+                  <div className="px-4 py-3 text-sm font-medium">Note moyenne avis</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? formatRating(companyARating) : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? formatRating(companyBRating) : 'Connectez-vous'}</div>
+                  <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked ? reviewRatingGap : null)}`}>{companyRatingDeltaDisplay}</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t">
+                  <div className="px-4 py-3 text-sm font-medium">Volume avis</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? companyAReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? companyBReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</div>
+                  <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked ? reviewVolumeGap : null)}`}>{companyVolumeDeltaDisplay}</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
+                  <div className="px-4 py-3 text-sm font-medium">Confiance avis</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? getConfidenceLabel(companyAReviewCount) : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? getConfidenceLabel(companyBReviewCount) : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t">
+                  <div className="px-4 py-3 text-sm font-medium">Derniere mise a jour</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(companyA.refreshed_at)}</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(companyB.refreshed_at)}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">{companyRatingLeader}</div>
+                </div>
               </div>
               <div className="flex justify-end">
                 <ContentShareButton
@@ -334,7 +386,7 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-primary/20 shadow-sm">
         <CardHeader>
           <CardTitle>Role: ville A vs ville B</CardTitle>
           <CardDescription>Comparez un poste identique entre deux villes.</CardDescription>
@@ -370,33 +422,61 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
           {selectedRole && roleCityA && roleCityB && cityA && cityB && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader><CardTitle className="text-base">{selectedRole} - {cityA.city}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Mediane: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                    <p>Junior: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                    <p>Senior+: <strong>{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</strong></p>
-                    <p>Maj: <strong>{formatRefreshedDate(roleCityA.refreshed_at)}</strong></p>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <Card className="lg:col-span-2 border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent shadow-sm">
+                  <CardContent className="pt-5">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span>{selectedRole}</span>
+                      <span>|</span>
+                      <span>{cityA.city}</span>
+                      <span>vs</span>
+                      <span>{cityB.city}</span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">Comparaison du meme role entre deux marches locaux.</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle className="text-base">{selectedRole} - {cityB.city}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <p>Mediane: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</strong></p>
-                    <p>Junior: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</strong></p>
-                    <p>Senior+: <strong>{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</strong></p>
-                    <p>Maj: <strong>{formatRefreshedDate(roleCityB.refreshed_at)}</strong></p>
+                  <CardContent className="pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Delta median salaire</p>
+                    <p className={`mt-2 text-2xl font-black ${valueTone(isUnlocked && roleAHasData && roleBHasData ? roleGap : null)}`}>
+                      {roleSalaryDeltaDisplay}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-muted-foreground">{roleSalaryLeader}</p>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader><CardTitle className="text-base">Ecart median</CardTitle></CardHeader>
-                  <CardContent className="text-2xl font-bold">
-                    {roleAHasData && roleBHasData
-                      ? (isUnlocked ? `${roleGap >= 0 ? '+' : ''}${roleGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
-                      : 'Donnees insuffisantes'}
-                  </CardContent>
-                </Card>
+              </div>
+
+              <div className="rounded-2xl border border-primary/15 overflow-hidden shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/20 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="px-4 py-3">Indicateur</div>
+                  <div className="px-4 py-3">{cityA.city}</div>
+                  <div className="px-4 py-3">{cityB.city}</div>
+                  <div className="px-4 py-3">Delta A-B</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t">
+                  <div className="px-4 py-3 text-sm font-medium">Salaire median</div>
+                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
+                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
+                  <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked && roleAHasData && roleBHasData ? roleGap : null)}`}>{roleSalaryDeltaDisplay}</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
+                  <div className="px-4 py-3 text-sm font-medium">Bande junior</div>
+                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
+                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t">
+                  <div className="px-4 py-3 text-sm font-medium">Bande senior+</div>
+                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</div>
+                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
+                  <div className="px-4 py-3 text-sm font-medium">Derniere mise a jour</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(roleCityA.refreshed_at)}</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(roleCityB.refreshed_at)}</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
+                </div>
               </div>
               <div className="flex justify-end">
                 <ContentShareButton
@@ -444,3 +524,5 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
     </div>
   );
 }
+
+
