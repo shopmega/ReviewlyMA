@@ -66,6 +66,26 @@ export function BusinessHero({ business }: BusinessHeroProps) {
       hasMedia: allMedia.length > 0
     };
   }, [business.hours, allMedia]);
+  const profileCompleteness = useMemo(() => {
+    const checks = [
+      Boolean(business.logo?.imageUrl),
+      hasMedia,
+      Boolean((business.location || business.address || '').trim()),
+      Boolean((business.website || '').trim()),
+      Array.isArray(business.hours) && business.hours.length > 0,
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }, [business.logo?.imageUrl, hasMedia, business.location, business.address, business.website, business.hours]);
+
+  const heroFallbackInitials = useMemo(() => {
+    const label = business.name || 'B';
+    return label
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word.charAt(0).toUpperCase())
+      .join('') || 'B';
+  }, [business.name]);
 
   const heroSizeClass = hasMedia
     ? 'h-[38vh] md:h-[48vh] min-h-[340px] md:min-h-[420px]'
@@ -98,7 +118,14 @@ export function BusinessHero({ business }: BusinessHeroProps) {
             </CarouselContent>
           </Carousel>
         ) : (
-          <div className="absolute inset-0 bg-slate-100 dark:bg-slate-900/50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-sky-700/80 to-indigo-800/80">
+            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,rgba(255,255,255,0.12)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.12)_75%,transparent_75%,transparent)] bg-[length:26px_26px]" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-24 w-24 md:h-32 md:w-32 rounded-3xl border border-white/35 bg-white/10 backdrop-blur-md flex items-center justify-center text-white shadow-2xl">
+                <span className="text-4xl md:text-5xl font-black tracking-tight">{heroFallbackInitials}</span>
+              </div>
+            </div>
+          </div>
         )}
         <div className="absolute inset-0 z-10 bg-background/65" />
       </div>
@@ -163,6 +190,11 @@ export function BusinessHero({ business }: BusinessHeroProps) {
                     ) : (
                       t('business.hero.businessPro', 'Business Pro')
                     )}
+                  </Badge>
+                )}
+                {profileCompleteness < 80 && (
+                  <Badge variant="outline" className="text-xs py-0.5 border-white/35 bg-black/20 text-white">
+                    {tf('business.hero.profileComplete', 'Profil {percent}% complet', { percent: profileCompleteness })}
                   </Badge>
                 )}
               </div>

@@ -52,6 +52,30 @@ export function BusinessCover({
         ? resolvedCoverUrl
         : (hasGalleryFallback ? resolvedGalleryUrl : null);
 
+    const getFallbackPalette = () => {
+        const seed = `${business.name || ''}-${business.category || ''}`;
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) {
+            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const palettes = [
+            'from-sky-600 to-blue-700',
+            'from-emerald-600 to-teal-700',
+            'from-indigo-600 to-blue-700',
+            'from-cyan-600 to-sky-700',
+            'from-amber-600 to-orange-700',
+            'from-rose-600 to-pink-700',
+        ];
+        return palettes[Math.abs(hash) % palettes.length];
+    };
+
+    const initials = (business.name || 'B')
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((word) => word.charAt(0).toUpperCase())
+        .join('');
+
     if (coverUrl) {
         if (fill) {
             return (
@@ -82,7 +106,17 @@ export function BusinessCover({
 
     return (
         <div
-            className={`flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-900/50 ${className}`}
-        />
+            className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${getFallbackPalette()} ${className}`}
+        >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_50%)]" />
+            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,rgba(255,255,255,0.12)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.12)_75%,transparent_75%,transparent)] bg-[length:22px_22px]" />
+            <div className="relative z-10 px-4 text-white text-center">
+                <p className="text-3xl md:text-4xl font-black tracking-tight leading-none">{initials || 'B'}</p>
+                <p className="mt-2 text-[11px] md:text-xs font-semibold uppercase tracking-wider opacity-90">
+                    {business.category || 'Entreprise'}
+                </p>
+                <p className="text-[10px] md:text-xs opacity-80 mt-1">{business.city || 'Maroc'}</p>
+            </div>
+        </div>
     );
 }

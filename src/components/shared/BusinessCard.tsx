@@ -14,6 +14,19 @@ type BusinessCardProps = {
 
 export function BusinessCard({ business }: BusinessCardProps) {
   const topAmenities = (business.amenities || []).slice(0, 3);
+  const hasRealLogo = Boolean(business.logo?.imageUrl);
+  const hasRealCover = Boolean(business.cover_url) || Boolean(business.photos?.length);
+  const isProfileCompleting = !hasRealLogo && !hasRealCover;
+  const profileCompleteness = (() => {
+    const checks = [
+      hasRealLogo,
+      hasRealCover,
+      Boolean((business.location || business.address || '').trim()),
+      Boolean((business.website || '').trim()),
+      Array.isArray(business.hours) && business.hours.length > 0,
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  })();
 
   return (
     <Link href={`/businesses/${business.id}`} className="group block h-full">
@@ -43,6 +56,22 @@ export function BusinessCard({ business }: BusinessCardProps) {
           </div>
 
           <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-2 md:right-4 md:top-4">
+            {isProfileCompleting && (
+              <Badge
+                variant="outline"
+                className="border-white/40 bg-black/25 text-white backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider"
+              >
+                Profil en cours
+              </Badge>
+            )}
+            {profileCompleteness < 80 && (
+              <Badge
+                variant="outline"
+                className="border-white/35 bg-black/20 text-white backdrop-blur-sm text-[10px] font-bold"
+              >
+                {profileCompleteness}% complet
+              </Badge>
+            )}
             {typeof business.overallRating === 'number' && business.overallRating > 0 ? (
               <div className="flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-bold text-foreground">
                 <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />

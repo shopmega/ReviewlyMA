@@ -81,9 +81,17 @@ export function BusinessLogo({
   if (!hasValidUrl || imageError) {
     return (
       <div
-        className={`flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 ${className} relative overflow-hidden`}
+        className={`flex items-center justify-center ${bgColor} ${className} relative overflow-hidden`}
         style={{ width, height }}
-      />
+      >
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,white,transparent_55%)]" />
+        <div className="relative z-10 flex flex-col items-center justify-center leading-none">
+          <Building2 className="h-3.5 w-3.5 mb-1 opacity-90" />
+          <span className="font-black tracking-tight" style={{ fontSize: Math.max(10, Math.round(width * 0.28)) }}>
+            {initials}
+          </span>
+        </div>
+      </div>
     );
   }
 
