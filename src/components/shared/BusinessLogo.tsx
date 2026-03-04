@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { isValidImageUrl } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { Building2 } from 'lucide-react';
@@ -74,9 +73,14 @@ export function BusinessLogo({
 
   const initials = getInitials(businessName);
   const bgColor = getBackgroundColor(businessName);
+  const normalizedLogoUrl = (logo?.imageUrl || '').toLowerCase();
+  const isPlaceholderLogo =
+    normalizedLogoUrl.includes('/placeholders/') ||
+    normalizedLogoUrl.includes('logo-placeholder') ||
+    normalizedLogoUrl.includes('placeholder-logo');
 
   // Check valid URL
-  const hasValidUrl = logo?.imageUrl && isValidImageUrl(logo.imageUrl);
+  const hasValidUrl = logo?.imageUrl && isValidImageUrl(logo.imageUrl) && !isPlaceholderLogo;
 
   if (!hasValidUrl || imageError) {
     return (

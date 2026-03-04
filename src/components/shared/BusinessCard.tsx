@@ -1,6 +1,25 @@
+import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, MapPin, Zap, Sparkles } from 'lucide-react';
+import {
+  Star,
+  MapPin,
+  Zap,
+  Sparkles,
+  Landmark,
+  Laptop,
+  Headphones,
+  Factory,
+  Truck,
+  Heart,
+  GraduationCap,
+  ShoppingBag,
+  Building2,
+  Utensils,
+  Hotel,
+  Plane,
+  Briefcase,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Business } from '@/lib/types';
 import { isPaidTier } from '@/lib/tier-utils';
@@ -12,6 +31,47 @@ type BusinessCardProps = {
   business: Business;
 };
 
+const CATEGORY_ICONS = {
+  landmark: Landmark,
+  laptop: Laptop,
+  headphones: Headphones,
+  factory: Factory,
+  truck: Truck,
+  heart: Heart,
+  graduation: GraduationCap,
+  shopping: ShoppingBag,
+  utensils: Utensils,
+  hotel: Hotel,
+  plane: Plane,
+  briefcase: Briefcase,
+  building: Building2,
+} as const;
+
+type CategoryIconKey = keyof typeof CATEGORY_ICONS;
+
+const normalizeLabel = (value?: string) =>
+  (value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+const getCategoryIconKey = (label?: string): CategoryIconKey => {
+  const normalized = normalizeLabel(label);
+  if (normalized.includes('banque') || normalized.includes('finance')) return 'landmark';
+  if (normalized.includes('technologie') || normalized.includes('it') || normalized.includes('software')) return 'laptop';
+  if (normalized.includes('appel') || normalized.includes('bpo') || normalized.includes('call')) return 'headphones';
+  if (normalized.includes('industrie') || normalized.includes('chimie') || normalized.includes('manufact')) return 'factory';
+  if (normalized.includes('transport') || normalized.includes('logistique') || normalized.includes('livraison')) return 'truck';
+  if (normalized.includes('sante') || normalized.includes('medical') || normalized.includes('clinique')) return 'heart';
+  if (normalized.includes('education') || normalized.includes('formation') || normalized.includes('ecole')) return 'graduation';
+  if (normalized.includes('distribution') || normalized.includes('commerce') || normalized.includes('retail')) return 'shopping';
+  if (normalized.includes('restaurant') || normalized.includes('food') || normalized.includes('cafe')) return 'utensils';
+  if (normalized.includes('hotel') || normalized.includes('tourisme')) return 'hotel';
+  if (normalized.includes('aerien') || normalized.includes('aviation')) return 'plane';
+  if (normalized.includes('consulting') || normalized.includes('service')) return 'briefcase';
+  return 'building';
+};
+
 export function BusinessCard({ business }: BusinessCardProps) {
   const topAmenities = (business.amenities || []).slice(0, 3);
   const hasRealLogo = Boolean(business.logo?.imageUrl);
@@ -20,6 +80,9 @@ export function BusinessCard({ business }: BusinessCardProps) {
   const normalizedCategory = (business.category || '').trim().toLowerCase();
   const normalizedSubcategory = (business.subcategory || '').trim().toLowerCase();
   const showSubcategory = Boolean(business.subcategory) && normalizedSubcategory !== normalizedCategory;
+  const categoryIconKey = getCategoryIconKey(business.category);
+  const subcategoryIconKey = showSubcategory ? getCategoryIconKey(business.subcategory) : null;
+  const isSameIcon = subcategoryIconKey && subcategoryIconKey === categoryIconKey;
   const profileCompleteness = (() => {
     const checks = [
       hasRealLogo,
@@ -90,14 +153,20 @@ export function BusinessCard({ business }: BusinessCardProps) {
             )}
           </div>
 
-          <div className="absolute bottom-3 right-3 z-10 flex max-w-[80%] flex-wrap justify-end gap-1.5 md:bottom-4 md:right-4">
-            <Badge variant="secondary" className="max-w-full truncate border border-border bg-card px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-foreground">
-              {business.category}
-            </Badge>
-            {showSubcategory && (
-              <Badge variant="secondary" className="max-w-full truncate border border-info/20 bg-info/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-info">
-                {business.subcategory}
-              </Badge>
+          <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 md:bottom-4 md:right-4">
+              <span
+                title={business.category || 'Categorie'}
+                className="h-8 w-8 rounded-full border border-white/35 bg-black/25 text-white backdrop-blur-sm flex items-center justify-center"
+              >
+                {React.createElement(CATEGORY_ICONS[categoryIconKey], { className: 'h-4 w-4' })}
+              </span>
+            {showSubcategory && subcategoryIconKey && !isSameIcon && (
+              <span
+                title={business.subcategory || 'Sous-categorie'}
+                className="h-8 w-8 rounded-full border border-white/30 bg-black/20 text-white/90 backdrop-blur-sm flex items-center justify-center"
+              >
+                {React.createElement(CATEGORY_ICONS[subcategoryIconKey], { className: 'h-4 w-4' })}
+              </span>
             )}
           </div>
         </div>
