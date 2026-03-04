@@ -75,6 +75,9 @@ export function BusinessCover({
         .slice(0, 2)
         .map((word) => word.charAt(0).toUpperCase())
         .join('');
+    const fallbackSizingClass = fill
+        ? 'absolute inset-0 h-full w-full'
+        : 'h-full w-full';
 
     if (coverUrl) {
         if (fill) {
@@ -106,16 +109,13 @@ export function BusinessCover({
 
     return (
         <div
-            className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${getFallbackPalette()} ${className}`}
+            className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${getFallbackPalette()} ${fallbackSizingClass} ${className || ''}`}
+            style={!fill && width && height ? { width, height } : undefined}
         >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_50%)]" />
             <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,rgba(255,255,255,0.12)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.12)_75%,transparent_75%,transparent)] bg-[length:22px_22px]" />
             <div className="relative z-10 px-4 text-white text-center">
                 <p className="text-3xl md:text-4xl font-black tracking-tight leading-none">{initials || 'B'}</p>
-                <p className="mt-2 text-[11px] md:text-xs font-semibold uppercase tracking-wider opacity-90">
-                    {business.category || 'Entreprise'}
-                </p>
-                <p className="text-[10px] md:text-xs opacity-80 mt-1">{business.city || 'Maroc'}</p>
             </div>
         </div>
     );
