@@ -40,14 +40,14 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const hasCompanyCompare = !!sp.companyA && !!sp.companyB;
   const hasRoleCompare = !!sp.role && !!sp.cityA && !!sp.cityB;
 
-  let title = 'Comparaison des salaires';
-  let description = 'Comparez les salaires entre entreprises et villes au Maroc.';
+  let title = 'Comparaison entreprise: salaires et reputation';
+  let description = 'Comparez les salaires et la reputation des entreprises au Maroc.';
 
   if (hasCompanyCompare) {
     const companyALabel = sp.companyALabel || 'Entreprise A';
     const companyBLabel = sp.companyBLabel || 'Entreprise B';
-    title = `${companyALabel} vs ${companyBLabel} | Comparaison salariale`;
-    description = `Comparez les tendances salariales entre ${companyALabel} et ${companyBLabel} au Maroc.`;
+    title = `${companyALabel} vs ${companyBLabel} | Salaires et reputation`;
+    description = `Comparez les tendances salariales et la reputation avis entre ${companyALabel} et ${companyBLabel} au Maroc.`;
   } else if (hasRoleCompare) {
     const roleLabel = sp.roleLabel || 'Poste';
     const cityALabel = sp.cityALabel || 'Ville A';
@@ -100,9 +100,22 @@ function formatMoney(value: number | null | undefined) {
   return `${value.toLocaleString('fr-MA')} MAD`;
 }
 
+function formatRating(value: number | null | undefined) {
+  if (value === null || value === undefined) return 'Non defini';
+  return `${value.toFixed(1)} / 5`;
+}
+
 function formatPct(value: number | null | undefined) {
   if (value === null || value === undefined) return '-';
   return `${value.toFixed(2)}%`;
+}
+
+function getConfidenceLabel(totalReviews: number | null | undefined) {
+  const count = totalReviews ?? 0;
+  if (count >= 60) return 'Confiance elevee';
+  if (count >= 20) return 'Confiance moyenne';
+  if (count > 0) return 'Confiance en construction';
+  return 'Aucun avis';
 }
 
 function formatRefreshedDate(value: string | null | undefined) {
@@ -118,7 +131,16 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const isUnlocked = !!user;
+  const isAuthenticated = !!user;
+  const { count: salaryContributionCount } = user
+    ? await supabase
+        .from('salaries')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('status', ['pending', 'published'])
+    : { count: 0 };
+  const hasSalaryContribution = (salaryContributionCount ?? 0) > 0;
+  const isUnlocked = hasSalaryContribution;
 
   const [companyMetrics, cityMetrics, roleCityPairs] = await Promise.all([
     getSalaryCompanyMetricsList(300),
@@ -159,6 +181,24 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
     selectedRole && cityBSlug ? getSalaryRoleCityMetric(selectedRole, cityBSlug) : Promise.resolve(null),
   ]);
 
+  const comparedBusinessIds = Array.from(new Set([companyAId, companyBId].filter(Boolean)));
+  const { data: comparedBusinesses } = isUnlocked && comparedBusinessIds.length
+    ? await supabase
+        .from('businesses')
+        .select('id,overall_rating,review_count')
+        .in('id', comparedBusinessIds)
+    : { data: [] as Array<{ id: string; overall_rating: number | null; review_count: number | null }> };
+
+  const reputationMap = new Map((comparedBusinesses || []).map((row) => [row.id, row]));
+  const companyAReputation = reputationMap.get(companyAId);
+  const companyBReputation = reputationMap.get(companyBId);
+  const companyARating = companyAReputation?.overall_rating ?? null;
+  const companyBRating = companyBReputation?.overall_rating ?? null;
+  const companyAReviewCount = companyAReputation?.review_count ?? 0;
+  const companyBReviewCount = companyBReputation?.review_count ?? 0;
+  const reviewRatingGap = companyARating !== null && companyBRating !== null ? companyARating - companyBRating : null;
+  const reviewVolumeGap = companyAReviewCount - companyBReviewCount;
+
   const companyGap = (companyA?.median_monthly_salary ?? 0) - (companyB?.median_monthly_salary ?? 0);
   const roleGap = (roleCityA?.median_monthly_salary ?? 0) - (roleCityB?.median_monthly_salary ?? 0);
   const companyAHasData = hasSufficientSampleSize(companyA?.submission_count);
@@ -188,9 +228,9 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
       <section className="space-y-3">
         <Badge variant="outline" className="uppercase tracking-widest text-[10px]">Comparateur</Badge>
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight">Comparaison des salaires</h1>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight">Comparaison: salaires et reputation</h1>
         <p className="text-muted-foreground">
-          Comparez entreprise vs entreprise et role dans deux villes. URL partageable via les filtres.
+          Comparez entreprise vs entreprise (salaires + avis) et role dans deux villes. URL partageable via les filtres.
         </p>
       </section>
 
@@ -199,7 +239,7 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
       <Card>
         <CardHeader>
           <CardTitle>Entreprise vs entreprise</CardTitle>
-          <CardDescription>Comparez les medians salariaux publies.</CardDescription>
+          <CardDescription>Comparez les salaires publies et la reputation basee sur les avis.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form method="get" className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -254,11 +294,36 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
                   </CardContent>
                 </Card>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Reputation - {companyA.business_name}</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Note moyenne: <strong>{isUnlocked ? formatRating(companyARating) : 'Connectez-vous'}</strong></p>
+                    <p>Volume avis: <strong>{isUnlocked ? companyAReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</strong></p>
+                    <p>Confiance: <strong>{isUnlocked ? getConfidenceLabel(companyAReviewCount) : 'Connectez-vous'}</strong></p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Reputation - {companyB.business_name}</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Note moyenne: <strong>{isUnlocked ? formatRating(companyBRating) : 'Connectez-vous'}</strong></p>
+                    <p>Volume avis: <strong>{isUnlocked ? companyBReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</strong></p>
+                    <p>Confiance: <strong>{isUnlocked ? getConfidenceLabel(companyBReviewCount) : 'Connectez-vous'}</strong></p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Ecart reputation</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    <p>Note: <strong>{isUnlocked ? (reviewRatingGap === null ? 'Non defini' : `${reviewRatingGap >= 0 ? '+' : ''}${reviewRatingGap.toFixed(1)} / 5`) : 'Connectez-vous'}</strong></p>
+                    <p>Volume avis: <strong>{isUnlocked ? `${reviewVolumeGap >= 0 ? '+' : ''}${reviewVolumeGap.toLocaleString('fr-MA')}` : 'Connectez-vous'}</strong></p>
+                  </CardContent>
+                </Card>
+              </div>
               <div className="flex justify-end">
                 <ContentShareButton
                   url={companyComparisonUrl}
-                  title={`Comparaison salariale: ${companyA.business_name} vs ${companyB.business_name}`}
-                  text={`Ecart de salaire median entre ${companyA.business_name} et ${companyB.business_name}.`}
+                  title={`Comparaison entreprise: ${companyA.business_name} vs ${companyB.business_name}`}
+                  text={`Comparaison salaires et reputation entre ${companyA.business_name} et ${companyB.business_name}.`}
                   contentType="salary_company_comparison"
                   contentId={`${companyA.business_id}_${companyB.business_id}`}
                   cardType="company_delta"
@@ -352,13 +417,17 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
         <section className="rounded-2xl border p-5 bg-muted/20">
           <h2 className="font-bold text-lg mb-1">Debloquez la comparaison detaillee</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Creez un compte ou connectez-vous pour voir les details junior/senior, les ecarts complets et les benchmarks avances.
+            {isAuthenticated
+              ? 'Partagez au moins un salaire pour debloquer les details junior/senior, les ecarts complets et les benchmarks avances.'
+              : 'Creez un compte ou connectez-vous, puis partagez un salaire pour debloquer les details junior/senior, les ecarts complets et les benchmarks avances.'}
           </p>
           <p className="text-xs text-muted-foreground mb-4">
             En mode apercu, les listes et indicateurs sont volontairement limites.
           </p>
           <Button asChild>
-            <Link href="/login?next=/salaires/comparaison">Se connecter</Link>
+            <Link href={isAuthenticated ? '/salaires/partager' : '/login?next=/salaires/comparaison'}>
+              {isAuthenticated ? 'Partager mon salaire' : 'Se connecter'}
+            </Link>
           </Button>
         </section>
       )}
