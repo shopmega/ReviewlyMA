@@ -316,7 +316,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 {trustSignals.map((signal) => (
                                     <div
                                         key={signal.label}
-                                        className="flex items-center gap-3 rounded-xl border border-primary/15 bg-white/70 dark:bg-white/5 px-4 py-3 backdrop-blur-sm"
+                                        className="surface-soft flex items-center gap-3 px-4 py-3 bg-white/75 dark:bg-card/80 backdrop-blur-sm"
                                     >
                                         <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                                             <signal.icon className="h-4 w-4" />
@@ -331,7 +331,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
                             {/* Search + Filters */}
                             <div className="w-full max-w-3xl animate-fade-in-up [animation-delay:200ms]">
-                                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-2 p-2.5 md:p-2 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl hover:shadow-primary/5 transition-all duration-500 ring-1 ring-black/5 dark:ring-white/5">
+                                <div className="surface-strong flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-2 p-2.5 md:p-2 bg-white/85 dark:bg-card/90 backdrop-blur-xl transition-all duration-300">
                                     <div className="flex-1 w-full relative z-10">
                                         <SearchAutocomplete
                                             city={searchCity}
@@ -407,12 +407,14 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             {t('home.hero.writeReview', 'Ecrire un avis')}
                                         </Link>
                                     </Button>
-                                    <Button asChild size="lg" variant="ghost" className="rounded-xl h-11 px-6 font-bold border border-border/70 hover:border-primary/30">
-                                        <Link href="/pour-les-pros" onClick={() => trackHomeCta('claim_listing', 'hero_secondary_cta')}>
-                                            <ShieldCheck className="mr-2 h-4 w-4" />
-                                            {t('home.hero.claimCta', 'Revendiquer une fiche')}
-                                        </Link>
-                                    </Button>
+                                    <Link
+                                        href="/pour-les-pros"
+                                        onClick={() => trackHomeCta('claim_listing', 'hero_text_link')}
+                                        className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                        <ShieldCheck className="h-4 w-4" />
+                                        {t('home.hero.claimCta', 'Revendiquer une fiche')}
+                                    </Link>
                                 </div>
                             </div>
 
@@ -423,7 +425,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     <Link
                                         key={search.href}
                                         href={search.href}
-                                        className="px-3 md:px-4 py-1.5 bg-secondary/50 hover:bg-secondary backdrop-blur-md rounded-full text-xs md:text-sm font-medium text-muted-foreground border border-border/50 transition-all hover:text-primary hover:border-primary/30 hover:-translate-y-0.5"
+                                        className="px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium text-muted-foreground border border-border/70 bg-background/80 transition-all hover:text-primary hover:border-primary/30 hover:-translate-y-0.5"
                                     >
                                         {search.label}
                                     </Link>
@@ -469,7 +471,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     (Array.isArray(business.photos) && business.photos.length > 0);
 
                                 return (
-                                    <Card key={business.id} className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                    <Card key={business.id} className="surface-soft hover:border-primary/30 transition-colors">
                                         <CardContent className="p-5 space-y-4">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
@@ -502,7 +504,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                     <section key="stats" className="container mx-auto px-4 mt-8 md:-mt-16 relative z-20">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
                             {stats.map((stat) => (
-                                <div key={stat.name} className="glass-card p-6 rounded-2xl shadow-xl flex items-center gap-6 transform hover:-translate-y-1 transition-transform duration-300">
+                                <div key={stat.name} className="surface-strong p-6 flex items-center gap-6 transform hover:-translate-y-1 transition-transform duration-300">
                                     <div className="p-4 bg-primary/10 rounded-full text-primary">
                                         <stat.icon className="w-6 h-6 text-primary" />
                                     </div>
@@ -769,7 +771,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 <p className="text-muted-foreground">{t('home.guides.subtitle', 'Des ressources pratiques pour orienter votre recherche.')}</p>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                <Card className="surface-soft hover:border-primary/30 transition-colors">
                                     <CardContent className="p-6 space-y-3">
                                         <Badge variant="outline">{t('home.guides.cityBadge', 'Guides par ville')}</Badge>
                                         <h3 className="font-bold text-lg">{t('home.guides.cityTitle', 'Comparez les villes avant de candidater')}</h3>
@@ -779,7 +781,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         </Button>
                                     </CardContent>
                                 </Card>
-                                <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                <Card className="surface-soft hover:border-primary/30 transition-colors">
                                     <CardContent className="p-6 space-y-3">
                                         <Badge variant="outline">{t('home.guides.salaryBadge', 'Salaire par secteur')}</Badge>
                                         <h3 className="font-bold text-lg">{t('home.guides.salaryTitle', 'Situez votre remuneration')}</h3>
@@ -789,7 +791,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         </Button>
                                     </CardContent>
                                 </Card>
-                                <Card className="rounded-2xl border-border/60 hover:border-primary/30 transition-colors">
+                                <Card className="surface-soft hover:border-primary/30 transition-colors">
                                     <CardContent className="p-6 space-y-3">
                                         <Badge variant="outline">{t('home.guides.interviewBadge', 'Avant entretien')}</Badge>
                                         <h3 className="font-bold text-lg">{t('home.guides.interviewTitle', 'Pourquoi consulter les avis avant un entretien')}</h3>
@@ -816,7 +818,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 { step: '2', title: t('home.howItWorks.step2Title', 'Comparez fiches et salaires'), desc: t('home.howItWorks.step2Desc', 'Analysez les profils complets et les indicateurs salariaux disponibles.'), icon: Sparkles },
                                 { step: '3', title: t('home.howItWorks.step3Title', 'Postez votre avis'), desc: t('home.howItWorks.step3Desc', 'Partagez un retour anonyme pour aider la communaute.'), icon: Star },
                             ].map((item) => (
-                                <Card key={item.step} className="rounded-2xl border-border/60">
+                                <Card key={item.step} className="surface-soft">
                                     <CardContent className="p-6 space-y-3">
                                         <Badge variant="secondary">{tf('home.howItWorks.stepBadge', 'Etape {step}', { step: item.step })}</Badge>
                                         <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -898,8 +900,8 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             { title: t('home.resources.tool3Title', 'Modeles de lettres'), desc: t('home.resources.tool3Desc', 'Demission, reclamation...'), icon: Briefcase },
                                             { title: t('home.resources.tool4Title', 'Droit du travail'), desc: t('home.resources.tool4Desc', 'Articles et guides experts'), icon: GraduationCap },
                                         ].map((tool, idx) => (
-                                            <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-white/5 border border-border shadow-sm hover:shadow-md transition-shadow">
-                                                <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600">
+                                            <div key={idx} className="surface-soft flex gap-4 p-4 hover:border-primary/30 transition-colors">
+                                                <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-primary/10 rounded-xl text-primary">
                                                     <tool.icon className="w-5 h-5" />
                                                 </div>
                                                 <div>
@@ -911,7 +913,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                     </div>
 
                                     <div className="pt-4">
-                                        <Button asChild size="lg" className="rounded-2xl h-14 px-8 font-bold shadow-lg shadow-primary/20 group">
+                                        <Button asChild size="lg" className="cta-primary rounded-2xl h-14 px-8 group">
                                             <a href={siteSettings?.partner_app_url || "https://monrh.vercel.app/"} target="_blank" rel="noopener noreferrer">
                                                 {t('home.resources.cta', 'Decouvrir tous les outils')}
                                                 <ExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />

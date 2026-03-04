@@ -2,9 +2,17 @@ import { test, expect, Page } from '@playwright/test';
 
 async function openFirstBusiness(page: Page) {
   await page.goto('/businesses', { waitUntil: 'domcontentloaded', timeout: 120000 });
-  const firstBusinessLink = page.locator('a[href*="/businesses/"]').first();
-  await expect(firstBusinessLink).toBeVisible();
-  await firstBusinessLink.click();
+
+  const businessLinks = page.locator('a[href^="/businesses/"]:not([href*="/review"]):not([href*="/salaries"])');
+  let linkCount = await businessLinks.count();
+
+  if (linkCount === 0) {
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 120000 });
+    linkCount = await businessLinks.count();
+  }
+
+  await expect(businessLinks.first()).toBeVisible({ timeout: 15000 });
+  await businessLinks.first().click();
   await expect(page).toHaveURL(/\/businesses\/[^/]+$/);
 }
 

@@ -150,3 +150,21 @@ body {
     }
   }
 }
+
+@layer components {
+  .surface-soft {
+    @apply rounded-2xl border border-border bg-card shadow-sm;
+  }
+
+  .surface-strong {
+    @apply rounded-2xl border border-border bg-card shadow-md shadow-black/5;
+  }
+
+  .section-stack {
+    @apply space-y-6 md:space-y-8;
+  }
+
+  .cta-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold transition-colors hover:bg-primary/90;
+  }
+}

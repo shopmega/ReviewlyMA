@@ -254,10 +254,10 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
       </section>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8 xl:gap-10">
 
           {/* Main Content (Left) */}
-          <div className="lg:w-2/3 space-y-8 order-last lg:order-first">
+          <div className="lg:w-3/4 space-y-8 order-last lg:order-first">
             <BusinessInsightsTabs
               business={displayedBusiness}
               enableSalaries={settings.enable_salaries}
@@ -296,7 +296,7 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
           </div>
 
           {/* Sidebar (Right) - Sticky */}
-          <aside className="lg:w-1/3 order-first lg:order-last">
+          <aside className="lg:w-1/4 order-first lg:order-last">
             <div className="mb-6">
               <InternalAdsSlot
                 placement="business_profile_sidebar"

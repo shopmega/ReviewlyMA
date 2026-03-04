@@ -299,30 +299,47 @@ export function BusinessList({
 
   return (
     <div className="space-y-6">
-      {/* Active Filters */}
-      {activeFilters.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {activeFilters.map((filter) => (
-            <Badge key={filter.key} variant="secondary" className="gap-1.5 px-2.5 py-1 text-xs">
-              {filter.label}
-              <button
-                onClick={() => removeFilter(filter.key)}
-                className="ml-1 hover:text-destructive"
+      <div className="rounded-2xl border border-border bg-card p-4 md:p-5 shadow-sm">
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="search-top" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {t('listing.search', 'Rechercher')}
+          </Label>
+          <div className="flex flex-col md:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search-top"
+                placeholder={t('listing.searchPlaceholder', 'Etablissement...')}
+                className="pl-9 h-11 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-xl text-sm"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applySearchQuery();
+                  }
+                }}
+              />
+            </div>
+            <div className="flex w-full sm:w-auto items-center gap-2">
+              <Button type="button" onClick={applySearchQuery} className="h-11 rounded-xl px-5 font-semibold flex-1 sm:flex-none">
+                {t('listing.search', 'Rechercher')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSearchInput('');
+                  setSearchQuery('');
+                }}
+                className="h-11 rounded-xl px-4 flex-1 sm:flex-none"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetFilters}
-            className="text-xs h-7"
-          >
-            {t('listing.clearAll', 'Effacer tous')}
-          </Button>
+                {t('listing.clear', 'Effacer')}
+              </Button>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Mobile Filter Button - Only visible on mobile */}
@@ -546,37 +563,6 @@ export function BusinessList({
         <aside className="hidden md:block md:col-span-1">
           <div className="sticky top-24 bg-background border border-border rounded-xl p-5 shadow-sm space-y-6">
             <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="search-listing" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('listing.search', 'Rechercher')}</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search-listing"
-                    placeholder={t('listing.searchPlaceholder', 'Etablissement...')}
-                    className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        applySearchQuery();
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={applySearchQuery}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
-                  >
-                    {t('common.ok', 'OK')}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="h-px bg-border" />
-
               <Accordion type="multiple" defaultValue={['category', 'city']} className="w-full">
                 <AccordionItem value="category" className="border-none">
                   <AccordionTrigger className={`text-sm py-2 hover:no-underline ${categoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.category', 'Categorie')}</AccordionTrigger>
@@ -732,6 +718,14 @@ export function BusinessList({
                   </button>
                 </Badge>
               ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="text-xs h-8 rounded-lg"
+              >
+                {t('listing.clearAll', 'Effacer tous')}
+              </Button>
             </div>
           )}
 

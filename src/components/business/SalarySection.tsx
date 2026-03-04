@@ -17,6 +17,7 @@ import { Lock, LogIn, Sparkles, ShieldCheck, CalendarClock, TrendingUp } from 'l
 import { useI18n } from '@/components/providers/i18n-provider';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
+import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 type SalarySectionProps = {
   businessId: string;
@@ -47,6 +48,7 @@ export function SalarySection({
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
   const [isCompanyAlertSubscribed, setIsCompanyAlertSubscribed] = useState(false);
+  const [isCompactChart, setIsCompactChart] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -123,6 +125,15 @@ export function SalarySection({
     };
   }, [authStatus, businessId]);
 
+  useEffect(() => {
+    const updateChartMode = () => {
+      setIsCompactChart(window.innerWidth < 640);
+    };
+    updateChartMode();
+    window.addEventListener('resize', updateChartMode);
+    return () => window.removeEventListener('resize', updateChartMode);
+  }, []);
+
   const loginHref = `/login?next=${encodeURIComponent(pathname || `/businesses/${businessId}`)}`;
   const salaryConfidence = useMemo(() => {
     if (stats.count >= 50) return { label: t('business.salary.confidenceHigh', 'Confiance elevee'), score: 100 };
@@ -144,6 +155,20 @@ export function SalarySection({
     if (stats.minMonthly === null || stats.maxMonthly === null) return null;
     return Math.max(0, stats.maxMonthly - stats.minMonthly);
   }, [stats.maxMonthly, stats.minMonthly]);
+  const salaryChartData = useMemo(() => {
+    if (stats.roleBreakdown.length > 0) {
+      return stats.roleBreakdown.slice(0, 6).map((row) => ({
+        label: row.jobTitle.length > 18 ? `${row.jobTitle.slice(0, 18)}...` : row.jobTitle,
+        salary: Math.round(row.medianMonthly || 0),
+      }));
+    }
+
+    return [
+      { label: t('business.salary.minMonthly', 'Minimum mensuel'), salary: Math.round(stats.minMonthly || 0) },
+      { label: t('business.salary.medianMonthly', 'Mediane mensuelle'), salary: Math.round(stats.medianMonthly || 0) },
+      { label: t('business.salary.maxMonthly', 'Maximum mensuel'), salary: Math.round(stats.maxMonthly || 0) },
+    ].filter((row) => row.salary > 0);
+  }, [stats.roleBreakdown, stats.minMonthly, stats.medianMonthly, stats.maxMonthly, t]);
   const isAuthenticated = authStatus === 'authenticated';
   const hasEnoughData = hasSufficientSampleSize(stats.count);
   const canViewDetailedStats = isAuthenticated && hasEnoughData;
@@ -189,6 +214,33 @@ export function SalarySection({
 
           {stats.count > 0 ? (
             <>
+              {salaryChartData.length > 0 && (
+                <div className="rounded-lg border p-3 md:p-4">
+                  <p className="text-sm font-semibold mb-3">{t('business.salary.visualOverview', 'Apercu visuel des salaires')}</p>
+                  <div className="h-48 sm:h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={salaryChartData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
+                        <XAxis
+                          dataKey="label"
+                          tick={{ fontSize: 11 }}
+                          interval={0}
+                          angle={isCompactChart ? -25 : -12}
+                          textAnchor="end"
+                          height={isCompactChart ? 62 : 52}
+                        />
+                        <YAxis tick={{ fontSize: 11 }} tickFormatter={(value) => `${Math.round(Number(value) / 1000)}k`} />
+                        <Tooltip
+                          formatter={(value) => formatMoneyMAD(Number(value))}
+                          contentStyle={{ borderRadius: '0.75rem', borderColor: 'hsl(var(--border))' }}
+                        />
+                        <Bar dataKey="salary" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                 <div className="rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{t('business.salary.medianMonthly', 'Mediane mensuelle')}</p>
