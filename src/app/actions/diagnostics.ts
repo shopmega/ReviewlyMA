@@ -72,6 +72,36 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
     details: googleAdsEnv ? maskSecret(googleAdsEnv) : undefined,
   });
 
+  const googleAdsConversionVars = [
+    'NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_PREMIUM_SUBSCRIBED',
+    'NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_BUSINESS_CLAIMED',
+    'NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_USER_REGISTERED',
+    'NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_REVIEW_SUBMITTED',
+  ] as const;
+
+  const configuredConversionVars = googleAdsConversionVars.filter((key) => Boolean(process.env[key]));
+  checks.push({
+    name: 'Env: Google Ads conversion labels',
+    status: configuredConversionVars.length > 0 ? 'ok' : 'warn',
+    message:
+      configuredConversionVars.length > 0
+        ? `${configuredConversionVars.length}/${googleAdsConversionVars.length} label(s) configured`
+        : 'No Google Ads conversion labels configured',
+    details:
+      configuredConversionVars.length > 0
+        ? configuredConversionVars.join(', ')
+        : undefined,
+  });
+
+  const missingConversionVars = googleAdsConversionVars.filter((key) => !process.env[key]);
+  for (const key of missingConversionVars) {
+    checks.push({
+      name: `Env: ${key}`,
+      status: 'warn',
+      message: 'Missing (event conversion for this action will not fire)',
+    });
+  }
+
   try {
     const serviceClient = await createAdminClient();
 
