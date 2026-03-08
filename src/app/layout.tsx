@@ -18,6 +18,7 @@ import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
 import { cookies, headers } from 'next/headers';
+import { SoftAuthPromptController } from '@/components/auth/SoftAuthPromptController';
 
 const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -118,6 +119,7 @@ export default async function RootLayout({
               />
               <TrackingConsentBridge />
               <AnalyticsPageTracker />
+              <SoftAuthPromptController />
               <AdSense
                 enabled={settings.adsense_enabled ?? false}
                 pubId={settings.adsense_client_id || undefined}
