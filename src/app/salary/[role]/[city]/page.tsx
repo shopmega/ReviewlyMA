@@ -15,6 +15,7 @@ import { getSalaryCityMetrics, getSalaryRoleCityMetrics } from '@/lib/data/salar
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 
 type Params = { role: string; city: string };
 
@@ -188,6 +189,16 @@ export default async function SalaryRoleCityIaPage({ params }: { params: Promise
           <Button asChild variant="outline">
             <Link href="/salary">Back to salary hub</Link>
           </Button>
+          {!isUnlocked && (
+            <SoftAuthTriggerButton
+              label="Debloquer les details"
+              nextPath={`/salary/${role}/${city}`}
+              intent="salary_role_city_unlock"
+              variant="outline"
+              title="Debloquez les details salaires"
+              description="Connectez-vous pour acceder aux valeurs detaillees et aux comparaisons avancees."
+            />
+          )}
         </div>
       </section>
 

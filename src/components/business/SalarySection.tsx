@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { submitSalary } from '@/app/actions/salary';
 import { getSalaryAlertSubscriptionStatus } from '@/app/actions/salary-alerts';
 import type { SalaryEntry, SalaryStats } from '@/lib/types';
@@ -13,11 +12,12 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
-import { Lock, LogIn, Sparkles, ShieldCheck, CalendarClock, TrendingUp } from 'lucide-react';
+import { Lock, Sparkles, ShieldCheck, CalendarClock, TrendingUp } from 'lucide-react';
 import { useI18n } from '@/components/providers/i18n-provider';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { SoftAuthDialog } from '@/components/auth/SoftAuthDialog';
 
 type SalarySectionProps = {
   businessId: string;
@@ -49,6 +49,7 @@ export function SalarySection({
   const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
   const [isCompanyAlertSubscribed, setIsCompanyAlertSubscribed] = useState(false);
   const [isCompactChart, setIsCompactChart] = useState(false);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -134,7 +135,6 @@ export function SalarySection({
     return () => window.removeEventListener('resize', updateChartMode);
   }, []);
 
-  const loginHref = `/login?next=${encodeURIComponent(pathname || `/businesses/${businessId}`)}`;
   const salaryConfidence = useMemo(() => {
     if (stats.count >= 50) return { label: t('business.salary.confidenceHigh', 'Confiance elevee'), score: 100 };
     if (stats.count >= 20) return { label: t('business.salary.confidenceMedium', 'Confiance moyenne'), score: 72 };
@@ -259,6 +259,13 @@ export function SalarySection({
                   <p className="font-bold">{tf('business.salary.entriesCount', '{count} entrees', { count: stats.count })}</p>
                 </div>
               </div>
+              {!isAuthenticated && (
+                <div className="flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setIsAuthPromptOpen(true)}>
+                    Debloquer les details salaires
+                  </Button>
+                </div>
+              )}
 
               {stats.roleBreakdown.length > 0 && hasEnoughData && (
                 <div className="space-y-2">
@@ -358,11 +365,8 @@ export function SalarySection({
                     {t('business.salary.loginRequiredDesc', 'La soumission reste reservee aux utilisateurs connectes pour limiter le spam et garder des donnees de qualite.')}
                   </p>
                   <div className="pt-1">
-                    <Button asChild>
-                      <Link href={loginHref} className="inline-flex items-center gap-2">
-                        <LogIn className="h-4 w-4" />
-                        {t('business.salary.loginAndShare', 'Se connecter et publier')}
-                      </Link>
+                    <Button type="button" onClick={() => setIsAuthPromptOpen(true)}>
+                      {t('business.salary.loginAndShare', 'Se connecter et publier')}
                     </Button>
                   </div>
                 </div>
@@ -503,6 +507,14 @@ export function SalarySection({
           )}
         </CardContent>
       </Card>
+      <SoftAuthDialog
+        open={isAuthPromptOpen}
+        onOpenChange={setIsAuthPromptOpen}
+        nextPath={`${pathname || `/businesses/${businessId}`}?tab=salaries#salaries`}
+        intent="salary_unlock"
+        title="Debloquez les insights salaires"
+        description="Connectez-vous pour voir les details salaires et publier votre salaire de facon anonyme."
+      />
     </section>
   );
 }

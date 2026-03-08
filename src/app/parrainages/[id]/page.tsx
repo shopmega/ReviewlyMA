@@ -13,6 +13,7 @@ import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 
 type OfferRecord = {
   id: string;
@@ -270,11 +271,14 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
                 </Link>
               </Button>
             ) : (
-              <Button asChild className="rounded-xl">
-                <Link href={`/login?next=/parrainages/${offer.id}`}>
-                  {t('referrals.detail.goToLogin', 'Aller a la connexion')}
-                </Link>
-              </Button>
+              <SoftAuthTriggerButton
+                label={t('referrals.detail.goToLogin', 'Aller a la connexion')}
+                nextPath={`/parrainages/${offer.id}`}
+                intent="referral_apply"
+                className="rounded-xl"
+                title="Demandez un parrainage en quelques clics"
+                description="Connectez-vous pour envoyer votre demande, suivre les reponses et gerer vos candidatures."
+              />
             )}
             {canApply ? (
               <Button asChild variant="outline" className="rounded-xl">
@@ -333,9 +337,15 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
               <CardContent className="pt-6 text-sm text-muted-foreground">
                 {t('referrals.detail.loginPrompt', 'Connectez-vous pour demander un parrainage.')}
                 <div className="mt-3">
-                  <Link href={`/login?next=/parrainages/${offer.id}`} className="text-primary hover:underline">
-                    {t('referrals.detail.goToLogin', 'Aller a la connexion')}
-                  </Link>
+                  <SoftAuthTriggerButton
+                    label={t('referrals.detail.goToLogin', 'Aller a la connexion')}
+                    nextPath={`/parrainages/${offer.id}`}
+                    intent="referral_apply_sidebar"
+                    variant="link"
+                    className="h-auto p-0 text-primary"
+                    title="Demandez un parrainage en quelques clics"
+                    description="Connectez-vous pour envoyer votre demande, suivre les reponses et gerer vos candidatures."
+                  />
                 </div>
               </CardContent>
             </Card>

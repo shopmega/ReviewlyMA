@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { SoftAuthDialog } from '@/components/auth/SoftAuthDialog';
 
 type VoteButtonsProps = {
   reviewId: number;
@@ -20,7 +22,9 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
   });
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const { toast } = useToast();
+  const pathname = usePathname();
   const supabase = createClient();
 
   const refreshVoteCounts = async () => {
@@ -31,7 +35,7 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
       .single();
 
     if (!error && data) {
-      setVotes(prev => ({
+      setVotes((prev) => ({
         ...prev,
         likes: data.likes ?? 0,
         dislikes: data.dislikes ?? 0,
@@ -41,12 +45,13 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (user) {
         setUserId(user.id);
 
-        // Fetch user's existing vote safely
         const { data: voteData } = await supabase
           .from('review_votes')
           .select('vote_type')
@@ -54,24 +59,20 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
           .eq('user_id', user.id);
 
         if (voteData && voteData.length > 0) {
-          setVotes(prev => ({
+          setVotes((prev) => ({
             ...prev,
-            userVote: voteData[0].vote_type as 'like' | 'dislike'
+            userVote: voteData[0].vote_type as 'like' | 'dislike',
           }));
         }
       }
     };
 
     fetchUserData();
-  }, [reviewId]);
+  }, [reviewId, supabase]);
 
   const handleLike = async () => {
     if (!userId) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour voter sur un avis.",
-        variant: "destructive",
-      });
+      setIsAuthPromptOpen(true);
       return;
     }
 
@@ -79,7 +80,6 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
     setIsLoading(true);
 
     try {
-      // If user already liked, remove the like
       if (votes.userVote === 'like') {
         const { error } = await supabase
           .from('review_votes')
@@ -93,18 +93,20 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
             variant: 'destructive',
           });
         } else {
-          setVotes(prev => ({ ...prev, userVote: null }));
+          setVotes((prev) => ({ ...prev, userVote: null }));
           await refreshVoteCounts();
         }
       } else {
-        // Optimistic UI: If user previously disliked, remove the dislike and add like
         const { error } = await supabase
           .from('review_votes')
-          .upsert({
-            review_id: reviewId,
-            user_id: userId,
-            vote_type: 'like',
-          }, { onConflict: 'review_id,user_id' });
+          .upsert(
+            {
+              review_id: reviewId,
+              user_id: userId,
+              vote_type: 'like',
+            },
+            { onConflict: 'review_id,user_id' }
+          );
 
         if (error) {
           toast({
@@ -113,7 +115,7 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
             variant: 'destructive',
           });
         } else {
-          setVotes(prev => ({ ...prev, userVote: 'like' }));
+          setVotes((prev) => ({ ...prev, userVote: 'like' }));
           await refreshVoteCounts();
         }
       }
@@ -124,11 +126,7 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
 
   const handleDislike = async () => {
     if (!userId) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour voter sur un avis.",
-        variant: "destructive",
-      });
+      setIsAuthPromptOpen(true);
       return;
     }
 
@@ -136,7 +134,6 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
     setIsLoading(true);
 
     try {
-      // If user already disliked, remove the dislike
       if (votes.userVote === 'dislike') {
         const { error } = await supabase
           .from('review_votes')
@@ -150,18 +147,20 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
             variant: 'destructive',
           });
         } else {
-          setVotes(prev => ({ ...prev, userVote: null }));
+          setVotes((prev) => ({ ...prev, userVote: null }));
           await refreshVoteCounts();
         }
       } else {
-        // Optimistic UI: If user previously liked, remove the like and add dislike
         const { error } = await supabase
           .from('review_votes')
-          .upsert({
-            review_id: reviewId,
-            user_id: userId,
-            vote_type: 'dislike',
-          }, { onConflict: 'review_id,user_id' });
+          .upsert(
+            {
+              review_id: reviewId,
+              user_id: userId,
+              vote_type: 'dislike',
+            },
+            { onConflict: 'review_id,user_id' }
+          );
 
         if (error) {
           toast({
@@ -170,7 +169,7 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
             variant: 'destructive',
           });
         } else {
-          setVotes(prev => ({ ...prev, userVote: 'dislike' }));
+          setVotes((prev) => ({ ...prev, userVote: 'dislike' }));
           await refreshVoteCounts();
         }
       }
@@ -180,27 +179,37 @@ export function VoteButtons({ reviewId, initialLikes, initialDislikes }: VoteBut
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant={votes.userVote === 'like' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={handleLike}
-        disabled={isLoading}
-        className={`flex items-center gap-1 text-xs h-8 px-2.5 ${votes.userVote === 'like' ? 'text-primary bg-primary/10 hover:bg-primary/20' : ''}`}
-      >
-        <ThumbsUp className={`w-3.5 h-3.5 ${votes.userVote === 'like' ? 'fill-current' : ''}`} />
-        <span className="font-medium">{votes.likes}</span>
-      </Button>
-      <Button
-        variant={votes.userVote === 'dislike' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={handleDislike}
-        disabled={isLoading}
-        className={`flex items-center gap-1 text-xs h-8 px-2.5 ${votes.userVote === 'dislike' ? 'text-destructive bg-destructive/10 hover:bg-destructive/20' : ''}`}
-      >
-        <ThumbsDown className={`w-3.5 h-3.5 ${votes.userVote === 'dislike' ? 'fill-current' : ''}`} />
-        <span className="font-medium">{votes.dislikes}</span>
-      </Button>
-    </div>
+    <>
+      <div className="flex items-center gap-2">
+        <Button
+          variant={votes.userVote === 'like' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={handleLike}
+          disabled={isLoading}
+          className={`flex items-center gap-1 text-xs h-8 px-2.5 ${votes.userVote === 'like' ? 'text-primary bg-primary/10 hover:bg-primary/20' : ''}`}
+        >
+          <ThumbsUp className={`w-3.5 h-3.5 ${votes.userVote === 'like' ? 'fill-current' : ''}`} />
+          <span className="font-medium">{votes.likes}</span>
+        </Button>
+        <Button
+          variant={votes.userVote === 'dislike' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={handleDislike}
+          disabled={isLoading}
+          className={`flex items-center gap-1 text-xs h-8 px-2.5 ${votes.userVote === 'dislike' ? 'text-destructive bg-destructive/10 hover:bg-destructive/20' : ''}`}
+        >
+          <ThumbsDown className={`w-3.5 h-3.5 ${votes.userVote === 'dislike' ? 'fill-current' : ''}`} />
+          <span className="font-medium">{votes.dislikes}</span>
+        </Button>
+      </div>
+      <SoftAuthDialog
+        open={isAuthPromptOpen}
+        onOpenChange={setIsAuthPromptOpen}
+        nextPath={pathname || '/businesses'}
+        intent="review_vote"
+        title="Votez et influencez la transparence"
+        description="Connectez-vous pour voter sur les avis et personnaliser vos recommandations."
+      />
+    </>
   );
 }

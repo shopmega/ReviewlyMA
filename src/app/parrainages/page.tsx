@@ -8,6 +8,7 @@ import { AlertTriangle, ArrowRight, Clock3, MapPin, ShieldCheck, TrendingUp, Use
 import { getServerTranslator } from '@/lib/i18n/server';
 import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 
 type ReferralOffer = {
   id: string;
@@ -230,9 +231,20 @@ export default async function ParrainagesPage({
             <Button asChild variant="outline" className="rounded-xl">
               <Link href="/parrainages/demandes">Demand board</Link>
             </Button>
-            <Button asChild className="rounded-xl">
-              <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
-            </Button>
+            {currentUserId ? (
+              <Button asChild className="rounded-xl">
+                <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
+              </Button>
+            ) : (
+              <SoftAuthTriggerButton
+                label={t('referrals.list.publish', 'Publier une offre')}
+                nextPath="/parrainages/new"
+                intent="referral_publish"
+                className="rounded-xl"
+                title="Publiez une offre de parrainage"
+                description="Connectez-vous pour publier une offre et gerer les demandes en toute securite."
+              />
+            )}
           </div>
         </div>
       </section>
