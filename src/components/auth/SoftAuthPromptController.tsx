@@ -5,11 +5,10 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { SoftAuthDialog } from '@/components/auth/SoftAuthDialog';
 
-const NAV_COUNTER_KEY = 'soft_auth_nav_counter_v1';
 const SESSION_SHOWN_KEY = 'soft_auth_shown_session_v1';
 const DISMISS_UNTIL_KEY = 'soft_auth_dismiss_until_v1';
 const DISMISS_COOLDOWN_MS = 24 * 60 * 60 * 1000;
-const NAV_THRESHOLD = 2;
+const SCROLL_TRIGGER_RATIO = 0.35;
 
 function isTargetPath(pathname: string): boolean {
   if (/^\/businesses\/[^/]+(?:\/reviews)?$/i.test(pathname)) return true;
@@ -59,6 +58,13 @@ export function SoftAuthPromptController() {
   }, [supabase]);
 
   useEffect(() => {
+    // Always close prompt on auth pages or once user is authenticated.
+    if (authStatus === 'authenticated' || (pathname && isExcludedPath(pathname))) {
+      setOpen(false);
+    }
+  }, [pathname, authStatus]);
+
+  useEffect(() => {
     if (!pathname) return;
     if (authStatus !== 'unauthenticated') return;
     if (isExcludedPath(pathname)) return;
@@ -68,16 +74,30 @@ export function SoftAuthPromptController() {
     if (dismissedUntil > Date.now()) return;
 
     if (sessionStorage.getItem(SESSION_SHOWN_KEY) === '1') return;
+    if (open) return;
 
-    const nextCount = Number(localStorage.getItem(NAV_COUNTER_KEY) || '0') + 1;
-    localStorage.setItem(NAV_COUNTER_KEY, String(nextCount));
+    const tryTriggerByScroll = () => {
+      const documentEl = document.documentElement;
+      const scrollTop = window.scrollY || documentEl.scrollTop || 0;
+      const scrollable = Math.max(documentEl.scrollHeight - window.innerHeight, 0);
+      if (scrollable <= 0) return;
 
-    if (nextCount >= NAV_THRESHOLD) {
-      setOpen(true);
-      sessionStorage.setItem(SESSION_SHOWN_KEY, '1');
-      localStorage.setItem(NAV_COUNTER_KEY, '0');
-    }
-  }, [pathname, authStatus]);
+      const ratio = scrollTop / scrollable;
+      if (ratio >= SCROLL_TRIGGER_RATIO) {
+        setOpen(true);
+        sessionStorage.setItem(SESSION_SHOWN_KEY, '1');
+      }
+    };
+
+    tryTriggerByScroll();
+    window.addEventListener('scroll', tryTriggerByScroll, { passive: true });
+    window.addEventListener('resize', tryTriggerByScroll);
+
+    return () => {
+      window.removeEventListener('scroll', tryTriggerByScroll);
+      window.removeEventListener('resize', tryTriggerByScroll);
+    };
+  }, [pathname, authStatus, open]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (open && !nextOpen) {
@@ -93,10 +113,9 @@ export function SoftAuthPromptController() {
       open={open}
       onOpenChange={handleOpenChange}
       nextPath={pathname}
-      intent="nav_soft_prompt"
+      intent="scroll_soft_prompt"
       title="Profitez de plus de fonctionnalites avec un compte gratuit"
       description="Connectez-vous pour voter, suivre les entreprises, publier un salaire ou demander un parrainage."
     />
   );
 }
-
