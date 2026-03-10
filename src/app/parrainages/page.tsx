@@ -323,6 +323,9 @@ export default async function ParrainagesPage({
             {currentUserId ? (
               <>
                 <Button asChild variant="outline" className="rounded-xl">
+                  <Link href="/parrainages/inbox">Inbox</Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-xl">
                   <Link href="/parrainages/mes-offres">{t('referrals.list.myOffers', 'Mes offres')}</Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-xl">
