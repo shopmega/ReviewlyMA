@@ -74,9 +74,9 @@
     },
     "hero": {
       "badge": "Immediate value for your career decisions",
-      "titleLine1": "اكتشف وقارن الشركات في المغرب",
-      "titleLine2": "آراء حقيقية، رواتب، وأدلة المدن/الرواتب.",
-      "subtitle": "اعثر على معلومات موثوقة عن الشركات حتى قبل مقابلاتك.",
+      "titleLine1": "افهم الشركة",
+      "titleLine2": "قبل الانضمام إليها.",
+      "subtitle": "آراء، رواتب وسمعة الشركات المغربية.",
       "searchPlaceholder": "Company, role, or keyword...",
       "searchCta": "Search a company",
       "writeReview": "Write a review",
