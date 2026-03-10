@@ -313,3 +313,19 @@ export async function getTopSalarySectorCityPairs(
   }
   return data as SalaryCitySectorMetrics[];
 }
+export async function getCareerPathMetrics(
+  jobTitle: string
+): Promise<any[]> {
+  const supabase = await getSalaryAnalyticsClient();
+  const { data, error } = await supabase
+    .from('salary_career_path_metrics_mv')
+    .select('*')
+    .eq('job_title', jobTitle)
+    .order('avg_years_experience', { ascending: true });
+
+  if (error || !data) {
+    if (error) logSalaryAnalyticsError('getCareerPathMetrics', error);
+    return [];
+  }
+  return data;
+}

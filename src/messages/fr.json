@@ -363,7 +363,24 @@
       "qualitySignal": "Signal qualite",
       "rangeNote": "Entre minimum et maximum publies.",
       "rangeSignal": "Amplitude observee",
-      "visualOverview": "Apercu visuel des salaires"
+      "visualOverview": "Apercu visuel des salaires",
+      "careerMatrix": {
+        "title": "Progression de carriere",
+        "description": "Evolution du salaire median par niveau d'experience pour {job}.",
+        "note": "Cette matrice est basee sur l'ensemble des données nationales publiees pour ce poste. Les ecarts peuvent varier selon la ville et le secteur."
+      },
+      "common": {
+        "yearsAvg": "ans moy.",
+        "samples": "points"
+      },
+      "levels": {
+        "junior": "Junior",
+        "confirme": "Confirme",
+        "senior": "Senior",
+        "expert": "Expert",
+        "manager": "Manager",
+        "lead": "Lead"
+      }
     },
     "sidebar": {
       "visitWebsite": "Visiter le site web",

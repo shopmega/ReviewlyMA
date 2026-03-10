@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-policy';
 import { getSalaryAlertSubscriptionStatus } from '@/app/actions/salary-alerts';
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
+import { CareerPathMatrix } from '@/components/salaries/CareerPathMatrix';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { getServerTranslator } from '@/lib/i18n/server';
 
@@ -154,6 +155,8 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
           </CardContent>
         </Card>
       </section>
+
+      <CareerPathMatrix jobTitle={metric.job_title} />
 
       {isUnlocked && hasEnoughData ? (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
