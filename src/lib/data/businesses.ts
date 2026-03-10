@@ -415,6 +415,7 @@ export const getBusinessesForSitemap = async (): Promise<Array<{ id: string; cre
     const { data, error } = await supabase
         .from('businesses')
         .select('id, created_at')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
     if (error || !data) {

@@ -145,7 +145,7 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
   const siteUrl = getServerSiteUrl();
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "Organization",
     "name": displayedBusiness.name,
     "description": displayedBusiness.description,
     "image": displayedBusiness.logo?.imageUrl,
@@ -155,9 +155,17 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
       "@type": "PostalAddress",
       "addressLocality": displayedBusiness.city,
       "addressRegion": displayedBusiness.quartier,
-      "streetAddress": displayedBusiness.location,
+      "streetAddress": displayedBusiness.address || displayedBusiness.location,
       "addressCountry": "MA"
     },
+    ...(displayedBusiness.hours && displayedBusiness.hours.length > 0 && {
+      "openingHoursSpecification": displayedBusiness.hours.map(h => ({
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": h.day,
+        "opens": h.open,
+        "closes": h.close
+      }))
+    }),
     "aggregateRating": displayedBusiness.overallRating > 0 ? {
       "@type": "AggregateRating",
       "ratingValue": displayedBusiness.overallRating,

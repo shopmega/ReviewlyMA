@@ -23,8 +23,8 @@ type AdvertisingTab = 'manage' | 'create' | 'analytics' | 'competitor';
 
 const AD_PLACEMENTS = [
   { value: 'home_top_banner', key: 'homeTopBanner', fallback: 'Home top banner' },
-  { value: 'directory_top_banner', key: 'directoryTopBanner', fallback: 'Directory top banner' },
-  { value: 'directory_inline', key: 'directoryInline', fallback: 'Directory inline' },
+  { value: 'listing_top', key: 'listingTop', fallback: 'Listing top banner' },
+  { value: 'listing_inline', key: 'listingInline', fallback: 'Listing inline' },
   { value: 'business_profile_inline', key: 'businessProfileInline', fallback: 'Business profile inline' },
   { value: 'business_profile_sidebar', key: 'businessProfileSidebar', fallback: 'Business profile sidebar' },
   { value: 'referrals_top_banner', key: 'referralsTopBanner', fallback: 'Referrals top banner' },

@@ -90,7 +90,7 @@ export default async function CombinedPage({ params, searchParams }: CombinedPag
             </div>
 
             <div className="mb-8">
-                <InternalAdsSlot placement="directory_top_banner" />
+                <InternalAdsSlot placement="listing_top" />
             </div>
 
             <Suspense fallback={<div className="flex justify-center py-20">Chargement des résultats...</div>}>
@@ -105,7 +105,7 @@ export default async function CombinedPage({ params, searchParams }: CombinedPag
                 />
             </Suspense>
             <div className="mt-10">
-                <InternalAdsSlot placement="directory_inline" />
+                <InternalAdsSlot placement="listing_inline" />
             </div>
 
             {result.totalCount === 0 && (

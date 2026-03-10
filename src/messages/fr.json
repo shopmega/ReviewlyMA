@@ -15,13 +15,13 @@
     "logout": "Deconnexion",
     "profile": "Mon profil",
     "admin": "Administration",
-    "suggestPlace": "Suggérer un lieu",
+    "suggestPlace": "Referencer une entreprise",
     "navigation": "Navigation",
     "more": "Plus",
     "mobileMenuTitle": "Menu de navigation",
     "mobileMenuDesc": "Accedez aux differentes sections du site depuis ce menu mobile.",
     "mobileTagline": "Guide & Avis Entreprises",
-    "mobileGuestHint": "Explorez les meilleures adresses du Maroc."
+    "mobileGuestHint": "Explorez les meilleurs employeurs du Maroc."
   },
   "common": {
     "ok": "OK",
@@ -53,7 +53,7 @@
       "premium": "Abonnement premium",
       "charter": "Charte de confiance",
       "support": "Support",
-      "suggest": "Suggérer un etablissement",
+      "suggest": "Referencer une entreprise",
       "techCasa": "Tech & IT a Casablanca",
       "financeRabat": "Finance a Rabat",
       "recruiters": "Espace recruteurs"
@@ -102,7 +102,7 @@
       "over15k": "15 000+ MAD"
     },
     "stats": {
-      "businesses": "Etablissements",
+      "businesses": "Entreprises",
       "reviews": "Avis employes"
     },
     "recent": {
@@ -116,7 +116,7 @@
       "subtitle": "Trouvez rapidement les meilleures societes par secteur."
     },
     "citySection": {
-      "subtitle": "Decouvrez les adresses les mieux notees dans les plus grandes villes du pays.",
+      "subtitle": "Decouvrez les societes les mieux notees dans les plus grandes villes du pays.",
       "exploreCity": "Explorer {city}"
     },
     "guides": {
@@ -179,16 +179,16 @@
     },
     "trust": {
       "active": "Active",
-      "businesses": "Etablissements actifs",
+      "businesses": "Societes actives",
       "moderated": "Moderation",
       "reviews": "Avis publies"
     }
   },
   "listingPage": {
-    "featuredTitle": "Etablissements a la une",
-    "allTitle": "Tous les etablissements",
+    "featuredTitle": "Entreprises a la une",
+    "allTitle": "Toutes les entreprises",
     "featuredSubtitle": "Decouvrez notre selection d'entreprises premium et recommandees.",
-    "allSubtitle": "Parcourez et filtrez des milliers d'etablissements pour trouver celui qui vous convient."
+    "allSubtitle": "Parcourez et filtrez des milliers de societes pour trouver celle qui vous convient."
   },
   "listing": {
     "ratingLabel": "Note: {rating}+ ★",
@@ -208,7 +208,7 @@
     "allCities": "Toutes les villes",
     "minRating": "Note minimale",
     "benefits": "Avantages",
-    "seeCount": "Voir {count} etablissement(s)",
+    "seeCount": "Voir {count} entreprise(s)",
     "results": "RESULTATS",
     "resultsPlural": "resultats",
     "resultsSingular": "resultat",
@@ -219,7 +219,7 @@
     "sortReviews": "Avis",
     "previous": "Precedent",
     "next": "Suivant",
-    "emptyTitle": "Aucun etablissement trouve",
+    "emptyTitle": "Aucune entreprise trouvee",
     "emptyDesc": "Nous n'avons pas trouve de resultats pour vos criteres actuels. Essayez d'ajuster vos filtres ou de reinitialiser votre recherche.",
     "resetFilters": "Reinitialiser les filtres",
     "clear": "Effacer"
@@ -391,7 +391,7 @@
       "hoursUnknown": "Horaires non renseignes",
       "reputation": "Reputation & avis",
       "verifiedReviews": "AVIS VERIFIES",
-      "noReviewsYet": "Pas encore d'avis pour cet etablissement.",
+      "noReviewsYet": "Pas encore d'avis pour cette entreprise.",
       "claimPending": "Demande en cours",
       "claimedAlready": "Deja revendique",
       "isYourBusiness": "C'est votre entreprise ?",
@@ -435,7 +435,7 @@
       "badge": "Guide geographique",
       "title1": "Explorez le Maroc",
       "title2": "Ville par Ville",
-      "subtitle": "Retrouvez les adresses les mieux notees et les avis de la communaute pour chaque quartier."
+      "subtitle": "Retrouvez les societes les mieux notees et les avis de la communaute pour chaque quartier."
     },
     "popularTitle": "Villes populaires",
     "topNational": "Top national",
@@ -444,7 +444,7 @@
     "cta": {
       "title": "Vous ne trouvez pas votre ville ?",
       "subtitle": "Aidez-nous a grandir en suggerant de nouveaux etablissements dans votre region.",
-      "suggest": "Suggerer un lieu",
+      "suggest": "Référencer une entreprise",
       "contact": "Nous contacter"
     }
   },
@@ -564,7 +564,7 @@
   "businessReport": {
     "reasonRequired": "Veuillez selectionner une raison.",
     "sentTitle": "Signalement envoye",
-    "trigger": "Signaler ce lieu",
+    "trigger": "Signaler cette entreprise",
     "title": "Signaler {businessName}",
     "description": "Un probleme avec cette entreprise ? Dites-le nous pour que nous puissions verifier.",
     "problemLabel": "Quel est le probleme ?",
@@ -1166,7 +1166,7 @@
       "count": "Affichage de {visible} favoris sur {total}.",
       "viewAll": "Voir tous mes favoris",
       "emptyTitle": "Vos favoris sont vides",
-      "emptyDescription": "Gardez une trace des lieux que vous adorez ou que vous projetez de visiter au Maroc.",
+      "emptyDescription": "Gardez une trace des entreprises que vous adorez ou que vous projetez de visiter au Maroc.",
       "emptyCta": "Explorer les adresses",
       "loadMore": "Charger plus de favoris"
     },
@@ -1555,7 +1555,7 @@
       "bulkUpdateSuccess": "Mise a jour reussie",
       "bulkActionError": "Une erreur est survenue lors de action groupee",
       "requiredFields": "Veuillez remplir tous les champs obligatoires.",
-      "createSuccess": "Etablissement ajoute avec succes."
+      "createSuccess": "Entreprise ajoutée avec succès."
     },
     "badge": "Annuaire & CRM",
     "filter": {
@@ -2931,8 +2931,8 @@
     },
     "placements": {
       "homeTopBanner": "Banniere haute accueil",
-      "directoryTopBanner": "Banniere haute annuaire",
-      "directoryInline": "Inline annuaire",
+      "listingTop": "Bannière haute liste",
+      "listingInline": "Liste inline",
       "businessProfileInline": "Inline fiche entreprise",
       "businessProfileSidebar": "Sidebar fiche entreprise",
       "referralsTopBanner": "Banniere haute referrals",

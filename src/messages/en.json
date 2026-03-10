@@ -15,13 +15,13 @@
     "logout": "Log out",
     "profile": "My profile",
     "admin": "Admin",
-    "suggestPlace": "Suggest a place",
+    "suggestPlace": "Reference a company",
     "navigation": "Navigation",
     "more": "More",
     "mobileMenuTitle": "Navigation menu",
     "mobileMenuDesc": "Access the different site sections from this mobile menu.",
     "mobileTagline": "Company Guide & Reviews",
-    "mobileGuestHint": "Explore the best places in Morocco."
+    "mobileGuestHint": "Explore the best employers in Morocco."
   },
   "common": {
     "ok": "OK",
@@ -53,7 +53,7 @@
       "premium": "Premium subscription",
       "charter": "Trust charter",
       "support": "Support",
-      "suggest": "Suggest a business",
+      "suggest": "Reference a company",
       "techCasa": "Tech & IT in Casablanca",
       "financeRabat": "Finance in Rabat",
       "recruiters": "Recruiter area"
@@ -102,7 +102,7 @@
       "over15k": "15,000+ MAD"
     },
     "stats": {
-      "businesses": "Businesses",
+      "businesses": "Companies",
       "reviews": "Employee reviews"
     },
     "recent": {
@@ -116,7 +116,7 @@
       "subtitle": "Quickly find the best companies by sector."
     },
     "citySection": {
-      "subtitle": "Discover top-rated places in the country's biggest cities.",
+      "subtitle": "Discover top-rated companies in the country's biggest cities.",
       "exploreCity": "Explore {city}"
     },
     "guides": {
@@ -175,20 +175,20 @@
       "learnMore": "See pro offers",
       "start": "Start claim process",
       "subtitle": "Claiming your profile builds trust, lets you reply to reviews, and share official updates.",
-      "title": "Do you represent a business?"
+      "title": "Do you represent a company?"
     },
     "trust": {
       "active": "Active",
-      "businesses": "Active businesses",
+      "businesses": "Active companies",
       "moderated": "Moderation",
       "reviews": "Published reviews"
     }
   },
   "listingPage": {
-    "featuredTitle": "Featured businesses",
-    "allTitle": "All businesses",
+    "featuredTitle": "Featured companies",
+    "allTitle": "All companies",
     "featuredSubtitle": "Discover our premium and recommended company selection.",
-    "allSubtitle": "Browse and filter thousands of businesses to find the right one."
+    "allSubtitle": "Browse and filter thousands of companies to find the right one."
   },
   "listing": {
     "ratingLabel": "Rating: {rating}+ ★",
@@ -208,7 +208,7 @@
     "allCities": "All cities",
     "minRating": "Minimum rating",
     "benefits": "Benefits",
-    "seeCount": "See {count} business(es)",
+    "seeCount": "See {count} company(ies)",
     "results": "RESULTS",
     "resultsPlural": "results",
     "resultsSingular": "result",
@@ -219,7 +219,7 @@
     "sortReviews": "Reviews",
     "previous": "Previous",
     "next": "Next",
-    "emptyTitle": "No business found",
+    "emptyTitle": "No company found",
     "emptyDesc": "No results match your current filters. Try adjusting or resetting your search.",
     "resetFilters": "Reset filters",
     "clear": "Clear"
@@ -363,7 +363,24 @@
       "qualitySignal": "Quality signal",
       "rangeNote": "Between published minimum and maximum.",
       "rangeSignal": "Observed range",
-      "visualOverview": "Salary visual overview"
+      "visualOverview": "Salary visual overview",
+      "careerMatrix": {
+        "title": "Career Progression",
+        "description": "Median salary evolution by experience level for {job}.",
+        "note": "This matrix is based on all national data published for this position. Differences may vary by city and sector."
+      },
+      "common": {
+        "yearsAvg": "yrs avg.",
+        "samples": "points"
+      },
+      "levels": {
+        "junior": "Junior",
+        "confirme": "Confirmed",
+        "senior": "Senior",
+        "expert": "Expert",
+        "manager": "Manager",
+        "lead": "Lead"
+      }
     },
     "sidebar": {
       "visitWebsite": "Visit website",
@@ -374,7 +391,7 @@
       "hoursUnknown": "Hours not provided",
       "reputation": "Reputation & reviews",
       "verifiedReviews": "VERIFIED REVIEWS",
-      "noReviewsYet": "No reviews yet for this business.",
+      "noReviewsYet": "No reviews yet for this company.",
       "claimPending": "Request pending",
       "claimedAlready": "Already claimed",
       "isYourBusiness": "Is this your business?",
@@ -418,7 +435,7 @@
       "badge": "Geographic guide",
       "title1": "Explore Morocco",
       "title2": "City by City",
-      "subtitle": "Find top-rated places and community reviews for each district."
+      "subtitle": "Find top-rated companies and community reviews for each district."
     },
     "popularTitle": "Popular cities",
     "topNational": "National top",
@@ -427,7 +444,7 @@
     "cta": {
       "title": "Can't find your city?",
       "subtitle": "Help us grow by suggesting new businesses in your region.",
-      "suggest": "Suggest a place",
+      "suggest": "Reference a company",
       "contact": "Contact us"
     }
   },
@@ -1540,7 +1557,7 @@
       "requiredFields": "Please fill in all required fields.",
       "createSuccess": "Business added successfully."
     },
-    "badge": "Directory & CRM",
+    "badge": "Company Listing & CRM",
     "filter": {
       "allCities": "All cities",
       "allStatuses": "All statuses",
@@ -2914,8 +2931,8 @@
     },
     "placements": {
       "homeTopBanner": "Home top banner",
-      "directoryTopBanner": "Directory top banner",
-      "directoryInline": "Directory inline",
+      "listingTop": "Listing top banner",
+      "listingInline": "Listing inline",
       "businessProfileInline": "Business profile inline",
       "businessProfileSidebar": "Business profile sidebar",
       "referralsTopBanner": "Referrals top banner",

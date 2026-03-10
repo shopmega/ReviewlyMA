@@ -102,7 +102,7 @@ export default async function BusinessesPage({
         </p>
       </div>
       <div className="mb-8">
-        <InternalAdsSlot placement="directory_top_banner" />
+        <InternalAdsSlot placement="listing_top" />
       </div>
       <Suspense fallback={<div>{t('common.loading', 'Chargement...')}</div>}>
         <BusinessList
@@ -116,7 +116,7 @@ export default async function BusinessesPage({
         />
       </Suspense>
       <div className="mt-10">
-        <InternalAdsSlot placement="directory_inline" />
+        <InternalAdsSlot placement="listing_inline" />
       </div>
     </div>
   );

@@ -3,8 +3,8 @@ import type { Ad } from '@/lib/types';
 
 export type AdPlacement =
   | 'home_top_banner'
-  | 'directory_top_banner'
-  | 'directory_inline'
+  | 'listing_top'
+  | 'listing_inline'
   | 'business_profile_inline'
   | 'business_profile_sidebar'
   | 'referrals_top_banner'
