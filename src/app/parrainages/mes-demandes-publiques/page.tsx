@@ -66,7 +66,7 @@ export default async function MyPublicDemandListingsPage() {
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link href="/parrainages/demandes">{t('referralMyPublicDemandsPage.actions.viewBoard', 'View board')}</Link>
+            <Link href="/parrainages?kind=demands">{t('referralMyPublicDemandsPage.actions.viewBoard', 'View board')}</Link>
           </Button>
           <Button asChild>
             <Link href="/parrainages/demandes/new">{t('referralMyPublicDemandsPage.actions.publish', 'Publish request')}</Link>

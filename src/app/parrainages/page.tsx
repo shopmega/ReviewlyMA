@@ -28,7 +28,25 @@ type ReferralOffer = {
   response_hours_avg: number | null;
 };
 
+type DemandListing = {
+  id: string;
+  title: string;
+  target_role: string;
+  city: string | null;
+  contract_type: string | null;
+  work_mode: string | null;
+  seniority: string | null;
+  summary: string;
+  created_at: string;
+};
+
 type SearchParams = { [key: string]: string | string[] | undefined };
+
+type MarketKind = 'all' | 'offers' | 'demands';
+
+type MarketItem =
+  | { itemType: 'offer'; created_at: string; data: ReferralOffer }
+  | { itemType: 'demand'; created_at: string; data: DemandListing };
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Parrainages emploi au Maroc | Reviewly MA',
     description:
-      'Parcourez des offres de parrainage interne au Maroc. Filtres, signaux de confiance et demandes securisees sur Reviewly MA.',
+      'Marketplace unifiee offres + demandes de parrainage au Maroc. Filtres, signaux de confiance et echanges securises sur Reviewly MA.',
     alternates: {
       canonical: '/parrainages',
     },
@@ -100,6 +118,11 @@ const getParam = (params: SearchParams, key: string) => {
   return value.trim();
 };
 
+const normalizeKind = (value: string): MarketKind => {
+  if (value === 'offers' || value === 'demands') return value;
+  return 'all';
+};
+
 const getTrustLabel = (offer: ReferralOffer) => {
   if (offer.identity_level === 'verified_employee' || offer.verification_status === 'verified') return 'Employe verifie';
   if (offer.identity_level === 'public') return 'Identite publique';
@@ -121,6 +144,35 @@ const getSortLabel = (sort: string) => {
   }
 };
 
+const buildMarketHref = ({
+  kind,
+  search,
+  city,
+  contract,
+  mode,
+  seniority,
+  sort,
+}: {
+  kind: MarketKind;
+  search: string;
+  city: string;
+  contract: string;
+  mode: string;
+  seniority: string;
+  sort: string;
+}) => {
+  const query = new URLSearchParams();
+  if (search) query.set('search', search);
+  if (city) query.set('city', city);
+  if (contract) query.set('contract', contract);
+  if (mode) query.set('mode', mode);
+  if (seniority) query.set('seniority', seniority);
+  if (sort && sort !== 'newest') query.set('sort', sort);
+  if (kind !== 'all') query.set('kind', kind);
+  const qs = query.toString();
+  return qs ? `/parrainages?${qs}` : '/parrainages';
+};
+
 export default async function ParrainagesPage({
   searchParams,
 }: {
@@ -138,66 +190,119 @@ export default async function ParrainagesPage({
   const mode = getParam(params, 'mode');
   const seniority = getParam(params, 'seniority');
   const sort = getParam(params, 'sort') || 'newest';
+  const kind = normalizeKind(getParam(params, 'kind'));
 
-  let query = supabase
-    .from('job_referral_offers')
-    .select(
-      'id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at, identity_level, verification_status, trust_score, response_rate, response_hours_avg',
-      { count: 'exact' }
-    )
-    .eq('status', 'active');
+  const showOffers = kind !== 'demands';
+  const showDemands = kind !== 'offers';
 
-  if (search) {
-    const cleaned = search.replace(/[%_]/g, '');
-    query = query.or(`company_name.ilike.%${cleaned}%,job_title.ilike.%${cleaned}%`);
-  }
-  if (city) query = query.ilike('city', city);
-  if (contract) query = query.eq('contract_type', contract);
-  if (mode) query = query.eq('work_mode', mode);
-  if (seniority) query = query.eq('seniority', seniority);
+  let offers: ReferralOffer[] = [];
+  let demands: DemandListing[] = [];
+  let offersCount = 0;
+  let demandsCount = 0;
+  const loadErrors: string[] = [];
 
-  switch (sort) {
-    case 'expiring':
-      query = query.order('expires_at', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
-      break;
-    case 'spots':
-      query = query.order('slots', { ascending: false }).order('created_at', { ascending: false });
-      break;
-    case 'responsive':
-      query = query.order('response_hours_avg', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
-      break;
-    case 'trust':
-      query = query.order('trust_score', { ascending: false }).order('response_rate', { ascending: false });
-      break;
-    default:
-      query = query.order('created_at', { ascending: false });
-      break;
-  }
-
-  let { data: offers, error, count } = await query.limit(60);
-
-  // Backward-compatible fallback if newer trust fields are not migrated yet.
-  if (error && (error.message.includes('identity_level') || error.message.includes('verification_status'))) {
-    const fallback = await supabase
+  if (showOffers) {
+    let offerQuery = supabase
       .from('job_referral_offers')
-      .select('id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at', { count: 'exact' })
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(60);
+      .select(
+        'id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at, identity_level, verification_status, trust_score, response_rate, response_hours_avg',
+        { count: 'exact' }
+      )
+      .eq('status', 'active');
 
-    offers = (fallback.data || []).map((row: any) => ({
-      ...row,
-      identity_level: 'anonymous',
-      verification_status: 'unverified',
-      trust_score: null,
-      response_rate: null,
-      response_hours_avg: null,
-    }));
-    count = fallback.count;
-    error = fallback.error;
+    if (search) {
+      const cleaned = search.replace(/[%_]/g, '');
+      offerQuery = offerQuery.or(`company_name.ilike.%${cleaned}%,job_title.ilike.%${cleaned}%`);
+    }
+    if (city) offerQuery = offerQuery.ilike('city', city);
+    if (contract) offerQuery = offerQuery.eq('contract_type', contract);
+    if (mode) offerQuery = offerQuery.eq('work_mode', mode);
+    if (seniority) offerQuery = offerQuery.eq('seniority', seniority);
+
+    switch (sort) {
+      case 'expiring':
+        offerQuery = offerQuery.order('expires_at', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
+        break;
+      case 'spots':
+        offerQuery = offerQuery.order('slots', { ascending: false }).order('created_at', { ascending: false });
+        break;
+      case 'responsive':
+        offerQuery = offerQuery.order('response_hours_avg', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
+        break;
+      case 'trust':
+        offerQuery = offerQuery.order('trust_score', { ascending: false }).order('response_rate', { ascending: false });
+        break;
+      default:
+        offerQuery = offerQuery.order('created_at', { ascending: false });
+        break;
+    }
+
+    let { data: offerRows, error: offerError, count } = await offerQuery.limit(60);
+
+    if (offerError && (offerError.message.includes('identity_level') || offerError.message.includes('verification_status'))) {
+      const fallback = await supabase
+        .from('job_referral_offers')
+        .select('id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at', { count: 'exact' })
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(60);
+
+      offerRows = (fallback.data || []).map((row: any) => ({
+        ...row,
+        identity_level: 'anonymous',
+        verification_status: 'unverified',
+        trust_score: null,
+        response_rate: null,
+        response_hours_avg: null,
+      }));
+      count = fallback.count;
+      offerError = fallback.error;
+    }
+
+    if (offerError) {
+      loadErrors.push('Impossible de charger les offres pour le moment.');
+    } else {
+      offers = (offerRows || []) as ReferralOffer[];
+      offersCount = count || 0;
+    }
   }
 
-  const items = (offers || []) as ReferralOffer[];
+  if (showDemands) {
+    let demandQuery = supabase
+      .from('job_referral_demand_listings')
+      .select('id, title, target_role, city, contract_type, work_mode, seniority, summary, created_at', { count: 'exact' })
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (search) {
+      const cleaned = search.replace(/[%_]/g, '');
+      demandQuery = demandQuery.or(`title.ilike.%${cleaned}%,target_role.ilike.%${cleaned}%,summary.ilike.%${cleaned}%`);
+    }
+    if (city) demandQuery = demandQuery.ilike('city', city);
+    if (contract) demandQuery = demandQuery.eq('contract_type', contract);
+    if (mode) demandQuery = demandQuery.eq('work_mode', mode);
+    if (seniority) demandQuery = demandQuery.eq('seniority', seniority);
+
+    const { data: demandRows, error: demandError, count } = await demandQuery.limit(60);
+
+    if (demandError) {
+      loadErrors.push('Impossible de charger les demandes publiques pour le moment.');
+    } else {
+      demands = (demandRows || []) as DemandListing[];
+      demandsCount = count || 0;
+    }
+  }
+
+  const marketItems: MarketItem[] = [
+    ...offers.map((item) => ({ itemType: 'offer' as const, created_at: item.created_at, data: item })),
+    ...demands.map((item) => ({ itemType: 'demand' as const, created_at: item.created_at, data: item })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const totalCount = (showOffers ? offersCount : 0) + (showDemands ? demandsCount : 0);
+
+  const allHref = buildMarketHref({ kind: 'all', search, city, contract, mode, seniority, sort });
+  const offersHref = buildMarketHref({ kind: 'offers', search, city, contract, mode, seniority, sort });
+  const demandsHref = buildMarketHref({ kind: 'demands', search, city, contract, mode, seniority, sort });
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -207,7 +312,7 @@ export default async function ParrainagesPage({
             <Badge variant="outline" className="w-fit">{t('referrals.list.badge', 'Referral marketplace')}</Badge>
             <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('referrals.list.title', 'Parrainages emploi')}</h1>
             <p className="text-muted-foreground max-w-2xl">
-              {t('referrals.list.subtitle', 'Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.')}
+              Marketplace unifiee: offres internes des employes + demandes publiques de candidats.
             </p>
             <div className="inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
               <AlertTriangle className="h-4 w-4" />
@@ -228,9 +333,6 @@ export default async function ParrainagesPage({
                 </Button>
               </>
             ) : null}
-            <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/parrainages/demandes">Demand board</Link>
-            </Button>
             {currentUserId ? (
               <Button asChild className="rounded-xl">
                 <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
@@ -253,12 +355,25 @@ export default async function ParrainagesPage({
 
       <Card className="rounded-2xl border-border bg-card">
         <CardContent className="pt-6 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant={kind === 'all' ? 'default' : 'outline'} className="rounded-xl">
+              <Link href={allHref}>Tous ({totalCount || marketItems.length})</Link>
+            </Button>
+            <Button asChild variant={kind === 'offers' ? 'default' : 'outline'} className="rounded-xl">
+              <Link href={offersHref}>Offres ({offersCount})</Link>
+            </Button>
+            <Button asChild variant={kind === 'demands' ? 'default' : 'outline'} className="rounded-xl">
+              <Link href={demandsHref}>Demandes ({demandsCount})</Link>
+            </Button>
+          </div>
+
           <form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-6">
+            <input type="hidden" name="kind" value={kind} />
             <input
               type="text"
               name="search"
               defaultValue={search}
-              placeholder="Entreprise ou poste"
+              placeholder={kind === 'demands' ? 'Poste, mots-cles...' : 'Entreprise ou poste'}
               className="h-10 rounded-md border bg-background px-3 text-sm md:col-span-2"
             />
             <input
@@ -303,90 +418,146 @@ export default async function ParrainagesPage({
                 <Link href="/parrainages">Reinitialiser</Link>
               </Button>
               <span className="text-xs text-muted-foreground">
-                {count ?? items.length} resultat(s) • tri: {getSortLabel(sort)}
+                {totalCount || marketItems.length} resultat(s) - tri: {getSortLabel(sort)}
               </span>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      {error ? (
+      {loadErrors.length > 0 ? (
         <Card className="rounded-2xl">
-          <CardContent className="py-10 text-center text-muted-foreground">
-            Impossible de charger les offres pour le moment. Veuillez reessayer.
+          <CardContent className="py-4 text-sm text-amber-700 space-y-1">
+            {loadErrors.map((item) => (
+              <p key={item}>{item}</p>
+            ))}
           </CardContent>
         </Card>
-      ) : items.length === 0 ? (
+      ) : null}
+
+      {marketItems.length === 0 ? (
         <Card className="rounded-2xl">
           <CardContent className="py-12 text-center space-y-3">
-            <p className="text-muted-foreground">{t('referrals.list.empty', 'Aucune offre active pour le moment.')}</p>
+            <p className="text-muted-foreground">
+              {kind === 'demands'
+                ? 'Aucune demande active pour le moment.'
+                : kind === 'offers'
+                  ? t('referrals.list.empty', 'Aucune offre active pour le moment.')
+                  : 'Aucune offre ou demande active pour le moment.'}
+            </p>
             <div className="flex justify-center gap-2">
               <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/parrainages/new">Publier la premiere offre</Link>
+                <Link href="/parrainages/new">Publier une offre</Link>
               </Button>
               <Button asChild className="rounded-xl">
-                <Link href={currentUserId ? '/parrainages/mes-demandes' : '/signup'}>Creer une alerte</Link>
+                <Link href={currentUserId ? '/parrainages/demandes/new' : '/signup'}>Publier une demande</Link>
               </Button>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {items.map((offer) => {
-            const expiresAt = offer.expires_at ? new Date(offer.expires_at).toLocaleDateString(locale) : null;
-            const responseLabel = offer.response_hours_avg ? `Repond en ~${offer.response_hours_avg}h` : 'Reactivite en cours';
+          {marketItems.map((item) => {
+            if (item.itemType === 'offer') {
+              const offer = item.data;
+              const expiresAt = offer.expires_at ? new Date(offer.expires_at).toLocaleDateString(locale) : null;
+              const responseLabel = offer.response_hours_avg ? `Repond en ~${offer.response_hours_avg}h` : 'Reactivite en cours';
+
+              return (
+                <Card key={`offer-${offer.id}`} className="rounded-2xl border-border bg-card transition-colors hover:border-primary/30">
+                  <CardHeader className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <Badge variant="outline">
+                        <Link href={`/parrainages/entreprise/${slugify(offer.company_name)}`}>{offer.company_name}</Link>
+                      </Badge>
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {new Date(offer.created_at).toLocaleDateString(locale)}
+                      </span>
+                    </div>
+                    <CardTitle className="text-xl">{offer.job_title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <Badge variant="secondary">Offre</Badge>
+                      {offer.city ? (
+                        <Badge variant="secondary" className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <Link href={`/parrainages/ville/${slugify(offer.city)}`}>{offer.city}</Link>
+                        </Badge>
+                      ) : null}
+                      {formatContractType(offer.contract_type) ? <Badge variant="secondary">{formatContractType(offer.contract_type)}</Badge> : null}
+                      {formatWorkMode(offer.work_mode) ? <Badge variant="secondary">{formatWorkMode(offer.work_mode)}</Badge> : null}
+                      {formatSeniority(offer.seniority) ? <Badge variant="secondary">{formatSeniority(offer.seniority)}</Badge> : null}
+                    </div>
+
+                    <div className="space-y-2 text-xs text-muted-foreground">
+                      <p className="inline-flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {t('referrals.list.slots', 'Places disponibles')}: {offer.slots}
+                      </p>
+                      <p className="inline-flex items-center gap-1">
+                        <ShieldCheck className="h-4 w-4" />
+                        {getTrustLabel(offer)}{offer.trust_score != null ? ` - Score ${offer.trust_score}/100` : ''}
+                      </p>
+                      <p className="inline-flex items-center gap-1">
+                        <TrendingUp className="h-4 w-4" />
+                        {responseLabel}{offer.response_rate != null ? ` - ${Math.round(offer.response_rate)}% de reponses` : ''}
+                      </p>
+                      <p>{expiresAt ? `Expire le ${expiresAt}` : 'Expiration non precisee'}</p>
+                    </div>
+
+                    <Button asChild variant="outline" className="w-full rounded-md">
+                      <Link href={`/parrainages/${offer.id}`} className="inline-flex items-center justify-center gap-2">
+                        {t('referrals.list.viewOffer', "Voir l'offre")}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            const demand = item.data;
             return (
-              <Card key={offer.id} className="rounded-2xl border-border bg-card transition-colors hover:border-primary/30">
+              <Card key={`demand-${demand.id}`} className="rounded-2xl border-border bg-card transition-colors hover:border-primary/30">
                 <CardHeader className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <Badge variant="outline">
-                      <Link href={`/parrainages/entreprise/${slugify(offer.company_name)}`}>{offer.company_name}</Link>
-                    </Badge>
+                    <Badge variant="outline">Demande</Badge>
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock3 className="h-3.5 w-3.5" />
-                      {new Date(offer.created_at).toLocaleDateString(locale)}
+                      {new Date(demand.created_at).toLocaleDateString(locale)}
                     </span>
                   </div>
-                  <CardTitle className="text-xl">{offer.job_title}</CardTitle>
+                  <CardTitle className="text-xl">{demand.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-2 text-xs">
-                    {offer.city && (
+                    <Badge variant="secondary">{demand.target_role}</Badge>
+                    {demand.city ? (
                       <Badge variant="secondary" className="inline-flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
-                        <Link href={`/parrainages/ville/${slugify(offer.city)}`}>{offer.city}</Link>
+                        {demand.city}
                       </Badge>
-                    )}
-                    {formatContractType(offer.contract_type) && <Badge variant="secondary">{formatContractType(offer.contract_type)}</Badge>}
-                    {formatWorkMode(offer.work_mode) && <Badge variant="secondary">{formatWorkMode(offer.work_mode)}</Badge>}
-                    {formatSeniority(offer.seniority) && <Badge variant="secondary">{formatSeniority(offer.seniority)}</Badge>}
-                    <Badge variant="secondary">
-                      <Link href={`/parrainages/poste/${slugify(offer.job_title)}`}>Poste similaire</Link>
-                    </Badge>
+                    ) : null}
+                    {formatContractType(demand.contract_type) ? <Badge variant="secondary">{formatContractType(demand.contract_type)}</Badge> : null}
+                    {formatWorkMode(demand.work_mode) ? <Badge variant="secondary">{formatWorkMode(demand.work_mode)}</Badge> : null}
+                    {formatSeniority(demand.seniority) ? <Badge variant="secondary">{formatSeniority(demand.seniority)}</Badge> : null}
                   </div>
 
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p className="inline-flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      {t('referrals.list.slots', 'Places disponibles')}: {offer.slots}
-                    </p>
-                    <p className="inline-flex items-center gap-1">
-                      <ShieldCheck className="h-4 w-4" />
-                      {getTrustLabel(offer)}{offer.trust_score != null ? ` • Score ${offer.trust_score}/100` : ''}
-                    </p>
-                    <p className="inline-flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4" />
-                      {responseLabel}{offer.response_rate != null ? ` • ${Math.round(offer.response_rate)}% de reponses` : ''}
-                    </p>
-                    <p>{expiresAt ? `Expire le ${expiresAt}` : 'Expiration non precisee'}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-4">{demand.summary}</p>
 
-                  <Button asChild variant="outline" className="w-full rounded-md">
-                    <Link href={`/parrainages/${offer.id}`} className="inline-flex items-center justify-center gap-2">
-                      {t('referrals.list.viewOffer', "Voir l'offre")}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button asChild variant="outline" className="w-full rounded-md">
+                      <Link href={`/parrainages/demandes/${demand.id}`} className="inline-flex items-center justify-center gap-2">
+                        Voir la demande
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild className="w-full rounded-md">
+                      <Link href={`/parrainages/demandes/${demand.id}#respond-form`}>Proposer un parrainage</Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );

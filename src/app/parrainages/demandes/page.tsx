@@ -1,38 +1,15 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MapPin, Clock3, ArrowRight } from 'lucide-react';
-import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
-import { getServerTranslator } from '@/lib/i18n/server';
-
-type DemandListing = {
-  id: string;
-  title: string;
-  target_role: string;
-  city: string | null;
-  contract_type: string | null;
-  work_mode: string | null;
-  seniority: string | null;
-  summary: string;
-  created_at: string;
-};
+import { redirect } from 'next/navigation';
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getServerTranslator();
   return {
-    title: t('referralDemandBoardPage.metaTitle', 'Referral requests | Reviewly MA'),
-    description: t(
-      'referralDemandBoardPage.metaDescription',
-      'Browse public requests from candidates looking for a referral.'
-    ),
-    alternates: { canonical: '/parrainages/demandes' },
+    title: 'Demandes de parrainage | Reviewly MA',
+    description: 'Redirection vers le marketplace unifie des parrainages.',
+    alternates: { canonical: '/parrainages?kind=demands' },
   };
 }
 
@@ -42,182 +19,19 @@ const getParam = (params: SearchParams, key: string) => {
   return value.trim();
 };
 
-const formatContractType = (value: string | null) => {
-  switch (value) {
-    case 'cdi':
-      return 'CDI';
-    case 'cdd':
-      return 'CDD';
-    case 'stage':
-      return 'Stage';
-    case 'freelance':
-      return 'Freelance';
-    case 'alternance':
-      return 'Alternance';
-    case 'autre':
-      return 'Autre';
-    default:
-      return null;
-  }
-};
-
-const formatWorkMode = (value: string | null) => {
-  switch (value) {
-    case 'onsite':
-      return 'Presentiel';
-    case 'hybrid':
-      return 'Hybride';
-    case 'remote':
-      return 'Remote';
-    default:
-      return null;
-  }
-};
-
 export default async function ReferralDemandBoardPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { t, tf, locale } = await getServerTranslator();
-  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  const currentUserId = auth.user?.id ?? null;
+  const query = new URLSearchParams();
+  query.set('kind', 'demands');
 
   const search = getParam(params, 'search');
   const city = getParam(params, 'city');
+  if (search) query.set('search', search);
+  if (city) query.set('city', city);
 
-  let query = supabase
-    .from('job_referral_demand_listings')
-    .select('id, title, target_role, city, contract_type, work_mode, seniority, summary, created_at', { count: 'exact' })
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
-
-  if (search) {
-    const cleaned = search.replace(/[%_]/g, '');
-    query = query.or(`title.ilike.%${cleaned}%,target_role.ilike.%${cleaned}%,summary.ilike.%${cleaned}%`);
-  }
-  if (city) query = query.ilike('city', city);
-
-  const { data, count } = await query.limit(80);
-  const listings = (data || []) as DemandListing[];
-
-  return (
-    <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <section className="rounded-2xl border border-border bg-card p-6 md:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2">
-            <Badge variant="outline" className="w-fit">{t('referralDemandBoardPage.badge', 'Demand board')}</Badge>
-            <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('referralDemandBoardPage.title', 'Referral requests')}</h1>
-            <p className="text-muted-foreground max-w-2xl">
-              {t(
-                'referralDemandBoardPage.subtitle',
-                'Candidates publish their needs. Employees can identify profiles to refer.'
-              )}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {currentUserId ? (
-              <>
-                <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-demandes">{t('referralDemandBoardPage.actions.myPrivateRequests', 'My private requests')}</Link>
-                </Button>
-                <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-demandes-publiques">{t('referralDemandBoardPage.actions.myPublicRequests', 'My public requests')}</Link>
-                </Button>
-              </>
-            ) : null}
-            <Button asChild className="rounded-xl">
-              <Link href="/parrainages/demandes/new">{t('referralDemandBoardPage.actions.publish', 'Publish a request')}</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <InternalAdsSlot placement="referrals_top_banner" />
-
-      <Card className="rounded-2xl border-border bg-card">
-        <CardContent className="pt-6 space-y-4">
-          <form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-4">
-            <input
-              type="text"
-              name="search"
-              defaultValue={search}
-              placeholder={t('referralDemandBoardPage.filters.searchPlaceholder', 'Role, keywords...')}
-              className="h-10 rounded-md border bg-background px-3 text-sm md:col-span-2"
-            />
-            <input
-              type="text"
-              name="city"
-              defaultValue={city}
-              placeholder={t('referralDemandBoardPage.filters.cityPlaceholder', 'City')}
-              className="h-10 rounded-md border bg-background px-3 text-sm"
-            />
-            <Button type="submit" className="rounded-md">{t('referralDemandBoardPage.filters.submit', 'Filter')}</Button>
-          </form>
-          <p className="text-xs text-muted-foreground">
-            {tf('referralDemandBoardPage.filters.resultsCount', '{count} result(s)', { count: count ?? listings.length })}
-          </p>
-        </CardContent>
-      </Card>
-
-      {listings.length === 0 ? (
-        <Card className="rounded-2xl">
-          <CardContent className="py-10 text-center text-muted-foreground">
-            {t('referralDemandBoardPage.empty', 'No public request at the moment.')}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {listings.map((item) => (
-            <Card key={item.id} className="rounded-2xl border-border bg-card">
-              <CardHeader className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <Badge variant="secondary">{item.target_role}</Badge>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock3 className="h-3.5 w-3.5" />
-                    {new Date(item.created_at).toLocaleDateString(dateLocale)}
-                  </span>
-                </div>
-                <CardTitle className="text-xl">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {item.city && (
-                  <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {item.city}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {formatContractType(item.contract_type) ? (
-                    <Badge variant="outline">{formatContractType(item.contract_type)}</Badge>
-                  ) : null}
-                  {formatWorkMode(item.work_mode) ? (
-                    <Badge variant="outline">{formatWorkMode(item.work_mode)}</Badge>
-                  ) : null}
-                  {item.seniority ? <Badge variant="outline">{item.seniority}</Badge> : null}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-4">{item.summary}</p>
-                <Button asChild variant="outline" className="w-full rounded-md">
-                  <Link href={`/parrainages/demandes/${item.id}`} className="inline-flex items-center justify-center gap-2">
-                    {t('referralDemandBoardPage.actions.viewRequest', 'View request')}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild className="w-full rounded-md">
-                  <Link href={`/parrainages/demandes/${item.id}#respond-form`}>
-                    Proposer un parrainage
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      <InternalAdsSlot placement="referrals_inline" />
-    </div>
-  );
+  redirect(`/parrainages?${query.toString()}`);
 }

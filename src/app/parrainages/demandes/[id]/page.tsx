@@ -152,7 +152,7 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-        <Link href="/parrainages/demandes" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+        <Link href="/parrainages?kind=demands" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
           <ArrowLeft className="h-4 w-4" />
           Retour au board
         </Link>
