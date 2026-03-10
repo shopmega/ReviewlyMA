@@ -257,6 +257,19 @@ async function sendWithConsole(options: EmailOptions): Promise<ActionState> {
 }
 
 /**
+ * Escape HTML special characters to prevent XSS in email templates.
+ * Used for any user/admin-supplied content interpolated into HTML strings.
+ */
+function escapeHtml(str: string): string {
+  return (str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * Email templates
  */
 export const emailTemplates = {
@@ -310,15 +323,15 @@ export const emailTemplates = {
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9fafb; padding: 40px; text-align: center; }
         .footer { background: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; font-size: 12px; border-radius: 0 0 8px 8px; }
-        .code-display { 
-            font-size: 42px; 
-            font-weight: 800; 
-            letter-spacing: 8px; 
-            color: #4f46e5; 
-            background: #fff; 
-            border: 2px dashed #e5e7eb; 
-            padding: 20px; 
-            border-radius: 12px; 
+        .code-display {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: 8px;
+            color: #4f46e5;
+            background: #fff;
+            border: 2px dashed #e5e7eb;
+            padding: 20px;
+            border-radius: 12px;
             margin: 30px 0;
             display: inline-block;
         }
@@ -344,7 +357,10 @@ export const emailTemplates = {
   },
   supportResponse: {
     subject: (ticketSubject: string) => `Réponse à votre ticket : ${ticketSubject}`,
-    html: (data: { userName: string; ticketSubject: string; adminMessage: string; siteName: string; siteUrl: string }) => `
+    html: (data: { userName: string; ticketSubject: string; adminMessage: string; siteName: string; siteUrl: string }) => {
+      // C6 fix: escape adminMessage to prevent XSS if admin credentials are ever compromised.
+      const safeAdminMessage = escapeHtml(data.adminMessage);
+      return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -368,7 +384,7 @@ export const emailTemplates = {
             <p>Bonjour ${data.userName},</p>
             <p>Un administrateur a répondu à votre ticket concernant : <strong>"${data.ticketSubject}"</strong>.</p>
             <div class="response-box">
-                <p style="white-space: pre-wrap; margin: 0;">${data.adminMessage}</p>
+                <p style="white-space: pre-wrap; margin: 0;">${safeAdminMessage}</p>
             </div>
             <a href="${data.siteUrl}/dashboard/support" class="button">Voir la discussion complète</a>
         </div>
@@ -378,9 +394,7 @@ export const emailTemplates = {
     </div>
 </body>
 </html>
-    `,
+`;
+    },
   },
 };
-
-
-

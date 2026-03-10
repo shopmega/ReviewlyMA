@@ -517,10 +517,12 @@ export async function updateBusinessProfile(
             updateData.location = sanitizer.stripHTML(updateData.location);
         }
         if (updateData.website) {
-            updateData.website = sanitizer.sanitizeURL(updateData.website);
+            // C2 fix: only allow https:// for public-facing business links
+            updateData.website = sanitizer.sanitizeSecureURL(updateData.website);
         }
         if (updateData.affiliate_link) {
-            updateData.affiliate_link = sanitizer.sanitizeURL(updateData.affiliate_link);
+            // C2 fix: only allow https:// for public-facing business links
+            updateData.affiliate_link = sanitizer.sanitizeSecureURL(updateData.affiliate_link);
         }
         logger.server(LogLevel.DEBUG, '[DEBUG] Business update details', { businessId: businessIdToUpdate, updateData });
 

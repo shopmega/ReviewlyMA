@@ -12,7 +12,7 @@ vi.mock('next/cache', () => ({
 }));
 
 vi.mock('@/lib/rate-limiter-enhanced', () => ({
-  checkRateLimit: vi.fn(async () => ({ isLimited: false, retryAfterSeconds: 0 })),
+  checkRateLimit: vi.fn(async () => ({ isLimited: false, remainingAttempts: 10, retryAfterSeconds: 0 })),
   recordAttempt: vi.fn(async () => ({})),
   RATE_LIMIT_CONFIG: { report: { windowMs: 60000, maxRequests: 10 } },
 }));
@@ -60,7 +60,7 @@ function buildClient(options: {
 describe('Moderation Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(checkRateLimit).mockResolvedValue({ isLimited: false, retryAfterSeconds: 0 });
+    vi.mocked(checkRateLimit).mockResolvedValue({ isLimited: false, remainingAttempts: 10, retryAfterSeconds: 0 });
   });
 
   it('reportBusiness should reject unauthenticated users', async () => {
@@ -77,7 +77,7 @@ describe('Moderation Actions', () => {
   });
 
   it('reportBusiness should block when rate limited', async () => {
-    vi.mocked(checkRateLimit).mockResolvedValueOnce({ isLimited: true, retryAfterSeconds: 120 });
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({ isLimited: true, remainingAttempts: 0, retryAfterSeconds: 120 });
     vi.mocked(createClient).mockResolvedValue(buildClient({ userId: 'user-1' }) as any);
 
     const result = await reportBusiness({

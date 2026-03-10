@@ -27,8 +27,8 @@ function isInternalNavigationRequest(request: NextRequest): boolean {
 function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
-    // Keep unsafe-inline fallback while migrating all inline scripts to nonce-only.
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
+    // NOTE: 'unsafe-inline' has been removed (C4 fix). All inline scripts must use the nonce.
+    `script-src 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
     `script-src-elem 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: https://www.facebook.com",

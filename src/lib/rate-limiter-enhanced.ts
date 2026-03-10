@@ -378,6 +378,12 @@ export function cleanupExpiredRecords(): void {
   }
 }
 
+// M8 fix: auto-schedule cleanup when running in in-memory mode (no Redis).
+// This prevents the inMemoryStore from growing unbounded in long-lived processes.
+if (!process.env.REDIS_URL && typeof setInterval !== 'undefined') {
+  setInterval(() => { cleanupExpiredRecords(); }, 10 * 60 * 1000); // Every 10 minutes
+}
+
 export default {
   checkRateLimit,
   recordAttempt,

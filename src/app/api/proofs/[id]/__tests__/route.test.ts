@@ -37,12 +37,12 @@ const fromMock = vi.fn((table: string) => {
   return { select: vi.fn() };
 });
 
-const createServerClientMock = vi.fn(() => ({
+const createServerClientMock = vi.fn((..._args: any[]) => ({
   auth: { getUser: getUserMock },
   from: fromMock,
 }));
 
-const createClientMock = vi.fn(() => ({
+const createClientMock = vi.fn((..._args: any[]) => ({
   storage: {
     from: vi.fn(() => ({
       createSignedUrl: createSignedUrlMock,
@@ -58,17 +58,17 @@ vi.mock('@/lib/api-rate-limiter', () => ({
 }));
 
 vi.mock('@supabase/ssr', () => ({
-  createServerClient: (...args: any[]) => createServerClientMock(...(args as any)),
+  createServerClient: (...args: any[]) => createServerClientMock(...args),
 }));
 
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: (...args: any[]) => createClientMock(...(args as any)),
+  createClient: (...args: any[]) => createClientMock(...args),
 }));
 
 vi.mock('next/headers', () => ({
   cookies: async () => ({
     getAll: () => [],
-    set: (...args: any[]) => setCookieMock(...(args as any)),
+    set: (...args: any[]) => setCookieMock(...args),
   }),
 }));
 

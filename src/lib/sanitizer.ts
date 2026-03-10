@@ -165,6 +165,24 @@ export function sanitizeURL(url: string): string {
 }
 
 /**
+ * Sanitize external URLs for business-facing fields (affiliate links, websites).
+ * Only allows https:// to prevent mixed-content and http-based phishing (C2 fix).
+ * @param url - URL to sanitize
+ * @returns Safe https URL or empty string
+ */
+export function sanitizeSecureURL(url: string): string {
+  if (!url) return '';
+  try {
+    const trimmed = url.trim().toLowerCase();
+    // Only allow https links for public-facing business fields.
+    if (trimmed.startsWith('https://')) return url.trim();
+    return '';
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Strip all HTML tags
  * @param html - HTML content
  * @returns Plain text
@@ -246,6 +264,7 @@ export default {
   sanitizeHTML,
   sanitizeText,
   sanitizeURL,
+  sanitizeSecureURL,
   stripHTML,
   sanitizeReviewContent,
   sanitizeBusinessContent,

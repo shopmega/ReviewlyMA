@@ -1,11 +1,12 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import {
-    loginSchema, 
-    signupSchema, 
-    proSignupSchema, 
-    resetPasswordRequestSchema, 
+    loginSchema,
+    signupSchema,
+    proSignupSchema,
+    resetPasswordRequestSchema,
     updatePasswordSchema,
     ActionState
 } from '@/lib/types';
@@ -22,6 +23,24 @@ import {
     ErrorCode
 } from '@/lib/errors';
 import { getServerSiteUrl } from '@/lib/site-config';
+
+/**
+ * C3 fix: Build a composite rate-limit key from email + client IP.
+ * Combining both dimensions prevents an attacker from bypassing limits by
+ * rotating email addresses (since the IP sub-key would still be blocked).
+ */
+async function getRateLimitKey(email: string): Promise<string> {
+    try {
+        const headerStore = await headers();
+        const ip =
+            headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+            headerStore.get('x-real-ip') ||
+            'unknown';
+        return `${email}::ip:${ip}`;
+    } catch {
+        return email; // Fallback: email-only (safe)
+    }
+}
 
 export type AuthFormState = ActionState;
 
@@ -41,8 +60,9 @@ export async function login(
 
     const { email, password } = validatedFields.data;
 
-    // Rate limiting
-    const { isLimited, retryAfterSeconds } = await checkRateLimit(email, RATE_LIMIT_CONFIG.login);
+    // Rate limiting — composite key: email + client IP (C3 fix)
+    const rateLimitKey = await getRateLimitKey(email);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.login);
     if (isLimited) {
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
@@ -55,7 +75,7 @@ export async function login(
         const { error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            await recordAttempt(email, RATE_LIMIT_CONFIG.login);
+            await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.login);
             logError('login_action', error, { email });
             return handleAuthenticationError(
                 error.message || 'Identifiant ou mot de passe incorrect.'
@@ -90,8 +110,9 @@ export async function signup(
 
     const { email, password, fullName } = validatedFields.data;
 
-    // Rate limiting
-    const { isLimited, retryAfterSeconds } = await checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
+    // Rate limiting — composite key: email + client IP (C3 fix)
+    const rateLimitKey = await getRateLimitKey(email);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.signup);
     if (isLimited) {
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
@@ -125,7 +146,7 @@ export async function signup(
         });
 
         if (error) {
-            await recordAttempt(email, RATE_LIMIT_CONFIG.signup);
+            await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.signup);
             logError('signup_action', error, { email });
             return handleDatabaseError(error) as AuthFormState;
         }
@@ -179,8 +200,9 @@ export async function proSignup(
         }
     };
 
-    // Rate limiting
-    const { isLimited, retryAfterSeconds } = await checkRateLimit(email, RATE_LIMIT_CONFIG.signup);
+    // Rate limiting — composite key: email + client IP (C3 fix)
+    const rateLimitKey = await getRateLimitKey(email);
+    const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.signup);
     if (isLimited) {
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
@@ -205,7 +227,7 @@ export async function proSignup(
         });
 
         if (authError) {
-            await recordAttempt(email, RATE_LIMIT_CONFIG.signup);
+            await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.signup);
             logError('pro_signup_auth', authError, { email });
             return handleDatabaseError(authError) as AuthFormState;
         }

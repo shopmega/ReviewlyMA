@@ -501,8 +501,27 @@ export async function createReferralDemandListing(_prev: ActionState, formData: 
     };
   }
 
+  // C7 fix: demand listings require the same eligibility as referral offers.
+  const limitKey = `referrals:create-demand:${user.id}`;
+  const limitCheck = await checkRateLimit(limitKey, RATE_LIMIT_CONFIG.review);
+  if (limitCheck.isLimited) {
+    return {
+      status: 'error',
+      message: `Trop de publications en peu de temps. Reessayez dans ${Math.ceil(limitCheck.retryAfterSeconds / 60)} minute(s).`,
+    };
+  }
+
+  const eligibility = await getReferralEligibility();
+  if (!eligibility?.is_eligible) {
+    return {
+      status: 'error',
+      message: "Vous devez verifier votre email et publier au moins un avis ou un salaire avant de publier une demande.",
+    };
+  }
+
   const contentIssue = detectUnsafeReferralContent(`${parsed.data.summary}\n${parsed.data.details || ''}`);
   if (contentIssue) {
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
     return { status: 'error', message: contentIssue };
   }
 
@@ -528,6 +547,7 @@ export async function createReferralDemandListing(_prev: ActionState, formData: 
     .single();
 
   if (error || !data) {
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.review);
     return { status: 'error', message: "Impossible de publier votre demande pour le moment." };
   }
 

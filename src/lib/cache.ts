@@ -53,10 +53,14 @@ export const CACHE_CONFIG = {
 /**
  * Optimized cache fetcher using unstable_cache
  */
-export const getCachedSiteSettings = async () => {
-  const { getSiteSettings } = await import('./data');
-  return getSiteSettings();
-};
+export const getCachedSiteSettings = unstable_cache(
+  async () => {
+    const { getSiteSettings } = await import('./data');
+    return getSiteSettings();
+  },
+  [CACHE_KEYS.SITE_SETTINGS],
+  { revalidate: CACHE_CONFIG.SITE_SETTINGS, tags: [CACHE_TAGS.SITE_SETTINGS] }
+);
 
 /**
  * Cache businesses with 5 minute TTL
