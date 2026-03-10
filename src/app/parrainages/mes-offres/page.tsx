@@ -106,7 +106,7 @@ export default async function MyReferralOffersPage() {
           <p className="text-sm text-muted-foreground">{t('referralMyOffersPage.subtitle', 'Manage your offers and received requests.')}</p>
         </div>
         <Button asChild>
-          <Link href="/parrainages/new">{t('referralMyOffersPage.actions.publishOffer', 'Publish an offer')}</Link>
+          <Link href="/parrainages/new?type=offer">{t('referralMyOffersPage.actions.publishOffer', 'Publish an offer')}</Link>
         </Button>
       </div>
 

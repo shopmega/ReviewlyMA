@@ -203,7 +203,7 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
                 className="w-full rounded-xl"
               />
               <Button asChild className="w-full rounded-xl">
-                <Link href="/parrainages/demandes/new">Publier votre demande</Link>
+                <Link href="/parrainages/new?type=demand">Publier votre demande</Link>
               </Button>
             </CardContent>
           </Card>

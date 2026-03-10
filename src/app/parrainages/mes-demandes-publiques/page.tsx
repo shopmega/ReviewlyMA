@@ -69,7 +69,7 @@ export default async function MyPublicDemandListingsPage() {
             <Link href="/parrainages?kind=demands">{t('referralMyPublicDemandsPage.actions.viewBoard', 'View board')}</Link>
           </Button>
           <Button asChild>
-            <Link href="/parrainages/demandes/new">{t('referralMyPublicDemandsPage.actions.publish', 'Publish request')}</Link>
+            <Link href="/parrainages/new?type=demand">{t('referralMyPublicDemandsPage.actions.publish', 'Publish request')}</Link>
           </Button>
         </div>
       </div>

@@ -335,12 +335,12 @@ export default async function ParrainagesPage({
             ) : null}
             {currentUserId ? (
               <Button asChild className="rounded-xl">
-                <Link href="/parrainages/new">{t('referrals.list.publish', 'Publier une offre')}</Link>
+                <Link href="/parrainages/new?type=offer">{t('referrals.list.publish', 'Publier une offre')}</Link>
               </Button>
             ) : (
               <SoftAuthTriggerButton
                 label={t('referrals.list.publish', 'Publier une offre')}
-                nextPath="/parrainages/new"
+                nextPath="/parrainages/new?type=offer"
                 intent="referral_publish"
                 className="rounded-xl"
                 title="Publiez une offre de parrainage"
@@ -447,10 +447,10 @@ export default async function ParrainagesPage({
             </p>
             <div className="flex justify-center gap-2">
               <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/parrainages/new">Publier une offre</Link>
+                <Link href="/parrainages/new?type=offer">Publier une offre</Link>
               </Button>
               <Button asChild className="rounded-xl">
-                <Link href={currentUserId ? '/parrainages/demandes/new' : '/signup'}>Publier une demande</Link>
+                <Link href={currentUserId ? '/parrainages/new?type=demand' : '/signup'}>Publier une demande</Link>
               </Button>
             </div>
           </CardContent>
