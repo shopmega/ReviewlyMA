@@ -42,6 +42,20 @@ export default async function MyPublicDemandListingsPage() {
     .order('created_at', { ascending: false });
 
   const items = (data || []) as DemandListing[];
+  const responseCountMap = new Map<string, number>();
+  if (items.length > 0) {
+    const demandIds = items.map((item) => item.id);
+    const { data: responses } = await supabase
+      .from('job_referral_demand_responses')
+      .select('demand_listing_id')
+      .in('demand_listing_id', demandIds)
+      .eq('status', 'active');
+
+    for (const row of responses || []) {
+      const listingId = (row as { demand_listing_id: string }).demand_listing_id;
+      responseCountMap.set(listingId, (responseCountMap.get(listingId) || 0) + 1);
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-6">
@@ -78,6 +92,9 @@ export default async function MyPublicDemandListingsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge>{STATUS_LABELS[item.status] || item.status}</Badge>
                   {item.city ? <span className="text-xs text-muted-foreground">{item.city}</span> : null}
+                  <span className="text-xs text-muted-foreground">
+                    {responseCountMap.get(item.id) || 0} reponse(s)
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {tf('referralMyPublicDemandsPage.publishedOn', 'Published on {date}', {
                       date: new Date(item.created_at).toLocaleDateString(dateLocale),

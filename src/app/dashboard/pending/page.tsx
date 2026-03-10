@@ -10,6 +10,7 @@ import { AlertCircle, CheckCircle2, Clock, Check, Loader2, X, Upload } from 'luc
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 interface Claim {
     id: string;
@@ -41,6 +42,9 @@ export default function PendingPage() {
     const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
+    const { t, tf, locale } = useI18n();
+    const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+    const methodLabel = (method: string) => t(`dashboardPendingPage.verification.methods.${method}`, method);
 
     useEffect(() => {
         const fetchClaimStatus = async () => {
@@ -50,7 +54,7 @@ export default function PendingPage() {
                 const { data: { user }, error: authError } = await supabase.auth.getUser();
                 if (authError) {
                     console.error('Auth error:', authError);
-                    setError('Authentication error');
+                    setError(t('dashboardPendingPage.errors.auth', 'Authentication error'));
                     setLoading(false);
                     return;
                 }
@@ -72,7 +76,11 @@ export default function PendingPage() {
                         code: claimError.code,
                         details: claimError.details,
                     });
-                    setError('Error loading claim: ' + claimError.message);
+                    setError(
+                        tf('dashboardPendingPage.errors.loadClaim', 'Error loading claim: {message}', {
+                            message: claimError.message,
+                        })
+                    );
                     setLoading(false);
                     return;
                 }
@@ -122,17 +130,25 @@ export default function PendingPage() {
                 setLoading(false);
             } catch (err: any) {
                 console.error('Error fetching claim:', err);
-                setError('Error: ' + (err?.message || 'Unknown error'));
+                setError(
+                    tf('dashboardPendingPage.errors.generic', 'Error: {message}', {
+                        message: err?.message || 'Unknown error',
+                    })
+                );
                 setLoading(false);
             }
         };
 
         fetchClaimStatus();
-    }, [router]);
+    }, [router, t, tf]);
 
     const handleVerifyCode = async (method: string) => {
         if (!verificationCode.trim()) {
-            toast({ title: 'Error', description: 'Please enter the verification code.', variant: 'destructive' });
+            toast({
+                title: t('common.error', 'Error'),
+                description: t('dashboardPendingPage.errors.enterCode', 'Please enter the verification code.'),
+                variant: 'destructive',
+            });
             return;
         }
 
@@ -150,7 +166,11 @@ export default function PendingPage() {
                 .single();
 
             if (codeError || !codes) {
-                toast({ title: 'Error', description: 'Invalid or expired code.', variant: 'destructive' });
+                toast({
+                    title: t('common.error', 'Error'),
+                    description: t('dashboardPendingPage.errors.invalidCode', 'Invalid or expired code.'),
+                    variant: 'destructive',
+                });
                 return;
             }
 
@@ -167,7 +187,12 @@ export default function PendingPage() {
                 .update({ proof_status: newProofStatus, proof_data: newProofData })
                 .eq('id', claim?.id);
 
-            toast({ title: 'Success', description: `${method} verified successfully!` });
+            toast({
+                title: t('common.success', 'Success'),
+                description: tf('dashboardPendingPage.toasts.verified', '{method} verified successfully!', {
+                    method: methodLabel(method),
+                }),
+            });
             setVerificationCode('');
             setVerifyingMethod(null);
 
@@ -176,7 +201,11 @@ export default function PendingPage() {
             }
         } catch (err: any) {
             console.error('Verification error:', err);
-            toast({ title: 'Error', description: 'Verification failed. Please try again.', variant: 'destructive' });
+            toast({
+                title: t('common.error', 'Error'),
+                description: t('dashboardPendingPage.errors.verificationFailed', 'Verification failed. Please try again.'),
+                variant: 'destructive',
+            });
         } finally {
             setIsVerifying(false);
         }
@@ -185,7 +214,11 @@ export default function PendingPage() {
     const handleDocumentUpload = async (file: File) => {
         if (!file || !claim) return;
         if (file.size > 10 * 1024 * 1024) {
-            toast({ title: 'Error', description: 'File too large (max 10MB)', variant: 'destructive' });
+            toast({
+                title: t('common.error', 'Error'),
+                description: t('dashboardPendingPage.errors.fileTooLargeDoc', 'File too large (max 10MB)'),
+                variant: 'destructive',
+            });
             return;
         }
 
@@ -230,7 +263,10 @@ export default function PendingPage() {
                 throw updateError;
             }
 
-            toast({ title: 'Success', description: 'Document uploaded. Our team will review it.' });
+            toast({
+                title: t('common.success', 'Success'),
+                description: t('dashboardPendingPage.toasts.documentUploaded', 'Document uploaded. Our team will review it.'),
+            });
             setUploadedFiles(prev => ({ ...prev, document: file }));
             setVerifyingMethod(null);
             setClaim({ ...claim, proof_status: newProofStatus, proof_data: newProofData });
@@ -240,7 +276,11 @@ export default function PendingPage() {
                 message: err?.message,
                 cause: err?.cause,
             });
-            toast({ title: 'Error', description: err?.message || 'Upload failed. Please try again.', variant: 'destructive' });
+            toast({
+                title: t('common.error', 'Error'),
+                description: err?.message || t('dashboardPendingPage.errors.uploadFailed', 'Upload failed. Please try again.'),
+                variant: 'destructive',
+            });
         } finally {
             setIsUploading(false);
         }
@@ -249,7 +289,11 @@ export default function PendingPage() {
     const handleVideoUpload = async (file: File) => {
         if (!file || !claim) return;
         if (file.size > 100 * 1024 * 1024) {
-            toast({ title: 'Error', description: 'Video too large (max 100MB)', variant: 'destructive' });
+            toast({
+                title: t('common.error', 'Error'),
+                description: t('dashboardPendingPage.errors.fileTooLargeVideo', 'Video too large (max 100MB)'),
+                variant: 'destructive',
+            });
             return;
         }
 
@@ -293,7 +337,10 @@ export default function PendingPage() {
                 throw updateError;
             }
 
-            toast({ title: 'Success', description: 'Video uploaded. Our team will review it.' });
+            toast({
+                title: t('common.success', 'Success'),
+                description: t('dashboardPendingPage.toasts.videoUploaded', 'Video uploaded. Our team will review it.'),
+            });
             setUploadedFiles(prev => ({ ...prev, video: file }));
             setVerifyingMethod(null);
             setClaim({ ...claim, proof_status: newProofStatus, proof_data: newProofData });
@@ -303,7 +350,11 @@ export default function PendingPage() {
                 message: err?.message,
                 cause: err?.cause,
             });
-            toast({ title: 'Error', description: err?.message || 'Upload failed. Please try again.', variant: 'destructive' });
+            toast({
+                title: t('common.error', 'Error'),
+                description: err?.message || t('dashboardPendingPage.errors.uploadFailed', 'Upload failed. Please try again.'),
+                variant: 'destructive',
+            });
         } finally {
             setIsUploading(false);
         }
@@ -323,9 +374,13 @@ export default function PendingPage() {
             <div className={`flex items-center gap-2 p-3 rounded-lg border ${isVerified ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
                 <span className="text-lg">{methodIcons[method]}</span>
                 <div className="flex-1">
-                    <p className="font-medium capitalize">{method}</p>
+                    <p className="font-medium">{methodLabel(method)}</p>
                     <p className={`text-xs ${isVerified ? 'text-green-600' : 'text-yellow-600'}`}>
-                        {isVerified ? (status === 'pending_review' ? 'In review' : 'Verified') : 'Pending verification'}
+                        {isVerified
+                            ? (status === 'pending_review'
+                                ? t('dashboardPendingPage.verification.proof.inReview', 'In review')
+                                : t('dashboardPendingPage.verification.proof.verified', 'Verified'))
+                            : t('dashboardPendingPage.verification.proof.pending', 'Pending verification')}
                     </p>
                 </div>
                 {isVerified && <Check className="h-5 w-5 text-green-600" />}
@@ -338,10 +393,10 @@ export default function PendingPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <CardTitle>Loading...</CardTitle>
+                        <CardTitle>{t('dashboardPendingPage.loading.title', 'Loading...')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="animate-pulse">Please wait</div>
+                        <div className="animate-pulse">{t('dashboardPendingPage.loading.description', 'Please wait')}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -355,14 +410,16 @@ export default function PendingPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-red-600">
                             <AlertCircle className="h-5 w-5" />
-                            Error
+                            {t('dashboardPendingPage.error.title', 'Error')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">{error}</p>
-                        <p className="text-xs text-muted-foreground mb-4">Check browser console for details</p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                            {t('dashboardPendingPage.error.consoleHint', 'Check browser console for details')}
+                        </p>
                         <Button asChild className="w-full">
-                            <Link href="/login">Back to login</Link>
+                            <Link href="/login">{t('dashboardPendingPage.error.backToLogin', 'Back to login')}</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -375,14 +432,17 @@ export default function PendingPage() {
             <div className="min-h-screen flex items-center justify-center p-4">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <CardTitle>No claim found</CardTitle>
+                        <CardTitle>{t('dashboardPendingPage.empty.title', 'No claim found')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            You don't have a pending claim. Please create a pro account first.
+                            {t(
+                                'dashboardPendingPage.empty.description',
+                                "You don't have a pending claim. Please create a pro account first."
+                            )}
                         </p>
                         <Button asChild className="w-full">
-                            <Link href="/pour-les-pros/signup">Create pro account</Link>
+                            <Link href="/pour-les-pros/signup">{t('dashboardPendingPage.empty.createPro', 'Create pro account')}</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -401,16 +461,22 @@ export default function PendingPage() {
                                 <div>
                                     <CardTitle className="text-amber-900">
                                         {claim.status === 'pending'
-                                            ? 'Claim pending approval'
+                                            ? t('dashboardPendingPage.status.pendingApproval', 'Claim pending approval')
                                             : claim.status === 'rejected'
-                                                ? 'Claim rejected'
-                                                : 'Processing'}
+                                                ? t('dashboardPendingPage.status.rejected', 'Claim rejected')
+                                                : t('dashboardPendingPage.status.processing', 'Processing')}
                                     </CardTitle>
                                     <CardDescription className="text-amber-800 mt-1">
                                         {claim.status === 'pending' &&
-                                            'Your claim is pending review by our moderators. This usually takes 24-48 hours.'}
+                                            t(
+                                                'dashboardPendingPage.status.pendingDescription',
+                                                'Your claim is pending review by our moderators. This usually takes 24-48 hours.'
+                                            )}
                                         {claim.status === 'rejected' &&
-                                            'Your claim was rejected. Please verify the information and try again.'}
+                                            t(
+                                                'dashboardPendingPage.status.rejectedDescription',
+                                                'Your claim was rejected. Please verify the information and try again.'
+                                            )}
                                     </CardDescription>
                                 </div>
                             </div>
@@ -420,44 +486,58 @@ export default function PendingPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Claim details</CardTitle>
+                        <CardTitle>{t('dashboardPendingPage.claimDetails.title', 'Claim details')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Business</p>
-                                <p className="text-lg font-semibold">{business?.name || 'Loading...'}</p>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {t('dashboardPendingPage.claimDetails.fields.business', 'Business')}
+                                </p>
+                                <p className="text-lg font-semibold">
+                                    {business?.name || t('dashboardPendingPage.claimDetails.businessLoading', 'Loading...')}
+                                </p>
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Status</p>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {t('dashboardPendingPage.claimDetails.fields.status', 'Status')}
+                                </p>
                                 <p className="text-lg font-semibold capitalize">
                                     {claim.status === 'pending' && (
-                                        <span className="text-amber-600">Pending</span>
+                                        <span className="text-amber-600">{t('dashboardPendingPage.claimDetails.status.pending', 'Pending')}</span>
                                     )}
                                     {claim.status === 'approved' && (
-                                        <span className="text-green-600">Approved</span>
+                                        <span className="text-green-600">{t('dashboardPendingPage.claimDetails.status.approved', 'Approved')}</span>
                                     )}
                                     {claim.status === 'rejected' && (
-                                        <span className="text-red-600">Rejected</span>
+                                        <span className="text-red-600">{t('dashboardPendingPage.claimDetails.status.rejected', 'Rejected')}</span>
                                     )}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Your name</p>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {t('dashboardPendingPage.claimDetails.fields.name', 'Your name')}
+                                </p>
                                 <p className="text-lg font-semibold">{claim.full_name}</p>
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Your title</p>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {t('dashboardPendingPage.claimDetails.fields.title', 'Your title')}
+                                </p>
                                 <p className="text-lg font-semibold">{claim.job_title}</p>
                             </div>
                             <div className="col-span-2">
-                                <p className="text-sm font-medium text-muted-foreground">Email</p>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {t('dashboardPendingPage.claimDetails.fields.email', 'Email')}
+                                </p>
                                 <p className="text-lg font-semibold">{claim.email}</p>
                             </div>
                             <div className="col-span-2">
-                                <p className="text-sm font-medium text-muted-foreground">Date</p>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {t('dashboardPendingPage.claimDetails.fields.date', 'Date')}
+                                </p>
                                 <p className="text-lg font-semibold">
-                                    {new Date(claim.created_at).toLocaleDateString('en-US', {
+                                    {new Date(claim.created_at).toLocaleDateString(dateLocale, {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric',
@@ -473,10 +553,10 @@ export default function PendingPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <AlertCircle className="h-5 w-5 text-blue-600" />
-                                Identity verification
+                                {t('dashboardPendingPage.verification.title', 'Identity verification')}
                             </CardTitle>
                             <CardDescription className="text-blue-900">
-                                Complete verification to speed up approval
+                                {t('dashboardPendingPage.verification.subtitle', 'Complete verification to speed up approval')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -493,8 +573,14 @@ export default function PendingPage() {
                                                 <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
                                                     {method === 'email' && (
                                                         <div>
-                                                            <Label htmlFor={`code-${method}`} className="text-sm">Verification code (6 digits)</Label>
-                                                            <p className="text-xs text-muted-foreground mb-2">Check your email {claim.email}</p>
+                                                            <Label htmlFor={`code-${method}`} className="text-sm">
+                                                                {t('dashboardPendingPage.verification.inputs.emailCodeLabel', 'Verification code (6 digits)')}
+                                                            </Label>
+                                                            <p className="text-xs text-muted-foreground mb-2">
+                                                                {tf('dashboardPendingPage.verification.inputs.emailHint', 'Check your email {email}', {
+                                                                    email: claim.email,
+                                                                })}
+                                                            </p>
                                                             <div className="flex gap-2">
                                                                 <Input
                                                                     id={`code-${method}`}
@@ -516,8 +602,12 @@ export default function PendingPage() {
 
                                                     {method === 'phone' && (
                                                         <div>
-                                                            <Label htmlFor={`code-${method}`} className="text-sm">SMS code (6 digits)</Label>
-                                                            <p className="text-xs text-muted-foreground mb-2">Check your SMS messages</p>
+                                                            <Label htmlFor={`code-${method}`} className="text-sm">
+                                                                {t('dashboardPendingPage.verification.inputs.smsCodeLabel', 'SMS code (6 digits)')}
+                                                            </Label>
+                                                            <p className="text-xs text-muted-foreground mb-2">
+                                                                {t('dashboardPendingPage.verification.inputs.smsHint', 'Check your SMS messages')}
+                                                            </p>
                                                             <div className="flex gap-2">
                                                                 <Input
                                                                     id={`code-${method}`}
@@ -541,8 +631,12 @@ export default function PendingPage() {
                                                         <div>
                                                             <label className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 block">
                                                                 <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                                                                <p className="text-sm font-medium">Upload document</p>
-                                                                <p className="text-xs text-muted-foreground">PDF, JPG, PNG (max 10MB)</p>
+                                                                <p className="text-sm font-medium">
+                                                                    {t('dashboardPendingPage.verification.upload.documentTitle', 'Upload document')}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {t('dashboardPendingPage.verification.upload.documentHint', 'PDF, JPG, PNG (max 10MB)')}
+                                                                </p>
                                                                 <input
                                                                     type="file"
                                                                     accept=".pdf,.jpg,.png,.jpeg"
@@ -563,8 +657,12 @@ export default function PendingPage() {
                                                         <div>
                                                             <label className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 block">
                                                                 <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                                                                <p className="text-sm font-medium">Upload video</p>
-                                                                <p className="text-xs text-muted-foreground">MP4, WebM (max 100MB)</p>
+                                                                <p className="text-sm font-medium">
+                                                                    {t('dashboardPendingPage.verification.upload.videoTitle', 'Upload video')}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {t('dashboardPendingPage.verification.upload.videoHint', 'MP4, WebM (max 100MB)')}
+                                                                </p>
                                                                 <input
                                                                     type="file"
                                                                     accept=".mp4,.webm,.mov"
@@ -585,7 +683,7 @@ export default function PendingPage() {
 
                                             {isPending && verifyingMethod !== method && (
                                                 <Button variant="outline" onClick={() => setVerifyingMethod(method)} className="w-full" disabled={isUploading}>
-                                                    Verify now
+                                                    {t('dashboardPendingPage.verification.actions.verifyNow', 'Verify now')}
                                                 </Button>
                                             )}
                                         </div>
@@ -598,7 +696,7 @@ export default function PendingPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Next steps</CardTitle>
+                        <CardTitle>{t('dashboardPendingPage.nextSteps.title', 'Next steps')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-3">
@@ -609,8 +707,10 @@ export default function PendingPage() {
                                             <Clock className="h-3 w-3 text-blue-600" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="font-medium">1. Complete verification</p>
-                                            <p className="text-sm text-muted-foreground">Verify above, then our team reviews</p>
+                                            <p className="font-medium">{t('dashboardPendingPage.nextSteps.step1.title', '1. Complete verification')}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {t('dashboardPendingPage.nextSteps.step1.description', 'Verify above, then our team reviews')}
+                                            </p>
                                         </div>
                                     </>
                                 )}
@@ -620,8 +720,10 @@ export default function PendingPage() {
                                     <CheckCircle2 className="h-3 w-3 text-gray-600" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-medium">2. Approval</p>
-                                    <p className="text-sm text-muted-foreground">You'll get a confirmation email</p>
+                                    <p className="font-medium">{t('dashboardPendingPage.nextSteps.step2.title', '2. Approval')}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t('dashboardPendingPage.nextSteps.step2.description', "You'll get a confirmation email")}
+                                    </p>
                                 </div>
                             </div>
                             <div className="flex gap-3">
@@ -629,15 +731,18 @@ export default function PendingPage() {
                                     <CheckCircle2 className="h-3 w-3 text-gray-600" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-medium">3. Dashboard access</p>
-                                    <p className="text-sm text-muted-foreground">Manage reviews and more</p>
+                                    <p className="font-medium">{t('dashboardPendingPage.nextSteps.step3.title', '3. Dashboard access')}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t('dashboardPendingPage.nextSteps.step3.description', 'Manage reviews and more')}
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-blue-50 p-4 rounded-lg mt-6">
                             <p className="text-sm text-muted-foreground mb-2">
-                                <strong>Tip:</strong> Check your email (including spam) for important notifications.
+                                <strong>{t('dashboardPendingPage.tip.title', 'Tip:')}</strong>{' '}
+                                {t('dashboardPendingPage.tip.description', 'Check your email (including spam) for important notifications.')}
                             </p>
                         </div>
                     </CardContent>
@@ -645,11 +750,11 @@ export default function PendingPage() {
 
                 <div className="flex gap-3">
                     <Button asChild variant="outline" className="flex-1">
-                        <Link href="/">Back to home</Link>
+                        <Link href="/">{t('dashboardPendingPage.actions.backHome', 'Back to home')}</Link>
                     </Button>
                     {claim.status === 'rejected' && (
                         <Button asChild className="flex-1">
-                            <Link href="/pour-les-pros/signup">Try again</Link>
+                            <Link href="/pour-les-pros/signup">{t('dashboardPendingPage.actions.tryAgain', 'Try again')}</Link>
                         </Button>
                     )}
                 </div>

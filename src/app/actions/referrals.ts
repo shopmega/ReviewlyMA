@@ -180,6 +180,16 @@ const sendReferralMessageSchema = z.object({
   message: z.string().trim().min(2).max(2000),
 });
 
+const createDemandResponseSchema = z.object({
+  demandListingId: z.string().uuid(),
+  message: z.string().trim().min(20).max(2000),
+  referralOfferId: z.string().uuid().optional().or(z.literal('')),
+});
+
+const retractDemandResponseSchema = z.object({
+  demandResponseId: z.string().uuid(),
+});
+
 const reportOfferSchema = z.object({
   offerId: z.string().uuid(),
   reason: z.enum(REPORT_REASONS),
@@ -814,6 +824,195 @@ export async function retractReferralDemandListing(_prev: ActionState, formData:
   return { status: 'success', message: 'Demande supprimee.' };
 }
 
+export async function createReferralDemandResponse(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = createDemandResponseSchema.safeParse({
+    demandListingId: String(formData.get('demandListingId') || ''),
+    message: String(formData.get('message') || '').trim(),
+    referralOfferId: String(formData.get('referralOfferId') || '').trim(),
+  });
+
+  if (!parsed.success) {
+    return {
+      status: 'error',
+      message: 'Veuillez corriger votre reponse.',
+      errors: parsed.error.flatten().fieldErrors as ActionState['errors'],
+    };
+  }
+
+  const limitKey = `referrals:demand-response:${user.id}`;
+  const limitCheck = await checkRateLimit(limitKey, RATE_LIMIT_CONFIG.report);
+  if (limitCheck.isLimited) {
+    return {
+      status: 'error',
+      message: `Vous avez envoye trop de reponses. Reessayez dans ${Math.ceil(limitCheck.retryAfterSeconds / 60)} minute(s).`,
+    };
+  }
+
+  const safetyIssue = detectUnsafeReferralContent(parsed.data.message);
+  if (safetyIssue) {
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
+    return { status: 'error', message: safetyIssue };
+  }
+
+  const { data: listing, error: listingError } = await supabase
+    .from('job_referral_demand_listings')
+    .select('id, user_id, status, expires_at, target_role')
+    .eq('id', parsed.data.demandListingId)
+    .maybeSingle();
+
+  if (listingError || !listing) {
+    return { status: 'error', message: 'Demande introuvable.' };
+  }
+
+  if (listing.user_id === user.id) {
+    return { status: 'error', message: 'Vous ne pouvez pas repondre a votre propre demande.' };
+  }
+
+  const listingExpired = !!listing.expires_at && new Date(listing.expires_at).getTime() <= Date.now();
+  if (listing.status !== 'active' || listingExpired) {
+    return { status: 'error', message: "Cette demande n'est plus active." };
+  }
+
+  const { data: blockedByAuthor } = await supabase
+    .from('job_referral_user_blocks')
+    .select('id')
+    .eq('blocker_user_id', listing.user_id)
+    .eq('blocked_user_id', user.id)
+    .maybeSingle();
+
+  if (blockedByAuthor) {
+    return { status: 'error', message: 'Vous ne pouvez plus contacter cet utilisateur.' };
+  }
+
+  const { data: blockedAuthor } = await supabase
+    .from('job_referral_user_blocks')
+    .select('id')
+    .eq('blocker_user_id', user.id)
+    .eq('blocked_user_id', listing.user_id)
+    .maybeSingle();
+
+  if (blockedAuthor) {
+    return { status: 'error', message: "Debloquez d'abord cet utilisateur pour repondre." };
+  }
+
+  let referralOfferId: string | null = null;
+  if (parsed.data.referralOfferId) {
+    const { data: offer, error: offerError } = await supabase
+      .from('job_referral_offers')
+      .select('id, user_id, status')
+      .eq('id', parsed.data.referralOfferId)
+      .maybeSingle();
+
+    if (offerError || !offer || offer.user_id !== user.id || offer.status !== 'active') {
+      return {
+        status: 'error',
+        message: 'Offre de parrainage invalide ou indisponible.',
+        errors: { referralOfferId: ['Selectionnez une offre active que vous possedez.'] },
+      };
+    }
+
+    referralOfferId = offer.id;
+  }
+
+  const { data: existingResponse } = await supabase
+    .from('job_referral_demand_responses')
+    .select('id, status')
+    .eq('demand_listing_id', parsed.data.demandListingId)
+    .eq('responder_user_id', user.id)
+    .maybeSingle();
+
+  if (existingResponse?.status === 'active') {
+    return { status: 'error', message: 'Vous avez deja repondu a cette demande.' };
+  }
+
+  let error: { code?: string } | null = null;
+  if (existingResponse?.status === 'withdrawn') {
+    const result = await supabase
+      .from('job_referral_demand_responses')
+      .update({
+        message: parsed.data.message,
+        referral_offer_id: referralOfferId,
+        status: 'active',
+      })
+      .eq('id', existingResponse.id)
+      .eq('responder_user_id', user.id);
+    error = result.error as { code?: string } | null;
+  } else {
+    const result = await supabase.from('job_referral_demand_responses').insert({
+      demand_listing_id: parsed.data.demandListingId,
+      responder_user_id: user.id,
+      message: parsed.data.message,
+      referral_offer_id: referralOfferId,
+      status: 'active',
+    });
+    error = result.error as { code?: string } | null;
+  }
+
+  if (error) {
+    await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
+    if (error.code === '23505') {
+      return { status: 'error', message: 'Vous avez deja repondu a cette demande.' };
+    }
+    return { status: 'error', message: 'Impossible d envoyer votre reponse pour le moment.' };
+  }
+
+  revalidatePath('/parrainages/demandes');
+  revalidatePath(`/parrainages/demandes/${parsed.data.demandListingId}`);
+  revalidatePath('/parrainages/mes-demandes-publiques');
+  await notifyUser(
+    listing.user_id,
+    'Nouvelle reponse a votre demande publique',
+    `Un employe a propose son aide pour votre demande: ${listing.target_role}.`,
+    `/parrainages/demandes/${parsed.data.demandListingId}`
+  );
+  return { status: 'success', message: 'Votre reponse a ete envoyee.' };
+}
+
+export async function retractReferralDemandResponse(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) {
+    return { status: 'error', message: 'Vous devez etre connecte.' };
+  }
+
+  const parsed = retractDemandResponseSchema.safeParse({
+    demandResponseId: String(formData.get('demandResponseId') || ''),
+  });
+
+  if (!parsed.success) {
+    return { status: 'error', message: 'Reponse invalide.' };
+  }
+
+  const { data, error } = await supabase
+    .from('job_referral_demand_responses')
+    .update({ status: 'withdrawn' })
+    .eq('id', parsed.data.demandResponseId)
+    .eq('responder_user_id', user.id)
+    .eq('status', 'active')
+    .select('id, demand_listing_id')
+    .maybeSingle();
+
+  if (error) {
+    return { status: 'error', message: 'Impossible de retirer votre reponse.' };
+  }
+  if (!data) {
+    return { status: 'error', message: 'Reponse introuvable ou deja retiree.' };
+  }
+
+  revalidatePath('/parrainages/demandes');
+  revalidatePath(`/parrainages/demandes/${data.demand_listing_id}`);
+  revalidatePath('/parrainages/mes-demandes-publiques');
+  return { status: 'success', message: 'Votre reponse a ete retiree.' };
+}
+
 export async function retractReferralOffer(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -1233,6 +1432,14 @@ export async function updateMyReferralDemandListingStatusForm(formData: FormData
 
 export async function updateReferralDemandListingForm(formData: FormData): Promise<void> {
   await updateReferralDemandListing(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function createReferralDemandResponseForm(formData: FormData): Promise<void> {
+  await createReferralDemandResponse(DEFAULT_ACTION_STATE, formData);
+}
+
+export async function retractReferralDemandResponseForm(formData: FormData): Promise<void> {
+  await retractReferralDemandResponse(DEFAULT_ACTION_STATE, formData);
 }
 
 export async function updateReferralRequestStatusForm(formData: FormData): Promise<void> {

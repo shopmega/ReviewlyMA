@@ -1,0 +1,363 @@
+[
+  {
+    "key": "adminSettings.security.maintenanceDesc",
+    "usages": [
+      "src/app/(admin)/admin/parametres/page.tsx:1274"
+    ]
+  },
+  {
+    "key": "adminSettings.security.maintenanceLabel",
+    "usages": [
+      "src/app/(admin)/admin/parametres/page.tsx:1273"
+    ]
+  },
+  {
+    "key": "adminSettings.security.registrationsDesc",
+    "usages": [
+      "src/app/(admin)/admin/parametres/page.tsx:1280"
+    ]
+  },
+  {
+    "key": "adminSettings.security.registrationsLabel",
+    "usages": [
+      "src/app/(admin)/admin/parametres/page.tsx:1279"
+    ]
+  },
+  {
+    "key": "business.hero.profileComplete",
+    "usages": [
+      "src/components/business/BusinessHero.tsx:197"
+    ]
+  },
+  {
+    "key": "business.salary.confidenceHigh",
+    "usages": [
+      "src/components/business/SalarySection.tsx:139"
+    ]
+  },
+  {
+    "key": "business.salary.confidenceLow",
+    "usages": [
+      "src/components/business/SalarySection.tsx:141"
+    ]
+  },
+  {
+    "key": "business.salary.confidenceMedium",
+    "usages": [
+      "src/components/business/SalarySection.tsx:140"
+    ]
+  },
+  {
+    "key": "business.salary.confidenceVeryLow",
+    "usages": [
+      "src/components/business/SalarySection.tsx:142"
+    ]
+  },
+  {
+    "key": "business.salary.insufficientData",
+    "usages": [
+      "src/components/business/SalarySection.tsx:247"
+    ]
+  },
+  {
+    "key": "business.salary.kAnonymityNotice",
+    "usages": [
+      "src/components/business/SalarySection.tsx:310"
+    ]
+  },
+  {
+    "key": "business.salary.lastUpdate",
+    "usages": [
+      "src/components/business/SalarySection.tsx:198"
+    ]
+  },
+  {
+    "key": "business.salary.loginToUnlock",
+    "usages": [
+      "src/components/business/SalarySection.tsx:247",
+      "src/components/business/SalarySection.tsx:251",
+      "src/components/business/SalarySection.tsx:255",
+      "src/components/business/SalarySection.tsx:278",
+      "src/components/business/SalarySection.tsx:296"
+    ]
+  },
+  {
+    "key": "business.salary.moderationNote",
+    "usages": [
+      "src/components/business/SalarySection.tsx:201"
+    ]
+  },
+  {
+    "key": "business.salary.notAvailable",
+    "usages": [
+      "src/components/business/SalarySection.tsx:145",
+      "src/components/business/SalarySection.tsx:151"
+    ]
+  },
+  {
+    "key": "business.salary.previewLimited",
+    "usages": [
+      "src/components/business/SalarySection.tsx:305"
+    ]
+  },
+  {
+    "key": "business.salary.qualitySignal",
+    "usages": [
+      "src/components/business/SalarySection.tsx:188"
+    ]
+  },
+  {
+    "key": "business.salary.rangeNote",
+    "usages": [
+      "src/components/business/SalarySection.tsx:211"
+    ]
+  },
+  {
+    "key": "business.salary.rangeSignal",
+    "usages": [
+      "src/components/business/SalarySection.tsx:206"
+    ]
+  },
+  {
+    "key": "business.salary.visualOverview",
+    "usages": [
+      "src/components/business/SalarySection.tsx:219"
+    ]
+  },
+  {
+    "key": "business.trust.claimPrompt",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:116"
+    ]
+  },
+  {
+    "key": "business.trust.claimPromptLink",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:122"
+    ]
+  },
+  {
+    "key": "business.trust.claimed",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:81"
+    ]
+  },
+  {
+    "key": "business.trust.confidence",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:106"
+    ]
+  },
+  {
+    "key": "business.trust.high",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:47"
+    ]
+  },
+  {
+    "key": "business.trust.lastUpdate",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:99"
+    ]
+  },
+  {
+    "key": "business.trust.low",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:49"
+    ]
+  },
+  {
+    "key": "business.trust.medium",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:48"
+    ]
+  },
+  {
+    "key": "business.trust.moderated",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:85"
+    ]
+  },
+  {
+    "key": "business.trust.noDate",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:65"
+    ]
+  },
+  {
+    "key": "business.trust.reviews",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:91"
+    ]
+  },
+  {
+    "key": "business.trust.salaries",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:95"
+    ]
+  },
+  {
+    "key": "business.trust.unclaimed",
+    "usages": [
+      "src/components/business/BusinessInsightsTabs.tsx:81"
+    ]
+  },
+  {
+    "key": "claimNew.step1.presentation",
+    "usages": [
+      "src/app/claim/new/page.tsx:826"
+    ]
+  },
+  {
+    "key": "forProsPage.features.gold.9",
+    "usages": [
+      "src/app/pour-les-pros/page.tsx:48"
+    ]
+  },
+  {
+    "key": "home.claim.badge",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:527"
+    ]
+  },
+  {
+    "key": "home.claim.benefit1",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:537"
+    ]
+  },
+  {
+    "key": "home.claim.benefit2",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:540"
+    ]
+  },
+  {
+    "key": "home.claim.benefit3",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:543"
+    ]
+  },
+  {
+    "key": "home.claim.learnMore",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:556"
+    ]
+  },
+  {
+    "key": "home.claim.start",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:551"
+    ]
+  },
+  {
+    "key": "home.claim.subtitle",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:533"
+    ]
+  },
+  {
+    "key": "home.claim.title",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:530"
+    ]
+  },
+  {
+    "key": "home.hero.claimCta",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:416"
+    ]
+  },
+  {
+    "key": "home.trust.active",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:276"
+    ]
+  },
+  {
+    "key": "home.trust.businesses",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:265"
+    ]
+  },
+  {
+    "key": "home.trust.moderated",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:275"
+    ]
+  },
+  {
+    "key": "home.trust.reviews",
+    "usages": [
+      "src/components/shared/HomeClient.tsx:270"
+    ]
+  },
+  {
+    "key": "listing.clear",
+    "usages": [
+      "src/components/shared/BusinessList.tsx:337"
+    ]
+  },
+  {
+    "key": "referrals.detail.applyNow",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:285"
+    ]
+  },
+  {
+    "key": "referrals.detail.myRequestsCta",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:270",
+      "src/app/parrainages/[id]/page.tsx:373"
+    ]
+  },
+  {
+    "key": "referrals.detail.offerUnavailable",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:370"
+    ]
+  },
+  {
+    "key": "referrals.detail.ownerCta",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:264",
+      "src/app/parrainages/[id]/page.tsx:360"
+    ]
+  },
+  {
+    "key": "referrals.detail.statusActive",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:210"
+    ]
+  },
+  {
+    "key": "referrals.detail.statusClosed",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:214"
+    ]
+  },
+  {
+    "key": "referrals.detail.statusPaused",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:212"
+    ]
+  },
+  {
+    "key": "referrals.detail.statusRejected",
+    "usages": [
+      "src/app/parrainages/[id]/page.tsx:215"
+    ]
+  },
+  {
+    "key": "referrals.list.myOffers",
+    "usages": [
+      "src/app/parrainages/page.tsx:221"
+    ]
+  },
+  {
+    "key": "referrals.list.myRequests",
+    "usages": [
+      "src/app/parrainages/page.tsx:224"
+    ]
+  }
+]

@@ -1,0 +1,2263 @@
+{
+  "ok": true,
+  "scannedUrl": "https://reviewly-ma.vercel.app/",
+  "supabaseUrl": "https://bxxrycsmmxnsenunvzyq.supabase.co",
+  "tablesDiscovered": 64,
+  "authAvailable": false,
+  "extractionSummary": {
+    "bundlesScanned": 20,
+    "supabaseUrlFound": true,
+    "anonKeyFound": true,
+    "otherCredentialsFound": 0,
+    "framework": "nextjs",
+    "buildId": "VyRUXZACd71K-8KG7D0nw",
+    "totalChunksAvailable": 1,
+    "chunksScanned": 20
+  },
+  "partial": false,
+  "partialReason": null,
+  "score": 0,
+  "grade": "F",
+  "counts": {
+    "CRITICAL": 64,
+    "HIGH": 56,
+    "MEDIUM": 9,
+    "LOW": 0,
+    "INFO": 1,
+    "ERROR": 0
+  },
+  "summary": "64 critical issues found — immediate action required.",
+  "findings": [
+    {
+      "id": "RLS_004",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_analytics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_analytics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_analytics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_analytics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_analytics_owner_only\" ON public.business_analytics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_008",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"review_versions\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"review_versions\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "review_versions",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.review_versions ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_versions_owner_only\" ON public.review_versions\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_011",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_city_sector_metrics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_city_sector_metrics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_city_sector_metrics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_city_sector_metrics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_city_sector_metrics_owner_only\" ON public.salary_city_sector_metrics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_015",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"support_tickets\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"support_tickets\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "support_tickets",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"support_tickets_owner_only\" ON public.support_tickets\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_019",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"ads\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"ads\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "ads",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.ads ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"ads_owner_only\" ON public.ads\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_023",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"updates\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"updates\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "updates",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.updates ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"updates_owner_only\" ON public.updates\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_026",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_city_metrics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_city_metrics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_city_metrics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_city_metrics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_city_metrics_owner_only\" ON public.salary_city_metrics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_029",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"businesses\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"businesses\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "businesses",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"businesses_owner_only\" ON public.businesses\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_031",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_company_metrics_mv\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_company_metrics_mv\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_company_metrics_mv",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_company_metrics_mv ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_company_metrics_mv_owner_only\" ON public.salary_company_metrics_mv\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_035",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"carousel_analytics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"carousel_analytics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "carousel_analytics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.carousel_analytics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"carousel_analytics_owner_only\" ON public.carousel_analytics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_038",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_company_metrics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_company_metrics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_company_metrics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_company_metrics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_company_metrics_owner_only\" ON public.salary_company_metrics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_040",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_city_metrics_mv\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_city_metrics_mv\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_city_metrics_mv",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_city_metrics_mv ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_city_metrics_mv_owner_only\" ON public.salary_city_metrics_mv\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_043",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_reports\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_reports",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_reports_owner_only\" ON public.business_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_046",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_role_city_metrics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_role_city_metrics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_role_city_metrics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_role_city_metrics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_role_city_metrics_owner_only\" ON public.salary_role_city_metrics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_050",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_alert_subscriptions\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_alert_subscriptions\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_alert_subscriptions",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_alert_subscriptions ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_alert_subscriptions_owner_only\" ON public.salary_alert_subscriptions\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_054",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"review_moderation_events\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"review_moderation_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "review_moderation_events",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.review_moderation_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_moderation_events_owner_only\" ON public.review_moderation_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_057",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"subcategories\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"subcategories\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "subcategories",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.subcategories ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"subcategories_owner_only\" ON public.subcategories\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_061",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"support_ticket_messages\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"support_ticket_messages\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "support_ticket_messages",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.support_ticket_messages ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"support_ticket_messages_owner_only\" ON public.support_ticket_messages\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_064",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"profiles\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"profiles\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "profiles",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"profiles_owner_only\" ON public.profiles\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_065",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salaries\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salaries\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salaries",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salaries ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salaries_owner_only\" ON public.salaries\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_067",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"user_businesses\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"user_businesses\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "user_businesses",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.user_businesses ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"user_businesses_owner_only\" ON public.user_businesses\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_069",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"competitor_ads\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"competitor_ads\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "competitor_ads",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.competitor_ads ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"competitor_ads_owner_only\" ON public.competitor_ads\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_071",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"favorites\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"favorites\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "favorites",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"favorites_owner_only\" ON public.favorites\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_073",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"error_reports\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"error_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "error_reports",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.error_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"error_reports_owner_only\" ON public.error_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_075",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"premium_users\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"premium_users\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "premium_users",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.premium_users ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"premium_users_owner_only\" ON public.premium_users\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_076",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"blog_articles\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"blog_articles\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "blog_articles",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.blog_articles ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"blog_articles_owner_only\" ON public.blog_articles\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_078",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"review_reports\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"review_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "review_reports",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.review_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_reports_owner_only\" ON public.review_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_079",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"amenities\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"amenities\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "amenities",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.amenities ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"amenities_owner_only\" ON public.amenities\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_081",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_claim_events\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_claim_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_claim_events",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_claim_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_claim_events_owner_only\" ON public.business_claim_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_083",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"review_appeals\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"review_appeals\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "review_appeals",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.review_appeals ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_appeals_owner_only\" ON public.review_appeals\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_085",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_outreach_pipeline\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_outreach_pipeline\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_outreach_pipeline",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_outreach_pipeline ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_outreach_pipeline_owner_only\" ON public.business_outreach_pipeline\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_087",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"media_reports\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"media_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "media_reports",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.media_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"media_reports_owner_only\" ON public.media_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_089",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"analytics_events\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"analytics_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "analytics_events",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"analytics_events_owner_only\" ON public.analytics_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_090",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_role_city_metrics_mv\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_role_city_metrics_mv\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_role_city_metrics_mv",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_role_city_metrics_mv ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_role_city_metrics_mv_owner_only\" ON public.salary_role_city_metrics_mv\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_092",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"review_votes\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"review_votes\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "review_votes",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.review_votes ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_votes_owner_only\" ON public.review_votes\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_094",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"job_referral_requests\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"job_referral_requests\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "job_referral_requests",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.job_referral_requests ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_requests_owner_only\" ON public.job_referral_requests\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_096",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_monthly_reports_public\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_monthly_reports_public\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_monthly_reports_public",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_monthly_reports_public ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_monthly_reports_public_owner_only\" ON public.salary_monthly_reports_public\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_098",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_suggestions\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_suggestions\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_suggestions",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_suggestions ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_suggestions_owner_only\" ON public.business_suggestions\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_100",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"job_referral_offer_reports\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"job_referral_offer_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "job_referral_offer_reports",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.job_referral_offer_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_offer_reports_owner_only\" ON public.job_referral_offer_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_102",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"competitor_ad_events\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"competitor_ad_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "competitor_ad_events",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.competitor_ad_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"competitor_ad_events_owner_only\" ON public.competitor_ad_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_103",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"admin_business_opportunity_v1\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"admin_business_opportunity_v1\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "admin_business_opportunity_v1",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.admin_business_opportunity_v1 ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"admin_business_opportunity_v1_owner_only\" ON public.admin_business_opportunity_v1\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_105",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_claims\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_claims\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_claims",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_claims ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_claims_owner_only\" ON public.business_claims\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_107",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"job_referral_user_blocks\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"job_referral_user_blocks\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "job_referral_user_blocks",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.job_referral_user_blocks ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_user_blocks_owner_only\" ON public.job_referral_user_blocks\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_109",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"verification_codes\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"verification_codes\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "verification_codes",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.verification_codes ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"verification_codes_owner_only\" ON public.verification_codes\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_110",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"business_hours\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"business_hours\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "business_hours",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.business_hours ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_hours_owner_only\" ON public.business_hours\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_112",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"messages\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"messages\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "messages",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"messages_owner_only\" ON public.messages\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_114",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"site_settings\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"site_settings\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "site_settings",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "zero_rows_matched"
+      },
+      "remediation": "ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"site_settings_owner_only\" ON public.site_settings\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_116",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"search_analytics\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"search_analytics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "search_analytics",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.search_analytics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"search_analytics_owner_only\" ON public.search_analytics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_118",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"job_referral_offers\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"job_referral_offers\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "job_referral_offers",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.job_referral_offers ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_offers_owner_only\" ON public.job_referral_offers\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_120",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"seasonal_collections\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"seasonal_collections\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "seasonal_collections",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.seasonal_collections ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"seasonal_collections_owner_only\" ON public.seasonal_collections\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_122",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"interviews\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"interviews\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "interviews",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.interviews ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"interviews_owner_only\" ON public.interviews\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_124",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"claim_verification_evidence\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"claim_verification_evidence\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "claim_verification_evidence",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.claim_verification_evidence ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"claim_verification_evidence_owner_only\" ON public.claim_verification_evidence\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_126",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"search_logs\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"search_logs\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "search_logs",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.search_logs ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"search_logs_owner_only\" ON public.search_logs\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_128",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"admin_audit_log\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"admin_audit_log\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "admin_audit_log",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"admin_audit_log_owner_only\" ON public.admin_audit_log\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_129",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_city_sector_metrics_mv\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_city_sector_metrics_mv\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_city_sector_metrics_mv",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_city_sector_metrics_mv ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_city_sector_metrics_mv_owner_only\" ON public.salary_city_sector_metrics_mv\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_131",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"job_referral_demand_listings\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"job_referral_demand_listings\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "job_referral_demand_listings",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.job_referral_demand_listings ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_demand_listings_owner_only\" ON public.job_referral_demand_listings\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_133",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"saved_businesses\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"saved_businesses\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "saved_businesses",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.saved_businesses ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"saved_businesses_owner_only\" ON public.saved_businesses\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_134",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"categories\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"categories\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "categories",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"categories_owner_only\" ON public.categories\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_135",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"reviews\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"reviews\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "reviews",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"reviews_owner_only\" ON public.reviews\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_137",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"salary_monthly_reports\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"salary_monthly_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "salary_monthly_reports",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.salary_monthly_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_monthly_reports_owner_only\" ON public.salary_monthly_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_139",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"pinned_content\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"pinned_content\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "pinned_content",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.pinned_content ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"pinned_content_owner_only\" ON public.pinned_content\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_141",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"notifications\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"notifications\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "notifications",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"notifications_owner_only\" ON public.notifications\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_143",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"audit_logs\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"audit_logs\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "audit_logs",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"audit_logs_owner_only\" ON public.audit_logs\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_145",
+      "module": "rls_checker",
+      "severity": "CRITICAL",
+      "cvssScore": 9.1,
+      "title": "Table \"premium_payments\" Allows UPDATE as Anonymous User",
+      "description": "Any unauthenticated visitor can perform UPDATE on the \"premium_payments\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies. RLS authorization passed — the request was only rejected at the schema/constraint layer, confirming the table is writable beyond the auth boundary.",
+      "evidence": {
+        "table": "premium_payments",
+        "operation": "UPDATE",
+        "authenticatedAs": "anon",
+        "httpEvidence": "PGRST204"
+      },
+      "remediation": "ALTER TABLE public.premium_payments ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"premium_payments_owner_only\" ON public.premium_payments\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RECON_001",
+      "module": "recon",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "PostgREST Schema Endpoint Publicly Accessible",
+      "description": "The PostgREST OpenAPI root (/rest/v1/) returned a full list of database table definitions to an unauthenticated request. This exposes your entire data model without authentication.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/",
+        "tableCount": 64,
+        "tables": [
+          "business_analytics",
+          "review_versions",
+          "salary_city_sector_metrics",
+          "support_tickets",
+          "ads",
+          "updates",
+          "salary_city_metrics",
+          "businesses",
+          "salary_company_metrics_mv",
+          "carousel_analytics",
+          "salary_company_metrics",
+          "salary_city_metrics_mv",
+          "business_reports",
+          "salary_role_city_metrics",
+          "salary_alert_subscriptions",
+          "review_moderation_events",
+          "subcategories",
+          "support_ticket_messages",
+          "profiles",
+          "salaries"
+        ],
+        "rpcFunctions": [
+          "get_my_competitor_ad_metrics",
+          "rls_auto_enable",
+          "is_admin_user",
+          "replace_business_hours",
+          "get_published_review_segment_count",
+          "compute_claim_risk_score",
+          "transition_review_status",
+          "refresh_salary_analytics_materialized_views",
+          "salary_sector_slug",
+          "can_show_review_segment",
+          "get_review_visibility_guardrails",
+          "toggle_user_premium",
+          "expire_premium_accounts",
+          "can_manage_business_action",
+          "sync_all_business_ratings",
+          "get_my_referral_offer_requests",
+          "recalculate_business_rating",
+          "transition_claim_state",
+          "can_user_publish_referral_offer",
+          "generate_salary_monthly_report"
+        ]
+      },
+      "remediation": "In Supabase project settings → API, set \"Expose schemas\" to empty or restrict the exposed schema list. Consider adding a JWT requirement to schema introspection via a custom policy."
+    },
+    {
+      "id": "RLS_002",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"business_analytics\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"business_analytics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "business_analytics",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.business_analytics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_analytics_owner_only\" ON public.business_analytics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_006",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"review_versions\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"review_versions\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "review_versions",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.review_versions ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_versions_owner_only\" ON public.review_versions\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_013",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"support_tickets\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"support_tickets\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "support_tickets",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"support_tickets_owner_only\" ON public.support_tickets\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_017",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"ads\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"ads\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "ads",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.ads ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"ads_owner_only\" ON public.ads\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_021",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"updates\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"updates\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "updates",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.updates ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"updates_owner_only\" ON public.updates\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_033",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"carousel_analytics\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"carousel_analytics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "carousel_analytics",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.carousel_analytics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"carousel_analytics_owner_only\" ON public.carousel_analytics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_042",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"business_reports\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"business_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "business_reports",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.business_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_reports_owner_only\" ON public.business_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_048",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"salary_alert_subscriptions\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"salary_alert_subscriptions\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "salary_alert_subscriptions",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.salary_alert_subscriptions ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_alert_subscriptions_owner_only\" ON public.salary_alert_subscriptions\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_052",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"review_moderation_events\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"review_moderation_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "review_moderation_events",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.review_moderation_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_moderation_events_owner_only\" ON public.review_moderation_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_059",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"support_ticket_messages\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"support_ticket_messages\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "support_ticket_messages",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.support_ticket_messages ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"support_ticket_messages_owner_only\" ON public.support_ticket_messages\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_063",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"profiles\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"profiles\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "profiles",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"profiles_owner_only\" ON public.profiles\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_066",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"user_businesses\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"user_businesses\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "user_businesses",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.user_businesses ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"user_businesses_owner_only\" ON public.user_businesses\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_068",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"competitor_ads\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"competitor_ads\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "competitor_ads",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.competitor_ads ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"competitor_ads_owner_only\" ON public.competitor_ads\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_070",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"favorites\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"favorites\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "favorites",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"favorites_owner_only\" ON public.favorites\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_072",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"error_reports\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"error_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "error_reports",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.error_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"error_reports_owner_only\" ON public.error_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_074",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"premium_users\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"premium_users\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "premium_users",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.premium_users ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"premium_users_owner_only\" ON public.premium_users\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_077",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"review_reports\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"review_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "review_reports",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.review_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_reports_owner_only\" ON public.review_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_080",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"business_claim_events\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"business_claim_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "business_claim_events",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.business_claim_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_claim_events_owner_only\" ON public.business_claim_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_082",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"review_appeals\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"review_appeals\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "review_appeals",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.review_appeals ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_appeals_owner_only\" ON public.review_appeals\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_084",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"business_outreach_pipeline\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"business_outreach_pipeline\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "business_outreach_pipeline",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.business_outreach_pipeline ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_outreach_pipeline_owner_only\" ON public.business_outreach_pipeline\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_086",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"media_reports\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"media_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "media_reports",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.media_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"media_reports_owner_only\" ON public.media_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_088",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"analytics_events\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"analytics_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "analytics_events",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"analytics_events_owner_only\" ON public.analytics_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_091",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"review_votes\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"review_votes\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "review_votes",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.review_votes ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"review_votes_owner_only\" ON public.review_votes\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_093",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"job_referral_requests\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"job_referral_requests\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "job_referral_requests",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.job_referral_requests ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_requests_owner_only\" ON public.job_referral_requests\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_095",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"salary_monthly_reports_public\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"salary_monthly_reports_public\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "salary_monthly_reports_public",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.salary_monthly_reports_public ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_monthly_reports_public_owner_only\" ON public.salary_monthly_reports_public\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_097",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"business_suggestions\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"business_suggestions\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "business_suggestions",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.business_suggestions ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_suggestions_owner_only\" ON public.business_suggestions\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_099",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"job_referral_offer_reports\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"job_referral_offer_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "job_referral_offer_reports",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.job_referral_offer_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_offer_reports_owner_only\" ON public.job_referral_offer_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_101",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"competitor_ad_events\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"competitor_ad_events\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "competitor_ad_events",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.competitor_ad_events ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"competitor_ad_events_owner_only\" ON public.competitor_ad_events\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_104",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"business_claims\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"business_claims\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "business_claims",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.business_claims ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"business_claims_owner_only\" ON public.business_claims\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_106",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"job_referral_user_blocks\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"job_referral_user_blocks\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "job_referral_user_blocks",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.job_referral_user_blocks ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_user_blocks_owner_only\" ON public.job_referral_user_blocks\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_108",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"verification_codes\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"verification_codes\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "verification_codes",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.verification_codes ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"verification_codes_owner_only\" ON public.verification_codes\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_111",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"messages\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"messages\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "messages",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"messages_owner_only\" ON public.messages\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_113",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"site_settings\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"site_settings\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "site_settings",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 1,
+        "exposedColumns": [
+          "id",
+          "site_name",
+          "site_description",
+          "contact_email",
+          "support_phone",
+          "facebook_url",
+          "twitter_url",
+          "instagram_url",
+          "linkedin_url",
+          "maintenance_mode",
+          "allow_new_registrations",
+          "require_email_verification",
+          "default_language",
+          "updated_at",
+          "popular_searches_config",
+          "premium_annual_price",
+          "premium_monthly_price",
+          "premium_enabled",
+          "premium_description",
+          "email_provider",
+          "resend_api_key",
+          "sendgrid_api_key",
+          "mailjet_api_key",
+          "mailjet_api_secret",
+          "email_from",
+          "payment_bank_name",
+          "payment_rib_number",
+          "payment_beneficiary",
+          "payment_chari_url",
+          "payment_methods_enabled",
+          "enable_reviews",
+          "enable_salaries",
+          "enable_interviews",
+          "enable_messaging",
+          "enable_claims",
+          "site_logo_url",
+          "google_analytics_id",
+          "facebook_pixel_id",
+          "office_address",
+          "office_phone",
+          "copyright_text",
+          "home_sections_config",
+          "tier_growth_monthly_price",
+          "tier_growth_annual_price",
+          "tier_gold_monthly_price",
+          "tier_gold_annual_price",
+          "tier_pro_monthly_price",
+          "tier_pro_annual_price",
+          "adsense_enabled",
+          "adsense_client_id",
+          "adsense_auto_ads_enabled",
+          "adsense_config",
+          "salary_roles",
+          "salary_departments",
+          "salary_intervals",
+          "enable_competitor_ads",
+          "enable_competitor_ads_tracking",
+          "partner_app_name",
+          "partner_app_url"
+        ]
+      },
+      "remediation": "ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"site_settings_owner_only\" ON public.site_settings\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_115",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"search_analytics\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"search_analytics\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "search_analytics",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.search_analytics ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"search_analytics_owner_only\" ON public.search_analytics\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_117",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"job_referral_offers\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"job_referral_offers\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "job_referral_offers",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.job_referral_offers ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_offers_owner_only\" ON public.job_referral_offers\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_119",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"seasonal_collections\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"seasonal_collections\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "seasonal_collections",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.seasonal_collections ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"seasonal_collections_owner_only\" ON public.seasonal_collections\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_121",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"interviews\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"interviews\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "interviews",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.interviews ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"interviews_owner_only\" ON public.interviews\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_123",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"claim_verification_evidence\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"claim_verification_evidence\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "claim_verification_evidence",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.claim_verification_evidence ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"claim_verification_evidence_owner_only\" ON public.claim_verification_evidence\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_125",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"search_logs\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"search_logs\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "search_logs",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.search_logs ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"search_logs_owner_only\" ON public.search_logs\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_127",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"admin_audit_log\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"admin_audit_log\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "admin_audit_log",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"admin_audit_log_owner_only\" ON public.admin_audit_log\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_130",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"job_referral_demand_listings\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"job_referral_demand_listings\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "job_referral_demand_listings",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.job_referral_demand_listings ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"job_referral_demand_listings_owner_only\" ON public.job_referral_demand_listings\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_132",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"saved_businesses\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"saved_businesses\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "saved_businesses",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.saved_businesses ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"saved_businesses_owner_only\" ON public.saved_businesses\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_136",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"salary_monthly_reports\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"salary_monthly_reports\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "salary_monthly_reports",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.salary_monthly_reports ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"salary_monthly_reports_owner_only\" ON public.salary_monthly_reports\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_138",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"pinned_content\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"pinned_content\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "pinned_content",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.pinned_content ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"pinned_content_owner_only\" ON public.pinned_content\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_140",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"notifications\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"notifications\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "notifications",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"notifications_owner_only\" ON public.notifications\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_142",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"audit_logs\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"audit_logs\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "audit_logs",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"audit_logs_owner_only\" ON public.audit_logs\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "RLS_144",
+      "module": "rls_checker",
+      "severity": "HIGH",
+      "cvssScore": 7.5,
+      "title": "Table \"premium_payments\" Allows SELECT as Anonymous User",
+      "description": "Any unauthenticated visitor can perform SELECT on the \"premium_payments\" table without ownership scoping. This indicates missing or overly permissive Row Level Security policies.",
+      "evidence": {
+        "table": "premium_payments",
+        "operation": "SELECT",
+        "authenticatedAs": "anon",
+        "httpEvidence": null,
+        "rowCount": 0
+      },
+      "remediation": "ALTER TABLE public.premium_payments ENABLE ROW LEVEL SECURITY;\n-- Then add scoped policies, e.g.:\nCREATE POLICY \"premium_payments_owner_only\" ON public.premium_payments\n  USING (auth.uid() = user_id);"
+    },
+    {
+      "id": "SENS_002",
+      "module": "sensitive_scanner",
+      "severity": "HIGH",
+      "cvssScore": 7.8,
+      "title": "Sensitive Columns Exposed in \"businesses\" Table",
+      "description": "The \"businesses\" table is readable without authentication and contains columns matching sensitive data patterns: address, phone. PII columns must be scoped to the owning user only.",
+      "evidence": {
+        "table": "businesses",
+        "sensitiveColumns": [
+          "address",
+          "phone"
+        ],
+        "allColumns": [
+          "id",
+          "slug",
+          "name",
+          "type",
+          "category",
+          "subcategory",
+          "location",
+          "address",
+          "city",
+          "quartier",
+          "description",
+          "phone",
+          "website",
+          "whatsapp_number",
+          "company_size",
+          "employee_count",
+          "price_range",
+          "logo_url",
+          "logo_hint",
+          "cover_url",
+          "cover_hint",
+          "gallery_urls",
+          "image_url",
+          "tags",
+          "amenities",
+          "benefits",
+          "affiliate_link",
+          "affiliate_cta",
+          "admin_affiliate_link",
+          "admin_affiliate_cta",
+          "logo_requested",
+          "is_featured",
+          "is_sponsored",
+          "is_premium",
+          "tier",
+          "status",
+          "deleted_at",
+          "deleted_by",
+          "owner_id",
+          "user_id",
+          "overall_rating",
+          "average_rating",
+          "review_count",
+          "search_vector",
+          "created_at",
+          "updated_at",
+          "verification_badge_level",
+          "verification_last_checked_at",
+          "verification_public_note"
+        ],
+        "authenticatedAs": "anon"
+      },
+      "remediation": "1. Enable RLS: ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;\n2. Scope access: CREATE POLICY \"businesses_owner\" ON public.businesses\n   USING (auth.uid() = user_id);\n3. Use select= column filtering to exclude sensitive columns from default responses."
+    },
+    {
+      "id": "RPC_001",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"get_my_competitor_ad_metrics\" Accessible to Anonymous Users",
+      "description": "The RPC function \"get_my_competitor_ad_metrics\" is accessible to unauthenticated callers via POST /rest/v1/rpc/get_my_competitor_ad_metrics. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/get_my_competitor_ad_metrics",
+        "httpStatus": 200,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the get_my_competitor_ad_metrics function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.get_my_competitor_ad_metrics FROM anon;\nGRANT EXECUTE ON FUNCTION public.get_my_competitor_ad_metrics TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "RPC_002",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"rls_auto_enable\" Accessible to Anonymous Users",
+      "description": "The RPC function \"rls_auto_enable\" is accessible to unauthenticated callers via POST /rest/v1/rpc/rls_auto_enable. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/rls_auto_enable",
+        "httpStatus": 400,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the rls_auto_enable function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.rls_auto_enable FROM anon;\nGRANT EXECUTE ON FUNCTION public.rls_auto_enable TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "RPC_003",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"refresh_salary_analytics_materialized_views\" Accessible to Anonymous Users",
+      "description": "The RPC function \"refresh_salary_analytics_materialized_views\" is accessible to unauthenticated callers via POST /rest/v1/rpc/refresh_salary_analytics_materialized_views. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/refresh_salary_analytics_materialized_views",
+        "httpStatus": 200,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the refresh_salary_analytics_materialized_views function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.refresh_salary_analytics_materialized_views FROM anon;\nGRANT EXECUTE ON FUNCTION public.refresh_salary_analytics_materialized_views TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "RPC_004",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"expire_premium_accounts\" Accessible to Anonymous Users",
+      "description": "The RPC function \"expire_premium_accounts\" is accessible to unauthenticated callers via POST /rest/v1/rpc/expire_premium_accounts. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/expire_premium_accounts",
+        "httpStatus": 200,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the expire_premium_accounts function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.expire_premium_accounts FROM anon;\nGRANT EXECUTE ON FUNCTION public.expire_premium_accounts TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "RPC_005",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"sync_all_business_ratings\" Accessible to Anonymous Users",
+      "description": "The RPC function \"sync_all_business_ratings\" is accessible to unauthenticated callers via POST /rest/v1/rpc/sync_all_business_ratings. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/sync_all_business_ratings",
+        "httpStatus": 200,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the sync_all_business_ratings function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.sync_all_business_ratings FROM anon;\nGRANT EXECUTE ON FUNCTION public.sync_all_business_ratings TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "RPC_006",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"get_my_referral_offer_requests\" Accessible to Anonymous Users",
+      "description": "The RPC function \"get_my_referral_offer_requests\" is accessible to unauthenticated callers via POST /rest/v1/rpc/get_my_referral_offer_requests. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/get_my_referral_offer_requests",
+        "httpStatus": 200,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the get_my_referral_offer_requests function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.get_my_referral_offer_requests FROM anon;\nGRANT EXECUTE ON FUNCTION public.get_my_referral_offer_requests TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "RPC_007",
+      "module": "rpc_auditor",
+      "severity": "HIGH",
+      "cvssScore": 8,
+      "title": "RPC Function \"generate_salary_monthly_report\" Accessible to Anonymous Users",
+      "description": "The RPC function \"generate_salary_monthly_report\" is accessible to unauthenticated callers via POST /rest/v1/rpc/generate_salary_monthly_report. Any visitor can invoke this function without a valid session.",
+      "evidence": {
+        "endpoint": "https://bxxrycsmmxnsenunvzyq.supabase.co/rest/v1/rpc/generate_salary_monthly_report",
+        "httpStatus": 200,
+        "accessLevel": "anonymous",
+        "isDangerous": false,
+        "discoveredVia": "openapi_spec"
+      },
+      "remediation": "Restrict the generate_salary_monthly_report function to authenticated or privileged roles only:\nREVOKE EXECUTE ON FUNCTION public.generate_salary_monthly_report FROM anon;\nGRANT EXECUTE ON FUNCTION public.generate_salary_monthly_report TO authenticated;\n\nOr add a Postgres security check inside the function body:\nIF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;"
+    },
+    {
+      "id": "SENS_001",
+      "module": "sensitive_scanner",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Sensitive Columns Exposed in \"site_settings\" Table",
+      "description": "The \"site_settings\" table is readable without authentication and contains columns matching sensitive data patterns: contact_email, support_phone, require_email_verification, email_provider, resend_api_key, sendgrid_api_key, mailjet_api_key, mailjet_api_secret, email_from, office_address, office_phone. ",
+      "evidence": {
+        "table": "site_settings",
+        "sensitiveColumns": [
+          "contact_email",
+          "support_phone",
+          "require_email_verification",
+          "email_provider",
+          "resend_api_key",
+          "sendgrid_api_key",
+          "mailjet_api_key",
+          "mailjet_api_secret",
+          "email_from",
+          "office_address",
+          "office_phone"
+        ],
+        "allColumns": [
+          "id",
+          "site_name",
+          "site_description",
+          "contact_email",
+          "support_phone",
+          "facebook_url",
+          "twitter_url",
+          "instagram_url",
+          "linkedin_url",
+          "maintenance_mode",
+          "allow_new_registrations",
+          "require_email_verification",
+          "default_language",
+          "updated_at",
+          "popular_searches_config",
+          "premium_annual_price",
+          "premium_monthly_price",
+          "premium_enabled",
+          "premium_description",
+          "email_provider",
+          "resend_api_key",
+          "sendgrid_api_key",
+          "mailjet_api_key",
+          "mailjet_api_secret",
+          "email_from",
+          "payment_bank_name",
+          "payment_rib_number",
+          "payment_beneficiary",
+          "payment_chari_url",
+          "payment_methods_enabled",
+          "enable_reviews",
+          "enable_salaries",
+          "enable_interviews",
+          "enable_messaging",
+          "enable_claims",
+          "site_logo_url",
+          "google_analytics_id",
+          "facebook_pixel_id",
+          "office_address",
+          "office_phone",
+          "copyright_text",
+          "home_sections_config",
+          "tier_growth_monthly_price",
+          "tier_growth_annual_price",
+          "tier_gold_monthly_price",
+          "tier_gold_annual_price",
+          "tier_pro_monthly_price",
+          "tier_pro_annual_price",
+          "adsense_enabled",
+          "adsense_client_id",
+          "adsense_auto_ads_enabled",
+          "adsense_config",
+          "salary_roles",
+          "salary_departments",
+          "salary_intervals",
+          "enable_competitor_ads",
+          "enable_competitor_ads_tracking",
+          "partner_app_name",
+          "partner_app_url"
+        ],
+        "authenticatedAs": "anon"
+      },
+      "remediation": "1. Enable RLS: ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;\n2. Scope access: CREATE POLICY \"site_settings_owner\" ON public.site_settings\n   USING (auth.uid() = user_id);\n3. Use select= column filtering to exclude sensitive columns from default responses."
+    },
+    {
+      "id": "ORACLE_001",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"businesses\"",
+      "description": "Although RLS prevents reading data from \"businesses\", the total row count (4238) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 4238 rows even without being able to read them.",
+      "evidence": {
+        "table": "businesses",
+        "rowCount": 4238,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_002",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"subcategories\"",
+      "description": "Although RLS prevents reading data from \"subcategories\", the total row count (106) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 106 rows even without being able to read them.",
+      "evidence": {
+        "table": "subcategories",
+        "rowCount": 106,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.subcategories ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_003",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"salaries\"",
+      "description": "Although RLS prevents reading data from \"salaries\", the total row count (120) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 120 rows even without being able to read them.",
+      "evidence": {
+        "table": "salaries",
+        "rowCount": 120,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.salaries ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_004",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"blog_articles\"",
+      "description": "Although RLS prevents reading data from \"blog_articles\", the total row count (24) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 24 rows even without being able to read them.",
+      "evidence": {
+        "table": "blog_articles",
+        "rowCount": 24,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.blog_articles ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_005",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"amenities\"",
+      "description": "Although RLS prevents reading data from \"amenities\", the total row count (25) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 25 rows even without being able to read them.",
+      "evidence": {
+        "table": "amenities",
+        "rowCount": 25,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.amenities ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_006",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"business_hours\"",
+      "description": "Although RLS prevents reading data from \"business_hours\", the total row count (7) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 7 rows even without being able to read them.",
+      "evidence": {
+        "table": "business_hours",
+        "rowCount": 7,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.business_hours ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_007",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"categories\"",
+      "description": "Although RLS prevents reading data from \"categories\", the total row count (13) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 13 rows even without being able to read them.",
+      "evidence": {
+        "table": "categories",
+        "rowCount": 13,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "ORACLE_008",
+      "module": "row_count_oracle",
+      "severity": "MEDIUM",
+      "cvssScore": 5.5,
+      "title": "Row Count Leaked for RLS-Blocked Table \"reviews\"",
+      "description": "Although RLS prevents reading data from \"reviews\", the total row count (1361) is leaked via the Content-Range header on a HEAD request. An attacker knows this table has 1361 rows even without being able to read them.",
+      "evidence": {
+        "table": "reviews",
+        "rowCount": 1361,
+        "leakMethod": "content-range-header",
+        "authenticatedAs": "anon"
+      },
+      "remediation": "ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;\n-- Ensure your SELECT policy uses USING (false) or a strict auth.uid() check.\n-- Consider disabling count in Supabase API settings for production."
+    },
+    {
+      "id": "AUTH_001",
+      "module": "auth",
+      "severity": "INFO",
+      "cvssScore": 0,
+      "title": "Authenticated Scan Skipped",
+      "description": "LeakScope could not create a throwaway account. Reason: Signup failed: email rate limit exceeded",
+      "evidence": {
+        "skipReason": "Signup failed: email rate limit exceeded"
+      },
+      "remediation": "No action required. Unauthenticated checks still ran."
+    }
+  ],
+  "scannedAt": "2026-03-08T22:21:22.640Z",
+  "aiReport": null
+}

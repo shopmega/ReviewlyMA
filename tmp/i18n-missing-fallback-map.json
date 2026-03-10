@@ -1,0 +1,516 @@
+{
+  "adminSettings.security.maintenanceLabel": [
+    {
+      "file": "src/app/(admin)/admin/parametres/page.tsx",
+      "line": 1273,
+      "fallback": "Mode Maintenance Actif",
+      "fn": "t"
+    }
+  ],
+  "adminSettings.security.maintenanceDesc": [
+    {
+      "file": "src/app/(admin)/admin/parametres/page.tsx",
+      "line": 1274,
+      "fallback": "Le site sera inaccessible pour les visiteurs. Utile pour les mises a jour critiques.",
+      "fn": "t"
+    }
+  ],
+  "adminSettings.security.registrationsLabel": [
+    {
+      "file": "src/app/(admin)/admin/parametres/page.tsx",
+      "line": 1279,
+      "fallback": "Ouverture des Inscriptions",
+      "fn": "t"
+    }
+  ],
+  "adminSettings.security.registrationsDesc": [
+    {
+      "file": "src/app/(admin)/admin/parametres/page.tsx",
+      "line": 1280,
+      "fallback": "Permettre a de nouveaux utilisateurs de rejoindre la plateforme.",
+      "fn": "t"
+    }
+  ],
+  "claimNew.step1.presentation": [
+    {
+      "file": "src/app/claim/new/page.tsx",
+      "line": 826,
+      "fallback": "Presentation",
+      "fn": "t"
+    }
+  ],
+  "referrals.list.myOffers": [
+    {
+      "file": "src/app/parrainages/page.tsx",
+      "line": 221,
+      "fallback": "Mes offres",
+      "fn": "t"
+    }
+  ],
+  "referrals.list.myRequests": [
+    {
+      "file": "src/app/parrainages/page.tsx",
+      "line": 224,
+      "fallback": "Mes demandes",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.statusActive": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 210,
+      "fallback": "Active",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.statusPaused": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 212,
+      "fallback": "En pause",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.statusClosed": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 214,
+      "fallback": "Fermee",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.statusRejected": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 215,
+      "fallback": "Indisponible",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.ownerCta": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 264,
+      "fallback": "Gerer mes offres et demandes",
+      "fn": "t"
+    },
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 360,
+      "fallback": "Gerer mes offres et demandes",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.myRequestsCta": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 270,
+      "fallback": "Voir mes demandes",
+      "fn": "t"
+    },
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 373,
+      "fallback": "Voir mes demandes",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.applyNow": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 285,
+      "fallback": "Postuler maintenant",
+      "fn": "t"
+    }
+  ],
+  "referrals.detail.offerUnavailable": [
+    {
+      "file": "src/app/parrainages/[id]/page.tsx",
+      "line": 370,
+      "fallback": "Cette offre n'est plus active. Consultez d'autres opportunites ou suivez vos demandes existantes.",
+      "fn": "t"
+    }
+  ],
+  "forProsPage.features.gold.9": [
+    {
+      "file": "src/app/pour-les-pros/page.tsx",
+      "line": 48,
+      "fallback": "Multi-business management (up to 5)",
+      "fn": "t"
+    }
+  ],
+  "business.hero.profileComplete": [
+    {
+      "file": "src/components/business/BusinessHero.tsx",
+      "line": 197,
+      "fallback": "Profil {percent}% complet",
+      "fn": "tf"
+    }
+  ],
+  "business.trust.high": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 47,
+      "fallback": "Confiance elevee",
+      "fn": "t"
+    }
+  ],
+  "business.trust.medium": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 48,
+      "fallback": "Confiance moyenne",
+      "fn": "t"
+    }
+  ],
+  "business.trust.low": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 49,
+      "fallback": "Confiance en construction",
+      "fn": "t"
+    }
+  ],
+  "business.trust.noDate": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 65,
+      "fallback": "Date indisponible",
+      "fn": "t"
+    }
+  ],
+  "business.trust.claimed": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 81,
+      "fallback": "Profil revendique",
+      "fn": "t"
+    }
+  ],
+  "business.trust.unclaimed": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 81,
+      "fallback": "Profil non revendique",
+      "fn": "t"
+    }
+  ],
+  "business.trust.moderated": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 85,
+      "fallback": "Moderation active sur les contributions",
+      "fn": "t"
+    }
+  ],
+  "business.trust.reviews": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 91,
+      "fallback": "Avis publies",
+      "fn": "t"
+    }
+  ],
+  "business.trust.salaries": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 95,
+      "fallback": "Salaires publies",
+      "fn": "t"
+    }
+  ],
+  "business.trust.lastUpdate": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 99,
+      "fallback": "Derniere activite",
+      "fn": "t"
+    }
+  ],
+  "business.trust.confidence": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 106,
+      "fallback": "Niveau de confiance",
+      "fn": "t"
+    }
+  ],
+  "business.trust.claimPrompt": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 116,
+      "fallback": "Vous representez cette entreprise ?",
+      "fn": "t"
+    }
+  ],
+  "business.trust.claimPromptLink": [
+    {
+      "file": "src/components/business/BusinessInsightsTabs.tsx",
+      "line": 122,
+      "fallback": "Revendiquer la fiche",
+      "fn": "t"
+    }
+  ],
+  "business.salary.confidenceHigh": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 139,
+      "fallback": "Confiance elevee",
+      "fn": "t"
+    }
+  ],
+  "business.salary.confidenceMedium": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 140,
+      "fallback": "Confiance moyenne",
+      "fn": "t"
+    }
+  ],
+  "business.salary.confidenceLow": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 141,
+      "fallback": "Confiance en construction",
+      "fn": "t"
+    }
+  ],
+  "business.salary.confidenceVeryLow": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 142,
+      "fallback": "Donnees encore limitees",
+      "fn": "t"
+    }
+  ],
+  "business.salary.notAvailable": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 145,
+      "fallback": "Indisponible",
+      "fn": "t"
+    },
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 151,
+      "fallback": "Indisponible",
+      "fn": "t"
+    }
+  ],
+  "business.salary.qualitySignal": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 188,
+      "fallback": "Signal qualite",
+      "fn": "t"
+    }
+  ],
+  "business.salary.lastUpdate": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 198,
+      "fallback": "Derniere publication",
+      "fn": "t"
+    }
+  ],
+  "business.salary.moderationNote": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 201,
+      "fallback": "Chaque entree est moderee avant publication.",
+      "fn": "t"
+    }
+  ],
+  "business.salary.rangeSignal": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 206,
+      "fallback": "Amplitude observee",
+      "fn": "t"
+    }
+  ],
+  "business.salary.rangeNote": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 211,
+      "fallback": "Entre minimum et maximum publies.",
+      "fn": "t"
+    }
+  ],
+  "business.salary.visualOverview": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 219,
+      "fallback": "Apercu visuel des salaires",
+      "fn": "t"
+    }
+  ],
+  "business.salary.loginToUnlock": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 247,
+      "fallback": "Connectez-vous",
+      "fn": "t"
+    },
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 251,
+      "fallback": "Connectez-vous",
+      "fn": "t"
+    },
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 255,
+      "fallback": "Connectez-vous",
+      "fn": "t"
+    },
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 278,
+      "fallback": "Connectez-vous",
+      "fn": "t"
+    },
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 296,
+      "fallback": "Connectez-vous",
+      "fn": "t"
+    }
+  ],
+  "business.salary.insufficientData": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 247,
+      "fallback": "Donnees insuffisantes",
+      "fn": "t"
+    }
+  ],
+  "business.salary.previewLimited": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 305,
+      "fallback": "Apercu limite: connectez-vous pour voir toutes les entrees et valeurs detaillees.",
+      "fn": "t"
+    }
+  ],
+  "business.salary.kAnonymityNotice": [
+    {
+      "file": "src/components/business/SalarySection.tsx",
+      "line": 310,
+      "fallback": "Minimum ${MIN_PUBLIC_SAMPLE_SIZE} soumissions requis pour afficher les details statistiquement sensibles.",
+      "fn": "t"
+    }
+  ],
+  "listing.clear": [
+    {
+      "file": "src/components/shared/BusinessList.tsx",
+      "line": 337,
+      "fallback": "Effacer",
+      "fn": "t"
+    }
+  ],
+  "home.trust.businesses": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 265,
+      "fallback": "Etablissements actifs",
+      "fn": "t"
+    }
+  ],
+  "home.trust.reviews": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 270,
+      "fallback": "Avis publies",
+      "fn": "t"
+    }
+  ],
+  "home.trust.moderated": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 275,
+      "fallback": "Moderation",
+      "fn": "t"
+    }
+  ],
+  "home.trust.active": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 276,
+      "fallback": "Active",
+      "fn": "t"
+    }
+  ],
+  "home.hero.claimCta": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 416,
+      "fallback": "Revendiquer une fiche",
+      "fn": "t"
+    }
+  ],
+  "home.claim.badge": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 527,
+      "fallback": "Espace entreprises",
+      "fn": "t"
+    }
+  ],
+  "home.claim.title": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 530,
+      "fallback": "Vous representez une entreprise ?",
+      "fn": "t"
+    }
+  ],
+  "home.claim.subtitle": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 533,
+      "fallback": "Revendiquer votre fiche renforce la confiance, vous permet de repondre aux avis et de partager des mises a jour officielles.",
+      "fn": "t"
+    }
+  ],
+  "home.claim.benefit1": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 537,
+      "fallback": "Reponse officielle",
+      "fn": "t"
+    }
+  ],
+  "home.claim.benefit2": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 540,
+      "fallback": "Profil verifie",
+      "fn": "t"
+    }
+  ],
+  "home.claim.benefit3": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 543,
+      "fallback": "Mises a jour employeur",
+      "fn": "t"
+    }
+  ],
+  "home.claim.start": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 551,
+      "fallback": "Commencer la revendication",
+      "fn": "t"
+    }
+  ],
+  "home.claim.learnMore": [
+    {
+      "file": "src/components/shared/HomeClient.tsx",
+      "line": 556,
+      "fallback": "Voir les offres pro",
+      "fn": "t"
+    }
+  ]
+}

@@ -1,0 +1,1350 @@
+[
+  {
+    "file": "src/app/(admin)/admin/revendications/page.tsx",
+    "total": 60,
+    "examples": [
+      "En attente",
+      "Approuvée",
+      "Rejetée",
+      "Modération des",
+      "Précisez la raison (ex: Document flou, email non-professionnel...)"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/advertising/page.tsx",
+    "total": 56,
+    "examples": [
+      "Placements",
+      "Salary city slugs",
+      "Salary role slugs",
+      "Salary sector slugs",
+      "casablanca, rabat",
+      "software-engineer, accountant"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/statistiques/page.tsx",
+    "total": 48,
+    "examples": [
+      "= thisMonthStart && d",
+      "= thisMonthStart && d",
+      "= thisMonthStart && d",
+      "= lastMonthStart && d",
+      "Ville (ex: Casablanca)",
+      "Categorie (ex: call center, it...)"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/blog/page.tsx",
+    "total": 47,
+    "examples": [
+      "Blog CMS",
+      "Gestion des articles blog",
+      "Creez, mettez a jour et publiez des articles sans modifier le code.",
+      "Nouvel article",
+      "Titre",
+      "slug-article (optionnel, auto-genere depuis le titre)"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/competitor-ads/CompetitorAdsContent.tsx",
+    "total": 47,
+    "examples": [
+      "Annonces Concurrentes",
+      "Créez des annonces pour apparaître sur les pages de vos concurrents",
+      "Disponible pour tous les comptes entreprise. Les impressions et clics sont suivis automatiquement.",
+      "Vos Campagnes Concurrentes",
+      "Entrez l",
+      "Entrez les IDs des entreprises concurrentes, un par ligne"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/edit-profile/page.tsx",
+    "total": 45,
+    "examples": [
+      "Modifier le profil",
+      "Accès refusé",
+      "Revendiquer une entreprise",
+      "Retour",
+      "Sélectionnez une catégorie",
+      "Sélectionnez une sous-catégorie"
+    ]
+  },
+  {
+    "file": "src/app/claim/page.tsx",
+    "total": 44,
+    "examples": [
+      "Revendication en cours",
+      "Votre demande de revendication est en cours de traitement",
+      "Revendication en attente de validation",
+      "Établissement concerné:",
+      "Entrez le nom ou l"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/DashboardClient.tsx",
+    "total": 44,
+    "examples": [
+      "Accès Restreint",
+      "Revendiquer mon entreprise",
+      "0 ? 'text-success' : ratingDelta",
+      "Nouvelle réponse du support"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/support/page.tsx",
+    "total": 43,
+    "examples": [
+      "Centre d'Assistance",
+      "Gestion",
+      "Support",
+      "Urgent",
+      "Rechercher par sujet, email...",
+      "Statut"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/pending/page.tsx",
+    "total": 43,
+    "examples": [
+      "Loading...",
+      "Please wait",
+      "Error",
+      "Check browser console for details",
+      "000000",
+      "000000"
+    ]
+  },
+  {
+    "file": "src/app/salaires/comparaison/page.tsx",
+    "total": 40,
+    "examples": [
+      "Comparateur",
+      "Comparaison: salaires et reputation",
+      "Comparez entreprise vs entreprise (salaires + avis) et role dans deux villes. URL partageable via les filtres.",
+      "Entreprise vs entreprise"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/salaires/page.tsx",
+    "total": 39,
+    "examples": [
+      "En attente",
+      "Publié",
+      "Rejeté",
+      "Transparence Salariale",
+      "Rechercher poste, département, entreprise...",
+      "Publier"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/premium/page.tsx",
+    "total": 37,
+    "examples": [
+      "Abonnement Business",
+      "EXPIRÉ",
+      "Statut",
+      "Validité",
+      "Ex: T123456789"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/categories/page.tsx",
+    "total": 36,
+    "examples": [
+      "Taxonomie & Contenu",
+      "Gestion des",
+      "Catégories",
+      "Nouvelle Catégorie",
+      "Rechercher une catégorie...",
+      "ex: Restaurants & Cafés"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/homepage/AddCollectionForm.tsx",
+    "total": 36,
+    "examples": [
+      "Ajouter une collection",
+      "Nouvelle Collection",
+      "Créez une nouvelle collection thématique pour le carrousel de la page d'accueil.",
+      "Titre",
+      "Idées pour le Ftour",
+      "Les meilleurs endroits..."
+    ]
+  },
+  {
+    "file": "src/components/salaries/SalaryQuickSubmitCard.tsx",
+    "total": 36,
+    "examples": [
+      "Soumettre maintenant",
+      "Verification de session...",
+      "Connectez-vous pour publier un salaire",
+      "La soumission directe est reservee aux comptes connectes pour limiter le spam.",
+      "Rechercher une entreprise...",
+      "Ex: Developpeur Full Stack"
+    ]
+  },
+  {
+    "file": "src/app/ga-test/GATestingPageClient.tsx",
+    "total": 35,
+    "examples": [
+      "Passed",
+      "Failed",
+      "Google Analytics Testing Dashboard",
+      "Comprehensive testing suite for GA4 implementation verification"
+    ]
+  },
+  {
+    "file": "src/components/admin/AdminBusinessAssignment.tsx",
+    "total": 35,
+    "examples": [
+      "Business Assignment",
+      "Assign businesses to users and manage ownership relationships",
+      "Find User",
+      "Search for a user by their email address",
+      "user@example.com",
+      "business-id-here"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/parrainages/page.tsx",
+    "total": 33,
+    "examples": [
+      "Réseau & Talents",
+      "Gestion des",
+      "Parrainages",
+      "Modération et supervision des offres de parrainage",
+      "Note de modération interne (optionnel)..."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/analytics/page.tsx",
+    "total": 32,
+    "examples": [
+      "Chargement des données...",
+      "Données indisponibles",
+      "Impossible de récupérer les statistiques pour le moment.",
+      "Réessayer"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/homepage/CollectionRow.tsx",
+    "total": 32,
+    "examples": [
+      "Modifier la Collection",
+      "Modifiez les détails de la collection thématique.",
+      "Titre",
+      "Sous-titre",
+      "Activer/Désactiver la collection",
+      "Type de filtre"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/avis-appels/page.tsx",
+    "total": 30,
+    "examples": [
+      "Ouvert",
+      "En revue",
+      "Accepte",
+      "Rejete",
+      "Accepter",
+      "Rejeter"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/updates/page.tsx",
+    "total": 30,
+    "examples": [
+      "Publier",
+      "Gerer les Nouveautes",
+      "Partagez des annonces, offres speciales ou actualites avec vos clients.",
+      "Fonctionnalite PRO / GOLD",
+      "Ex: Offre speciale de saison",
+      "Decrivez votre annonce..."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/business-suggestions/page.tsx",
+    "total": 27,
+    "examples": [
+      "En attente",
+      "Approuvée",
+      "Rejetée",
+      "Suggestions d'entreprises",
+      "Tous les statuts",
+      "Ajoutez des notes pour expliquer votre décision..."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/contenu/page.tsx",
+    "total": 24,
+    "examples": [
+      "En attente",
+      "Supprimé",
+      "Conservé",
+      "Audit de Contenu",
+      "Reported media"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/opportunites/page.tsx",
+    "total": 23,
+    "examples": [
+      "Outreach",
+      "Upgrade",
+      "Monitor",
+      "Opportunites Business"
+    ]
+  },
+  {
+    "file": "src/app/referral-demand/page.tsx",
+    "total": 23,
+    "examples": [
+      "= previousStart && ts",
+      "Referral Demand Intelligence",
+      "Live referral demand dashboard",
+      "Voir le demand board"
+    ]
+  },
+  {
+    "file": "src/app/suggest/page.tsx",
+    "total": 23,
+    "examples": [
+      "Suggérer une entreprise",
+      "Aidez la communauté à découvrir de nouvelles entreprises. Ajoutez votre entreprise ou service préféré.",
+      "Contribution directe",
+      "Ajout immédiat",
+      "Ex: TechCorp Solutions",
+      "Choisir..."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/outreach/page.tsx",
+    "total": 22,
+    "examples": [
+      "Outreach Pipeline",
+      "Gestion operationnelle des leads entreprises: assignation, suivi et conversion.",
+      "Filters",
+      "Filter by stage, owner, overdue, city, and category.",
+      "Latest call summary, objections, next action..."
+    ]
+  },
+  {
+    "file": "src/app/dashboard/business/[id]/page.tsx",
+    "total": 22,
+    "examples": [
+      "Business Not Found",
+      "We couldn't find the business you're looking for.",
+      "Back to Dashboard",
+      "Gestion spécifique pour cette entreprise"
+    ]
+  },
+  {
+    "file": "src/app/salaires/page.tsx",
+    "total": 22,
+    "examples": [
+      "Barometre",
+      "Salaires au Maroc",
+      "Visualisez les salaires par poste, ville et secteur. Donnees anonymisees basees sur les soumissions publiees.",
+      "Commencez par choisir un poste ou une ville puis ouvrez la comparaison pour voir les ecarts."
+    ]
+  },
+  {
+    "file": "src/app/dashboard/salary-benchmark/page.tsx",
+    "total": 21,
+    "examples": [
+      "Aucune entreprise liee",
+      "Vous devez d abord revendiquer une entreprise pour acceder aux benchmarks salariaux.",
+      "Revendiquer une entreprise",
+      "GOLD"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/avis-signalements/page.tsx",
+    "total": 20,
+    "examples": [
+      "En attente",
+      "Traite",
+      "Rejete",
+      "Signalements avis",
+      "Marquer comme traite",
+      "Rejeter signalement"
+    ]
+  },
+  {
+    "file": "src/app/review/page.tsx",
+    "total": 19,
+    "examples": [
+      "setSelectedBusiness(null)} className=\"mb-4\">",
+      "Retour au choix de l'entreprise",
+      "Votre avis est anonyme et aidera des milliers de personnes à faire des choix éclairés.",
+      "Laisser un avis",
+      "Rechercher une entreprise...",
+      "Toutes les catégories"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/entreprises-signalements/page.tsx",
+    "total": 18,
+    "examples": [
+      "En attente",
+      "Traite",
+      "Rejete",
+      "Signalements entreprises",
+      "Traiter",
+      "Rejeter"
+    ]
+  },
+  {
+    "file": "src/app/reports/[reportSlug]/page.tsx",
+    "total": 18,
+    "examples": [
+      "}): Promise",
+      "Monthly Referral Report",
+      "Open referral-demand dashboard",
+      "Back to reports hub",
+      "Share report"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/audit/page.tsx",
+    "total": 17,
+    "examples": [
+      "Audit logs",
+      "Timeline unifiee des actions admin et bulk operations.",
+      "Rafraichir",
+      "Actions ce mois",
+      "Rechercher action, cible, admin, source"
+    ]
+  },
+  {
+    "file": "src/app/companies/[company]/referrals/page.tsx",
+    "total": 17,
+    "examples": [
+      "= previousStart && ts",
+      "}): Promise",
+      "Company Referral Page",
+      "Transitional SEO mode: indexing is gated until route cutover flags are enabled."
+    ]
+  },
+  {
+    "file": "src/app/dashboard/analytics/page.tsx",
+    "total": 17,
+    "examples": [
+      "= monthStart && d",
+      "Accès refusé",
+      "Revendiquer une entreprise",
+      "Statistiques",
+      "WhatsApp Tracking",
+      "Booking Tracking"
+    ]
+  },
+  {
+    "file": "src/components/shared/ReviewReportDialog.tsx",
+    "total": 16,
+    "examples": [
+      "Signaler",
+      "Signaler cet avis",
+      "Aidez-nous à maintenir l'intégrité de notre plateforme. Pourquoi signalez-vous cet avis ?",
+      "Raison du signalement",
+      "Sélectionnez une raison",
+      "Précisez votre signalement ici..."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/utilisateurs/UsersTable.tsx",
+    "total": 15,
+    "examples": [
+      "Admin",
+      "Pro",
+      "Utilisateur",
+      "Tous les utilisateurs",
+      "Rechercher par nom ou email..."
+    ]
+  },
+  {
+    "file": "src/app/parrainages/[id]/SafetyActions.tsx",
+    "total": 15,
+    "examples": [
+      "Securite et moderation",
+      "Rappel: aucun paiement n&apos;est autorise. Gardez les echanges sur la plateforme.",
+      "Se connecter pour signaler ou bloquer",
+      "Signaler cette offre",
+      "Donnez un contexte utile (optionnel)."
+    ]
+  },
+  {
+    "file": "src/components/reviews/EditReviewModal.tsx",
+    "total": 14,
+    "examples": [
+      "Modifier votre avis",
+      "Mettez à jour votre évaluation et vos commentaires pour cette entreprise.",
+      "Note générale",
+      "Titre de l'avis",
+      "Résumez votre expérience en quelques mots",
+      "Décrivez votre expérience en détail..."
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessPageActions.tsx",
+    "total": 14,
+    "examples": [
+      "Gérer",
+      "trackBusinessCta('write_review', 'action_bar_primary')}>",
+      "Donner mon avis",
+      "trackBusinessCta('share_salary', 'action_bar_secondary')}>"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/homepage/page.tsx",
+    "total": 13,
+    "examples": [
+      "Gestion de la page d'accueil",
+      "Gérez le contenu mis en avant sur la page d'accueil.",
+      "Entreprises à la une",
+      "Nom"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/salary-alerts/page.tsx",
+    "total": 13,
+    "examples": [
+      "Mes alertes salaires",
+      "Impossible de charger vos alertes pour le moment.",
+      "Mes alertes salaires",
+      "Gerer les alertes role/ville, secteur/ville et entreprises suivies."
+    ]
+  },
+  {
+    "file": "src/app/rules/page.tsx",
+    "total": 13,
+    "examples": [
+      "Transparence & Confiance",
+      "Charte de la Communauté",
+      "Nous avons créé cet espace pour que chaque Marocain puisse partager des avis honnêtes, utiles et respectueux. Voici comment nous gardons la plateforme saine.",
+      "À faire"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/etablissements/import/csv-import-form.tsx",
+    "total": 12,
+    "examples": [
+      "Importer des entreprises (CSV)",
+      "Sélectionnez un fichier CSV contenant les colonnes suivantes :",
+      "name, category, city",
+      "(requis), et autres."
+    ]
+  },
+  {
+    "file": "src/app/blog/[slug]/page.tsx",
+    "total": 12,
+    "examples": [
+      "}): Promise",
+      "Retour au blog",
+      "0 ? (",
+      ") : null}",
+      "Partager cet article"
+    ]
+  },
+  {
+    "file": "src/app/businesses/[slug]/salaries/page.tsx",
+    "total": 12,
+    "examples": [
+      "Salaires",
+      "Donnees anonymisees basees sur les salaires publies par les contributeurs.",
+      "Voir la fiche entreprise",
+      "Voir les avis"
+    ]
+  },
+  {
+    "file": "src/app/salary/[role]/[city]/page.tsx",
+    "total": 12,
+    "examples": [
+      "}): Promise",
+      "Salary Intelligence Page",
+      "Transitional SEO mode: indexing is gated until route cutover flags are enabled.",
+      "Open canonical salary page",
+      "Debloquer les details",
+      "Debloquez les details salaires"
+    ]
+  },
+  {
+    "file": "src/components/admin/BulkActions.tsx",
+    "total": 12,
+    "examples": [
+      "Actions Groupées - Avis",
+      "setReviewAction(value)}>",
+      "Publier",
+      "Rejeter",
+      "Choisir une action...",
+      "Choisir une action..."
+    ]
+  },
+  {
+    "file": "src/components/admin/QuickBusinessAssignment.tsx",
+    "total": 12,
+    "examples": [
+      "Quick Business Assignment",
+      "Quickly assign a business to a user by email",
+      "User Email",
+      "Business ID",
+      "user@example.com",
+      "business-id-here"
+    ]
+  },
+  {
+    "file": "src/components/dashboard/MultiBusinessDashboard.tsx",
+    "total": 12,
+    "examples": [
+      "Limite d'entreprises",
+      "Select Active Business",
+      "Choose which business to manage. Your dashboard will show data for the selected business.",
+      "Primary",
+      "Select a business",
+      "Note Moyenne"
+    ]
+  },
+  {
+    "file": "src/components/shared/MediaReportDialog.tsx",
+    "total": 12,
+    "examples": [
+      "Signaler",
+      "Signaler ce média",
+      "Aidez-nous à maintenir la qualité du contenu. Pourquoi signalez-vous cette image ?",
+      "Raison du signalement",
+      "Sélectionnez une raison",
+      "Précisez votre signalement ici..."
+    ]
+  },
+  {
+    "file": "src/app/companies/page.tsx",
+    "total": 11,
+    "examples": [
+      "Company Insights",
+      "Company referral cluster",
+      "Cette section recevra les pages",
+      "/companies/[company]/referrals"
+    ]
+  },
+  {
+    "file": "src/app/reports/page.tsx",
+    "total": 11,
+    "examples": [
+      "Reports Hub",
+      "Periodic referral reports",
+      "Monthly report",
+      "Revue des signaux demande + salaires, mise a jour chaque mois."
+    ]
+  },
+  {
+    "file": "src/app/salaires/partager/page.tsx",
+    "total": 11,
+    "examples": [
+      "Soumission anonyme",
+      "Partager mon salaire",
+      "Recherchez d'abord votre entreprise. Ensuite, vous pourrez publier votre salaire de facon anonyme sur sa fiche.",
+      "Astuce: ouvrez la fiche puis allez a la section",
+      "Rechercher une entreprise..."
+    ]
+  },
+  {
+    "file": "src/app/referral-demand/[role]/[city]/page.tsx",
+    "total": 10,
+    "examples": [
+      "= previousStart && ts",
+      "}): Promise",
+      "Referral Demand Page",
+      "Back to dashboard"
+    ]
+  },
+  {
+    "file": "src/app/salaires/role/[roleSlug]/[citySlug]/page.tsx",
+    "total": 10,
+    "examples": [
+      "}): Promise",
+      "Barometre des salaires",
+      "Mediane",
+      "Fourchette"
+    ]
+  },
+  {
+    "file": "src/app/salaires/secteur/[sectorSlug]/[citySlug]/page.tsx",
+    "total": 10,
+    "examples": [
+      "}): Promise",
+      "Barometre des salaires",
+      "Mediane",
+      "Fourchette"
+    ]
+  },
+  {
+    "file": "src/app/salary/page.tsx",
+    "total": 10,
+    "examples": [
+      "Salary Intelligence",
+      "Salary cluster hub",
+      "Transition en cours",
+      "Les pages salaires actuellement en production restent accessibles via"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessSelector.tsx",
+    "total": 10,
+    "examples": [
+      "No business",
+      "Primary",
+      "Primary",
+      "1.2k"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/homepage/AddFeaturedBusinessForm.tsx",
+    "total": 9,
+    "examples": [
+      "Ajouter à la une",
+      "Ajouter une entreprise à la une",
+      "Sélectionnez une entreprise à mettre en avant sur la page d'accueil.",
+      "Rechercher une entreprise",
+      "Nom ou ville...",
+      "Sélectionner une entreprise"
+    ]
+  },
+  {
+    "file": "src/app/best-[slug]/page.tsx",
+    "total": 9,
+    "examples": [
+      "Accueil",
+      "Explorer",
+      "Classement 2026",
+      "Les Meilleurs"
+    ]
+  },
+  {
+    "file": "src/app/categories/page.tsx",
+    "total": 9,
+    "examples": [
+      "Exploration",
+      "Parcourir par",
+      "Categorie",
+      "Decouvrez les meilleures entreprises triees par activite pour trouver exactement ce que vous cherchez."
+    ]
+  },
+  {
+    "file": "src/components/shared/ContentShareButton.tsx",
+    "total": 9,
+    "examples": [
+      "shareViaChannel('whatsapp')} title=\"WhatsApp\">",
+      "shareViaChannel('linkedin')} title=\"LinkedIn\">",
+      "shareViaChannel('facebook')} title=\"Facebook\">",
+      "shareViaChannel('twitter')} title=\"X / Twitter\">",
+      "WhatsApp",
+      "LinkedIn"
+    ]
+  },
+  {
+    "file": "src/app/referral-demand/cities/page.tsx",
+    "total": 8,
+    "examples": [
+      "Referral Demand Intelligence",
+      "Top referral demand cities",
+      "City leaderboard generated from active referral demand listings.",
+      "Back to dashboard"
+    ]
+  },
+  {
+    "file": "src/app/referral-demand/roles/page.tsx",
+    "total": 8,
+    "examples": [
+      "Referral Demand Intelligence",
+      "Top referral demand roles",
+      "Role leaderboard generated from active referral demand listings.",
+      "Back to dashboard"
+    ]
+  },
+  {
+    "file": "src/app/terms/page.tsx",
+    "total": 8,
+    "examples": [
+      "1. Acceptation des conditions",
+      "En accédant à ce site, vous acceptez d'être lié par ces conditions d'utilisation.",
+      "2. Utilisation du site",
+      "Vous vous engagez à utiliser le site de manière licite et à ne pas porter atteinte aux droits de tiers."
+    ]
+  },
+  {
+    "file": "src/app/users/[id]/page.tsx",
+    "total": 8,
+    "examples": [
+      "Retour a l'accueil",
+      "Membre Premium",
+      "Avis",
+      "J'aime recus"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessHoursEditor.tsx",
+    "total": 8,
+    "examples": [
+      "= 1 && day.index",
+      "= 1 && day.index",
+      "Promise",
+      "= 2 && h.day_of_week"
+    ]
+  },
+  {
+    "file": "src/app/privacy/page.tsx",
+    "total": 7,
+    "examples": [
+      "1. Collecte des données",
+      "2. Utilisation des données",
+      "Vos données sont utilisées pour gérer votre compte, afficher vos avis et améliorer nos services.",
+      "3. Protection des données"
+    ]
+  },
+  {
+    "file": "src/components/business/AdminQaPreviewToggle.tsx",
+    "total": 7,
+    "examples": [
+      "[option.value, option.label])) as Record",
+      "Admin QA Preview",
+      "Avis (rating)",
+      "onDimensionChange('reviews', value as QaPreviewMode)}>"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessCard.tsx",
+    "total": 7,
+    "examples": [
+      "Profil en cours",
+      ") : profileCompleteness",
+      ") : null}",
+      "0 ? ("
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/page.tsx",
+    "total": 6,
+    "examples": [
+      "Centre de Commande",
+      "Editer Homepage",
+      "Ajouter une entreprise",
+      "Alertes Système"
+    ]
+  },
+  {
+    "file": "src/app/categorie/[categorySlug]/page.tsx",
+    "total": 6,
+    "examples": [
+      "}): Promise",
+      "Catégories",
+      "au Maroc",
+      "Filtrer par spécialité"
+    ]
+  },
+  {
+    "file": "src/app/parrainages/demandes/[id]/page.tsx",
+    "total": 6,
+    "examples": [
+      "}): Promise",
+      "Retour au board",
+      "Resume",
+      "Details"
+    ]
+  },
+  {
+    "file": "src/components/admin/AdminHeader.tsx",
+    "total": 6,
+    "examples": [
+      "Admin Suite",
+      "Mon Profil",
+      "Paramètres",
+      "Déconnexion",
+      "Recherche globale (entreprises, avis, users)...",
+      "Admin"
+    ]
+  },
+  {
+    "file": "src/components/reviews/DeleteReviewDialog.tsx",
+    "total": 6,
+    "examples": [
+      "Supprimer l'avis",
+      "Cette action est irréversible. Votre avis sera définitivement supprimé.",
+      "Avis à supprimer :",
+      "Annuler"
+    ]
+  },
+  {
+    "file": "src/app/dashboard/test-auth.tsx",
+    "total": 5,
+    "examples": [
+      "Testing authentication...",
+      "Dashboard Auth Test",
+      "Testing authentication and access control",
+      "Authentication Status"
+    ]
+  },
+  {
+    "file": "src/app/opengraph-image.tsx",
+    "total": 5,
+    "examples": [
+      "A",
+      "AVis",
+      "Avis et confiance pour les entreprises",
+      "Trouvez les meilleures entreprises"
+    ]
+  },
+  {
+    "file": "src/app/recently-added/page.tsx",
+    "total": 5,
+    "examples": [
+      "Nouveautes",
+      "Derniers",
+      "Arrives",
+      "Fraichement ajoutes"
+    ]
+  },
+  {
+    "file": "src/app/top-rated/page.tsx",
+    "total": 5,
+    "examples": [
+      "L'Excellence",
+      "Les Mieux Notés",
+      "du Maroc",
+      "Classement National"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessSubRatings.tsx",
+    "total": 5,
+    "examples": [
+      "Détails de la note",
+      "Équilibre travail-vie privée",
+      "Management",
+      "Évolution de carrière"
+    ]
+  },
+  {
+    "file": "src/components/shared/ErrorBoundary.tsx",
+    "total": 5,
+    "examples": [
+      "Une erreur est survenue",
+      "Désolé, quelque chose s'est mal passé. Notre équipe a été notifiée et travaille à résoudre le problème.",
+      "Détails techniques (développement)",
+      "Réessayer"
+    ]
+  },
+  {
+    "file": "src/components/shared/RatingDistribution.tsx",
+    "total": 5,
+    "examples": [
+      "Repartition des avis",
+      "Aucun avis publie pour le moment.",
+      "Repartition des avis",
+      "Moyenne"
+    ]
+  },
+  {
+    "file": "src/components/shared/ReviewSubRatings.tsx",
+    "total": 5,
+    "examples": [
+      "Détails de l'évaluation",
+      "Équilibre travail-vie privée",
+      "Management",
+      "Évolution de carrière"
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/diagnostics/page.tsx",
+    "total": 4,
+    "examples": [
+      "Diagnostics",
+      "Manual checks for DB initialization and required keys. Runs only on button click.",
+      "System Check",
+      "No automatic execution on page load."
+    ]
+  },
+  {
+    "file": "src/app/maintenance/page.tsx",
+    "total": 4,
+    "examples": [
+      "en pause",
+      "Nous effectuons quelques réglages pour vous offrir une expérience",
+      "exceptionnelle",
+      "Retour prévu très prochainement"
+    ]
+  },
+  {
+    "file": "src/app/not-found.tsx",
+    "total": 4,
+    "examples": [
+      "404 - Page non trouvee",
+      "La page demandee est introuvable ou a ete deplacee.",
+      "Retour a l'accueil",
+      "Explorer les entreprises"
+    ]
+  },
+  {
+    "file": "src/app/profile/saved-businesses/page.tsx",
+    "total": 4,
+    "examples": [
+      "Mes Favoris",
+      "0 ? (",
+      "Aucun favori pour le moment",
+      "Sauvegardez les restaurants, riads ou services qui vous intéressent pour les retrouver facilement."
+    ]
+  },
+  {
+    "file": "src/app/twitter-image.tsx",
+    "total": 4,
+    "examples": [
+      "A",
+      "AVis",
+      "Avis, salaires et insights",
+      "Une vision claire des entreprises au Maroc"
+    ]
+  },
+  {
+    "file": "src/app/ville/[citySlug]/[categorySlug]/page.tsx",
+    "total": 4,
+    "examples": [
+      "}): Promise",
+      "situés à",
+      "Chargement des résultats...",
+      "Aucun résultat trouvé"
+    ]
+  },
+  {
+    "file": "src/components/business/CompetitorAds.tsx",
+    "total": 4,
+    "examples": [
+      "Annonces Concurrentes",
+      "Suggestions d'autres entreprises",
+      "Annonce",
+      "Visiter"
+    ]
+  },
+  {
+    "file": "src/components/layout/NotificationBell.tsx",
+    "total": 4,
+    "examples": [
+      "Notifications",
+      "Notifications",
+      "Tout marquer comme lu",
+      "Aucune notification"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessWidget.tsx",
+    "total": 4,
+    "examples": [
+      "Ouvert",
+      "0 && showHours && (",
+      "Voir les avis",
+      "Fourni par"
+    ]
+  },
+  {
+    "file": "src/components/shared/ThemeToggle.tsx",
+    "total": 4,
+    "examples": [
+      "Toggle theme",
+      "Light",
+      "Dark",
+      "System"
+    ]
+  },
+  {
+    "file": "src/components/_deprecated/ads/AdComponent.tsx",
+    "total": 4,
+    "examples": [
+      "= startDate) && (!endDate || now",
+      "Annonce",
+      "Voir plus",
+      "Fermer l"
+    ]
+  },
+  {
+    "file": "src/app/api/og/referral-offer/route.tsx",
+    "total": 3,
+    "examples": [
+      "Parrainage emploi",
+      "Anti-fraude",
+      "Aucun paiement autorise pour un parrainage."
+    ]
+  },
+  {
+    "file": "src/app/ville/[citySlug]/page.tsx",
+    "total": 3,
+    "examples": [
+      "}): Promise",
+      "Entreprises à",
+      "Chargement des résultats..."
+    ]
+  },
+  {
+    "file": "src/components/admin/ActivityFeed.tsx",
+    "total": 3,
+    "examples": [
+      "Activité Récente",
+      "Flux d'activité en temps réel sur la plateforme",
+      "Aucune activité récente."
+    ]
+  },
+  {
+    "file": "src/components/auth/SoftAuthDialog.tsx",
+    "total": 3,
+    "examples": [
+      "Continuer",
+      "Creer un compte",
+      "Pas maintenant"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessMap.tsx",
+    "total": 3,
+    "examples": [
+      "Voir sur la carte",
+      "Itinéraire",
+      "Carte interactive du Maroc"
+    ]
+  },
+  {
+    "file": "src/components/support/TicketConversation.tsx",
+    "total": 3,
+    "examples": [
+      "Début de la conversation...",
+      "Appuyez sur Entrée pour envoyer",
+      "Votre message..."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/etablissements/import/page.tsx",
+    "total": 2,
+    "examples": [
+      "Importation en masse",
+      "Ajoutez plusieurs établissements via un fichier CSV."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/homepage/FeaturedBusinessRow.tsx",
+    "total": 2,
+    "examples": [
+      "Retirer de la une ?",
+      "Annuler"
+    ]
+  },
+  {
+    "file": "src/app/api/og/company/route.tsx",
+    "total": 2,
+    "examples": [
+      "AVis - Entreprises",
+      "Donnees anonymisees et moderees"
+    ]
+  },
+  {
+    "file": "src/app/api/og/referral-demand/route.tsx",
+    "total": 2,
+    "examples": [
+      "Demand board",
+      "Publication anonymisee. Moderation active."
+    ]
+  },
+  {
+    "file": "src/app/api/og/review-snippet/route.tsx",
+    "total": 2,
+    "examples": [
+      "Extrait d avis employe",
+      "Donnees anonymisees et moderees"
+    ]
+  },
+  {
+    "file": "src/app/api/og/salary-comparison/route.tsx",
+    "total": 2,
+    "examples": [
+      "AVis - Salaires Maroc",
+      "Donnees anonymisees et agregees - indicateurs informatifs."
+    ]
+  },
+  {
+    "file": "src/app/dashboard/companies/page.tsx",
+    "total": 2,
+    "examples": [
+      "Mes Établissements",
+      "Gérez toutes vos entreprises et vos abonnements."
+    ]
+  },
+  {
+    "file": "src/app/dashboard/layout.tsx",
+    "total": 2,
+    "examples": [
+      "Gold",
+      "Menu Dashboard"
+    ]
+  },
+  {
+    "file": "src/components/shared/Breadcrumb.tsx",
+    "total": 2,
+    "examples": [
+      "Home",
+      "Breadcrumb"
+    ]
+  },
+  {
+    "file": "src/components/shared/BusinessWidgetServer.tsx",
+    "total": 2,
+    "examples": [
+      "Voir les avis",
+      "Fourni par"
+    ]
+  },
+  {
+    "file": "src/components/shared/InternalAdsSlot.tsx",
+    "total": 2,
+    "examples": [
+      "Ads",
+      "Contenu sponsorise"
+    ]
+  },
+  {
+    "file": "src/components/shared/PhotoGallery.tsx",
+    "total": 2,
+    "examples": [
+      "Aucune photo disponible",
+      "e.stopPropagation()}>"
+    ]
+  },
+  {
+    "file": "src/components/shared/TagInput.tsx",
+    "total": 2,
+    "examples": [
+      "Aucun mot-clé ajouté. Les mots-clés aident les utilisateurs à vous trouver via la barre de recherche.",
+      "Utilisez des mots-clés pertinents (ex: \"Halal\", \"Terrasse\", \"Vue sur mer\") pour améliorer votre visibilité."
+    ]
+  },
+  {
+    "file": "src/app/(admin)/admin/medias/page.tsx",
+    "total": 1,
+    "examples": [
+      "Redirection vers la gestion des médias..."
+    ]
+  },
+  {
+    "file": "src/app/apple-icon.tsx",
+    "total": 1,
+    "examples": [
+      "A"
+    ]
+  },
+  {
+    "file": "src/app/icon.tsx",
+    "total": 1,
+    "examples": [
+      "A"
+    ]
+  },
+  {
+    "file": "src/app/reviews/[id]/edit/page.tsx",
+    "total": 1,
+    "examples": [
+      "Modifier votre avis"
+    ]
+  },
+  {
+    "file": "src/components/auth/DashboardAuthGuard.tsx",
+    "total": 1,
+    "examples": [
+      "Vérification de l'accès..."
+    ]
+  },
+  {
+    "file": "src/components/auth/ProtectedRoute.tsx",
+    "total": 1,
+    "examples": [
+      "Vérification..."
+    ]
+  },
+  {
+    "file": "src/components/auth/SoftAuthPromptController.tsx",
+    "total": 1,
+    "examples": [
+      "Profitez de plus de fonctionnalites avec un compte gratuit"
+    ]
+  },
+  {
+    "file": "src/components/business/AboutSection.tsx",
+    "total": 1,
+    "examples": [
+      "Avantages & Prestations"
+    ]
+  },
+  {
+    "file": "src/components/business/PhotoGallery.tsx",
+    "total": 1,
+    "examples": [
+      "Galerie Photos"
+    ]
+  },
+  {
+    "file": "src/components/dashboard/ConsolidatedAnalytics.tsx",
+    "total": 1,
+    "examples": [
+      "Performance Globale du Groupe"
+    ]
+  },
+  {
+    "file": "src/components/providers/MonitoringProvider.tsx",
+    "total": 1,
+    "examples": [
+      "Component Error"
+    ]
+  },
+  {
+    "file": "src/components/shared/FollowButton.tsx",
+    "total": 1,
+    "examples": [
+      "Suivez les entreprises qui vous interessent"
+    ]
+  },
+  {
+    "file": "src/components/shared/PhotoLightbox.tsx",
+    "total": 1,
+    "examples": [
+      "!open && onClose()}>"
+    ]
+  },
+  {
+    "file": "src/components/shared/PremiumFeatureGate.tsx",
+    "total": 1,
+    "examples": [
+      "Mettre à jour"
+    ]
+  },
+  {
+    "file": "src/components/shared/ShareButton.tsx",
+    "total": 1,
+    "examples": [
+      "Partager cette entreprise"
+    ]
+  },
+  {
+    "file": "src/components/shared/SimilarBusinesses.tsx",
+    "total": 1,
+    "examples": [
+      "0) ? ("
+    ]
+  },
+  {
+    "file": "src/components/shared/SubRatingBar.tsx",
+    "total": 1,
+    "examples": [
+      "div]:bg-accent\" />"
+    ]
+  },
+  {
+    "file": "src/components/shared/VoteButtons.tsx",
+    "total": 1,
+    "examples": [
+      "Votez et influencez la transparence"
+    ]
+  }
+]

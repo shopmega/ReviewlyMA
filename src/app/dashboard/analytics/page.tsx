@@ -1,24 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Star, TrendingUp, Users, AlertCircle, Loader2, Zap } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Eye, Star, TrendingUp, Users, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { cn } from '@/lib/utils';
 import { PremiumFeatureGate } from '@/components/shared/PremiumFeatureGate';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type BusinessStats = {
   businessName: string;
   totalReviews: number;
   averageRating: number;
-  monthlyData: { name: string; avis: number }[];
+  monthlyData: { name: string; reviews: number }[];
   ratingDistribution: { rating: number; count: number }[];
   views: number;
   leads: number;
@@ -51,11 +51,12 @@ function AnalyticsSkeleton() {
 }
 
 export default function AnalyticsPage() {
-  const { businessId, profile, loading: profileLoading, error: profileError } = useBusinessProfile();
+  const { businessId, loading: profileLoading, error: profileError } = useBusinessProfile();
   const [stats, setStats] = useState<BusinessStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t, tf, locale } = useI18n();
+  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
 
-  // Fetch analytics once businessId is available
   useEffect(() => {
     if (profileLoading || !businessId) return;
     if (profileError) {
@@ -66,7 +67,6 @@ export default function AnalyticsPage() {
     async function fetchAnalytics() {
       const supabase = createClient();
 
-      // Fetch business info
       const { data: business } = await supabase
         .from('businesses')
         .select('id, name')
@@ -78,7 +78,6 @@ export default function AnalyticsPage() {
         return;
       }
 
-      // Fetch all reviews
       const { data: reviews } = await supabase
         .from('reviews')
         .select('id, rating, date, created_at')
@@ -90,42 +89,40 @@ export default function AnalyticsPage() {
         ? reviewsList.reduce((sum, r) => sum + r.rating, 0) / totalReviews
         : 0;
 
-      // Calculate monthly data for last 6 months
       const now = new Date();
-      const monthlyData: { name: string; avis: number }[] = [];
-
+      const monthlyData: { name: string; reviews: number }[] = [];
       for (let i = 5; i >= 0; i--) {
         const monthDate = subMonths(now, i);
         const monthStart = startOfMonth(monthDate);
         const monthEnd = endOfMonth(monthDate);
-
-        const monthReviews = reviewsList.filter(r => {
+        const monthReviews = reviewsList.filter((r) => {
           const d = new Date(r.created_at || r.date);
           return d >= monthStart && d <= monthEnd;
         }).length;
 
         monthlyData.push({
-          name: format(monthDate, 'MMM', { locale: fr }),
-          avis: monthReviews,
+          name: monthDate.toLocaleDateString(dateLocale, { month: 'short' }),
+          reviews: monthReviews,
         });
       }
 
-      // Calculate rating distribution
-      const ratingDistribution = [5, 4, 3, 2, 1].map(rating => ({
+      const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
         rating,
-        count: reviewsList.filter(r => r.rating === rating).length,
+        count: reviewsList.filter((r) => r.rating === rating).length,
       }));
 
-      // Fetch analytics events
       const { data: analytics } = await supabase
         .from('business_analytics')
         .select('*')
         .eq('business_id', businessId);
 
-      const views = analytics?.filter(a => a.event_type === 'page_view').length || 0;
-      const whatsappClicks = analytics?.filter(a => a.event_type === 'whatsapp_click').length || 0;
-      const affiliateClicks = analytics?.filter(a => a.event_type === 'affiliate_click').length || 0;
-      const leads = analytics?.filter(a => ['phone_click', 'website_click', 'contact_form', 'whatsapp_click', 'affiliate_click'].includes(a.event_type)).length || 0;
+      const views = analytics?.filter((a) => a.event_type === 'page_view').length || 0;
+      const whatsappClicks = analytics?.filter((a) => a.event_type === 'whatsapp_click').length || 0;
+      const affiliateClicks = analytics?.filter((a) => a.event_type === 'affiliate_click').length || 0;
+      const leads =
+        analytics?.filter((a) =>
+          ['phone_click', 'website_click', 'contact_form', 'whatsapp_click', 'affiliate_click'].includes(a.event_type)
+        ).length || 0;
 
       setStats({
         businessName: business.name,
@@ -136,14 +133,14 @@ export default function AnalyticsPage() {
         views,
         leads,
         whatsappClicks,
-        affiliateClicks
+        affiliateClicks,
       });
 
       setLoading(false);
     }
 
     fetchAnalytics();
-  }, [businessId, profileLoading, profileError]);
+  }, [businessId, dateLocale, profileError, profileLoading]);
 
   if (profileLoading || loading) {
     return <AnalyticsSkeleton />;
@@ -155,39 +152,72 @@ export default function AnalyticsPage() {
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <AlertCircle className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl font-bold font-headline">Accès refusé</h1>
-        <p className="text-muted-foreground">{profileError || "Erreur inconnue"}</p>
+        <h1 className="text-2xl font-bold font-headline">
+          {t('dashboardAnalyticsPage.errors.accessDenied', 'Access denied')}
+        </h1>
+        <p className="text-muted-foreground">{profileError || t('dashboardAnalyticsPage.errors.unknown', 'Unknown error')}</p>
         <Button asChild>
-          <Link href="/pour-les-pros">Revendiquer une entreprise</Link>
+          <Link href="/pour-les-pros">{t('dashboardAnalyticsPage.errors.claimBusiness', 'Claim a business')}</Link>
         </Button>
       </div>
     );
   }
 
   const statCards = [
-    { name: 'Total avis', value: stats.totalReviews.toString(), icon: Star, color: 'text-warning', bg: 'bg-warning/10' },
-    { name: 'Note moyenne', value: stats.averageRating.toFixed(1), icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
-    { name: 'Vues du profil', value: stats.views.toString(), icon: Eye, color: 'text-primary', bg: 'bg-primary/10' },
-    { name: 'Conversion Leads', value: stats.leads.toString(), icon: Users, color: 'text-info', bg: 'bg-info/10' },
+    {
+      name: t('dashboardAnalyticsPage.cards.totalReviews', 'Total reviews'),
+      value: stats.totalReviews.toString(),
+      icon: Star,
+      color: 'text-warning',
+      bg: 'bg-warning/10',
+    },
+    {
+      name: t('dashboardAnalyticsPage.cards.averageRating', 'Average rating'),
+      value: stats.averageRating.toFixed(1),
+      icon: TrendingUp,
+      color: 'text-success',
+      bg: 'bg-success/10',
+    },
+    {
+      name: t('dashboardAnalyticsPage.cards.profileViews', 'Profile views'),
+      value: stats.views.toString(),
+      icon: Eye,
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+    },
+    {
+      name: t('dashboardAnalyticsPage.cards.leads', 'Lead conversions'),
+      value: stats.leads.toString(),
+      icon: Users,
+      color: 'text-info',
+      bg: 'bg-info/10',
+    },
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Statistiques</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">
+          {t('dashboardAnalyticsPage.header.title', 'Analytics')}
+        </h1>
         <p className="text-muted-foreground text-lg">
-          Analyse des performances pour <span className="font-semibold text-foreground">{stats.businessName}</span>.
+          {tf('dashboardAnalyticsPage.header.subtitle', 'Performance analysis for {businessName}.', {
+            businessName: stats.businessName,
+          })}
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
-          <Card key={stat.name} className="rounded-xl border border-border bg-card shadow-none transition-colors hover:bg-secondary/20">
+          <Card
+            key={stat.name}
+            className="rounded-xl border border-border bg-card shadow-none transition-colors hover:bg-secondary/20"
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground font-body uppercase tracking-in-wider">
                 {stat.name}
               </CardTitle>
-              <div className={cn("p-2 rounded-lg", stat.bg, stat.color)}>
+              <div className={cn('p-2 rounded-lg', stat.bg, stat.color)}>
                 <stat.icon className="h-4 w-4" />
               </div>
             </CardHeader>
@@ -198,34 +228,49 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      {/* GOLD Lead Details */}
       <div className="grid gap-6 md:grid-cols-2">
-        <PremiumFeatureGate level="gold" title="WhatsApp Tracking" description="Activez le plan Business GOLD pour voir vos leads WhatsApp.">
+        <PremiumFeatureGate
+          level="gold"
+          title={t('dashboardAnalyticsPage.gates.whatsappTitle', 'WhatsApp tracking')}
+          description={t('dashboardAnalyticsPage.gates.whatsappDescription', 'Enable Business GOLD to view WhatsApp leads.')}
+        >
           <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-foreground">Clics WhatsApp</CardTitle>
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {t('dashboardAnalyticsPage.whatsapp.cardTitle', 'WhatsApp clicks')}
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-success" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-black text-foreground tabular-nums">{stats.whatsappClicks}</div>
-              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1">Nouveaux contacts directs</p>
+              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1">
+                {t('dashboardAnalyticsPage.whatsapp.caption', 'New direct contacts')}
+              </p>
             </CardContent>
           </Card>
         </PremiumFeatureGate>
 
-        <PremiumFeatureGate level="gold" title="Booking Tracking" description="Suivez vos réservations externes avec le plan GOLD.">
+        <PremiumFeatureGate
+          level="gold"
+          title={t('dashboardAnalyticsPage.gates.bookingTitle', 'Booking tracking')}
+          description={t('dashboardAnalyticsPage.gates.bookingDescription', 'Track external bookings with the GOLD plan.')}
+        >
           <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-foreground">Liens Affiliés / Résas</CardTitle>
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {t('dashboardAnalyticsPage.booking.cardTitle', 'Affiliate links / bookings')}
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-black text-foreground tabular-nums">{stats.affiliateClicks}</div>
-              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1">Redirections vers vos liens</p>
+              <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1">
+                {t('dashboardAnalyticsPage.booking.caption', 'Redirects to your links')}
+              </p>
             </CardContent>
           </Card>
         </PremiumFeatureGate>
@@ -233,10 +278,18 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
-          <PremiumFeatureGate level="growth" title="Analyses Avancées" description="Passez au statut Premium pour débloquer l'historique complet des avis.">
+          <PremiumFeatureGate
+            level="growth"
+            title={t('dashboardAnalyticsPage.gates.advancedTitle', 'Advanced analytics')}
+            description={t('dashboardAnalyticsPage.gates.advancedDescription', 'Upgrade to Premium to unlock full review history.')}
+          >
             <CardHeader>
-              <CardTitle className="font-headline">Avis au Fil du Temps</CardTitle>
-              <CardDescription>Évolution sur les 6 derniers mois</CardDescription>
+              <CardTitle className="font-headline">
+                {t('dashboardAnalyticsPage.timeline.title', 'Reviews over time')}
+              </CardTitle>
+              <CardDescription>
+                {t('dashboardAnalyticsPage.timeline.description', 'Trend over the last 6 months')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px] w-full">
@@ -261,16 +314,11 @@ export default function AnalyticsPage() {
                         backgroundColor: 'hsl(var(--card))',
                         borderColor: 'hsl(var(--border))',
                         borderRadius: '8px',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.08)'
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
                       }}
                       cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
                     />
-                    <Bar
-                      dataKey="avis"
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                      barSize={40}
-                    />
+                    <Bar dataKey="reviews" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -279,10 +327,18 @@ export default function AnalyticsPage() {
         </Card>
 
         <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-none">
-          <PremiumFeatureGate level="growth" title="Distribution Détaillée" description="Analysez précisément la répartition de vos notes avec Premium.">
+          <PremiumFeatureGate
+            level="growth"
+            title={t('dashboardAnalyticsPage.gates.distributionTitle', 'Detailed distribution')}
+            description={t('dashboardAnalyticsPage.gates.distributionDescription', 'Analyze your rating distribution in detail with Premium.')}
+          >
             <CardHeader>
-              <CardTitle className="font-headline">Distribution des Notes</CardTitle>
-              <CardDescription>Répartition par nombre d'étoiles</CardDescription>
+              <CardTitle className="font-headline">
+                {t('dashboardAnalyticsPage.distribution.title', 'Rating distribution')}
+              </CardTitle>
+              <CardDescription>
+                {t('dashboardAnalyticsPage.distribution.description', 'Breakdown by star count')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-5">
@@ -312,5 +368,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-
-

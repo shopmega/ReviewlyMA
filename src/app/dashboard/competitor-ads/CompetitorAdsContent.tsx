@@ -31,6 +31,7 @@ import {
 } from '@/lib/competitor-ads/server-actions';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 import { ClientOnly } from '@/components/ClientOnly';
 
@@ -61,6 +62,8 @@ function CompetitorAdsContentInner() {
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t, tf, locale } = useI18n();
+  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
 
   useEffect(() => {
     if (user) {
@@ -79,8 +82,8 @@ function CompetitorAdsContentInner() {
       setAds(adsResult.ads || []);
     } else {
       toast({
-        title: 'Erreur',
-        description: adsResult.error || 'Impossible de charger les annonces concurrentes',
+        title: t('common.error', 'Error'),
+        description: adsResult.error || t('dashboardCompetitorAdsPage.errors.loadAds', 'Unable to load competitor ads'),
         variant: 'destructive',
       });
     }
@@ -99,8 +102,8 @@ function CompetitorAdsContentInner() {
   const handleCreateAd = async () => {
     if (!newAd.title.trim() || !newAd.content.trim() || newAd.budget_cents <= 0) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs obligatoires et définir un budget valide',
+        title: t('common.error', 'Error'),
+        description: t('dashboardCompetitorAdsPage.errors.requiredFields', 'Please complete required fields and set a valid budget'),
         variant: 'destructive',
       });
       return;
@@ -115,8 +118,8 @@ function CompetitorAdsContentInner() {
     const result = await createCompetitorAd(adData);
     if (result.success) {
       toast({
-        title: 'Succès',
-        description: 'Annonce concurrente créée avec succès',
+        title: t('common.success', 'Success'),
+        description: t('dashboardCompetitorAdsPage.success.created', 'Competitor ad created successfully'),
       });
       setNewAd({
         advertiser_business_id: '',
@@ -132,8 +135,8 @@ function CompetitorAdsContentInner() {
       loadCompetitorAds();
     } else {
       toast({
-        title: 'Erreur',
-        description: result.error || 'Impossible de créer l\'annonce concurrente',
+        title: t('common.error', 'Error'),
+        description: result.error || t('dashboardCompetitorAdsPage.errors.createAd', 'Unable to create competitor ad'),
         variant: 'destructive',
       });
     }
@@ -155,36 +158,36 @@ function CompetitorAdsContentInner() {
 
     if (result.success) {
       toast({
-        title: 'Succès',
-        description: 'Annonce concurrente mise à jour avec succès',
+        title: t('common.success', 'Success'),
+        description: t('dashboardCompetitorAdsPage.success.updated', 'Competitor ad updated successfully'),
       });
       setEditingAd(null);
       loadCompetitorAds();
     } else {
       toast({
-        title: 'Erreur',
-        description: result.error || 'Impossible de mettre à jour l\'annonce concurrente',
+        title: t('common.error', 'Error'),
+        description: result.error || t('dashboardCompetitorAdsPage.errors.updateAd', 'Unable to update competitor ad'),
         variant: 'destructive',
       });
     }
   };
 
   const handleDeleteAd = async (adId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette annonce concurrente ?')) {
+    if (!confirm(t('dashboardCompetitorAdsPage.confirm.delete', 'Are you sure you want to delete this competitor ad?'))) {
       return;
     }
 
     const result = await deleteCompetitorAd(adId);
     if (result.success) {
       toast({
-        title: 'Succès',
-        description: 'Annonce concurrente supprimée avec succès',
+        title: t('common.success', 'Success'),
+        description: t('dashboardCompetitorAdsPage.success.deleted', 'Competitor ad deleted successfully'),
       });
       loadCompetitorAds();
     } else {
       toast({
-        title: 'Erreur',
-        description: result.error || 'Impossible de supprimer l\'annonce concurrente',
+        title: t('common.error', 'Error'),
+        description: result.error || t('dashboardCompetitorAdsPage.errors.deleteAd', 'Unable to delete competitor ad'),
         variant: 'destructive',
       });
     }
@@ -195,22 +198,27 @@ function CompetitorAdsContentInner() {
     const result = await toggleCompetitorAdStatus(adId, newStatus as 'active' | 'paused');
     if (result.success) {
       toast({
-        title: 'Succès',
-        description: `Annonce ${newStatus === 'active' ? 'activée' : 'mise en pause'}`,
+        title: t('common.success', 'Success'),
+        description: tf('dashboardCompetitorAdsPage.success.statusChanged', 'Ad {status}', {
+          status:
+            newStatus === 'active'
+              ? t('dashboardCompetitorAdsPage.status.activated', 'activated')
+              : t('dashboardCompetitorAdsPage.status.paused', 'paused'),
+        }),
       });
       loadCompetitorAds();
     } else {
       toast({
-        title: 'Erreur',
-        description: result.error || 'Impossible de modifier le statut de l\'annonce',
+        title: t('common.error', 'Error'),
+        description: result.error || t('dashboardCompetitorAdsPage.errors.toggleStatus', 'Unable to update ad status'),
         variant: 'destructive',
       });
     }
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Non défini';
-    return new Date(dateString).toLocaleDateString('fr-FR');
+    if (!dateString) return t('dashboardCompetitorAdsPage.common.notSet', 'Not set');
+    return new Date(dateString).toLocaleDateString(dateLocale);
   };
 
   const calculateSpendPercentage = (ad: CompetitorAd) => {
@@ -221,60 +229,60 @@ function CompetitorAdsContentInner() {
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Annonces Concurrentes</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('dashboardCompetitorAdsPage.header.title', 'Competitor ads')}</h1>
         <p className="text-muted-foreground mt-2">
-          Créez des annonces pour apparaître sur les pages de vos concurrents
+          {t('dashboardCompetitorAdsPage.header.subtitle', 'Create ads to appear on competitor business pages')}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Disponible pour tous les comptes entreprise. Les impressions et clics sont suivis automatiquement.
+          {t('dashboardCompetitorAdsPage.header.note', 'Available for all business accounts. Impressions and clicks are tracked automatically.')}
         </p>
       </div>
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Vos Campagnes Concurrentes</h2>
+        <h2 className="text-xl font-semibold">{t('dashboardCompetitorAdsPage.campaigns.title', 'Your competitor campaigns')}</h2>
         <Button onClick={() => setShowCreateForm(!showCreateForm)}>
           <Plus className="mr-2 h-4 w-4" />
-          Créer Annonce Concurrente
+          {t('dashboardCompetitorAdsPage.campaigns.create', 'Create competitor ad')}
         </Button>
       </div>
 
       {showCreateForm && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Nouvelle Annonce Concurrente</CardTitle>
+            <CardTitle>{t('dashboardCompetitorAdsPage.createForm.title', 'New competitor ad')}</CardTitle>
             <CardDescription>
-              Créez une campagne pour apparaître sur les pages de vos concurrents
+              {t('dashboardCompetitorAdsPage.createForm.description', 'Create a campaign to appear on competitor pages')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="advertiser-business-id">ID de l'Entreprise Annonceur</Label>
+                  <Label htmlFor="advertiser-business-id">{t('dashboardCompetitorAdsPage.form.advertiserBusinessId', 'Advertiser business ID')}</Label>
                   <Input
                     id="advertiser-business-id"
-                    placeholder="Entrez l'ID de votre entreprise"
+                    placeholder={t('dashboardCompetitorAdsPage.form.advertiserBusinessPlaceholder', 'Enter your business ID')}
                     value={newAd.advertiser_business_id}
                     onChange={(e) => setNewAd({...newAd, advertiser_business_id: e.target.value})}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="target-competitors">IDs des Concurrents Ciblés (facultatif)</Label>
+                  <Label htmlFor="target-competitors">{t('dashboardCompetitorAdsPage.form.targetCompetitors', 'Target competitor IDs (optional)')}</Label>
                   <Textarea
                     id="target-competitors"
-                    placeholder="Entrez les IDs des entreprises concurrentes, un par ligne"
+                    placeholder={t('dashboardCompetitorAdsPage.form.targetCompetitorsPlaceholder', 'Enter competitor business IDs, one per line')}
                     rows={3}
                     value={newAd.target_competitor_ids.join('\n')}
                     onChange={(e) => setNewAd({...newAd, target_competitor_ids: e.target.value.split('\n').filter(id => id.trim())})}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Si vide, l'annonce apparaîtra sur toutes les pages concurrentes
+                    {t('dashboardCompetitorAdsPage.form.targetCompetitorsHint', 'If empty, the ad appears on all competitor pages')}
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="budget">Budget (MAD)</Label>
+                  <Label htmlFor="budget">{t('dashboardCompetitorAdsPage.form.budgetMad', 'Budget (MAD)')}</Label>
                   <Input
                     id="budget"
                     type="number"
@@ -288,7 +296,7 @@ function CompetitorAdsContentInner() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="start-date">Date de Début</Label>
+                    <Label htmlFor="start-date">{t('dashboardCompetitorAdsPage.form.startDate', 'Start date')}</Label>
                     <Input
                       id="start-date"
                       type="date"
@@ -297,7 +305,7 @@ function CompetitorAdsContentInner() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="end-date">Date de Fin</Label>
+                    <Label htmlFor="end-date">{t('dashboardCompetitorAdsPage.form.endDate', 'End date')}</Label>
                     <Input
                       id="end-date"
                       type="date"
@@ -310,20 +318,20 @@ function CompetitorAdsContentInner() {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="ad-title">Titre de l'Annonce *</Label>
+                  <Label htmlFor="ad-title">{t('dashboardCompetitorAdsPage.form.adTitle', 'Ad title *')}</Label>
                   <Input
                     id="ad-title"
-                    placeholder="Titre accrocheur pour votre annonce"
+                    placeholder={t('dashboardCompetitorAdsPage.form.adTitlePlaceholder', 'Catchy ad title')}
                     value={newAd.title}
                     onChange={(e) => setNewAd({...newAd, title: e.target.value})}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="ad-content">Contenu de l'Annonce *</Label>
+                  <Label htmlFor="ad-content">{t('dashboardCompetitorAdsPage.form.adContent', 'Ad content *')}</Label>
                   <Textarea
                     id="ad-content"
-                    placeholder="Décrivez votre offre ou service en quelques mots..."
+                    placeholder={t('dashboardCompetitorAdsPage.form.adContentPlaceholder', 'Describe your offer or service...')}
                     rows={4}
                     value={newAd.content}
                     onChange={(e) => setNewAd({...newAd, content: e.target.value})}
@@ -331,10 +339,10 @@ function CompetitorAdsContentInner() {
                 </div>
 
                 <div>
-                  <Label htmlFor="media-urls">URLs Média (facultatif)</Label>
+                  <Label htmlFor="media-urls">{t('dashboardCompetitorAdsPage.form.mediaUrls', 'Media URLs (optional)')}</Label>
                   <Textarea
                     id="media-urls"
-                    placeholder="Ajoutez des URLs d'images séparées par des sauts de ligne"
+                    placeholder={t('dashboardCompetitorAdsPage.form.mediaUrlsPlaceholder', 'Add image URLs separated by line breaks')}
                     rows={2}
                     value={newAd.media_urls.join('\n')}
                     onChange={(e) => setNewAd({...newAd, media_urls: e.target.value.split('\n').filter(url => url.trim())})}
@@ -346,10 +354,10 @@ function CompetitorAdsContentInner() {
             <div className="flex gap-2 mt-4">
               <Button onClick={handleCreateAd}>
                 <Target className="mr-2 h-4 w-4" />
-                Créer Annonce Concurrente
+                {t('dashboardCompetitorAdsPage.campaigns.create', 'Create competitor ad')}
               </Button>
               <Button variant="outline" onClick={() => setShowCreateForm(false)}>
-                Annuler
+                {t('common.cancel', 'Cancel')}
               </Button>
             </div>
           </CardContent>
@@ -364,13 +372,13 @@ function CompetitorAdsContentInner() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Target className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Aucune annonce concurrente</h3>
+            <h3 className="text-lg font-medium mb-2">{t('dashboardCompetitorAdsPage.empty.title', 'No competitor ad yet')}</h3>
             <p className="text-muted-foreground mb-4">
-              Créez votre première annonce pour apparaître sur les pages de vos concurrents
+              {t('dashboardCompetitorAdsPage.empty.description', 'Create your first ad to appear on competitor pages')}
             </p>
             <Button onClick={() => setShowCreateForm(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Créer Annonce Concurrente
+              {t('dashboardCompetitorAdsPage.campaigns.create', 'Create competitor ad')}
             </Button>
           </CardContent>
         </Card>
@@ -392,7 +400,11 @@ function CompetitorAdsContentInner() {
                         variant={ad.status === 'active' ? 'default' : ad.status === 'paused' ? 'secondary' : 'outline'}
                         className="mt-0.5 capitalize"
                       >
-                        {ad.status === 'active' ? 'Active' : ad.status === 'paused' ? 'En pause' : ad.status}
+                        {ad.status === 'active'
+                          ? t('dashboardCompetitorAdsPage.badges.active', 'Active')
+                          : ad.status === 'paused'
+                            ? t('dashboardCompetitorAdsPage.badges.paused', 'Paused')
+                            : ad.status}
                       </Badge>
                     </div>
                   </div>
@@ -429,18 +441,22 @@ function CompetitorAdsContentInner() {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Budget:</span>
+                    <span>{t('dashboardCompetitorAdsPage.card.budget', 'Budget')}:</span>
                     <span>{(ad.budget_cents / 100).toFixed(2)} MAD</span>
                   </div>
                   
                   <div className="flex justify-between text-sm">
-                    <span>Dépensé:</span>
+                    <span>{t('dashboardCompetitorAdsPage.card.spent', 'Spent')}:</span>
                     <span>{(ad.spent_cents / 100).toFixed(2)} MAD</span>
                   </div>
                   
                   <div className="pt-2">
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span>Progression: {calculateSpendPercentage(ad).toFixed(0)}%</span>
+                      <span>
+                        {tf('dashboardCompetitorAdsPage.card.progress', 'Progress: {pct}%', {
+                          pct: calculateSpendPercentage(ad).toFixed(0),
+                        })}
+                      </span>
                       <span>{(ad.spent_cents / 100).toFixed(2)} / {(ad.budget_cents / 100).toFixed(2)} MAD</span>
                     </div>
                     <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -452,27 +468,29 @@ function CompetitorAdsContentInner() {
                   </div>
                   
                   <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                    <span>Début: {formatDate(ad.start_date)}</span>
-                    <span>Fin: {formatDate(ad.end_date)}</span>
+                    <span>{tf('dashboardCompetitorAdsPage.card.start', 'Start: {date}', { date: formatDate(ad.start_date) })}</span>
+                    <span>{tf('dashboardCompetitorAdsPage.card.end', 'End: {date}', { date: formatDate(ad.end_date) })}</span>
                   </div>
                   
                   {ad.target_competitor_ids && ad.target_competitor_ids.length > 0 && (
                     <div className="text-xs text-muted-foreground mt-2">
-                      Ciblage: {ad.target_competitor_ids.length} concurrent(s)
+                      {tf('dashboardCompetitorAdsPage.card.targeting', 'Targeting: {count} competitor(s)', {
+                        count: ad.target_competitor_ids.length,
+                      })}
                     </div>
                   )}
 
                   <div className="grid grid-cols-3 gap-2 text-xs mt-3">
                     <div className="rounded-md border p-2 text-center">
-                      <p className="text-muted-foreground">Impressions</p>
+                      <p className="text-muted-foreground">{t('dashboardCompetitorAdsPage.metrics.impressions', 'Impressions')}</p>
                       <p className="font-semibold">{metrics.impressions}</p>
                     </div>
                     <div className="rounded-md border p-2 text-center">
-                      <p className="text-muted-foreground">Clics</p>
+                      <p className="text-muted-foreground">{t('dashboardCompetitorAdsPage.metrics.clicks', 'Clicks')}</p>
                       <p className="font-semibold">{metrics.clicks}</p>
                     </div>
                     <div className="rounded-md border p-2 text-center">
-                      <p className="text-muted-foreground">CTR</p>
+                      <p className="text-muted-foreground">{t('dashboardCompetitorAdsPage.metrics.ctr', 'CTR')}</p>
                       <p className="font-semibold">{metrics.ctr}%</p>
                     </div>
                   </div>
@@ -487,16 +505,16 @@ function CompetitorAdsContentInner() {
       {editingAd && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Modifier l'Annonce Concurrente</CardTitle>
+            <CardTitle>{t('dashboardCompetitorAdsPage.editForm.title', 'Edit competitor ad')}</CardTitle>
             <CardDescription>
-              Mettez à jour les détails de votre annonce concurrente
+              {t('dashboardCompetitorAdsPage.editForm.description', 'Update your competitor ad details')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="edit-advertiser-business-id">ID de l'Entreprise Annonceur</Label>
+                  <Label htmlFor="edit-advertiser-business-id">{t('dashboardCompetitorAdsPage.form.advertiserBusinessId', 'Advertiser business ID')}</Label>
                   <Input
                     id="edit-advertiser-business-id"
                     value={editingAd.advertiser_business_id}
@@ -505,7 +523,7 @@ function CompetitorAdsContentInner() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-target-competitors">IDs des Concurrents Ciblés</Label>
+                  <Label htmlFor="edit-target-competitors">{t('dashboardCompetitorAdsPage.form.targetCompetitors', 'Target competitor IDs (optional)')}</Label>
                   <Textarea
                     id="edit-target-competitors"
                     rows={3}
@@ -515,7 +533,7 @@ function CompetitorAdsContentInner() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-budget">Budget (MAD)</Label>
+                  <Label htmlFor="edit-budget">{t('dashboardCompetitorAdsPage.form.budgetMad', 'Budget (MAD)')}</Label>
                   <Input
                     id="edit-budget"
                     type="number"
@@ -528,7 +546,7 @@ function CompetitorAdsContentInner() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="edit-start-date">Date de Début</Label>
+                    <Label htmlFor="edit-start-date">{t('dashboardCompetitorAdsPage.form.startDate', 'Start date')}</Label>
                     <Input
                       id="edit-start-date"
                       type="date"
@@ -537,7 +555,7 @@ function CompetitorAdsContentInner() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-end-date">Date de Fin</Label>
+                    <Label htmlFor="edit-end-date">{t('dashboardCompetitorAdsPage.form.endDate', 'End date')}</Label>
                     <Input
                       id="edit-end-date"
                       type="date"
@@ -550,7 +568,7 @@ function CompetitorAdsContentInner() {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="edit-ad-title">Titre de l'Annonce</Label>
+                  <Label htmlFor="edit-ad-title">{t('dashboardCompetitorAdsPage.form.adTitle', 'Ad title *')}</Label>
                   <Input
                     id="edit-ad-title"
                     value={editingAd.title}
@@ -559,7 +577,7 @@ function CompetitorAdsContentInner() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-ad-content">Contenu de l'Annonce</Label>
+                  <Label htmlFor="edit-ad-content">{t('dashboardCompetitorAdsPage.form.adContent', 'Ad content *')}</Label>
                   <Textarea
                     id="edit-ad-content"
                     rows={4}
@@ -569,7 +587,7 @@ function CompetitorAdsContentInner() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-media-urls">URLs Média</Label>
+                  <Label htmlFor="edit-media-urls">{t('dashboardCompetitorAdsPage.form.mediaUrls', 'Media URLs (optional)')}</Label>
                   <Textarea
                     id="edit-media-urls"
                     rows={2}
@@ -583,7 +601,7 @@ function CompetitorAdsContentInner() {
             <div className="flex gap-2 mt-4">
               <Button onClick={handleUpdateAd}>
                 <Edit className="mr-2 h-4 w-4" />
-                Mettre à Jour
+                {t('dashboardCompetitorAdsPage.editForm.update', 'Update')}
               </Button>
               <Button 
                 variant="outline" 
@@ -592,7 +610,7 @@ function CompetitorAdsContentInner() {
                   setShowCreateForm(false);
                 }}
               >
-                Annuler
+                {t('common.cancel', 'Cancel')}
               </Button>
             </div>
           </CardContent>

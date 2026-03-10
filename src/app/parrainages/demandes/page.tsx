@@ -42,6 +42,38 @@ const getParam = (params: SearchParams, key: string) => {
   return value.trim();
 };
 
+const formatContractType = (value: string | null) => {
+  switch (value) {
+    case 'cdi':
+      return 'CDI';
+    case 'cdd':
+      return 'CDD';
+    case 'stage':
+      return 'Stage';
+    case 'freelance':
+      return 'Freelance';
+    case 'alternance':
+      return 'Alternance';
+    case 'autre':
+      return 'Autre';
+    default:
+      return null;
+  }
+};
+
+const formatWorkMode = (value: string | null) => {
+  switch (value) {
+    case 'onsite':
+      return 'Presentiel';
+    case 'hybrid':
+      return 'Hybride';
+    case 'remote':
+      return 'Remote';
+    default:
+      return null;
+  }
+};
+
 export default async function ReferralDemandBoardPage({
   searchParams,
 }: {
@@ -158,11 +190,25 @@ export default async function ReferralDemandBoardPage({
                     {item.city}
                   </p>
                 )}
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {formatContractType(item.contract_type) ? (
+                    <Badge variant="outline">{formatContractType(item.contract_type)}</Badge>
+                  ) : null}
+                  {formatWorkMode(item.work_mode) ? (
+                    <Badge variant="outline">{formatWorkMode(item.work_mode)}</Badge>
+                  ) : null}
+                  {item.seniority ? <Badge variant="outline">{item.seniority}</Badge> : null}
+                </div>
                 <p className="text-sm text-muted-foreground line-clamp-4">{item.summary}</p>
                 <Button asChild variant="outline" className="w-full rounded-md">
                   <Link href={`/parrainages/demandes/${item.id}`} className="inline-flex items-center justify-center gap-2">
                     {t('referralDemandBoardPage.actions.viewRequest', 'View request')}
                     <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild className="w-full rounded-md">
+                  <Link href={`/parrainages/demandes/${item.id}#respond-form`}>
+                    Proposer un parrainage
                   </Link>
                 </Button>
               </CardContent>

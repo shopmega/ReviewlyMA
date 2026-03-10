@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, Users, Eye, Star, AlertTriangle, Activity, Download, Calendar, Filter, BarChart3, PieChart as PieChartIcon, Clock, CheckCircle, XCircle, Zap, Search } from 'lucide-react';
+import { TrendingUp, Users, AlertTriangle, Activity, Download, Calendar, PieChart as PieChartIcon, Zap, Search } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -20,9 +20,10 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from 'recharts';
 import { getAdminAnalytics } from '@/app/actions/analytics';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 interface AnalyticsData {
   overview: {
@@ -54,6 +55,11 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('overview');
+  const { t, tf, locale } = useI18n();
+
+  const numberLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(numberLocale), [numberLocale]);
+  const formatMad = (value: number) => `${numberFormatter.format(value)} MAD`;
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -77,15 +83,21 @@ export default function AnalyticsPage() {
     if (!data) return;
 
     const csvContent = [
-      ['Metric', 'Value'],
-      ['Total Users', data.overview.totalUsers],
-      ['Active Users', data.overview.activeUsers],
-      ['Total Businesses', data.overview.totalBusinesses],
-      ['Total Reviews', data.overview.totalReviews],
-      ['Average Rating', data.overview.avgRating],
-      ['Total Revenue', data.overview.totalRevenue + ' MAD'],
-      ['Total Messages', data.overview.totalMessages]
-    ].map(row => row.join(',')).join('\n');
+      [
+        t('adminAnalyticsPage.export.metricHeader', 'Metric'),
+        t('adminAnalyticsPage.export.valueHeader', 'Value'),
+      ],
+      [t('adminAnalyticsPage.stats.totalUsers', 'Total users'), data.overview.totalUsers],
+      [t('adminAnalyticsPage.stats.activeUsers', 'Active users'), data.overview.activeUsers],
+      [t('adminAnalyticsPage.export.totalBusinesses', 'Total businesses'), data.overview.totalBusinesses],
+      [t('adminAnalyticsPage.export.totalReviews', 'Total reviews'), data.overview.totalReviews],
+      [t('adminAnalyticsPage.export.averageRating', 'Average rating'), data.overview.avgRating],
+      [t('adminAnalyticsPage.stats.estimatedRevenue', 'Estimated revenue (premium)'), formatMad(data.overview.totalRevenue)],
+      [t('adminAnalyticsPage.export.totalMessages', 'Total messages'), data.overview.totalMessages],
+      [t('adminAnalyticsPage.stats.totalSearches', 'Total searches'), data.overview.totalSearches || 0],
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -99,8 +111,10 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-96 space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent"></div>
-        <p className="text-muted-foreground font-medium animate-pulse">Chargement des données...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent" />
+        <p className="text-muted-foreground font-medium animate-pulse">
+          {t('adminAnalyticsPage.loading.data', 'Loading analytics data...')}
+        </p>
       </div>
     );
   }
@@ -109,24 +123,35 @@ export default function AnalyticsPage() {
     return (
       <Card className="max-w-md mx-auto mt-20 p-8 text-center border-0 shadow-2xl rounded-3xl">
         <AlertTriangle className="mx-auto h-16 w-16 text-amber-500 mb-6" />
-        <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Données indisponibles</h3>
-        <p className="text-muted-foreground mb-6">Impossible de récupérer les statistiques pour le moment.</p>
+        <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">
+          {t('adminAnalyticsPage.unavailable.title', 'Data unavailable')}
+        </h3>
+        <p className="text-muted-foreground mb-6">
+          {t('adminAnalyticsPage.unavailable.description', 'Unable to load analytics right now.')}
+        </p>
         <Button onClick={fetchAnalyticsData} className="rounded-xl px-10 h-12 shadow-lg shadow-primary/20">
-          Réessayer
+          {t('adminAnalyticsPage.unavailable.retry', 'Retry')}
         </Button>
       </Card>
     );
   }
 
   const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#f97316'];
+  const ownerClaimRate = Math.round((data.overview.totalBusinesses / (data.overview.totalUsers || 1)) * 100);
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <Badge className="mb-4 bg-primary/10 text-primary border-none font-bold px-3 py-1">Insights Hub</Badge>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Analyse de Performance</h1>
-          <p className="text-muted-foreground mt-2 font-medium">Visualisez l'évolution et l'engagement de votre plateforme</p>
+          <Badge className="mb-4 bg-primary/10 text-primary border-none font-bold px-3 py-1">
+            {t('adminAnalyticsPage.header.badge', 'Insights hub')}
+          </Badge>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+            {t('adminAnalyticsPage.header.title', 'Performance analytics')}
+          </h1>
+          <p className="text-muted-foreground mt-2 font-medium">
+            {t('adminAnalyticsPage.header.subtitle', 'Track growth and engagement across the platform')}
+          </p>
         </div>
         <div className="flex bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-1.5 rounded-2xl border border-border/50 shadow-sm gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -135,32 +160,53 @@ export default function AnalyticsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="7d">7 derniers jours</SelectItem>
-              <SelectItem value="30d">30 derniers jours</SelectItem>
-              <SelectItem value="90d">90 derniers jours</SelectItem>
-              <SelectItem value="1y">L'année dernière</SelectItem>
+              <SelectItem value="7d">{t('adminAnalyticsPage.timeRange.last7Days', 'Last 7 days')}</SelectItem>
+              <SelectItem value="30d">{t('adminAnalyticsPage.timeRange.last30Days', 'Last 30 days')}</SelectItem>
+              <SelectItem value="90d">{t('adminAnalyticsPage.timeRange.last90Days', 'Last 90 days')}</SelectItem>
+              <SelectItem value="1y">{t('adminAnalyticsPage.timeRange.lastYear', 'Last year')}</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={exportData} variant="ghost" className="h-10 rounded-xl font-bold hover:bg-primary/10 hover:text-primary transition-all">
             <Download className="h-4 w-4 mr-2" />
-            Exporter CSV
+            {t('adminAnalyticsPage.actions.exportCsv', 'Export CSV')}
           </Button>
         </div>
       </div>
 
-      {/* Overview Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Utilisateurs Totaux', value: data.overview.totalUsers, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'Utilisateurs Actifs', value: data.overview.activeUsers, icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Recherches Totales', value: data.overview.totalSearches || 0, icon: Search, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-          { label: 'Revenus Estimés (Premium)', value: `${data.overview.totalRevenue.toLocaleString()} MAD`, icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+          {
+            label: t('adminAnalyticsPage.stats.totalUsers', 'Total users'),
+            value: data.overview.totalUsers,
+            icon: Users,
+            color: 'text-blue-500',
+            bg: 'bg-blue-500/10',
+          },
+          {
+            label: t('adminAnalyticsPage.stats.activeUsers', 'Active users'),
+            value: data.overview.activeUsers,
+            icon: Activity,
+            color: 'text-emerald-500',
+            bg: 'bg-emerald-500/10',
+          },
+          {
+            label: t('adminAnalyticsPage.stats.totalSearches', 'Total searches'),
+            value: data.overview.totalSearches || 0,
+            icon: Search,
+            color: 'text-amber-500',
+            bg: 'bg-amber-500/10',
+          },
+          {
+            label: t('adminAnalyticsPage.stats.estimatedRevenue', 'Estimated revenue (premium)'),
+            value: formatMad(data.overview.totalRevenue),
+            icon: Zap,
+            color: 'text-purple-500',
+            bg: 'bg-purple-500/10',
+          },
         ].map((stat, i) => (
           <Card key={i} className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl overflow-hidden group">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {stat.label}
-              </CardTitle>
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{stat.label}</CardTitle>
               <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
                 <stat.icon className="h-4 w-4" />
               </div>
@@ -169,28 +215,35 @@ export default function AnalyticsPage() {
               <div className="text-3xl font-black">{stat.value}</div>
               <div className="mt-2 flex items-center text-[10px] text-muted-foreground font-bold">
                 <TrendingUp className="h-3 w-3 mr-1 text-emerald-500" />
-                Croissance positive ce mois
+                {t('adminAnalyticsPage.stats.growthPositiveThisMonth', 'Positive growth this month')}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Detailed Analytics Tabs */}
       <Tabs value={selectedMetric} onValueChange={setSelectedMetric} className="space-y-8">
         <TabsList className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-border/50 h-14 p-1.5 rounded-2xl w-full max-w-lg">
-          <TabsTrigger value="overview" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="users" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="businesses" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">Entreprises</TabsTrigger>
-          <TabsTrigger value="search" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">Recherche</TabsTrigger>
+          <TabsTrigger value="overview" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
+            {t('adminAnalyticsPage.tabs.overview', 'Overview')}
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
+            {t('adminAnalyticsPage.tabs.users', 'Users')}
+          </TabsTrigger>
+          <TabsTrigger value="businesses" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
+            {t('adminAnalyticsPage.tabs.businesses', 'Businesses')}
+          </TabsTrigger>
+          <TabsTrigger value="search" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
+            {t('adminAnalyticsPage.tabs.search', 'Search')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="animate-in fade-in duration-300">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Tendance de croissance</CardTitle>
-                <CardDescription>Évolution mensuelle des nouveaux utilisateurs</CardDescription>
+                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.overview.growthTrend.title', 'Growth trend')}</CardTitle>
+                <CardDescription>{t('adminAnalyticsPage.overview.growthTrend.description', 'Monthly new-user growth')}</CardDescription>
               </CardHeader>
               <CardContent className="px-0 pb-0 pt-6">
                 <ResponsiveContainer width="100%" height={320}>
@@ -216,8 +269,12 @@ export default function AnalyticsPage() {
 
             <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Répartition par Ville</CardTitle>
-                <CardDescription>Concentration géographique des entreprises</CardDescription>
+                <CardTitle className="text-lg font-bold">
+                  {t('adminAnalyticsPage.overview.cityDistribution.title', 'City distribution')}
+                </CardTitle>
+                <CardDescription>
+                  {t('adminAnalyticsPage.overview.cityDistribution.description', 'Geographic concentration of businesses')}
+                </CardDescription>
               </CardHeader>
               <CardContent className="px-0 pb-0 flex flex-col items-center">
                 <ResponsiveContainer width="100%" height={280}>
@@ -247,8 +304,8 @@ export default function AnalyticsPage() {
         <TabsContent value="users" className="animate-in fade-in duration-300">
           <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-8">
             <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-2xl font-black">Engagement Utilisateurs</CardTitle>
-              <CardDescription>Flux d'acquisition sur les 6 derniers mois</CardDescription>
+              <CardTitle className="text-2xl font-black">{t('adminAnalyticsPage.users.title', 'User engagement')}</CardTitle>
+              <CardDescription>{t('adminAnalyticsPage.users.description', 'Acquisition flow over the last 6 months')}</CardDescription>
             </CardHeader>
             <CardContent className="px-0 pb-0 pt-10">
               <ResponsiveContainer width="100%" height={400}>
@@ -256,10 +313,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                   <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
-                    contentStyle={{ borderRadius: '16px', border: 'none' }}
-                  />
+                  <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={{ borderRadius: '16px', border: 'none' }} />
                   <Bar dataKey="users" fill="#6366f1" radius={[10, 10, 4, 4]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
@@ -271,8 +325,8 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="lg:col-span-2 border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Croissance Pro</CardTitle>
-                <CardDescription>Nouvelles entreprises par mois</CardDescription>
+                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.businesses.growth.title', 'Business growth')}</CardTitle>
+                <CardDescription>{t('adminAnalyticsPage.businesses.growth.description', 'New businesses per month')}</CardDescription>
               </CardHeader>
               <CardContent className="px-0 pb-0 pt-6">
                 <ResponsiveContainer width="100%" height={300}>
@@ -298,16 +352,18 @@ export default function AnalyticsPage() {
                 <PieChartIcon className="h-40 w-40" />
               </div>
               <div className="relative z-10 text-center space-y-4">
-                <p className="text-indigo-100 font-bold uppercase tracking-widest text-xs">Engagement Propriétaires</p>
-                <div className="text-6xl font-black">
-                  {Math.round((data.overview.totalBusinesses / (data.overview.totalUsers || 1)) * 100)}%
-                </div>
-                <p className="text-indigo-100 font-medium text-sm">Taux de revendication estimé</p>
+                <p className="text-indigo-100 font-bold uppercase tracking-widest text-xs">
+                  {t('adminAnalyticsPage.businesses.ownerEngagement.title', 'Owner engagement')}
+                </p>
+                <div className="text-6xl font-black">{ownerClaimRate}%</div>
+                <p className="text-indigo-100 font-medium text-sm">
+                  {t('adminAnalyticsPage.businesses.ownerEngagement.claimRate', 'Estimated claim rate')}
+                </p>
                 <div className="pt-4">
                   <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-white rounded-full shadow-[0_0_10px_white]"
-                      style={{ width: `${Math.min(100, (data.overview.totalBusinesses / (data.overview.totalUsers || 1)) * 100)}%` }}
+                      style={{ width: `${Math.min(100, ownerClaimRate)}%` }}
                     />
                   </div>
                 </div>
@@ -320,8 +376,8 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Volumes de Recherche</CardTitle>
-                <CardDescription>Évolution des requêtes sur 6 mois</CardDescription>
+                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.search.volume.title', 'Search volumes')}</CardTitle>
+                <CardDescription>{t('adminAnalyticsPage.search.volume.description', 'Search trend over 6 months')}</CardDescription>
               </CardHeader>
               <CardContent className="px-0 pb-0 pt-6">
                 <ResponsiveContainer width="100%" height={320}>
@@ -344,8 +400,8 @@ export default function AnalyticsPage() {
 
             <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
               <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Top Mots-Clés</CardTitle>
-                <CardDescription>Requêtes les plus fréquentes</CardDescription>
+                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.search.topQueries.title', 'Top queries')}</CardTitle>
+                <CardDescription>{t('adminAnalyticsPage.search.topQueries.description', 'Most frequent search terms')}</CardDescription>
               </CardHeader>
               <CardContent className="px-0 pt-6">
                 <div className="space-y-4">
@@ -357,12 +413,14 @@ export default function AnalyticsPage() {
                         </div>
                         <span className="font-bold text-slate-700 dark:text-slate-200">{query.name}</span>
                       </div>
-                      <Badge variant="secondary" className="rounded-lg font-bold">{query.value} searches</Badge>
+                      <Badge variant="secondary" className="rounded-lg font-bold">
+                        {tf('adminAnalyticsPage.search.topQueries.countLabel', '{count} searches', { count: query.value })}
+                      </Badge>
                     </div>
                   ))}
                   {(!data.searchMetrics?.topQueries || data.searchMetrics.topQueries.length === 0) && (
                     <div className="text-center py-10 text-muted-foreground font-medium italic">
-                      Données de recherche insuffisantes
+                      {t('adminAnalyticsPage.search.topQueries.empty', 'Insufficient search data')}
                     </div>
                   )}
                 </div>

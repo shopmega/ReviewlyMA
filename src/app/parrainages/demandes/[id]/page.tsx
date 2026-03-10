@@ -8,12 +8,15 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock3, MapPin } from 'lucide-react';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
+import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { DemandResponseForm } from './DemandResponseForm';
 
 type Params = { id: string };
 
 type DemandListing = {
   id: string;
+  user_id: string;
   title: string;
   target_role: string;
   city: string | null;
@@ -22,8 +25,25 @@ type DemandListing = {
   seniority: string | null;
   summary: string;
   details: string | null;
+  expires_at: string | null;
   created_at: string;
   status: string;
+};
+
+type DemandResponse = {
+  id: string;
+  demand_listing_id: string;
+  responder_user_id: string;
+  message: string;
+  referral_offer_id: string | null;
+  status: string;
+  created_at: string;
+};
+
+type LinkedOffer = {
+  id: string;
+  company_name: string;
+  job_title: string;
 };
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +52,7 @@ async function getDemandListingById(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('job_referral_demand_listings')
-    .select('id, title, target_role, city, contract_type, work_mode, seniority, summary, details, created_at, status')
+    .select('id, user_id, title, target_role, city, contract_type, work_mode, seniority, summary, details, expires_at, created_at, status')
     .eq('id', id)
     .eq('status', 'active')
     .maybeSingle();
@@ -87,6 +107,45 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
   const siteUrl = getServerSiteUrl();
   const item = await getDemandListingById(id);
   if (!item) notFound();
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const currentUserId = auth.user?.id ?? null;
+  const isOwner = currentUserId === item.user_id;
+
+  let existingResponse: { id: string; status: string } | null = null;
+  if (currentUserId && !isOwner) {
+    const { data } = await supabase
+      .from('job_referral_demand_responses')
+      .select('id, status')
+      .eq('demand_listing_id', item.id)
+      .eq('responder_user_id', currentUserId)
+      .eq('status', 'active')
+      .maybeSingle();
+    existingResponse = (data as { id: string; status: string } | null) || null;
+  }
+
+  let ownerResponses: DemandResponse[] = [];
+  let offerMap = new Map<string, LinkedOffer>();
+  if (isOwner) {
+    const { data } = await supabase
+      .from('job_referral_demand_responses')
+      .select('id, demand_listing_id, responder_user_id, message, referral_offer_id, status, created_at')
+      .eq('demand_listing_id', item.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    ownerResponses = (data || []) as DemandResponse[];
+    const linkedOfferIds = [...new Set(ownerResponses.map((response) => response.referral_offer_id).filter(Boolean))] as string[];
+
+    if (linkedOfferIds.length > 0) {
+      const { data: offers } = await supabase
+        .from('job_referral_offers')
+        .select('id, company_name, job_title')
+        .in('id', linkedOfferIds);
+      offerMap = new Map((offers || []).map((offer) => [offer.id, offer as LinkedOffer]));
+    }
+  }
+
   const demandShareUrl = `${siteUrl}/parrainages/demandes/${item.id}`;
   const demandShareText = `Demande de parrainage: ${item.target_role}${item.city ? ` a ${item.city}` : ''}.`;
 
@@ -133,7 +192,7 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
           <InternalAdsSlot placement="referrals_detail_sidebar" limit={1} />
           <Card className="rounded-2xl">
             <CardContent className="pt-6 text-sm text-muted-foreground space-y-3">
-              <p>Vous pouvez contacter ce candidat via vos canaux habituels de candidature.</p>
+              <p>Repondez ici pour proposer un parrainage et centraliser les echanges.</p>
               <ContentShareButton
                 url={demandShareUrl}
                 title={`Demande de parrainage: ${item.target_role}`}
@@ -148,6 +207,64 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
               </Button>
             </CardContent>
           </Card>
+
+          {!currentUserId ? (
+            <SoftAuthTriggerButton
+              label="Se connecter pour repondre"
+              nextPath={`/parrainages/demandes/${item.id}#respond-form`}
+              intent="referral_demand_reply"
+              className="w-full rounded-xl"
+              title="Proposez un parrainage en quelques clics"
+              description="Connectez-vous pour envoyer votre reponse et aider ce candidat."
+            />
+          ) : null}
+
+          {currentUserId && !isOwner ? (
+            <DemandResponseForm demandListingId={item.id} existingResponse={existingResponse} />
+          ) : null}
+
+          {isOwner ? (
+            <Card className="rounded-2xl">
+              <CardContent className="pt-6 space-y-3">
+                <h2 className="text-sm font-semibold">Reponses recues ({ownerResponses.length})</h2>
+                {ownerResponses.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucune reponse pour le moment.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {ownerResponses.slice(0, 8).map((response) => {
+                      const linkedOffer = response.referral_offer_id ? offerMap.get(response.referral_offer_id) : null;
+                      return (
+                        <div key={response.id} className="rounded-xl border border-border/60 bg-background/60 p-3 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <Link href={`/users/${response.responder_user_id}`} className="text-sm font-semibold text-primary hover:underline">
+                              Candidat {response.responder_user_id.slice(0, 8)}...
+                            </Link>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(response.created_at).toLocaleDateString('fr-MA')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{response.message}</p>
+                          {linkedOffer ? (
+                            <p className="text-xs text-muted-foreground">
+                              Offre liee:{' '}
+                              <Link href={`/parrainages/${linkedOffer.id}`} className="text-primary hover:underline">
+                                {linkedOffer.job_title} - {linkedOffer.company_name}
+                              </Link>
+                            </p>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                    {ownerResponses.length > 8 ? (
+                      <p className="text-xs text-muted-foreground">
+                        {ownerResponses.length - 8} reponse(s) supplementaire(s) non affichee(s).
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </div>
     </div>

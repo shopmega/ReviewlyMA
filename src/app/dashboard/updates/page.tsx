@@ -16,6 +16,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { isPaidTier } from '@/lib/tier-utils';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type Update = {
   id: string | number;
@@ -25,11 +26,11 @@ type Update = {
   is_pinned?: boolean;
 };
 
-function SubmitButton() {
+function SubmitButton({ label }: { label: string }) {
   return (
     <Button type="submit" className="w-full md:w-auto">
       <Megaphone className="mr-2" />
-      Publier
+      {label}
     </Button>
   );
 }
@@ -39,6 +40,7 @@ export default function UpdatesPage() {
   const initialState: BusinessActionState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(submitUpdate, initialState);
   const { toast } = useToast();
+  const { t, tf } = useI18n();
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | number | null>(null);
@@ -61,12 +63,19 @@ export default function UpdatesPage() {
 
   useEffect(() => {
     if (state.status === 'success') {
-      toast({ title: 'Succes', description: state.message || 'Nouveaute publiee.' });
+      toast({
+        title: t('dashboardUpdatesPage.toasts.successTitle', 'Success'),
+        description: state.message || t('dashboardUpdatesPage.toasts.publishedFallback', 'Update published.'),
+      });
       void fetchUpdates();
     } else if (state.status === 'error') {
-      toast({ variant: 'destructive', title: 'Erreur', description: state.message || 'Echec de publication.' });
+      toast({
+        variant: 'destructive',
+        title: t('dashboardUpdatesPage.toasts.errorTitle', 'Error'),
+        description: state.message || t('dashboardUpdatesPage.toasts.publishFailedFallback', 'Publishing failed.'),
+      });
     }
-  }, [state.status, state.message, toast]);
+  }, [state.status, state.message, toast, t]);
 
   const fetchUpdates = async () => {
     if (profileLoading || !businessId) {
@@ -93,10 +102,14 @@ export default function UpdatesPage() {
     setActionLoading(deleteDialog.updateId);
     const result = await deleteUpdate(String(deleteDialog.updateId));
     if (result.status === 'success') {
-      toast({ title: 'Succes', description: result.message });
+      toast({ title: t('dashboardUpdatesPage.toasts.successTitle', 'Success'), description: result.message });
       setUpdates((prev) => prev.filter((u) => String(u.id) !== String(deleteDialog.updateId)));
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({
+        title: t('dashboardUpdatesPage.toasts.errorTitle', 'Error'),
+        description: result.message,
+        variant: 'destructive',
+      });
     }
 
     setActionLoading(null);
@@ -108,11 +121,15 @@ export default function UpdatesPage() {
     setActionLoading(editingUpdate.id);
     const result = await editUpdate(String(editingUpdate.id), editTitle, editContent);
     if (result.status === 'success') {
-      toast({ title: 'Succes', description: result.message });
+      toast({ title: t('dashboardUpdatesPage.toasts.successTitle', 'Success'), description: result.message });
       setUpdates((prev) => prev.map((u) => (String(u.id) === String(editingUpdate.id) ? { ...u, title: editTitle, content: editContent } : u)));
       setEditingUpdate(null);
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({
+        title: t('dashboardUpdatesPage.toasts.errorTitle', 'Error'),
+        description: result.message,
+        variant: 'destructive',
+      });
     }
     setActionLoading(null);
   };
@@ -121,10 +138,14 @@ export default function UpdatesPage() {
     setActionLoading(update.id);
     const result = await setUpdatePinned(String(update.id), !update.is_pinned);
     if (result.status === 'success') {
-      toast({ title: 'Succes', description: result.message });
+      toast({ title: t('dashboardUpdatesPage.toasts.successTitle', 'Success'), description: result.message });
       await fetchUpdates();
     } else {
-      toast({ title: 'Erreur', description: result.message, variant: 'destructive' });
+      toast({
+        title: t('dashboardUpdatesPage.toasts.errorTitle', 'Error'),
+        description: result.message,
+        variant: 'destructive',
+      });
     }
     setActionLoading(null);
   };
@@ -138,8 +159,15 @@ export default function UpdatesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gerer les Nouveautes</h1>
-        <p className="text-muted-foreground">Partagez des annonces, offres speciales ou actualites avec vos clients.</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('dashboardUpdatesPage.header.title', 'Manage updates')}
+        </h1>
+        <p className="text-muted-foreground">
+          {t(
+            'dashboardUpdatesPage.header.description',
+            'Share announcements, special offers, or news with your customers.'
+          )}
+        </p>
       </div>
 
       {!isPro && !loading && (
@@ -149,11 +177,18 @@ export default function UpdatesPage() {
               <Lock className="h-8 w-8 text-amber-600 dark:text-amber-500" />
             </div>
             <div className="space-y-2 max-w-md">
-              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">Fonctionnalite PRO / GOLD</h3>
-              <p className="text-sm text-amber-700/80 dark:text-amber-500/80">La diffusion de nouveautes est reservee aux abonnes PRO ou GOLD.</p>
+              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">
+                {t('dashboardUpdatesPage.pro.title', 'PRO / GOLD feature')}
+              </h3>
+              <p className="text-sm text-amber-700/80 dark:text-amber-500/80">
+                {t(
+                  'dashboardUpdatesPage.pro.description',
+                  'Posting updates is reserved for PRO or GOLD subscribers.'
+                )}
+              </p>
             </div>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl" asChild>
-              <Link href="/dashboard/premium">Passer en Version PRO</Link>
+              <Link href="/dashboard/premium">{t('dashboardUpdatesPage.pro.cta', 'Upgrade to PRO')}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -172,25 +207,40 @@ export default function UpdatesPage() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Poster une nouvelle Nouveaute</CardTitle>
+                  <CardTitle>{t('dashboardUpdatesPage.form.title', 'Post a new update')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <form action={formAction} className="space-y-4">
                     {businessId && <input type="hidden" name="businessId" value={businessId} />}
                     <div className="space-y-2">
-                      <Label htmlFor="updateTitle">Titre de la nouveaute</Label>
-                      <Input id="updateTitle" name="updateTitle" placeholder="Ex: Offre speciale de saison" required />
+                      <Label htmlFor="updateTitle">
+                        {t('dashboardUpdatesPage.form.updateTitleLabel', 'Update title')}
+                      </Label>
+                      <Input
+                        id="updateTitle"
+                        name="updateTitle"
+                        placeholder={t('dashboardUpdatesPage.form.updateTitlePlaceholder', 'Ex: Seasonal special offer')}
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="updateText">Contenu</Label>
-                      <Textarea id="updateText" name="updateText" placeholder="Decrivez votre annonce..." className="min-h-32" required />
+                      <Label htmlFor="updateText">{t('dashboardUpdatesPage.form.updateTextLabel', 'Content')}</Label>
+                      <Textarea
+                        id="updateText"
+                        name="updateText"
+                        placeholder={t('dashboardUpdatesPage.form.updateTextPlaceholder', 'Describe your announcement...')}
+                        className="min-h-32"
+                        required
+                      />
                     </div>
                     <div className="flex items-center gap-2">
                       <input id="isPinned" name="isPinned" type="checkbox" className="h-4 w-4" />
-                      <Label htmlFor="isPinned">Epingler cette nouveaute en haut de la liste</Label>
+                      <Label htmlFor="isPinned">
+                        {t('dashboardUpdatesPage.form.isPinnedLabel', 'Pin this update at the top of the list')}
+                      </Label>
                     </div>
                     <CardFooter className="px-0">
-                      <SubmitButton />
+                      <SubmitButton label={t('dashboardUpdatesPage.form.publish', 'Publish')} />
                     </CardFooter>
                   </form>
                 </CardContent>
@@ -200,8 +250,8 @@ export default function UpdatesPage() {
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardHeader>
-                  <CardTitle>Nouveautes publiees</CardTitle>
-                  <CardDescription>Vos dernieres publications.</CardDescription>
+                  <CardTitle>{t('dashboardUpdatesPage.list.title', 'Published updates')}</CardTitle>
+                  <CardDescription>{t('dashboardUpdatesPage.list.description', 'Your latest posts.')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   {loading ? (
@@ -217,7 +267,7 @@ export default function UpdatesPage() {
                             {update.is_pinned && (
                               <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold">
                                 <Pin className="mr-1 h-3 w-3" />
-                                Epinglee
+                                {t('dashboardUpdatesPage.list.pinnedBadge', 'Pinned')}
                               </span>
                             )}
                           </p>
@@ -230,9 +280,15 @@ export default function UpdatesPage() {
                           ) : (
                             <>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleTogglePin(update)}>
+                                <span className="sr-only">
+                                  {update.is_pinned
+                                    ? t('dashboardUpdatesPage.list.unpinAriaLabel', 'Unpin update')
+                                    : t('dashboardUpdatesPage.list.pinAriaLabel', 'Pin update')}
+                                </span>
                                 {update.is_pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
                               </Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(update)}>
+                                <span className="sr-only">{t('dashboardUpdatesPage.list.editAriaLabel', 'Edit update')}</span>
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
@@ -241,6 +297,7 @@ export default function UpdatesPage() {
                                 className="h-8 w-8 text-destructive hover:text-destructive"
                                 onClick={() => setDeleteDialog({ open: true, updateId: update.id, title: update.title })}
                               >
+                                <span className="sr-only">{t('dashboardUpdatesPage.list.deleteAriaLabel', 'Delete update')}</span>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </>
@@ -249,7 +306,9 @@ export default function UpdatesPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">Aucune nouveaute publiee pour le moment.</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t('dashboardUpdatesPage.list.empty', 'No updates published yet.')}
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -259,27 +318,29 @@ export default function UpdatesPage() {
           <Dialog open={!!editingUpdate} onOpenChange={(open) => !open && setEditingUpdate(null)}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Modifier la nouveaute</DialogTitle>
-                <DialogDescription>Modifiez le titre et le contenu de votre publication.</DialogDescription>
+                <DialogTitle>{t('dashboardUpdatesPage.dialogs.edit.title', 'Edit update')}</DialogTitle>
+                <DialogDescription>
+                  {t('dashboardUpdatesPage.dialogs.edit.description', 'Edit the title and content of your post.')}
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="editTitle">Titre</Label>
+                  <Label htmlFor="editTitle">{t('dashboardUpdatesPage.dialogs.edit.titleLabel', 'Title')}</Label>
                   <Input id="editTitle" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="editContent">Contenu</Label>
+                  <Label htmlFor="editContent">{t('dashboardUpdatesPage.dialogs.edit.contentLabel', 'Content')}</Label>
                   <Textarea id="editContent" value={editContent} onChange={(e) => setEditContent(e.target.value)} className="min-h-24" />
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setEditingUpdate(null)}>
                   <X className="mr-2 h-4 w-4" />
-                  Annuler
+                  {t('dashboardUpdatesPage.common.cancel', 'Cancel')}
                 </Button>
                 <Button onClick={handleEdit} disabled={actionLoading === editingUpdate?.id}>
                   {actionLoading === editingUpdate?.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-                  Enregistrer
+                  {t('dashboardUpdatesPage.common.save', 'Save')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -288,18 +349,24 @@ export default function UpdatesPage() {
           <Dialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, updateId: '', title: '' })}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Supprimer la nouveaute</DialogTitle>
+                <DialogTitle>{t('dashboardUpdatesPage.dialogs.delete.title', 'Delete update')}</DialogTitle>
                 <DialogDescription>
-                  Etes-vous sur de vouloir supprimer <strong>"{deleteDialog.title}"</strong> ?
+                  {tf(
+                    'dashboardUpdatesPage.dialogs.delete.description',
+                    'Are you sure you want to delete "{title}"?',
+                    { title: deleteDialog.title }
+                  )}
                   <br />
-                  Cette action est irreversible.
+                  {t('dashboardUpdatesPage.dialogs.delete.irreversible', 'This action cannot be undone.')}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteDialog({ open: false, updateId: '', title: '' })}>Annuler</Button>
+                <Button variant="outline" onClick={() => setDeleteDialog({ open: false, updateId: '', title: '' })}>
+                  {t('dashboardUpdatesPage.common.cancel', 'Cancel')}
+                </Button>
                 <Button variant="destructive" onClick={handleDelete} disabled={actionLoading === deleteDialog.updateId}>
                   {actionLoading === deleteDialog.updateId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Supprimer
+                  {t('dashboardUpdatesPage.common.delete', 'Delete')}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -79,7 +79,8 @@
       "subtitle": "Avis, salaires et réputation des entreprises marocaines.",
       "searchPlaceholder": "Entreprise, poste ou mot-cle...",
       "searchCta": "Rechercher une entreprise",
-      "writeReview": "Ecrire un avis"
+      "writeReview": "Ecrire un avis",
+      "claimCta": "Revendiquer une fiche"
     },
     "filters": {
       "city": "Ville",
@@ -160,6 +161,22 @@
       "tool4Title": "Droit du travail",
       "tool4Desc": "Articles et guides experts",
       "cta": "Decouvrir tous les outils"
+    },
+    "claim": {
+      "badge": "Espace entreprises",
+      "benefit1": "Reponse officielle",
+      "benefit2": "Profil verifie",
+      "benefit3": "Mises a jour employeur",
+      "learnMore": "Voir les offres pro",
+      "start": "Commencer la revendication",
+      "subtitle": "Revendiquer votre fiche renforce la confiance, vous permet de repondre aux avis et de partager des mises a jour officielles.",
+      "title": "Vous representez une entreprise ?"
+    },
+    "trust": {
+      "active": "Active",
+      "businesses": "Etablissements actifs",
+      "moderated": "Moderation",
+      "reviews": "Avis publies"
     }
   },
   "listingPage": {
@@ -199,7 +216,8 @@
     "next": "Suivant",
     "emptyTitle": "Aucun etablissement trouve",
     "emptyDesc": "Nous n'avons pas trouve de resultats pour vos criteres actuels. Essayez d'ajuster vos filtres ou de reinitialiser votre recherche.",
-    "resetFilters": "Reinitialiser les filtres"
+    "resetFilters": "Reinitialiser les filtres",
+    "clear": "Effacer"
   },
   "reviewPage": {
     "title": "Ecrire un avis pour {name}",
@@ -237,7 +255,8 @@
       "businessPro": "Business Pro",
       "reviewCount": "{count} avis",
       "noRating": "Pas encore d'evaluation",
-      "firstReview": "Soyez le premier a donner votre avis"
+      "firstReview": "Soyez le premier a donner votre avis",
+      "profileComplete": "Profil {percent}% complet"
     },
     "reviews": {
       "metaTitle": "Avis {name} - Tous les commentaires employes | Reviewly",
@@ -324,7 +343,22 @@
       "bonusCommission": "Commission",
       "bonusAnnual": "Bonus annuel",
       "anonymousNotice": "Votre soumission est anonyme et passera par moderation avant publication.",
-      "submit": "Soumettre un salaire"
+      "submit": "Soumettre un salaire",
+      "confidenceHigh": "Confiance elevee",
+      "confidenceLow": "Confiance en construction",
+      "confidenceMedium": "Confiance moyenne",
+      "confidenceVeryLow": "Donnees encore limitees",
+      "insufficientData": "Donnees insuffisantes",
+      "kAnonymityNotice": "Minimum {minSample} soumissions requis pour afficher les details statistiquement sensibles.",
+      "lastUpdate": "Derniere publication",
+      "loginToUnlock": "Connectez-vous",
+      "moderationNote": "Chaque entree est moderee avant publication.",
+      "notAvailable": "Indisponible",
+      "previewLimited": "Apercu limite: connectez-vous pour voir toutes les entrees et valeurs detaillees.",
+      "qualitySignal": "Signal qualite",
+      "rangeNote": "Entre minimum et maximum publies.",
+      "rangeSignal": "Amplitude observee",
+      "visualOverview": "Apercu visuel des salaires"
     },
     "sidebar": {
       "visitWebsite": "Visiter le site web",
@@ -352,6 +386,21 @@
     },
     "similar": {
       "title": "Etablissements similaires a {city}"
+    },
+    "trust": {
+      "claimPrompt": "Vous representez cette entreprise ? ",
+      "claimPromptLink": "Revendiquer la fiche",
+      "claimed": "Profil revendique",
+      "confidence": "Niveau de confiance",
+      "high": "Confiance elevee",
+      "lastUpdate": "Derniere activite",
+      "low": "Confiance en construction",
+      "medium": "Confiance moyenne",
+      "moderated": "Moderation active sur les contributions",
+      "noDate": "Date indisponible",
+      "reviews": "Avis publies",
+      "salaries": "Salaires publies",
+      "unclaimed": "Profil non revendique"
     }
   },
   "about": {
@@ -395,7 +444,9 @@
       "publish": "Publier une offre",
       "empty": "Aucune offre active pour le moment.",
       "slots": "Places disponibles",
-      "viewOffer": "Voir l'offre"
+      "viewOffer": "Voir l'offre",
+      "myOffers": "Mes offres",
+      "myRequests": "Mes demandes"
     },
     "new": {
       "badge": "Publication",
@@ -452,7 +503,15 @@
       "requirements": "Exigences",
       "loginPrompt": "Connectez-vous pour demander un parrainage.",
       "goToLogin": "Aller a la connexion",
-      "ownerNote": "Vous etes le proprietaire de cette offre. Les demandes recues seront visibles dans votre espace utilisateur."
+      "ownerNote": "Vous etes le proprietaire de cette offre. Les demandes recues seront visibles dans votre espace utilisateur.",
+      "applyNow": "Postuler maintenant",
+      "myRequestsCta": "Voir mes demandes",
+      "offerUnavailable": "Cette offre n'est plus active. Consultez d'autres opportunites ou suivez vos demandes existantes.",
+      "ownerCta": "Gerer mes offres et demandes",
+      "statusActive": "Active",
+      "statusClosed": "Fermee",
+      "statusPaused": "En pause",
+      "statusRejected": "Indisponible"
     },
     "request": {
       "title": "Demander un parrainage",
@@ -788,7 +847,8 @@
         "5": "Benchmark salaires (Gold uniquement)",
         "6": "Barometre mensuel des salaires",
         "7": "Analytics avances",
-        "8": "Lead generation premium"
+        "8": "Lead generation premium",
+        "9": "Gestion multi-entreprises (jusqu'a 5)"
       }
     },
     "premium": {
@@ -1781,6 +1841,12 @@
       "urlLabel": "URL de l'Application",
       "urlPlaceholder": "https://...",
       "toolsTitle": "Configuration des outils"
+    },
+    "security": {
+      "maintenanceDesc": "Le site sera inaccessible pour les visiteurs. Utile pour les mises a jour critiques.",
+      "maintenanceLabel": "Mode Maintenance Actif",
+      "registrationsDesc": "Permettre a de nouveaux utilisateurs de rejoindre la plateforme.",
+      "registrationsLabel": "Ouverture des Inscriptions"
     }
   },
   "claimNew": {
@@ -1852,7 +1918,8 @@
       "detailsTitle": "Details de etablissement",
       "detailsDesc": "Ces informations seront visibles par les clients.",
       "requiredHint": "Veuillez remplir les informations obligatoires (*) pour continuer",
-      "next": "Suivant : Vos Avantages"
+      "next": "Suivant : Vos Avantages",
+      "presentation": "Presentation"
     },
     "cancel": "Annuler",
     "step2": {
@@ -2227,6 +2294,550 @@
       "deleteReasonRequired": "La raison est obligatoire pour retirer un avis.",
       "statusUpdated": "Statut mis a jour :",
       "reviewRemoved": "Avis retire."
+    }
+  },
+  "dashboardPendingPage": {
+    "errors": {
+      "auth": "Erreur d'authentification",
+      "loadClaim": "Erreur lors du chargement de la revendication : {message}",
+      "generic": "Erreur : {message}",
+      "enterCode": "Veuillez saisir le code de verification.",
+      "invalidCode": "Code invalide ou expire.",
+      "verificationFailed": "La verification a echoue. Veuillez reessayer.",
+      "fileTooLargeDoc": "Fichier trop volumineux (max 10MB)",
+      "fileTooLargeVideo": "Video trop volumineuse (max 100MB)",
+      "uploadFailed": "Echec du televersement. Veuillez reessayer."
+    },
+    "toasts": {
+      "verified": "{method} verifie avec succes !",
+      "documentUploaded": "Document televerse. Notre equipe va le verifier.",
+      "videoUploaded": "Video televersee. Notre equipe va la verifier."
+    },
+    "loading": {
+      "title": "Chargement...",
+      "description": "Veuillez patienter"
+    },
+    "error": {
+      "title": "Erreur",
+      "consoleHint": "Verifiez la console du navigateur pour plus de details",
+      "backToLogin": "Retour a la connexion"
+    },
+    "empty": {
+      "title": "Aucune revendication trouvee",
+      "description": "Vous n'avez pas de revendication en attente. Creez d'abord un compte pro.",
+      "createPro": "Creer un compte pro"
+    },
+    "status": {
+      "pendingApproval": "Revendication en attente d'approbation",
+      "rejected": "Revendication rejetee",
+      "processing": "Traitement en cours",
+      "pendingDescription": "Votre revendication est en cours de verification par nos moderateurs. Cela prend generalement 24-48 heures.",
+      "rejectedDescription": "Votre revendication a ete rejetee. Verifiez les informations puis reessayez."
+    },
+    "claimDetails": {
+      "title": "Details de la revendication",
+      "fields": {
+        "business": "Etablissement",
+        "status": "Statut",
+        "name": "Votre nom",
+        "title": "Votre role",
+        "email": "Email",
+        "date": "Date"
+      },
+      "businessLoading": "Chargement...",
+      "status": {
+        "pending": "En attente",
+        "approved": "Approuvee",
+        "rejected": "Rejetee"
+      }
+    },
+    "verification": {
+      "title": "Verification d'identite",
+      "subtitle": "Completez la verification pour accelerer l'approbation",
+      "methods": {
+        "email": "Email",
+        "phone": "Telephone",
+        "document": "Document",
+        "video": "Video"
+      },
+      "proof": {
+        "inReview": "En cours de revue",
+        "verified": "Verifie",
+        "pending": "En attente de verification"
+      },
+      "inputs": {
+        "emailCodeLabel": "Code de verification (6 chiffres)",
+        "emailHint": "Verifiez votre email {email}",
+        "smsCodeLabel": "Code SMS (6 chiffres)",
+        "smsHint": "Verifiez vos SMS"
+      },
+      "upload": {
+        "documentTitle": "Televerser un document",
+        "documentHint": "PDF, JPG, PNG (max 10MB)",
+        "videoTitle": "Televerser une video",
+        "videoHint": "MP4, WebM (max 100MB)"
+      },
+      "actions": {
+        "verifyNow": "Verifier maintenant"
+      }
+    },
+    "nextSteps": {
+      "title": "Prochaines etapes",
+      "step1": {
+        "title": "1. Finaliser la verification",
+        "description": "Verifiez vos preuves ci-dessus, puis notre equipe examine le dossier"
+      },
+      "step2": {
+        "title": "2. Approbation",
+        "description": "Vous recevrez un email de confirmation"
+      },
+      "step3": {
+        "title": "3. Acces au tableau de bord",
+        "description": "Gerez vos avis et plus encore"
+      }
+    },
+    "tip": {
+      "title": "Astuce :",
+      "description": "Verifiez votre email (y compris les spams) pour les notifications importantes."
+    },
+    "actions": {
+      "backHome": "Retour a l'accueil",
+      "tryAgain": "Reessayer"
+    }
+  },
+  "adminAnalyticsPage": {
+    "loading": {
+      "data": "Chargement des donnees analytiques..."
+    },
+    "unavailable": {
+      "title": "Donnees indisponibles",
+      "description": "Impossible de charger les statistiques pour le moment.",
+      "retry": "Reessayer"
+    },
+    "header": {
+      "badge": "Hub Insights",
+      "title": "Analyse de performance",
+      "subtitle": "Suivez la croissance et l engagement de la plateforme"
+    },
+    "timeRange": {
+      "last7Days": "7 derniers jours",
+      "last30Days": "30 derniers jours",
+      "last90Days": "90 derniers jours",
+      "lastYear": "L annee derniere"
+    },
+    "actions": {
+      "exportCsv": "Exporter CSV"
+    },
+    "stats": {
+      "totalUsers": "Utilisateurs totaux",
+      "activeUsers": "Utilisateurs actifs",
+      "totalSearches": "Recherches totales",
+      "estimatedRevenue": "Revenus estimes (premium)",
+      "growthPositiveThisMonth": "Croissance positive ce mois"
+    },
+    "tabs": {
+      "overview": "Vue d ensemble",
+      "users": "Utilisateurs",
+      "businesses": "Entreprises",
+      "search": "Recherche"
+    },
+    "overview": {
+      "growthTrend": {
+        "title": "Tendance de croissance",
+        "description": "Evolution mensuelle des nouveaux utilisateurs"
+      },
+      "cityDistribution": {
+        "title": "Repartition par ville",
+        "description": "Concentration geographique des entreprises"
+      }
+    },
+    "users": {
+      "title": "Engagement utilisateurs",
+      "description": "Flux d acquisition sur les 6 derniers mois"
+    },
+    "businesses": {
+      "growth": {
+        "title": "Croissance pro",
+        "description": "Nouvelles entreprises par mois"
+      },
+      "ownerEngagement": {
+        "title": "Engagement proprietaires",
+        "claimRate": "Taux de revendication estime"
+      }
+    },
+    "search": {
+      "volume": {
+        "title": "Volumes de recherche",
+        "description": "Evolution des requetes sur 6 mois"
+      },
+      "topQueries": {
+        "title": "Top mots-cles",
+        "description": "Requetes les plus frequentes",
+        "countLabel": "{count} recherches",
+        "empty": "Donnees de recherche insuffisantes"
+      }
+    },
+    "export": {
+      "metricHeader": "Metrique",
+      "valueHeader": "Valeur",
+      "totalBusinesses": "Total entreprises",
+      "totalReviews": "Total avis",
+      "averageRating": "Note moyenne",
+      "totalMessages": "Total messages"
+    }
+  },
+  "claimPage": {
+    "defaults": {
+      "siteName": "Platform"
+    },
+    "pending": {
+      "title": "Revendication en cours",
+      "subtitle": "Votre demande de revendication est en cours de traitement",
+      "cardTitle": "Revendication en attente de validation",
+      "businessLabel": "Etablissement :",
+      "submittedOn": "Soumis le {date}",
+      "nextSteps": {
+        "title": "Prochaines etapes",
+        "step1": "- Notre equipe verifie votre demande (24-48h)",
+        "step2": "- Vous recevrez un email apres validation",
+        "step3": "- Acces complet au tableau de bord apres approbation"
+      },
+      "limitTitle": "Limitation actuelle",
+      "limitDescription": "Actuellement, chaque utilisateur peut revendiquer une seule entreprise. Cette limitation sera ajustee avec les offres premium.",
+      "actions": {
+        "track": "Suivre ma demande",
+        "backHome": "Retour a l'accueil"
+      }
+    },
+    "header": {
+      "title": "Gerez votre etablissement",
+      "subtitle": "Revendiquez votre page {siteName} et commencez a gerer les avis de vos clients"
+    },
+    "benefits": {
+      "reviewsTitle": "Gerez les avis",
+      "reviewsDescription": "Repondez aux clients et ameliorez votre reputation",
+      "updatesTitle": "Partagez les actualites",
+      "updatesDescription": "Publiez des mises a jour et evenements",
+      "widgetTitle": "Integrez le widget",
+      "widgetDescription": "Affichez vos avis sur votre site"
+    },
+    "notice": {
+      "title": "Information importante",
+      "oneBusinessTitle": "Une entreprise par utilisateur",
+      "oneBusinessDescription": "Chaque utilisateur peut actuellement revendiquer une seule entreprise pour garantir une gestion de qualite.",
+      "importantLabel": "Important :",
+      "importantText": " Les comptes Growth/Pro restent limites a un seul etablissement pour le moment."
+    },
+    "step1": {
+      "title": "Etape 1 : Trouvez votre entreprise",
+      "description": "Cherchez votre entreprise existante ou creez-en une nouvelle"
+    },
+    "search": {
+      "label": "Recherchez votre entreprise",
+      "placeholder": "Entrez le nom ou l'adresse...",
+      "hint": "Tapez au moins 2 caracteres pour rechercher",
+      "claimedBadge": "Revendique",
+      "loading": "Recherche en cours...",
+      "emptyTitle": "Aucune entreprise trouvee pour \"{query}\"",
+      "emptyHint": "C'est normal, creez une nouvelle entreprise ci-dessous"
+    },
+    "selection": {
+      "label": "Etablissement selectionne :",
+      "ctaMine": "C'est le mien",
+      "change": "Changer",
+      "claimedTitle": "Etablissement deja revendique",
+      "claimedDescription": "Cette entreprise a deja ete revendiquee par un autre utilisateur. Si vous etes le proprietaire legitime, contactez notre equipe.",
+      "chooseAnother": "Choisir un autre",
+      "contactTeam": "Contacter l'equipe"
+    },
+    "divider": {
+      "or": "ou"
+    },
+    "createNew": "Creer une nouvelle entreprise",
+    "process": {
+      "title": "Processus rapide",
+      "step1": "- Remplissez vos informations (5 min)",
+      "step2": "- Verifiez votre identite (email, telephone, ou document)",
+      "step3": "- Notre equipe approuve votre demande (24-48h)",
+      "step4": "- Accedez a votre tableau de bord pro"
+    }
+  },
+  "dashboardAnalyticsPage": {
+    "errors": {
+      "accessDenied": "Acces refuse",
+      "unknown": "Erreur inconnue",
+      "claimBusiness": "Revendiquer une entreprise"
+    },
+    "cards": {
+      "totalReviews": "Total avis",
+      "averageRating": "Note moyenne",
+      "profileViews": "Vues du profil",
+      "leads": "Conversion leads"
+    },
+    "header": {
+      "title": "Statistiques",
+      "subtitle": "Analyse des performances pour {businessName}."
+    },
+    "gates": {
+      "whatsappTitle": "Suivi WhatsApp",
+      "whatsappDescription": "Activez Business GOLD pour voir vos leads WhatsApp.",
+      "bookingTitle": "Suivi reservations",
+      "bookingDescription": "Suivez vos reservations externes avec le plan GOLD.",
+      "advancedTitle": "Analyses avancees",
+      "advancedDescription": "Passez Premium pour debloquer l'historique complet des avis.",
+      "distributionTitle": "Distribution detaillee",
+      "distributionDescription": "Analysez finement la repartition de vos notes avec Premium."
+    },
+    "whatsapp": {
+      "cardTitle": "Clics WhatsApp",
+      "caption": "Nouveaux contacts directs"
+    },
+    "booking": {
+      "cardTitle": "Liens affilies / reservations",
+      "caption": "Redirections vers vos liens"
+    },
+    "timeline": {
+      "title": "Avis au fil du temps",
+      "description": "Evolution sur les 6 derniers mois"
+    },
+    "distribution": {
+      "title": "Distribution des notes",
+      "description": "Repartition par nombre d'etoiles"
+    }
+  },
+  "dashboardCompetitorAdsPage": {
+    "errors": {
+      "loadAds": "Impossible de charger les annonces concurrentes",
+      "requiredFields": "Veuillez remplir les champs obligatoires et definir un budget valide",
+      "createAd": "Impossible de creer l annonce concurrente",
+      "updateAd": "Impossible de mettre a jour l annonce concurrente",
+      "deleteAd": "Impossible de supprimer l annonce concurrente",
+      "toggleStatus": "Impossible de modifier le statut de l annonce"
+    },
+    "success": {
+      "created": "Annonce concurrente creee avec succes",
+      "updated": "Annonce concurrente mise a jour avec succes",
+      "deleted": "Annonce concurrente supprimee avec succes",
+      "statusChanged": "Annonce {status}"
+    },
+    "status": {
+      "activated": "activee",
+      "paused": "mise en pause"
+    },
+    "confirm": {
+      "delete": "Etes-vous sur de vouloir supprimer cette annonce concurrente ?"
+    },
+    "common": {
+      "notSet": "Non defini"
+    },
+    "header": {
+      "title": "Annonces concurrentes",
+      "subtitle": "Creez des annonces pour apparaitre sur les pages de vos concurrents",
+      "note": "Disponible pour tous les comptes entreprise. Les impressions et clics sont suivis automatiquement."
+    },
+    "campaigns": {
+      "title": "Vos campagnes concurrentes",
+      "create": "Creer annonce concurrente"
+    },
+    "createForm": {
+      "title": "Nouvelle annonce concurrente",
+      "description": "Creez une campagne pour apparaitre sur les pages de vos concurrents"
+    },
+    "form": {
+      "advertiserBusinessId": "ID de l entreprise annonceur",
+      "advertiserBusinessPlaceholder": "Entrez l ID de votre entreprise",
+      "targetCompetitors": "IDs des concurrents cibles (facultatif)",
+      "targetCompetitorsPlaceholder": "Entrez les IDs des entreprises concurrentes, un par ligne",
+      "targetCompetitorsHint": "Si vide, l annonce apparaitra sur toutes les pages concurrentes",
+      "budgetMad": "Budget (MAD)",
+      "startDate": "Date de debut",
+      "endDate": "Date de fin",
+      "adTitle": "Titre de l annonce *",
+      "adTitlePlaceholder": "Titre accrocheur pour votre annonce",
+      "adContent": "Contenu de l annonce *",
+      "adContentPlaceholder": "Decrivez votre offre ou service...",
+      "mediaUrls": "URLs media (facultatif)",
+      "mediaUrlsPlaceholder": "Ajoutez des URLs d images separees par des sauts de ligne"
+    },
+    "empty": {
+      "title": "Aucune annonce concurrente",
+      "description": "Creez votre premiere annonce pour apparaitre sur les pages de vos concurrents"
+    },
+    "badges": {
+      "active": "Active",
+      "paused": "En pause"
+    },
+    "card": {
+      "budget": "Budget",
+      "spent": "Depense",
+      "progress": "Progression: {pct}%",
+      "start": "Debut: {date}",
+      "end": "Fin: {date}",
+      "targeting": "Ciblage: {count} concurrent(s)"
+    },
+    "metrics": {
+      "impressions": "Impressions",
+      "clicks": "Clics",
+      "ctr": "CTR"
+    },
+    "editForm": {
+      "title": "Modifier l annonce concurrente",
+      "description": "Mettez a jour les details de votre annonce concurrente",
+      "update": "Mettre a jour"
+    }
+  },
+  "dashboardEditProfilePage": {
+    "errors": {
+      "genericTitle": "Erreur",
+      "businessNotFound": "Etablissement introuvable.",
+      "missingBusinessId": "ID de l etablissement manquant",
+      "missingBusinessIdRefresh": "ID de l etablissement manquant. Veuillez rafraichir la page.",
+      "unsupportedFormatTitle": "Format non supporte",
+      "unsupportedFormatDescription": "Veuillez utiliser du JPG, PNG, WEBP, AVIF ou GIF.",
+      "fileTooLargeTitle": "Fichier trop volumineux",
+      "fileTooLargeDescription": "La taille maximale est de {sizeMB}MB.",
+      "imageTooSmallTitle": "Image trop petite",
+      "imageTooSmallDescription": "La photo de couverture doit faire au moins 400x200 pixels (1200x400 recommande).",
+      "invalidImageTitle": "Image invalide",
+      "invalidImageDescription": "Impossible de lire le fichier image. Le fichier est peut-etre corrompu.",
+      "uploadFailed": "Impossible de telecharger l image.",
+      "removeFailed": "Impossible de supprimer l image."
+    },
+    "success": {
+      "savedChangesTitle": "Modifications enregistrees",
+      "imageUploadedTitle": "Image telechargee",
+      "imageUploadedDescription": "L image a ete mise a jour avec succes.",
+      "imageRemovedTitle": "Image supprimee",
+      "imageRemovedDescription": "L image a ete supprimee avec succes."
+    },
+    "errorState": {
+      "title": "Modifier le profil",
+      "accessDenied": "Acces refuse",
+      "claimBusiness": "Revendiquer une entreprise"
+    },
+    "header": {
+      "title": "Gestion de {name}",
+      "subtitle": "Mettez a jour les informations de {name}.",
+      "fallbackTitleName": "l entreprise",
+      "fallbackSubtitleName": "votre entreprise",
+      "back": "Retour",
+      "save": "Enregistrer"
+    },
+    "tabs": {
+      "general": "General",
+      "media": "Photos",
+      "business": "Services"
+    },
+    "general": {
+      "title": "Informations generales",
+      "nameLabel": "Nom de l entreprise",
+      "descriptionLabel": "Description",
+      "categoryLabel": "Categorie",
+      "categoryPlaceholder": "Selectionnez une categorie",
+      "subcategoryLabel": "Sous-categorie",
+      "subcategoryPlaceholder": "Selectionnez une sous-categorie",
+      "cityLabel": "Ville",
+      "cityPlaceholder": "Selectionnez une ville",
+      "quartierLabel": "Quartier",
+      "quartierPlaceholder": "Selectionnez un quartier",
+      "locationLabel": "Adresse precise",
+      "locationPlaceholder": "Rue, numero, etc.",
+      "websiteLabel": "Site web",
+      "websitePlaceholder": "www.example.com"
+    },
+    "pro": {
+      "title": "Options Business PRO",
+      "badgeRequired": "Plan PRO requis",
+      "whatsappLabel": "Numero WhatsApp",
+      "whatsappPlaceholder": "Ex: 212 600000000",
+      "whatsappDescriptionEnabled": "Affiche un bouton de contact direct sur votre fiche.",
+      "whatsappDescriptionDisabled": "Debloquez le contact direct WhatsApp avec un plan PRO.",
+      "affiliateLabel": "Lien de reservation / affiliation",
+      "affiliatePlaceholder": "Ex: https://booking.com/...",
+      "affiliateDescriptionEnabled": "Lien direct vers votre moteur de reservation (Booking, etc.).",
+      "affiliateDescriptionDisabled": "Redirigez vos clients vers votre moteur de reservation avec un plan PRO.",
+      "ctaLabel": "Texte du bouton (optionnel)",
+      "ctaPlaceholder": "Ex: Reserver sur Booking",
+      "tagsLabel": "Mots-cles de recherche (tags)",
+      "tagsDescriptionEnabled": "Ajoutez jusqu a 10 mots-cles pour aider les clients a vous trouver (ex: Terrasse, Halal, Brunch).",
+      "tagsDescriptionDisabled": "Le plan PRO permet d ajouter des mots-cles de recherche personnalises."
+    },
+    "media": {
+      "title": "Medias et images",
+      "description": "Gerez les photos de votre entreprise.",
+      "logoLabel": "Logo de l entreprise",
+      "logoAlt": "Logo de l entreprise",
+      "businessInitial": "E",
+      "chooseLogo": "Choisir un logo",
+      "logoHint": "Format carre recommande (PNG, JPG, max 5MB)",
+      "coverLabel": "Photo de couverture",
+      "coverAlt": "Image de couverture",
+      "changeCover": "Changer la couverture",
+      "galleryLabel": "Galerie photos",
+      "galleryCount": "{count}/10 photos",
+      "galleryAlt": "Image galerie {index}",
+      "add": "Ajouter",
+      "galleryHint": "Belles photos de vos locaux (max 10MB par image)"
+    },
+    "business": {
+      "defaultServicesGroup": "Services",
+      "customServicesGroup": "Autres services",
+      "title": "Equipements et services",
+      "description": "Selectionnez les equipements disponibles."
+    }
+  },
+  "dashboardUpdatesPage": {
+    "toasts": {
+      "successTitle": "Succes",
+      "errorTitle": "Erreur",
+      "publishedFallback": "Nouveaute publiee.",
+      "publishFailedFallback": "Echec de publication."
+    },
+    "header": {
+      "title": "Gerer les nouveautes",
+      "description": "Partagez des annonces, offres speciales ou actualites avec vos clients."
+    },
+    "pro": {
+      "title": "Fonctionnalite PRO / GOLD",
+      "description": "La diffusion de nouveautes est reservee aux abonnes PRO ou GOLD.",
+      "cta": "Passer en version PRO"
+    },
+    "form": {
+      "title": "Poster une nouvelle nouveaute",
+      "updateTitleLabel": "Titre de la nouveaute",
+      "updateTitlePlaceholder": "Ex: Offre speciale de saison",
+      "updateTextLabel": "Contenu",
+      "updateTextPlaceholder": "Decrivez votre annonce...",
+      "isPinnedLabel": "Epingler cette nouveaute en haut de la liste",
+      "publish": "Publier"
+    },
+    "list": {
+      "title": "Nouveautes publiees",
+      "description": "Vos dernieres publications.",
+      "pinnedBadge": "Epinglee",
+      "pinAriaLabel": "Epingler la nouveaute",
+      "unpinAriaLabel": "Retirer l epingle",
+      "editAriaLabel": "Modifier la nouveaute",
+      "deleteAriaLabel": "Supprimer la nouveaute",
+      "empty": "Aucune nouveaute publiee pour le moment."
+    },
+    "dialogs": {
+      "edit": {
+        "title": "Modifier la nouveaute",
+        "description": "Modifiez le titre et le contenu de votre publication.",
+        "titleLabel": "Titre",
+        "contentLabel": "Contenu"
+      },
+      "delete": {
+        "title": "Supprimer la nouveaute",
+        "description": "Etes-vous sur de vouloir supprimer \"{title}\" ?",
+        "irreversible": "Cette action est irreversible."
+      }
+    },
+    "common": {
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "delete": "Supprimer"
     }
   }
 }

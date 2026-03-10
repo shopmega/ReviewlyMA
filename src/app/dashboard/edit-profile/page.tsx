@@ -27,6 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { getStoragePublicUrl, parsePostgresArray } from '@/lib/data';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { isPaidTier } from '@/lib/tier-utils';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type BusinessData = {
   id: string;
@@ -43,7 +44,7 @@ type AmenityGroup = {
   amenities: string[];
 };
 
-const normalizeAmenityGroups = (value: unknown): AmenityGroup[] => {
+const normalizeAmenityGroups = (value: unknown, fallbackGroupLabel = 'Services'): AmenityGroup[] => {
   if (!Array.isArray(value)) return [];
 
   const grouped = value.filter((item): item is AmenityGroup => {
@@ -60,7 +61,7 @@ const normalizeAmenityGroups = (value: unknown): AmenityGroup[] => {
 
   const flatAmenities = value.filter((item): item is string => typeof item === 'string');
   if (flatAmenities.length === 0) return [];
-  return [{ group: 'Services', amenities: flatAmenities }];
+  return [{ group: fallbackGroupLabel, amenities: flatAmenities }];
 };
 
 const normalizeAmenitiesValue = (value: unknown): string[] => {
@@ -96,6 +97,7 @@ function FormSkeleton() {
 
 export default function EditProfilePage() {
   const { toast } = useToast();
+  const { t, tf } = useI18n();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   /* businessId comes from hook now */
@@ -151,7 +153,10 @@ export default function EditProfilePage() {
       setCategories(cats.map((c: string) => ({ id: c, name: c })));
 
       // Always expose the full default catalog in dashboard, then append custom DB amenities.
-      const defaultGroups = normalizeAmenityGroups(BENEFITS);
+      const defaultGroups = normalizeAmenityGroups(
+        BENEFITS,
+        t('dashboardEditProfilePage.business.defaultServicesGroup', 'Services')
+      );
       const defaultAmenities = new Set(defaultGroups.flatMap((group) => group.amenities));
       const discoveredAmenities = Array.isArray(amens)
         ? amens.filter((item): item is string => typeof item === 'string')
@@ -163,14 +168,17 @@ export default function EditProfilePage() {
       if (customAmenities.length > 0) {
         setAmenitiesList([
           ...defaultGroups,
-          { group: 'Autres services', amenities: Array.from(new Set(customAmenities)).sort() },
+          {
+            group: t('dashboardEditProfilePage.business.customServicesGroup', 'Other services'),
+            amenities: Array.from(new Set(customAmenities)).sort(),
+          },
         ]);
       } else {
         setAmenitiesList(defaultGroups);
       }
     }
     loadData();
-  }, []);
+  }, [t]);
 
   // Update subcategories when category changes
   useEffect(() => {
@@ -204,7 +212,7 @@ export default function EditProfilePage() {
         .single();
 
       if (businessError || !business) {
-        setError('Établissement introuvable.');
+        setError(t('dashboardEditProfilePage.errors.businessNotFound', 'Business not found.'));
         setLoading(false);
         return;
       }
@@ -240,12 +248,12 @@ export default function EditProfilePage() {
     }
 
     fetchBusinessData();
-  }, [businessId, profileLoading, form]);
+  }, [businessId, profileLoading, form, t]);
 
   useEffect(() => {
     if (state.status === 'success') {
       toast({
-        title: 'Modifications enregistrées !',
+        title: t('dashboardEditProfilePage.success.savedChangesTitle', 'Changes saved'),
         description: state.message,
       });
     } else if (state.status === 'error') {
@@ -261,19 +269,19 @@ export default function EditProfilePage() {
         });
       }
       toast({
-        title: 'Erreur',
+        title: t('dashboardEditProfilePage.errors.genericTitle', 'Error'),
         description: state.message,
         variant: 'destructive',
       });
     }
-  }, [state, toast, form]);
+  }, [state, toast, form, t]);
 
   const onSubmit = (data: BusinessProfileUpdateData) => {
     if (!businessId) {
       toast({
-        title: "Erreur",
-        description: "ID de l'établissement manquant",
-        variant: "destructive",
+        title: t('dashboardEditProfilePage.errors.genericTitle', 'Error'),
+        description: t('dashboardEditProfilePage.errors.missingBusinessId', 'Missing business ID'),
+        variant: 'destructive',
       });
       return;
     }
@@ -303,8 +311,11 @@ export default function EditProfilePage() {
     if (!file) return;
     if (!businessId) {
       toast({
-        title: 'Erreur',
-        description: 'ID de l\'établissement manquant. Veuillez rafraîchir la page.',
+        title: t('dashboardEditProfilePage.errors.genericTitle', 'Error'),
+        description: t(
+          'dashboardEditProfilePage.errors.missingBusinessIdRefresh',
+          'Missing business ID. Please refresh the page.'
+        ),
         variant: 'destructive',
       });
       return;
@@ -314,8 +325,11 @@ export default function EditProfilePage() {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
     if (!allowedTypes.includes(file.type)) {
       toast({
-        title: 'Format non supporté',
-        description: 'Veuillez utiliser du JPG, PNG, WEBP, AVIF ou GIF.',
+        title: t('dashboardEditProfilePage.errors.unsupportedFormatTitle', 'Unsupported format'),
+        description: t(
+          'dashboardEditProfilePage.errors.unsupportedFormatDescription',
+          'Please use JPG, PNG, WEBP, AVIF, or GIF.'
+        ),
         variant: 'destructive',
       });
       return;
@@ -325,8 +339,12 @@ export default function EditProfilePage() {
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
-        title: 'Fichier trop volumineux',
-        description: `La taille maximale est de ${maxSize / (1024 * 1024)}MB.`,
+        title: t('dashboardEditProfilePage.errors.fileTooLargeTitle', 'File too large'),
+        description: tf(
+          'dashboardEditProfilePage.errors.fileTooLargeDescription',
+          'Maximum size is {sizeMB}MB.',
+          { sizeMB: String(maxSize / (1024 * 1024)) }
+        ),
         variant: 'destructive',
       });
       return;
@@ -342,8 +360,11 @@ export default function EditProfilePage() {
           const valid = img.width >= 400 && img.height >= 200;
           if (!valid) {
             toast({
-              title: 'Image trop petite',
-              description: 'La photo de couverture doit faire au moins 400x200 pixels (1200x400 recommandé).',
+              title: t('dashboardEditProfilePage.errors.imageTooSmallTitle', 'Image too small'),
+              description: t(
+                'dashboardEditProfilePage.errors.imageTooSmallDescription',
+                'Cover image must be at least 400x200 pixels (1200x400 recommended).'
+              ),
               variant: 'destructive',
             });
           }
@@ -353,8 +374,11 @@ export default function EditProfilePage() {
 
         img.onerror = () => {
           toast({
-            title: 'Image invalide',
-            description: 'Impossible de lire le fichier image. Le fichier est peut-être corrompu.',
+            title: t('dashboardEditProfilePage.errors.invalidImageTitle', 'Invalid image'),
+            description: t(
+              'dashboardEditProfilePage.errors.invalidImageDescription',
+              'Unable to read image file. The file may be corrupted.'
+            ),
             variant: 'destructive',
           });
           URL.revokeObjectURL(objectUrl);
@@ -401,14 +425,17 @@ export default function EditProfilePage() {
       }
 
       toast({
-        title: 'Image téléchargée',
-        description: 'L\'image a été mise à jour avec succès.',
+        title: t('dashboardEditProfilePage.success.imageUploadedTitle', 'Image uploaded'),
+        description: t(
+          'dashboardEditProfilePage.success.imageUploadedDescription',
+          'The image was updated successfully.'
+        ),
       });
     } catch (error: any) {
       console.error('Error uploading image:', error);
       toast({
-        title: 'Erreur',
-        description: error.message || 'Impossible de télécharger l\'image.',
+        title: t('dashboardEditProfilePage.errors.genericTitle', 'Error'),
+        description: error.message || t('dashboardEditProfilePage.errors.uploadFailed', 'Unable to upload image.'),
         variant: 'destructive',
       });
     } finally {
@@ -437,14 +464,17 @@ export default function EditProfilePage() {
       }
 
       toast({
-        title: 'Image supprimée',
-        description: 'L\'image a été supprimée avec succès.',
+        title: t('dashboardEditProfilePage.success.imageRemovedTitle', 'Image removed'),
+        description: t(
+          'dashboardEditProfilePage.success.imageRemovedDescription',
+          'The image was removed successfully.'
+        ),
       });
     } catch (error: any) {
       console.error('Error removing image:', error);
       toast({
-        title: 'Erreur',
-        description: error.message || 'Impossible de supprimer l\'image.',
+        title: t('dashboardEditProfilePage.errors.genericTitle', 'Error'),
+        description: error.message || t('dashboardEditProfilePage.errors.removeFailed', 'Unable to remove image.'),
         variant: 'destructive',
       });
     }
@@ -458,56 +488,71 @@ export default function EditProfilePage() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Modifier le profil</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t('dashboardEditProfilePage.errorState.title', 'Edit profile')}
+          </h1>
         </div>
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="p-6 flex items-center gap-4">
             <AlertCircle className="h-8 w-8 text-destructive" />
             <div>
-              <h3 className="font-semibold text-destructive">Accès refusé</h3>
+              <h3 className="font-semibold text-destructive">
+                {t('dashboardEditProfilePage.errorState.accessDenied', 'Access denied')}
+              </h3>
               <p className="text-muted-foreground">{error}</p>
             </div>
           </CardContent>
         </Card>
         <Button asChild>
-          <Link href="/pour-les-pros">Revendiquer une entreprise</Link>
+          <Link href="/pour-les-pros">
+            {t('dashboardEditProfilePage.errorState.claimBusiness', 'Claim a business')}
+          </Link>
         </Button>
       </div>
     );
   }
+
+  const businessNameForTitle = form.watch('name') || t('dashboardEditProfilePage.header.fallbackTitleName', 'your business');
+  const businessNameForSubtitle = form.watch('name') || t('dashboardEditProfilePage.header.fallbackSubtitleName', 'your business');
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Gestion de {form.watch('name') || 'l\'entreprise'}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {tf('dashboardEditProfilePage.header.title', 'Manage {name}', { name: businessNameForTitle })}
+            </h1>
             <p className="text-muted-foreground">
-              Mettez à jour les informations de {form.watch('name') || 'votre entreprise'}.
+              {tf(
+                'dashboardEditProfilePage.header.subtitle',
+                'Update information for {name}.',
+                { name: businessNameForSubtitle }
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Button type="button" variant="outline" asChild>
-              <Link href="/dashboard">Retour</Link>
+              <Link href="/dashboard">{t('dashboardEditProfilePage.header.back', 'Back')}</Link>
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Enregistrer
+              {t('dashboardEditProfilePage.header.save', 'Save')}
             </Button>
           </div>
         </div>
 
         <Tabs defaultValue="general" className="w-full space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-            <TabsTrigger value="general">Général</TabsTrigger>
-            <TabsTrigger value="media">Photos</TabsTrigger>
-            <TabsTrigger value="business">Services</TabsTrigger>
+            <TabsTrigger value="general">{t('dashboardEditProfilePage.tabs.general', 'General')}</TabsTrigger>
+            <TabsTrigger value="media">{t('dashboardEditProfilePage.tabs.media', 'Photos')}</TabsTrigger>
+            <TabsTrigger value="business">{t('dashboardEditProfilePage.tabs.business', 'Services')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Informations Générales</CardTitle>
+                <CardTitle>{t('dashboardEditProfilePage.general.title', 'General information')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -515,7 +560,7 @@ export default function EditProfilePage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom de l'entreprise</FormLabel>
+                      <FormLabel>{t('dashboardEditProfilePage.general.nameLabel', 'Business name')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -528,7 +573,7 @@ export default function EditProfilePage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>{t('dashboardEditProfilePage.general.descriptionLabel', 'Description')}</FormLabel>
                       <FormControl>
                         <Textarea {...field} value={field.value || ''} rows={4} />
                       </FormControl>
@@ -542,11 +587,11 @@ export default function EditProfilePage() {
                     name="category"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Catégorie</FormLabel>
+                        <FormLabel>{t('dashboardEditProfilePage.general.categoryLabel', 'Category')}</FormLabel>
                         <Select value={field.value} onValueChange={(val) => { field.onChange(val); form.setValue('subcategory', ''); }}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionnez une catégorie" />
+                              <SelectValue placeholder={t('dashboardEditProfilePage.general.categoryPlaceholder', 'Select a category')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -564,11 +609,11 @@ export default function EditProfilePage() {
                     name="subcategory"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sous-catégorie</FormLabel>
+                        <FormLabel>{t('dashboardEditProfilePage.general.subcategoryLabel', 'Subcategory')}</FormLabel>
                         <Select value={field.value} onValueChange={field.onChange} disabled={!form.watch('category') || availableSubcategories.length === 0}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionnez une sous-catégorie" />
+                              <SelectValue placeholder={t('dashboardEditProfilePage.general.subcategoryPlaceholder', 'Select a subcategory')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -588,11 +633,11 @@ export default function EditProfilePage() {
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ville</FormLabel>
+                        <FormLabel>{t('dashboardEditProfilePage.general.cityLabel', 'City')}</FormLabel>
                         <Select value={field.value} onValueChange={(val) => { field.onChange(val); form.setValue('quartier', ''); }}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionnez une ville" />
+                              <SelectValue placeholder={t('dashboardEditProfilePage.general.cityPlaceholder', 'Select a city')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -610,11 +655,11 @@ export default function EditProfilePage() {
                     name="quartier"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Quartier</FormLabel>
+                        <FormLabel>{t('dashboardEditProfilePage.general.quartierLabel', 'District')}</FormLabel>
                         <Select value={field.value} onValueChange={field.onChange} disabled={!form.watch('city') || getQuartiersForCity(form.watch('city')).length === 0}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionnez un quartier" />
+                              <SelectValue placeholder={t('dashboardEditProfilePage.general.quartierPlaceholder', 'Select a district')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -633,9 +678,9 @@ export default function EditProfilePage() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Adresse précise</FormLabel>
+                      <FormLabel>{t('dashboardEditProfilePage.general.locationLabel', 'Full address')}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Rue, numéro, etc." />
+                        <Input {...field} placeholder={t('dashboardEditProfilePage.general.locationPlaceholder', 'Street, number, etc.')} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -647,9 +692,9 @@ export default function EditProfilePage() {
                     name="website"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Site Web</FormLabel>
+                        <FormLabel>{t('dashboardEditProfilePage.general.websiteLabel', 'Website')}</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ''} placeholder="www.example.com" />
+                          <Input {...field} value={field.value || ''} placeholder={t('dashboardEditProfilePage.general.websitePlaceholder', 'www.example.com')} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -662,10 +707,12 @@ export default function EditProfilePage() {
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-amber-600 flex items-center gap-2">
                       <Zap className="w-4 h-4 fill-current" />
-                      Options Business PRO
+                      {t('dashboardEditProfilePage.pro.title', 'Business PRO options')}
                     </h3>
                     {!isPaidTier(profile?.tier) && (
-                      <Badge variant="outline" className="text-[10px] bg-amber-50 uppercase tracking-tighter">Plan PRO requis</Badge>
+                      <Badge variant="outline" className="text-[10px] bg-amber-50 uppercase tracking-tighter">
+                        {t('dashboardEditProfilePage.pro.badgeRequired', 'PRO plan required')}
+                      </Badge>
                     )}
                   </div>
 
@@ -677,19 +724,25 @@ export default function EditProfilePage() {
                         <FormItem>
                           <FormLabel className="flex items-center gap-2">
                             <MessageCircle className="w-3.5 h-3.5" />
-                            Numéro WhatsApp
+                            {t('dashboardEditProfilePage.pro.whatsappLabel', 'WhatsApp number')}
                           </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder="Ex: 212 600000000"
+                              placeholder={t('dashboardEditProfilePage.pro.whatsappPlaceholder', 'Ex: 212 600000000')}
                               disabled={!isPaidTier(profile?.tier)}
                             />
                           </FormControl>
                           <FormDescription className="text-[11px]">
                             {isPaidTier(profile?.tier)
-                              ? "Affiche un bouton de contact direct sur votre fiche."
-                              : "Débloquez le contact direct WhatsApp avec un plan PRO."}
+                              ? t(
+                                'dashboardEditProfilePage.pro.whatsappDescriptionEnabled',
+                                'Displays a direct contact button on your profile.'
+                              )
+                              : t(
+                                'dashboardEditProfilePage.pro.whatsappDescriptionDisabled',
+                                'Unlock direct WhatsApp contact with a PRO plan.'
+                              )}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -702,19 +755,25 @@ export default function EditProfilePage() {
                         <FormItem>
                           <FormLabel className="flex items-center gap-2">
                             <ExternalLink className="w-3.5 h-3.5" />
-                            Lien de réservation / Affiliation
+                            {t('dashboardEditProfilePage.pro.affiliateLabel', 'Booking / affiliate link')}
                           </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder="Ex: https://booking.com/..."
+                              placeholder={t('dashboardEditProfilePage.pro.affiliatePlaceholder', 'Ex: https://booking.com/...')}
                               disabled={!isPaidTier(profile?.tier)}
                             />
                           </FormControl>
                           <FormDescription className="text-[11px]">
                             {isPaidTier(profile?.tier)
-                              ? "Lien direct vers votre moteur de réservation (Booking, etc.)."
-                              : "Redirigez vos clients vers votre moteur de réservation avec un plan PRO."}
+                              ? t(
+                                'dashboardEditProfilePage.pro.affiliateDescriptionEnabled',
+                                'Direct link to your booking engine (Booking, etc.).'
+                              )
+                              : t(
+                                'dashboardEditProfilePage.pro.affiliateDescriptionDisabled',
+                                'Redirect customers to your booking engine with a PRO plan.'
+                              )}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -726,11 +785,13 @@ export default function EditProfilePage() {
                     name="affiliate_cta"
                     render={({ field }) => (
                       <FormItem className="mt-4">
-                        <FormLabel className="text-xs">Texte du bouton (Optionnel)</FormLabel>
+                        <FormLabel className="text-xs">
+                          {t('dashboardEditProfilePage.pro.ctaLabel', 'Button text (optional)')}
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="Ex: Réserver sur Booking"
+                            placeholder={t('dashboardEditProfilePage.pro.ctaPlaceholder', 'Ex: Book on Booking')}
                             disabled={!isPaidTier(profile?.tier)}
                           />
                         </FormControl>
@@ -747,7 +808,7 @@ export default function EditProfilePage() {
                     render={({ field }) => (
                       <FormItem>
                         <TagInput
-                          label="Mots-clés de recherche (Tags)"
+                          label={t('dashboardEditProfilePage.pro.tagsLabel', 'Search keywords (tags)')}
                           tags={field.value || []}
                           onTagsChange={field.onChange}
                           disabled={!isPaidTier(profile?.tier)}
@@ -755,8 +816,14 @@ export default function EditProfilePage() {
                         />
                         <FormDescription className="text-[11px]">
                           {isPaidTier(profile?.tier)
-                            ? "Ajoutez jusqu'à 10 mots-clés pour aider les clients à vous trouver (ex: Terrasse, Halal, Brunch)."
-                            : "Le plan PRO permet d'ajouter des mots-clés de recherche personnalisés."}
+                            ? t(
+                              'dashboardEditProfilePage.pro.tagsDescriptionEnabled',
+                              'Add up to 10 keywords to help customers find you (e.g. Terrace, Halal, Brunch).'
+                            )
+                            : t(
+                              'dashboardEditProfilePage.pro.tagsDescriptionDisabled',
+                              'The PRO plan allows custom search keywords.'
+                            )}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -770,21 +837,25 @@ export default function EditProfilePage() {
           <TabsContent value="media" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Médias & Images</CardTitle>
+                <CardTitle>{t('dashboardEditProfilePage.media.title', 'Media & images')}</CardTitle>
                 <CardDescription>
-                  Gérez les photos de votre entreprise.
+                  {t('dashboardEditProfilePage.media.description', 'Manage your business photos.')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Logo Upload */}
                   <div className="space-y-3">
-                    <Label>Logo de l'entreprise</Label>
+                    <Label>{t('dashboardEditProfilePage.media.logoLabel', 'Business logo')}</Label>
                     <div className="flex items-center gap-4">
                       <div className="relative w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted overflow-hidden group">
                         {logoUrl ? (
                           <>
-                            <img src={getStoragePublicUrl(logoUrl) || ''} alt="Logo" className="w-full h-full object-cover" />
+                            <img
+                              src={getStoragePublicUrl(logoUrl) || ''}
+                              alt={t('dashboardEditProfilePage.media.logoAlt', 'Business logo')}
+                              className="w-full h-full object-cover"
+                            />
                             <button
                               type="button"
                               onClick={() => handleRemoveImage('logo')}
@@ -797,7 +868,9 @@ export default function EditProfilePage() {
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 rounded text-sm font-bold">
                             {form.watch('name') && form.watch('name').split(' ').length > 1
                               ? (form.watch('name').split(' ')[0][0] + form.watch('name').split(' ')[1][0]).toUpperCase()
-                              : form.watch('name') ? form.watch('name')[0].toUpperCase() : 'B'}
+                              : form.watch('name')
+                                ? form.watch('name')[0].toUpperCase()
+                                : t('dashboardEditProfilePage.media.businessInitial', 'B')}
                           </div>
                         )}
                         {isUploading === 'logo' && (
@@ -815,7 +888,7 @@ export default function EditProfilePage() {
                           disabled={!!isUploading}
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          Choisir un logo
+                          {t('dashboardEditProfilePage.media.chooseLogo', 'Choose a logo')}
                           <input
                             type="file"
                             className="absolute inset-0 opacity-0 cursor-pointer"
@@ -824,7 +897,7 @@ export default function EditProfilePage() {
                           />
                         </Button>
                         <p className="text-xs text-muted-foreground mt-2">
-                          Format carré recommandé (PNG, JPG, max 5MB)
+                          {t('dashboardEditProfilePage.media.logoHint', 'Square format recommended (PNG, JPG, max 5MB)')}
                         </p>
                       </div>
                     </div>
@@ -832,12 +905,16 @@ export default function EditProfilePage() {
 
                   {/* Cover Upload */}
                   <div className="space-y-3">
-                    <Label>Photo de couverture</Label>
+                    <Label>{t('dashboardEditProfilePage.media.coverLabel', 'Cover photo')}</Label>
                     <div className="space-y-3">
                       <div className="relative w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted overflow-hidden group">
                         {coverUrl ? (
                           <>
-                            <img src={getStoragePublicUrl(coverUrl) || ''} alt="Cover" className="w-full h-full object-cover" />
+                            <img
+                              src={getStoragePublicUrl(coverUrl) || ''}
+                              alt={t('dashboardEditProfilePage.media.coverAlt', 'Cover image')}
+                              className="w-full h-full object-cover"
+                            />
                             <button
                               type="button"
                               onClick={() => handleRemoveImage('cover')}
@@ -863,7 +940,7 @@ export default function EditProfilePage() {
                         disabled={!!isUploading}
                       >
                         <Upload className="h-4 w-4 mr-2" />
-                        Changer la couverture
+                        {t('dashboardEditProfilePage.media.changeCover', 'Change cover')}
                         <input
                           type="file"
                           className="absolute inset-0 opacity-0 cursor-pointer"
@@ -878,13 +955,23 @@ export default function EditProfilePage() {
                 {/* Gallery Upload */}
                 <div className="space-y-4 border-t pt-6">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base font-semibold">Galerie photos</Label>
-                    <span className="text-xs text-muted-foreground">{galleryUrls.length}/10 photos</span>
+                    <Label className="text-base font-semibold">
+                      {t('dashboardEditProfilePage.media.galleryLabel', 'Photo gallery')}
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      {tf('dashboardEditProfilePage.media.galleryCount', '{count}/10 photos', { count: String(galleryUrls.length) })}
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {galleryUrls.map((url, index) => (
                       <div key={index} className="relative aspect-square border rounded-lg overflow-hidden group">
-                        <img src={getStoragePublicUrl(url) || ''} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
+                        <img
+                          src={getStoragePublicUrl(url) || ''}
+                          alt={tf('dashboardEditProfilePage.media.galleryAlt', 'Gallery image {index}', {
+                            index: String(index + 1),
+                          })}
+                          className="w-full h-full object-cover"
+                        />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage('gallery', url)}
@@ -902,7 +989,9 @@ export default function EditProfilePage() {
                         ) : (
                           <>
                             <Plus className="h-6 w-6 text-muted-foreground mb-1" />
-                            <span className="text-xs text-muted-foreground">Ajouter</span>
+                            <span className="text-xs text-muted-foreground">
+                              {t('dashboardEditProfilePage.media.add', 'Add')}
+                            </span>
                           </>
                         )}
                         <input
@@ -916,7 +1005,7 @@ export default function EditProfilePage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Belles photos de vos locaux (max 10MB par image)
+                    {t('dashboardEditProfilePage.media.galleryHint', 'High-quality photos of your venue (max 10MB per image)')}
                   </p>
                 </div>
               </CardContent>
@@ -926,9 +1015,9 @@ export default function EditProfilePage() {
           <TabsContent value="business" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Équipements & Services</CardTitle>
+                <CardTitle>{t('dashboardEditProfilePage.business.title', 'Amenities & services')}</CardTitle>
                 <CardDescription>
-                  Sélectionnez les équipements disponibles.
+                  {t('dashboardEditProfilePage.business.description', 'Select available amenities.')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

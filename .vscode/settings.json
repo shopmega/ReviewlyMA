@@ -5,5 +5,6 @@
     "css.lint.unknownAtRules": "ignore",
     "tailwindCSS.includeLanguages": {
         "plaintext": "css"
-    }
+    },
+    "chatgpt.openOnStartup": true
 }

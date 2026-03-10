@@ -307,7 +307,11 @@ export function SalarySection({
                   )}
                   {!hasEnoughData && (
                     <p className="text-xs text-muted-foreground">
-                      {t('business.salary.kAnonymityNotice', `Minimum ${MIN_PUBLIC_SAMPLE_SIZE} soumissions requis pour afficher les details statistiquement sensibles.`)}
+                      {tf(
+                        'business.salary.kAnonymityNotice',
+                        'Minimum {minSample} soumissions requis pour afficher les details statistiquement sensibles.',
+                        { minSample: MIN_PUBLIC_SAMPLE_SIZE }
+                      )}
                     </p>
                   )}
                 </div>

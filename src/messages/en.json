@@ -79,7 +79,8 @@
       "subtitle": "Find verified company insights even before your interviews.",
       "searchPlaceholder": "Company, role, or keyword...",
       "searchCta": "Search a company",
-      "writeReview": "Write a review"
+      "writeReview": "Write a review",
+      "claimCta": "Claim a profile"
     },
     "filters": {
       "city": "City",
@@ -160,6 +161,22 @@
       "tool4Title": "Labor law",
       "tool4Desc": "Expert articles and guides",
       "cta": "Discover all tools"
+    },
+    "claim": {
+      "badge": "Business area",
+      "benefit1": "Official response",
+      "benefit2": "Verified profile",
+      "benefit3": "Employer updates",
+      "learnMore": "See pro offers",
+      "start": "Start claim process",
+      "subtitle": "Claiming your profile builds trust, lets you reply to reviews, and share official updates.",
+      "title": "Do you represent a business?"
+    },
+    "trust": {
+      "active": "Active",
+      "businesses": "Active businesses",
+      "moderated": "Moderation",
+      "reviews": "Published reviews"
     }
   },
   "listingPage": {
@@ -199,7 +216,8 @@
     "next": "Next",
     "emptyTitle": "No business found",
     "emptyDesc": "No results match your current filters. Try adjusting or resetting your search.",
-    "resetFilters": "Reset filters"
+    "resetFilters": "Reset filters",
+    "clear": "Clear"
   },
   "reviewPage": {
     "title": "Write a review for {name}",
@@ -237,7 +255,8 @@
       "businessPro": "Business Pro",
       "reviewCount": "{count} reviews",
       "noRating": "No rating yet",
-      "firstReview": "Be the first to leave a review"
+      "firstReview": "Be the first to leave a review",
+      "profileComplete": "Profile {percent}% complete"
     },
     "reviews": {
       "metaTitle": "Reviews {name} - All employee comments | Reviewly",
@@ -324,7 +343,22 @@
       "bonusCommission": "Commission",
       "bonusAnnual": "Annual bonus",
       "anonymousNotice": "Your submission is anonymous and will go through moderation before publication.",
-      "submit": "Submit salary"
+      "submit": "Submit salary",
+      "confidenceHigh": "High confidence",
+      "confidenceLow": "Confidence building",
+      "confidenceMedium": "Medium confidence",
+      "confidenceVeryLow": "Limited data",
+      "insufficientData": "Insufficient data",
+      "kAnonymityNotice": "At least {minSample} submissions are required to display statistically sensitive details.",
+      "lastUpdate": "Latest publication",
+      "loginToUnlock": "Log in",
+      "moderationNote": "Each entry is moderated before publication.",
+      "notAvailable": "Not available",
+      "previewLimited": "Limited preview: log in to view all entries and detailed values.",
+      "qualitySignal": "Quality signal",
+      "rangeNote": "Between published minimum and maximum.",
+      "rangeSignal": "Observed range",
+      "visualOverview": "Salary visual overview"
     },
     "sidebar": {
       "visitWebsite": "Visit website",
@@ -352,6 +386,21 @@
     },
     "similar": {
       "title": "Similar businesses in {city}"
+    },
+    "trust": {
+      "claimPrompt": "Do you represent this company? ",
+      "claimPromptLink": "Claim this profile",
+      "claimed": "Claimed profile",
+      "confidence": "Confidence level",
+      "high": "High confidence",
+      "lastUpdate": "Latest activity",
+      "low": "Confidence building",
+      "medium": "Medium confidence",
+      "moderated": "Contributions are actively moderated",
+      "noDate": "Date unavailable",
+      "reviews": "Published reviews",
+      "salaries": "Published salaries",
+      "unclaimed": "Unclaimed profile"
     }
   },
   "about": {
@@ -395,7 +444,9 @@
       "publish": "Publish an offer",
       "empty": "No active offers at the moment.",
       "slots": "Available spots",
-      "viewOffer": "View offer"
+      "viewOffer": "View offer",
+      "myOffers": "My offers",
+      "myRequests": "My requests"
     },
     "new": {
       "badge": "Publish",
@@ -452,7 +503,15 @@
       "requirements": "Requirements",
       "loginPrompt": "Log in to request a referral.",
       "goToLogin": "Go to login",
-      "ownerNote": "You are the owner of this offer. Incoming requests are visible in your user area."
+      "ownerNote": "You are the owner of this offer. Incoming requests are visible in your user area.",
+      "applyNow": "Apply now",
+      "myRequestsCta": "View my requests",
+      "offerUnavailable": "This offer is no longer active. Explore other opportunities or review your existing requests.",
+      "ownerCta": "Manage my offers and requests",
+      "statusActive": "Active",
+      "statusClosed": "Closed",
+      "statusPaused": "Paused",
+      "statusRejected": "Unavailable"
     },
     "request": {
       "title": "Request a referral",
@@ -788,7 +847,8 @@
         "5": "Salary benchmark (Gold only)",
         "6": "Monthly salary barometer",
         "7": "Advanced analytics",
-        "8": "Premium lead generation"
+        "8": "Premium lead generation",
+        "9": "Multi-business management (up to 5)"
       }
     },
     "premium": {
@@ -1781,6 +1841,12 @@
       "urlLabel": "Application URL",
       "urlPlaceholder": "https://...",
       "toolsTitle": "Tools configuration"
+    },
+    "security": {
+      "maintenanceDesc": "The site will be unavailable to visitors. Useful for critical maintenance windows.",
+      "maintenanceLabel": "Maintenance Mode Enabled",
+      "registrationsDesc": "Allow new users to register on the platform.",
+      "registrationsLabel": "Open Registrations"
     }
   },
   "claimNew": {
@@ -1852,7 +1918,8 @@
       "detailsTitle": "Details de etablissement",
       "detailsDesc": "Ces informations seront visibles par les clients.",
       "requiredHint": "Veuillez remplir les informations obligatoires (*) pour continuer",
-      "next": "Suivant : Vos Avantages"
+      "next": "Suivant : Vos Avantages",
+      "presentation": "Presentation"
     },
     "cancel": "Annuler",
     "step2": {
@@ -2227,6 +2294,550 @@
       "deleteReasonRequired": "Reason is required to remove a review.",
       "statusUpdated": "Status updated:",
       "reviewRemoved": "Review removed."
+    }
+  },
+  "dashboardPendingPage": {
+    "errors": {
+      "auth": "Authentication error",
+      "loadClaim": "Error loading claim: {message}",
+      "generic": "Error: {message}",
+      "enterCode": "Please enter the verification code.",
+      "invalidCode": "Invalid or expired code.",
+      "verificationFailed": "Verification failed. Please try again.",
+      "fileTooLargeDoc": "File too large (max 10MB)",
+      "fileTooLargeVideo": "Video too large (max 100MB)",
+      "uploadFailed": "Upload failed. Please try again."
+    },
+    "toasts": {
+      "verified": "{method} verified successfully!",
+      "documentUploaded": "Document uploaded. Our team will review it.",
+      "videoUploaded": "Video uploaded. Our team will review it."
+    },
+    "loading": {
+      "title": "Loading...",
+      "description": "Please wait"
+    },
+    "error": {
+      "title": "Error",
+      "consoleHint": "Check browser console for details",
+      "backToLogin": "Back to login"
+    },
+    "empty": {
+      "title": "No claim found",
+      "description": "You don't have a pending claim. Please create a pro account first.",
+      "createPro": "Create pro account"
+    },
+    "status": {
+      "pendingApproval": "Claim pending approval",
+      "rejected": "Claim rejected",
+      "processing": "Processing",
+      "pendingDescription": "Your claim is pending review by our moderators. This usually takes 24-48 hours.",
+      "rejectedDescription": "Your claim was rejected. Please verify the information and try again."
+    },
+    "claimDetails": {
+      "title": "Claim details",
+      "fields": {
+        "business": "Business",
+        "status": "Status",
+        "name": "Your name",
+        "title": "Your title",
+        "email": "Email",
+        "date": "Date"
+      },
+      "businessLoading": "Loading...",
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      }
+    },
+    "verification": {
+      "title": "Identity verification",
+      "subtitle": "Complete verification to speed up approval",
+      "methods": {
+        "email": "Email",
+        "phone": "Phone",
+        "document": "Document",
+        "video": "Video"
+      },
+      "proof": {
+        "inReview": "In review",
+        "verified": "Verified",
+        "pending": "Pending verification"
+      },
+      "inputs": {
+        "emailCodeLabel": "Verification code (6 digits)",
+        "emailHint": "Check your email {email}",
+        "smsCodeLabel": "SMS code (6 digits)",
+        "smsHint": "Check your SMS messages"
+      },
+      "upload": {
+        "documentTitle": "Upload document",
+        "documentHint": "PDF, JPG, PNG (max 10MB)",
+        "videoTitle": "Upload video",
+        "videoHint": "MP4, WebM (max 100MB)"
+      },
+      "actions": {
+        "verifyNow": "Verify now"
+      }
+    },
+    "nextSteps": {
+      "title": "Next steps",
+      "step1": {
+        "title": "1. Complete verification",
+        "description": "Verify above, then our team reviews"
+      },
+      "step2": {
+        "title": "2. Approval",
+        "description": "You'll get a confirmation email"
+      },
+      "step3": {
+        "title": "3. Dashboard access",
+        "description": "Manage reviews and more"
+      }
+    },
+    "tip": {
+      "title": "Tip:",
+      "description": "Check your email (including spam) for important notifications."
+    },
+    "actions": {
+      "backHome": "Back to home",
+      "tryAgain": "Try again"
+    }
+  },
+  "adminAnalyticsPage": {
+    "loading": {
+      "data": "Loading analytics data..."
+    },
+    "unavailable": {
+      "title": "Data unavailable",
+      "description": "Unable to load analytics right now.",
+      "retry": "Retry"
+    },
+    "header": {
+      "badge": "Insights hub",
+      "title": "Performance analytics",
+      "subtitle": "Track growth and engagement across the platform"
+    },
+    "timeRange": {
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "lastYear": "Last year"
+    },
+    "actions": {
+      "exportCsv": "Export CSV"
+    },
+    "stats": {
+      "totalUsers": "Total users",
+      "activeUsers": "Active users",
+      "totalSearches": "Total searches",
+      "estimatedRevenue": "Estimated revenue (premium)",
+      "growthPositiveThisMonth": "Positive growth this month"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "businesses": "Businesses",
+      "search": "Search"
+    },
+    "overview": {
+      "growthTrend": {
+        "title": "Growth trend",
+        "description": "Monthly new-user growth"
+      },
+      "cityDistribution": {
+        "title": "City distribution",
+        "description": "Geographic concentration of businesses"
+      }
+    },
+    "users": {
+      "title": "User engagement",
+      "description": "Acquisition flow over the last 6 months"
+    },
+    "businesses": {
+      "growth": {
+        "title": "Business growth",
+        "description": "New businesses per month"
+      },
+      "ownerEngagement": {
+        "title": "Owner engagement",
+        "claimRate": "Estimated claim rate"
+      }
+    },
+    "search": {
+      "volume": {
+        "title": "Search volumes",
+        "description": "Search trend over 6 months"
+      },
+      "topQueries": {
+        "title": "Top queries",
+        "description": "Most frequent search terms",
+        "countLabel": "{count} searches",
+        "empty": "Insufficient search data"
+      }
+    },
+    "export": {
+      "metricHeader": "Metric",
+      "valueHeader": "Value",
+      "totalBusinesses": "Total businesses",
+      "totalReviews": "Total reviews",
+      "averageRating": "Average rating",
+      "totalMessages": "Total messages"
+    }
+  },
+  "claimPage": {
+    "defaults": {
+      "siteName": "Platform"
+    },
+    "pending": {
+      "title": "Claim in progress",
+      "subtitle": "Your claim request is currently being processed",
+      "cardTitle": "Claim awaiting validation",
+      "businessLabel": "Business:",
+      "submittedOn": "Submitted on {date}",
+      "nextSteps": {
+        "title": "Next steps",
+        "step1": "- Our team verifies your request (24-48h)",
+        "step2": "- You will receive an email after validation",
+        "step3": "- Full dashboard access after approval"
+      },
+      "limitTitle": "Current limitation",
+      "limitDescription": "At the moment, each user can claim only one business. This limitation will be updated with premium tiers.",
+      "actions": {
+        "track": "Track my request",
+        "backHome": "Back to home"
+      }
+    },
+    "header": {
+      "title": "Manage your business",
+      "subtitle": "Claim your {siteName} page and start managing customer reviews"
+    },
+    "benefits": {
+      "reviewsTitle": "Manage reviews",
+      "reviewsDescription": "Reply to customers and improve your reputation",
+      "updatesTitle": "Share updates",
+      "updatesDescription": "Publish company news and events",
+      "widgetTitle": "Embed widget",
+      "widgetDescription": "Show your reviews on your website"
+    },
+    "notice": {
+      "title": "Important information",
+      "oneBusinessTitle": "One business per user",
+      "oneBusinessDescription": "Each user can currently claim one business to keep management quality high.",
+      "importantLabel": "Important:",
+      "importantText": " Growth/Pro accounts remain limited to a single business for now."
+    },
+    "step1": {
+      "title": "Step 1: Find your business",
+      "description": "Search for your existing business or create a new one"
+    },
+    "search": {
+      "label": "Search your business",
+      "placeholder": "Enter business name or address...",
+      "hint": "Type at least 2 characters to search",
+      "claimedBadge": "Claimed",
+      "loading": "Searching...",
+      "emptyTitle": "No business found for \"{query}\"",
+      "emptyHint": "That is normal, create a new business below"
+    },
+    "selection": {
+      "label": "Selected business:",
+      "ctaMine": "This is mine",
+      "change": "Change",
+      "claimedTitle": "Business already claimed",
+      "claimedDescription": "This business has already been claimed by another user. If you are the rightful owner, contact our team.",
+      "chooseAnother": "Choose another",
+      "contactTeam": "Contact team"
+    },
+    "divider": {
+      "or": "or"
+    },
+    "createNew": "Create a new business",
+    "process": {
+      "title": "Quick process",
+      "step1": "- Fill your information (5 min)",
+      "step2": "- Verify identity (email, phone, or document)",
+      "step3": "- Our team approves your request (24-48h)",
+      "step4": "- Access your pro dashboard"
+    }
+  },
+  "dashboardAnalyticsPage": {
+    "errors": {
+      "accessDenied": "Access denied",
+      "unknown": "Unknown error",
+      "claimBusiness": "Claim a business"
+    },
+    "cards": {
+      "totalReviews": "Total reviews",
+      "averageRating": "Average rating",
+      "profileViews": "Profile views",
+      "leads": "Lead conversions"
+    },
+    "header": {
+      "title": "Analytics",
+      "subtitle": "Performance analysis for {businessName}."
+    },
+    "gates": {
+      "whatsappTitle": "WhatsApp tracking",
+      "whatsappDescription": "Enable Business GOLD to view WhatsApp leads.",
+      "bookingTitle": "Booking tracking",
+      "bookingDescription": "Track external bookings with the GOLD plan.",
+      "advancedTitle": "Advanced analytics",
+      "advancedDescription": "Upgrade to Premium to unlock full review history.",
+      "distributionTitle": "Detailed distribution",
+      "distributionDescription": "Analyze your rating distribution in detail with Premium."
+    },
+    "whatsapp": {
+      "cardTitle": "WhatsApp clicks",
+      "caption": "New direct contacts"
+    },
+    "booking": {
+      "cardTitle": "Affiliate links / bookings",
+      "caption": "Redirects to your links"
+    },
+    "timeline": {
+      "title": "Reviews over time",
+      "description": "Trend over the last 6 months"
+    },
+    "distribution": {
+      "title": "Rating distribution",
+      "description": "Breakdown by star count"
+    }
+  },
+  "dashboardCompetitorAdsPage": {
+    "errors": {
+      "loadAds": "Unable to load competitor ads",
+      "requiredFields": "Please complete required fields and set a valid budget",
+      "createAd": "Unable to create competitor ad",
+      "updateAd": "Unable to update competitor ad",
+      "deleteAd": "Unable to delete competitor ad",
+      "toggleStatus": "Unable to update ad status"
+    },
+    "success": {
+      "created": "Competitor ad created successfully",
+      "updated": "Competitor ad updated successfully",
+      "deleted": "Competitor ad deleted successfully",
+      "statusChanged": "Ad {status}"
+    },
+    "status": {
+      "activated": "activated",
+      "paused": "paused"
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this competitor ad?"
+    },
+    "common": {
+      "notSet": "Not set"
+    },
+    "header": {
+      "title": "Competitor ads",
+      "subtitle": "Create ads to appear on competitor business pages",
+      "note": "Available for all business accounts. Impressions and clicks are tracked automatically."
+    },
+    "campaigns": {
+      "title": "Your competitor campaigns",
+      "create": "Create competitor ad"
+    },
+    "createForm": {
+      "title": "New competitor ad",
+      "description": "Create a campaign to appear on competitor pages"
+    },
+    "form": {
+      "advertiserBusinessId": "Advertiser business ID",
+      "advertiserBusinessPlaceholder": "Enter your business ID",
+      "targetCompetitors": "Target competitor IDs (optional)",
+      "targetCompetitorsPlaceholder": "Enter competitor business IDs, one per line",
+      "targetCompetitorsHint": "If empty, the ad appears on all competitor pages",
+      "budgetMad": "Budget (MAD)",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "adTitle": "Ad title *",
+      "adTitlePlaceholder": "Catchy ad title",
+      "adContent": "Ad content *",
+      "adContentPlaceholder": "Describe your offer or service...",
+      "mediaUrls": "Media URLs (optional)",
+      "mediaUrlsPlaceholder": "Add image URLs separated by line breaks"
+    },
+    "empty": {
+      "title": "No competitor ad yet",
+      "description": "Create your first ad to appear on competitor pages"
+    },
+    "badges": {
+      "active": "Active",
+      "paused": "Paused"
+    },
+    "card": {
+      "budget": "Budget",
+      "spent": "Spent",
+      "progress": "Progress: {pct}%",
+      "start": "Start: {date}",
+      "end": "End: {date}",
+      "targeting": "Targeting: {count} competitor(s)"
+    },
+    "metrics": {
+      "impressions": "Impressions",
+      "clicks": "Clicks",
+      "ctr": "CTR"
+    },
+    "editForm": {
+      "title": "Edit competitor ad",
+      "description": "Update your competitor ad details",
+      "update": "Update"
+    }
+  },
+  "dashboardEditProfilePage": {
+    "errors": {
+      "genericTitle": "Error",
+      "businessNotFound": "Business not found.",
+      "missingBusinessId": "Missing business ID",
+      "missingBusinessIdRefresh": "Missing business ID. Please refresh the page.",
+      "unsupportedFormatTitle": "Unsupported format",
+      "unsupportedFormatDescription": "Please use JPG, PNG, WEBP, AVIF, or GIF.",
+      "fileTooLargeTitle": "File too large",
+      "fileTooLargeDescription": "Maximum size is {sizeMB}MB.",
+      "imageTooSmallTitle": "Image too small",
+      "imageTooSmallDescription": "Cover image must be at least 400x200 pixels (1200x400 recommended).",
+      "invalidImageTitle": "Invalid image",
+      "invalidImageDescription": "Unable to read image file. The file may be corrupted.",
+      "uploadFailed": "Unable to upload image.",
+      "removeFailed": "Unable to remove image."
+    },
+    "success": {
+      "savedChangesTitle": "Changes saved",
+      "imageUploadedTitle": "Image uploaded",
+      "imageUploadedDescription": "The image was updated successfully.",
+      "imageRemovedTitle": "Image removed",
+      "imageRemovedDescription": "The image was removed successfully."
+    },
+    "errorState": {
+      "title": "Edit profile",
+      "accessDenied": "Access denied",
+      "claimBusiness": "Claim a business"
+    },
+    "header": {
+      "title": "Manage {name}",
+      "subtitle": "Update information for {name}.",
+      "fallbackTitleName": "your business",
+      "fallbackSubtitleName": "your business",
+      "back": "Back",
+      "save": "Save"
+    },
+    "tabs": {
+      "general": "General",
+      "media": "Photos",
+      "business": "Services"
+    },
+    "general": {
+      "title": "General information",
+      "nameLabel": "Business name",
+      "descriptionLabel": "Description",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "Select a category",
+      "subcategoryLabel": "Subcategory",
+      "subcategoryPlaceholder": "Select a subcategory",
+      "cityLabel": "City",
+      "cityPlaceholder": "Select a city",
+      "quartierLabel": "District",
+      "quartierPlaceholder": "Select a district",
+      "locationLabel": "Full address",
+      "locationPlaceholder": "Street, number, etc.",
+      "websiteLabel": "Website",
+      "websitePlaceholder": "www.example.com"
+    },
+    "pro": {
+      "title": "Business PRO options",
+      "badgeRequired": "PRO plan required",
+      "whatsappLabel": "WhatsApp number",
+      "whatsappPlaceholder": "Ex: 212 600000000",
+      "whatsappDescriptionEnabled": "Displays a direct contact button on your profile.",
+      "whatsappDescriptionDisabled": "Unlock direct WhatsApp contact with a PRO plan.",
+      "affiliateLabel": "Booking / affiliate link",
+      "affiliatePlaceholder": "Ex: https://booking.com/...",
+      "affiliateDescriptionEnabled": "Direct link to your booking engine (Booking, etc.).",
+      "affiliateDescriptionDisabled": "Redirect customers to your booking engine with a PRO plan.",
+      "ctaLabel": "Button text (optional)",
+      "ctaPlaceholder": "Ex: Book on Booking",
+      "tagsLabel": "Search keywords (tags)",
+      "tagsDescriptionEnabled": "Add up to 10 keywords to help customers find you (e.g. Terrace, Halal, Brunch).",
+      "tagsDescriptionDisabled": "The PRO plan allows custom search keywords."
+    },
+    "media": {
+      "title": "Media & images",
+      "description": "Manage your business photos.",
+      "logoLabel": "Business logo",
+      "logoAlt": "Business logo",
+      "businessInitial": "B",
+      "chooseLogo": "Choose a logo",
+      "logoHint": "Square format recommended (PNG, JPG, max 5MB)",
+      "coverLabel": "Cover photo",
+      "coverAlt": "Cover image",
+      "changeCover": "Change cover",
+      "galleryLabel": "Photo gallery",
+      "galleryCount": "{count}/10 photos",
+      "galleryAlt": "Gallery image {index}",
+      "add": "Add",
+      "galleryHint": "High-quality photos of your venue (max 10MB per image)"
+    },
+    "business": {
+      "defaultServicesGroup": "Services",
+      "customServicesGroup": "Other services",
+      "title": "Amenities & services",
+      "description": "Select available amenities."
+    }
+  },
+  "dashboardUpdatesPage": {
+    "toasts": {
+      "successTitle": "Success",
+      "errorTitle": "Error",
+      "publishedFallback": "Update published.",
+      "publishFailedFallback": "Publishing failed."
+    },
+    "header": {
+      "title": "Manage updates",
+      "description": "Share announcements, special offers, or news with your customers."
+    },
+    "pro": {
+      "title": "PRO / GOLD feature",
+      "description": "Posting updates is reserved for PRO or GOLD subscribers.",
+      "cta": "Upgrade to PRO"
+    },
+    "form": {
+      "title": "Post a new update",
+      "updateTitleLabel": "Update title",
+      "updateTitlePlaceholder": "Ex: Seasonal special offer",
+      "updateTextLabel": "Content",
+      "updateTextPlaceholder": "Describe your announcement...",
+      "isPinnedLabel": "Pin this update at the top of the list",
+      "publish": "Publish"
+    },
+    "list": {
+      "title": "Published updates",
+      "description": "Your latest posts.",
+      "pinnedBadge": "Pinned",
+      "pinAriaLabel": "Pin update",
+      "unpinAriaLabel": "Unpin update",
+      "editAriaLabel": "Edit update",
+      "deleteAriaLabel": "Delete update",
+      "empty": "No updates published yet."
+    },
+    "dialogs": {
+      "edit": {
+        "title": "Edit update",
+        "description": "Edit the title and content of your post.",
+        "titleLabel": "Title",
+        "contentLabel": "Content"
+      },
+      "delete": {
+        "title": "Delete update",
+        "description": "Are you sure you want to delete \"{title}\"?",
+        "irreversible": "This action cannot be undone."
+      }
+    },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete"
     }
   }
 }
