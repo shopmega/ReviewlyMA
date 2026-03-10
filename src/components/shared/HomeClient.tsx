@@ -121,10 +121,18 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         }))
         : defaultCategories.map((c) => ({ ...c, icon: null, IconComponent: c.icon }));
 
+    const firstCity = ALL_CITIES[0] || 'Casablanca';
+    const secondCity = ALL_CITIES[1] || 'Marrakech';
     const popularSearches = siteSettings?.popular_searches_config || [
-        { label: `Entreprises Tech à ${ALL_CITIES[0] || 'Casablanca'}`, href: `/businesses?search=Tech&city=${ALL_CITIES[0] || 'Casablanca'}` },
-        { label: 'Sociétés de consulting', href: '/businesses?search=Consulting' },
-        { label: `Banques à ${ALL_CITIES[1] || 'Marrakech'}`, href: `/businesses?category=Finance&city=${ALL_CITIES[1] || 'Marrakech'}` },
+        {
+            label: tf('home.hero.popularFallback.techInCity', 'Tech companies in {city}', { city: firstCity }),
+            href: `/businesses?search=Tech&city=${firstCity}`,
+        },
+        { label: t('home.hero.popularFallback.consulting', 'Consulting companies'), href: '/businesses?search=Consulting' },
+        {
+            label: tf('home.hero.popularFallback.banksInCity', 'Banks in {city}', { city: secondCity }),
+            href: `/businesses?category=Finance&city=${secondCity}`,
+        },
     ];
 
     const [searchCity, setSearchCity] = useState('all');

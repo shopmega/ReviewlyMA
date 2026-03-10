@@ -11,6 +11,7 @@ import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { DemandResponseForm } from './DemandResponseForm';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { id: string };
 
@@ -61,19 +62,28 @@ async function getDemandListingById(id: string) {
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t, tf } = await getServerTranslator();
   const { id } = await params;
   const siteUrl = getServerSiteUrl();
   const item = await getDemandListingById(id);
   if (!item) {
     return {
-      title: 'Demande de parrainage | Reviewly MA',
+      title: t('referralDemandDetailPage.metadata.notFoundTitle', 'Referral demand | Reviewly MA'),
       alternates: { canonical: `${siteUrl}/parrainages/demandes/${id}` },
     };
   }
 
   const citySuffix = item.city ? ` - ${item.city}` : '';
-  const title = `${item.target_role}${citySuffix} | Demande de parrainage`;
-  const description = `Demande publique de parrainage pour ${item.target_role}${citySuffix}. Donnees anonymisees et moderees.`;
+  const title = tf(
+    'referralDemandDetailPage.metadata.title',
+    '{role}{citySuffix} | Referral demand',
+    { role: item.target_role, citySuffix }
+  );
+  const description = tf(
+    'referralDemandDetailPage.metadata.description',
+    'Public referral demand for {role}{citySuffix}. Data is anonymized and moderated.',
+    { role: item.target_role, citySuffix }
+  );
   const ogQuery = new URLSearchParams({
     role: item.target_role,
     city: item.city || '',
@@ -91,7 +101,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       description,
       type: 'website',
       url: canonical,
-      images: [{ url: image, width: 1200, height: 630, alt: 'Demande de parrainage' }],
+      images: [{
+        url: image,
+        width: 1200,
+        height: 630,
+        alt: t('referralDemandDetailPage.metadata.ogAlt', 'Referral demand'),
+      }],
     },
     twitter: {
       card: 'summary_large_image',
@@ -103,6 +118,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ReferralDemandDetailPage({ params }: { params: Promise<Params> }) {
+  const { t, tf, locale } = await getServerTranslator();
+  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
   const { id } = await params;
   const siteUrl = getServerSiteUrl();
   const item = await getDemandListingById(id);
@@ -147,14 +164,18 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
   }
 
   const demandShareUrl = `${siteUrl}/parrainages/demandes/${item.id}`;
-  const demandShareText = `Demande de parrainage: ${item.target_role}${item.city ? ` a ${item.city}` : ''}.`;
+  const demandShareText = tf(
+    'referralDemandDetailPage.share.text',
+    'Referral demand: {role}{cityPart}.',
+    { role: item.target_role, cityPart: item.city ? tf('referralDemandDetailPage.share.cityPart', ' in {city}', { city: item.city }) : '' }
+  );
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
         <Link href="/parrainages?kind=demands" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
           <ArrowLeft className="h-4 w-4" />
-          Retour au board
+          {t('referralDemandDetailPage.actions.backToBoard', 'Back to board')}
         </Link>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{item.target_role}</Badge>
@@ -166,7 +187,7 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
           )}
           <Badge variant="secondary" className="inline-flex items-center gap-1">
             <Clock3 className="h-3 w-3" />
-            {new Date(item.created_at).toLocaleDateString('fr-MA')}
+            {new Date(item.created_at).toLocaleDateString(dateLocale)}
           </Badge>
         </div>
         <h1 className="text-3xl font-bold font-headline">{item.title}</h1>
@@ -176,12 +197,12 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
         <Card className="rounded-2xl lg:col-span-2">
           <CardContent className="pt-6 space-y-5">
             <div>
-              <h2 className="font-semibold mb-2">Resume</h2>
+              <h2 className="font-semibold mb-2">{t('referralDemandDetailPage.sections.summary', 'Summary')}</h2>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.summary}</p>
             </div>
             {item.details && (
               <div>
-                <h2 className="font-semibold mb-2">Details</h2>
+                <h2 className="font-semibold mb-2">{t('referralDemandDetailPage.sections.details', 'Details')}</h2>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.details}</p>
               </div>
             )}
@@ -192,10 +213,10 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
           <InternalAdsSlot placement="referrals_detail_sidebar" limit={1} />
           <Card className="rounded-2xl">
             <CardContent className="pt-6 text-sm text-muted-foreground space-y-3">
-              <p>Repondez ici pour proposer un parrainage et centraliser les echanges.</p>
+              <p>{t('referralDemandDetailPage.sidebar.description', 'Reply here to propose a referral and centralize exchanges.')}</p>
               <ContentShareButton
                 url={demandShareUrl}
-                title={`Demande de parrainage: ${item.target_role}`}
+                title={tf('referralDemandDetailPage.share.title', 'Referral demand: {role}', { role: item.target_role })}
                 text={demandShareText}
                 contentType="referral_demand"
                 contentId={item.id}
@@ -203,19 +224,19 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
                 className="w-full rounded-xl"
               />
               <Button asChild className="w-full rounded-xl">
-                <Link href="/parrainages/new?type=demand">Publier votre demande</Link>
+                <Link href="/parrainages/new?type=demand">{t('referralDemandDetailPage.actions.publishDemand', 'Publish your demand')}</Link>
               </Button>
             </CardContent>
           </Card>
 
           {!currentUserId ? (
             <SoftAuthTriggerButton
-              label="Se connecter pour repondre"
+              label={t('referralDemandDetailPage.authPrompt.label', 'Log in to reply')}
               nextPath={`/parrainages/demandes/${item.id}#respond-form`}
               intent="referral_demand_reply"
               className="w-full rounded-xl"
-              title="Proposez un parrainage en quelques clics"
-              description="Connectez-vous pour envoyer votre reponse et aider ce candidat."
+              title={t('referralDemandDetailPage.authPrompt.title', 'Propose a referral in a few clicks')}
+              description={t('referralDemandDetailPage.authPrompt.description', 'Log in to send your response and help this candidate.')}
             />
           ) : null}
 
@@ -226,9 +247,13 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
           {isOwner ? (
             <Card className="rounded-2xl">
               <CardContent className="pt-6 space-y-3">
-                <h2 className="text-sm font-semibold">Reponses recues ({ownerResponses.length})</h2>
+                <h2 className="text-sm font-semibold">
+                  {tf('referralDemandDetailPage.owner.responsesTitle', 'Received responses ({count})', {
+                    count: ownerResponses.length,
+                  })}
+                </h2>
                 {ownerResponses.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Aucune reponse pour le moment.</p>
+                  <p className="text-sm text-muted-foreground">{t('referralDemandDetailPage.owner.noResponses', 'No responses yet.')}</p>
                 ) : (
                   <div className="space-y-3">
                     {ownerResponses.slice(0, 8).map((response) => {
@@ -237,16 +262,18 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
                         <div key={response.id} className="rounded-xl border border-border/60 bg-background/60 p-3 space-y-2">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <Link href={`/users/${response.responder_user_id}`} className="text-sm font-semibold text-primary hover:underline">
-                              Candidat {response.responder_user_id.slice(0, 8)}...
+                              {tf('referralDemandDetailPage.owner.candidateLabel', 'Candidate {id}...', {
+                                id: response.responder_user_id.slice(0, 8),
+                              })}
                             </Link>
                             <span className="text-xs text-muted-foreground">
-                              {new Date(response.created_at).toLocaleDateString('fr-MA')}
+                              {new Date(response.created_at).toLocaleDateString(dateLocale)}
                             </span>
                           </div>
                           <p className="text-sm text-muted-foreground whitespace-pre-wrap">{response.message}</p>
                           {linkedOffer ? (
                             <p className="text-xs text-muted-foreground">
-                              Offre liee:{' '}
+                              {t('referralDemandDetailPage.owner.linkedOfferLabel', 'Linked offer:')}{' '}
                               <Link href={`/parrainages/${linkedOffer.id}`} className="text-primary hover:underline">
                                 {linkedOffer.job_title} - {linkedOffer.company_name}
                               </Link>
@@ -257,7 +284,11 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
                     })}
                     {ownerResponses.length > 8 ? (
                       <p className="text-xs text-muted-foreground">
-                        {ownerResponses.length - 8} reponse(s) supplementaire(s) non affichee(s).
+                        {tf(
+                          'referralDemandDetailPage.owner.hiddenResponses',
+                          '{count} additional response(s) not displayed.',
+                          { count: ownerResponses.length - 8 }
+                        )}
                       </p>
                     ) : null}
                   </div>

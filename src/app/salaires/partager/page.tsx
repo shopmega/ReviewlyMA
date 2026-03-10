@@ -8,15 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SalaryQuickSubmitCard } from '@/components/salaries/SalaryQuickSubmitCard';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: 'Partager mon salaire',
-  description: 'Choisissez une entreprise puis partagez votre salaire anonymement.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
+  return {
+    title: t('salarySharePage.metadata.title', 'Share my salary'),
+    description: t(
+      'salarySharePage.metadata.description',
+      'Choose a company and share your salary anonymously.'
+    ),
+  };
+}
 
 export default async function ShareSalaryPage() {
+  const { t } = await getServerTranslator();
   const [businessesResult, settings] = await Promise.all([
     getCachedBusinesses({ limit: 24, minimal: true }),
     getSiteSettings(),
@@ -35,28 +43,34 @@ export default async function ShareSalaryPage() {
       <section className="rounded-3xl border bg-gradient-to-br from-sky-50 via-background to-emerald-50 p-6 md:p-10">
         <div className="max-w-3xl space-y-4">
           <Badge variant="outline" className="uppercase tracking-widest text-[10px]">
-            Soumission anonyme
+            {t('salarySharePage.hero.badge', 'Anonymous submission')}
           </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">Partager mon salaire</h1>
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+            {t('salarySharePage.hero.title', 'Share my salary')}
+          </h1>
           <p className="text-muted-foreground text-base md:text-lg">
-            Recherchez d'abord votre entreprise. Ensuite, vous pourrez publier votre salaire de facon anonyme sur sa fiche.
+            {t(
+              'salarySharePage.hero.description',
+              'Search your company first, then publish your salary anonymously on its page.'
+            )}
           </p>
           <div className="rounded-2xl border bg-background/80 p-3 md:p-4">
             <SearchAutocomplete
-              placeholder="Rechercher une entreprise..."
+              placeholder={t('salarySharePage.search.placeholder', 'Search a company...')}
               className="w-full"
               inputClassName="h-12 text-base"
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              Astuce: ouvrez la fiche puis allez a la section <strong>Salaires</strong>.
+              {t('salarySharePage.search.tipPrefix', 'Tip: open the profile, then go to the')}{' '}
+              <strong>{t('salarySharePage.search.tipStrong', 'Salaries')}</strong>.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 pt-1">
             <Button asChild>
-              <Link href="/businesses">Voir toutes les entreprises</Link>
+              <Link href="/businesses">{t('salarySharePage.hero.viewBusinesses', 'View all companies')}</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/suggest">Je ne trouve pas mon entreprise</Link>
+              <Link href="/suggest">{t('salarySharePage.hero.missingBusiness', "I can't find my company")}</Link>
             </Button>
           </div>
         </div>
@@ -73,9 +87,12 @@ export default async function ShareSalaryPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold">Entreprises recentes</h2>
+        <h2 className="text-2xl font-bold">{t('salarySharePage.latest.title', 'Recent companies')}</h2>
         <p className="text-sm text-muted-foreground">
-          Vous pouvez commencer par une fiche recente puis cliquer sur la section salaires.
+          {t(
+            'salarySharePage.latest.description',
+            'You can start with a recent company page, then click the salaries section.'
+          )}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {latestBusinesses.map((business) => (
@@ -84,9 +101,13 @@ export default async function ShareSalaryPage() {
                 <CardTitle className="text-base">{business.name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">{business.city || business.location || 'Maroc'}</p>
+                <p className="text-sm text-muted-foreground">
+                  {business.city || business.location || t('salarySharePage.latest.defaultCountry', 'Morocco')}
+                </p>
                 <Button asChild size="sm" className="w-full">
-                  <Link href={`/businesses/${business.id}?shareSalary=1#salaries`}>Ouvrir la fiche salaires</Link>
+                  <Link href={`/businesses/${business.id}?shareSalary=1#salaries`}>
+                    {t('salarySharePage.latest.openSalaryCard', 'Open salary section')}
+                  </Link>
                 </Button>
               </CardContent>
             </Card>

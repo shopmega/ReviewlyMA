@@ -1,14 +1,19 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
   return {
-    title: 'Demandes de parrainage | Reviewly MA',
-    description: 'Redirection vers le marketplace unifie des parrainages.',
+    title: t('referralDemandBoardPage.metaTitle', 'Referral requests | Reviewly MA'),
+    description: t(
+      'referralDemandBoardPage.metaDescription',
+      'Browse public requests from candidates looking for a referral.'
+    ),
     alternates: { canonical: '/parrainages?kind=demands' },
   };
 }

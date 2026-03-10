@@ -80,7 +80,12 @@
       "searchPlaceholder": "Company, role, or keyword...",
       "searchCta": "Search a company",
       "writeReview": "Write a review",
-      "claimCta": "Claim a profile"
+      "claimCta": "Claim a profile",
+      "popularFallback": {
+        "techInCity": "Tech companies in {city}",
+        "consulting": "Consulting companies",
+        "banksInCity": "Banks in {city}"
+      }
     },
     "filters": {
       "city": "City",
@@ -2838,6 +2843,438 @@
       "cancel": "Cancel",
       "save": "Save",
       "delete": "Delete"
+    }
+  },
+  "dashboardAdvertisingPage": {
+    "toasts": {
+      "successTitle": "Success",
+      "errorTitle": "Error"
+    },
+    "errors": {
+      "loadAds": "Unable to load ads",
+      "requiredFields": "Title, content, and budget are required.",
+      "createAd": "Unable to create ad",
+      "updateAd": "Unable to update ad",
+      "toggleStatus": "Unable to change status",
+      "deleteAd": "Unable to delete ad"
+    },
+    "success": {
+      "created": "Ad created successfully",
+      "updated": "Ad updated",
+      "deleted": "Ad deleted",
+      "statusChanged": "Ad {status}"
+    },
+    "status": {
+      "active": "Active",
+      "pausedBadge": "Paused",
+      "activated": "activated",
+      "paused": "paused"
+    },
+    "confirm": {
+      "delete": "Delete this ad?"
+    },
+    "header": {
+      "title": "Ads",
+      "subtitle": "Manage campaigns and internal ad placements."
+    },
+    "tabs": {
+      "manage": "My ads",
+      "create": "Create",
+      "analytics": "Analytics",
+      "competitor": "Competitor ads"
+    },
+    "manage": {
+      "title": "Your campaigns",
+      "createAd": "Create ad"
+    },
+    "createDialog": {
+      "title": "New ad",
+      "description": "Create a standard ad campaign.",
+      "create": "Create ad"
+    },
+    "form": {
+      "title": "Title",
+      "content": "Content",
+      "budgetMad": "Budget (MAD)"
+    },
+    "targeting": {
+      "placementsLabel": "Placements",
+      "salaryCitySlugsLabel": "Salary city slugs",
+      "salaryCitySlugsPlaceholder": "casablanca, rabat",
+      "salaryRoleSlugsLabel": "Salary role slugs",
+      "salaryRoleSlugsPlaceholder": "software-engineer, accountant",
+      "salarySectorSlugsLabel": "Salary sector slugs",
+      "salarySectorSlugsPlaceholder": "it, finance",
+      "targetBusinessIdsLabel": "Target business IDs",
+      "targetBusinessIdsPlaceholder": "acme-corp, globex",
+      "ctaUrlLabel": "CTA URL",
+      "ctaUrlPlaceholder": "https://...",
+      "ctaLabelLabel": "CTA Label",
+      "ctaLabelPlaceholder": "Learn more"
+    },
+    "placements": {
+      "homeTopBanner": "Home top banner",
+      "directoryTopBanner": "Directory top banner",
+      "directoryInline": "Directory inline",
+      "businessProfileInline": "Business profile inline",
+      "businessProfileSidebar": "Business profile sidebar",
+      "referralsTopBanner": "Referrals top banner",
+      "referralsInline": "Referrals inline",
+      "referralsDetailSidebar": "Referrals detail sidebar",
+      "salaryPageTopBanner": "Salary page top banner",
+      "salaryPageInline": "Salary page inline",
+      "salaryCompareTopBanner": "Salary compare top banner",
+      "salaryRoleCityInline": "Salary role/city inline",
+      "salarySectorCityInline": "Salary sector/city inline",
+      "salaryShareTopBanner": "Salary share top banner"
+    },
+    "empty": {
+      "title": "No campaigns",
+      "description": "Create your first ad campaign."
+    },
+    "actions": {
+      "pause": "Pause ad",
+      "activate": "Activate ad",
+      "edit": "Edit ad",
+      "delete": "Delete ad"
+    },
+    "card": {
+      "budget": "Budget",
+      "spent": "Spent",
+      "progress": "Progress: {pct}%",
+      "start": "Start: {date}",
+      "end": "End: {date}"
+    },
+    "quickCreate": {
+      "title": "Create a campaign",
+      "description": "Quick creation of an ad campaign.",
+      "createCampaign": "Create campaign"
+    },
+    "analytics": {
+      "activeCampaigns": "Active campaigns",
+      "totalCampaigns": "Total campaigns",
+      "spendRate": "Spend rate",
+      "expenses": "Expenses",
+      "globalBudgetTitle": "Global budget",
+      "globalBudgetDescription": "Allocated budget vs spent budget across all campaigns.",
+      "totalBudget": "Total budget",
+      "totalSpent": "Total spent"
+    },
+    "editDialog": {
+      "title": "Edit ad",
+      "description": "Update campaign details."
+    },
+    "common": {
+      "notSet": "Not set",
+      "cancel": "Cancel",
+      "save": "Save"
+    }
+  },
+  "salaryIndexPage": {
+    "metadata": {
+      "title": "Salary barometer in Morocco",
+      "description": "Explore salaries by role, city and sector in Morocco."
+    },
+    "hero": {
+      "badge": "Barometer",
+      "title": "Salaries in Morocco",
+      "description": "Explore salaries by role, city and sector. Anonymous data based on published submissions.",
+      "helper": "Start by choosing a role or city, then open comparison to see differences.",
+      "compareCta": "Compare salaries",
+      "shareCta": "Share your salary"
+    },
+    "chart": {
+      "title": "Median salary by role (top samples)",
+      "description": "Display is limited to roles with at least {count} published submissions.",
+      "empty": "Not enough public data to display the chart."
+    },
+    "roleCards": {
+      "title": "Average salaries by role",
+      "description": "Role + city with sample reliability context."
+    },
+    "sectorCards": {
+      "title": "Sector trends",
+      "description": "Sector + city market read with confidence level."
+    },
+    "sample": {
+      "okTitle": "Sufficient sample for public display",
+      "lowTitle": "Below public threshold ({count})",
+      "okBadge": "Sample OK",
+      "lowBadge": "Low sample"
+    },
+    "locked": {
+      "title": "Preview mode active",
+      "description": "You are seeing a limited preview. Log in to access detailed values and advanced comparison.",
+      "ctaLogin": "Log in"
+    },
+    "contribute": {
+      "title": "Contribute to the barometer",
+      "description": "Sharing your salary improves statistical accuracy and unlocks better insights for everyone.",
+      "note": "Data is anonymized and aggregated. Public results follow a minimum sample threshold.",
+      "ctaShare": "Share your salary",
+      "ctaCompare": "Comparison tool"
+    },
+    "common": {
+      "currencyMad": "MAD",
+      "preview": "Preview",
+      "insufficientData": "Insufficient data",
+      "loginForDetails": "Log in for details",
+      "dataCount": "{count} data points",
+      "submissionsUnder": "< {count} submissions",
+      "noData": "No data available yet."
+    }
+  },
+  "salarySharePage": {
+    "metadata": {
+      "title": "Share my salary",
+      "description": "Choose a company and share your salary anonymously."
+    },
+    "hero": {
+      "badge": "Anonymous submission",
+      "title": "Share my salary",
+      "description": "Search your company first, then publish your salary anonymously on its page.",
+      "viewBusinesses": "View all companies",
+      "missingBusiness": "I can't find my company"
+    },
+    "search": {
+      "placeholder": "Search a company...",
+      "tipPrefix": "Tip: open the profile, then go to the",
+      "tipStrong": "Salaries"
+    },
+    "latest": {
+      "title": "Recent companies",
+      "description": "You can start with a recent company page, then click the salaries section.",
+      "defaultCountry": "Morocco",
+      "openSalaryCard": "Open salary section"
+    }
+  },
+  "salaryRoleCityPage": {
+    "metadata": {
+      "notFoundTitle": "Salary not found",
+      "title": "Salary {role} in {city} | Barometer",
+      "descriptionWithData": "Compare {role} in {city} with the national average. Log in to view detailed values.",
+      "descriptionInsufficient": "Insufficient data (fewer than {count} submissions) to show detailed values for {role} in {city}."
+    },
+    "hero": {
+      "badge": "Salary barometer",
+      "title": "Salary {role} in {city}",
+      "submissions": "Data based on {count} published submissions.",
+      "lastUpdated": "Last updated: {date}"
+    },
+    "cards": {
+      "median": "Median",
+      "range": "Range",
+      "vsNational": "Vs national",
+      "juniorMedian": "Junior median",
+      "seniorMedian": "Senior+ median"
+    },
+    "locked": {
+      "title": "Unlock detailed analysis",
+      "insufficientTitle": "Insufficient data for a reliable statistic",
+      "withDataDescription": "Log in to view full range, junior/senior bands, and national comparison.",
+      "insufficientDescription": "This page only shows details from {count} submissions to protect confidentiality.",
+      "ctaLogin": "Log in"
+    },
+    "cityContext": {
+      "title": "City context: {city}",
+      "summary": "City median: {median} | Junior: {junior} | Senior+: {senior}"
+    },
+    "actions": {
+      "shareSalary": "Share your salary",
+      "moreAnalyses": "View more analyses"
+    },
+    "common": {
+      "currencyMad": "MAD",
+      "loginToUnlock": "Log in",
+      "insufficientData": "Insufficient data",
+      "unavailable": "Unavailable",
+      "submissionsUnder": "< {count} submissions"
+    }
+  },
+  "salarySectorCityPage": {
+    "metadata": {
+      "notFoundTitle": "Sector not found",
+      "title": "Sector salary {sector} in {city} | Barometer",
+      "descriptionWithData": "Compare sector {sector} in {city}. Log in to view detailed values.",
+      "descriptionInsufficient": "Insufficient data (fewer than {count} submissions) to show detailed values for sector {sector} in {city}."
+    },
+    "hero": {
+      "badge": "Salary barometer",
+      "title": "Sector salary {sector} in {city}",
+      "submissions": "Data based on {submissions} published submissions ({businesses} companies).",
+      "lastUpdated": "Last updated: {date}"
+    },
+    "cards": {
+      "median": "Median",
+      "range": "Range",
+      "vsCityAverage": "Vs city average",
+      "juniorMedian": "Junior median",
+      "seniorMedian": "Senior+ median"
+    },
+    "locked": {
+      "title": "Unlock detailed analysis",
+      "insufficientTitle": "Insufficient data for a reliable statistic",
+      "withDataDescription": "Log in to view the full range and junior/senior details for this sector.",
+      "insufficientDescription": "This page only shows details from {count} submissions to protect confidentiality.",
+      "ctaLogin": "Log in"
+    },
+    "actions": {
+      "shareSalary": "Share your salary",
+      "moreAnalyses": "View more analyses"
+    },
+    "common": {
+      "currencyMad": "MAD",
+      "loginToUnlock": "Log in",
+      "insufficientData": "Insufficient data",
+      "unavailable": "Unavailable",
+      "submissionsUnder": "< {count} submissions"
+    }
+  },
+  "referralDemandDetailPage": {
+    "metadata": {
+      "notFoundTitle": "Referral demand | Reviewly MA",
+      "title": "{role}{citySuffix} | Referral demand",
+      "description": "Public referral demand for {role}{citySuffix}. Data is anonymized and moderated.",
+      "ogAlt": "Referral demand"
+    },
+    "sections": {
+      "summary": "Summary",
+      "details": "Details"
+    },
+    "sidebar": {
+      "description": "Reply here to propose a referral and centralize exchanges."
+    },
+    "authPrompt": {
+      "label": "Log in to reply",
+      "title": "Propose a referral in a few clicks",
+      "description": "Log in to send your response and help this candidate."
+    },
+    "share": {
+      "title": "Referral demand: {role}",
+      "text": "Referral demand: {role}{cityPart}.",
+      "cityPart": " in {city}"
+    },
+    "owner": {
+      "responsesTitle": "Received responses ({count})",
+      "noResponses": "No responses yet.",
+      "candidateLabel": "Candidate {id}...",
+      "linkedOfferLabel": "Linked offer:",
+      "hiddenResponses": "{count} additional response(s) not displayed."
+    },
+    "form": {
+      "toasts": {
+        "successTitle": "Success",
+        "errorTitle": "Error"
+      },
+      "active": {
+        "title": "Your response",
+        "description": "You have already offered help for this demand.",
+        "retractCta": "Withdraw my response"
+      },
+      "create": {
+        "title": "Propose a referral",
+        "messageLabel": "Your message",
+        "messagePlaceholder": "Describe how you can help this candidate (internal process, referrals, timing...).",
+        "submitCta": "Send my response"
+      }
+    },
+    "actions": {
+      "backToBoard": "Back to board",
+      "publishDemand": "Publish your demand"
+    }
+  },
+  "salaryComparisonPage": {
+    "metadata": {
+      "defaultTitle": "Company comparison: salary and reputation",
+      "defaultDescription": "Compare salaries and company reputation in Morocco.",
+      "companyTitle": "{companyA} vs {companyB} | Salaries and reputation",
+      "companyDescription": "Compare salary trends and review reputation between {companyA} and {companyB} in Morocco.",
+      "roleTitle": "{role}: {cityA} vs {cityB} | Salary comparison",
+      "roleDescription": "Compare salaries for {role} between {cityA} and {cityB}.",
+      "ogAlt": "Salary comparison",
+      "defaults": {
+        "companyA": "Company A",
+        "companyB": "Company B",
+        "role": "Role",
+        "cityA": "City A",
+        "cityB": "City B"
+      }
+    },
+    "hero": {
+      "badge": "Comparison tool",
+      "title": "Comparison: salary and reputation",
+      "subtitle": "Compare company vs company (salary + reviews) and role across two cities. Shareable URL via filters."
+    },
+    "company": {
+      "title": "Company vs company",
+      "description": "Compare published salaries and review-based reputation.",
+      "selectCompanyA": "Select company A",
+      "selectCompanyB": "Select company B",
+      "compare": "Compare",
+      "emptyHint": "Select two companies then click \"Compare\".",
+      "summary": "Compared view of salaries and reputation."
+    },
+    "role": {
+      "title": "Role: city A vs city B",
+      "description": "Compare the same role across two cities.",
+      "selectRole": "Select a role",
+      "selectCityA": "Select city A",
+      "selectCityB": "Select city B",
+      "compare": "Compare",
+      "emptyHint": "Select one role and two cities to start the comparison.",
+      "summary": "Comparison of the same role across two local markets."
+    },
+    "table": {
+      "indicator": "Indicator",
+      "deltaAB": "Delta A-B",
+      "medianSalary": "Median salary",
+      "averageSalary": "Average salary",
+      "positionVsCity": "Position vs city",
+      "reviewRating": "Average review rating",
+      "reviewVolume": "Review volume",
+      "reviewConfidence": "Review confidence",
+      "lastUpdated": "Last updated",
+      "juniorBand": "Junior band",
+      "seniorBand": "Senior+ band",
+      "submissionsUnder": "< {count} submissions"
+    },
+    "share": {
+      "companyTitle": "Company comparison: {companyA} vs {companyB}",
+      "companyText": "Salary and reputation comparison between {companyA} and {companyB}.",
+      "roleTitle": "Salary comparison {role}: {cityA} vs {cityB}",
+      "roleText": "Salary comparison for {role} between {cityA} and {cityB}."
+    },
+    "locked": {
+      "title": "Unlock detailed comparison",
+      "authenticatedDescription": "Share at least one salary to unlock junior/senior details, full deltas, and advanced benchmarks.",
+      "guestDescription": "Create an account or log in, then share a salary to unlock junior/senior details, full deltas, and advanced benchmarks.",
+      "previewNote": "In preview mode, lists and indicators are intentionally limited.",
+      "ctaShareSalary": "Share my salary",
+      "ctaLogin": "Log in"
+    },
+    "contribute": {
+      "title": "Contribute to the barometer",
+      "subtitle": "Share your salary to unlock even deeper analysis.",
+      "cta": "Share your salary"
+    },
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "building": "Building confidence",
+      "none": "No reviews"
+    },
+    "common": {
+      "vs": "vs",
+      "medianSalaryDelta": "Median salary delta",
+      "loginToUnlock": "Log in",
+      "insufficientData": "Insufficient data",
+      "lockedData": "Locked data",
+      "notDefined": "Not set",
+      "unavailable": "Unavailable",
+      "leftLabelA": "A",
+      "rightLabelB": "B",
+      "tie": "Tie",
+      "advantage": "Advantage {side}"
     }
   }
 }

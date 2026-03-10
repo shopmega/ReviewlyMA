@@ -15,6 +15,7 @@ import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-po
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type SearchParams = {
   companyA?: string;
@@ -36,24 +37,47 @@ type PageProps = {
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const sp = await searchParams;
   const siteUrl = getServerSiteUrl();
+  const { t, tf } = await getServerTranslator();
 
   const hasCompanyCompare = !!sp.companyA && !!sp.companyB;
   const hasRoleCompare = !!sp.role && !!sp.cityA && !!sp.cityB;
 
-  let title = 'Comparaison entreprise: salaires et reputation';
-  let description = 'Comparez les salaires et la reputation des entreprises au Maroc.';
+  let title = t(
+    'salaryComparisonPage.metadata.defaultTitle',
+    'Company comparison: salary and reputation'
+  );
+  let description = t(
+    'salaryComparisonPage.metadata.defaultDescription',
+    'Compare salaries and company reputation in Morocco.'
+  );
 
   if (hasCompanyCompare) {
-    const companyALabel = sp.companyALabel || 'Entreprise A';
-    const companyBLabel = sp.companyBLabel || 'Entreprise B';
-    title = `${companyALabel} vs ${companyBLabel} | Salaires et reputation`;
-    description = `Comparez les tendances salariales et la reputation avis entre ${companyALabel} et ${companyBLabel} au Maroc.`;
+    const companyALabel = sp.companyALabel || t('salaryComparisonPage.metadata.defaults.companyA', 'Company A');
+    const companyBLabel = sp.companyBLabel || t('salaryComparisonPage.metadata.defaults.companyB', 'Company B');
+    title = tf(
+      'salaryComparisonPage.metadata.companyTitle',
+      '{companyA} vs {companyB} | Salaries and reputation',
+      { companyA: companyALabel, companyB: companyBLabel }
+    );
+    description = tf(
+      'salaryComparisonPage.metadata.companyDescription',
+      'Compare salary trends and review reputation between {companyA} and {companyB} in Morocco.',
+      { companyA: companyALabel, companyB: companyBLabel }
+    );
   } else if (hasRoleCompare) {
-    const roleLabel = sp.roleLabel || 'Poste';
-    const cityALabel = sp.cityALabel || 'Ville A';
-    const cityBLabel = sp.cityBLabel || 'Ville B';
-    title = `${roleLabel}: ${cityALabel} vs ${cityBLabel} | Comparaison salariale`;
-    description = `Comparez les salaires de ${roleLabel} entre ${cityALabel} et ${cityBLabel}.`;
+    const roleLabel = sp.roleLabel || t('salaryComparisonPage.metadata.defaults.role', 'Role');
+    const cityALabel = sp.cityALabel || t('salaryComparisonPage.metadata.defaults.cityA', 'City A');
+    const cityBLabel = sp.cityBLabel || t('salaryComparisonPage.metadata.defaults.cityB', 'City B');
+    title = tf(
+      'salaryComparisonPage.metadata.roleTitle',
+      '{role}: {cityA} vs {cityB} | Salary comparison',
+      { role: roleLabel, cityA: cityALabel, cityB: cityBLabel }
+    );
+    description = tf(
+      'salaryComparisonPage.metadata.roleDescription',
+      'Compare salaries for {role} between {cityA} and {cityB}.',
+      { role: roleLabel, cityA: cityALabel, cityB: cityBLabel }
+    );
   }
 
   const ogQuery = new URLSearchParams();
@@ -84,7 +108,14 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       description,
       type: 'website',
       url: canonical,
-      images: [{ url: imageUrl, width: 1200, height: 630, alt: 'Comparaison salariale' }],
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: t('salaryComparisonPage.metadata.ogAlt', 'Salary comparison'),
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
@@ -95,13 +126,13 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   };
 }
 
-function formatMoney(value: number | null | undefined) {
+function formatMoney(value: number | null | undefined, locale = 'en-US') {
   if (value === null || value === undefined) return '-';
-  return `${value.toLocaleString('fr-MA')} MAD`;
+  return `${value.toLocaleString(locale)} MAD`;
 }
 
-function formatRating(value: number | null | undefined) {
-  if (value === null || value === undefined) return 'Non defini';
+function formatRating(value: number | null | undefined, notDefinedLabel = 'Not set') {
+  if (value === null || value === undefined) return notDefinedLabel;
   return `${value.toFixed(1)} / 5`;
 }
 
@@ -110,19 +141,22 @@ function formatPct(value: number | null | undefined) {
   return `${value.toFixed(2)}%`;
 }
 
-function getConfidenceLabel(totalReviews: number | null | undefined) {
+function getConfidenceLabel(
+  totalReviews: number | null | undefined,
+  t: (key: string, fallback?: string) => string
+) {
   const count = totalReviews ?? 0;
-  if (count >= 60) return 'Confiance elevee';
-  if (count >= 20) return 'Confiance moyenne';
-  if (count > 0) return 'Confiance en construction';
-  return 'Aucun avis';
+  if (count >= 60) return t('salaryComparisonPage.confidence.high', 'High confidence');
+  if (count >= 20) return t('salaryComparisonPage.confidence.medium', 'Medium confidence');
+  if (count > 0) return t('salaryComparisonPage.confidence.building', 'Building confidence');
+  return t('salaryComparisonPage.confidence.none', 'No reviews');
 }
 
-function formatRefreshedDate(value: string | null | undefined) {
-  if (!value) return 'Indisponible';
+function formatRefreshedDate(value: string | null | undefined, locale = 'en-US', unavailableLabel = 'Unavailable') {
+  if (!value) return unavailableLabel;
   const ts = Date.parse(value);
-  if (Number.isNaN(ts)) return 'Indisponible';
-  return new Date(ts).toLocaleDateString('fr-MA', { day: '2-digit', month: 'short', year: 'numeric' });
+  if (Number.isNaN(ts)) return unavailableLabel;
+  return new Date(ts).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function valueTone(value: number | null | undefined) {
@@ -132,14 +166,24 @@ function valueTone(value: number | null | undefined) {
   return 'text-foreground';
 }
 
-function leaderLabel(value: number | null | undefined, leftLabel: string, rightLabel: string) {
-  if (value === null || value === undefined || Number.isNaN(value)) return 'Egalite';
-  if (value > 0) return `Avantage ${leftLabel}`;
-  if (value < 0) return `Avantage ${rightLabel}`;
-  return 'Egalite';
+function leaderLabel(
+  value: number | null | undefined,
+  leftLabel: string,
+  rightLabel: string,
+  tieLabel = 'Tie',
+  advantageTemplate?: (side: string) => string
+) {
+  if (value === null || value === undefined || Number.isNaN(value)) return tieLabel;
+  const advantage = advantageTemplate || ((side: string) => `Advantage ${side}`);
+  if (value > 0) return advantage(leftLabel);
+  if (value < 0) return advantage(rightLabel);
+  return tieLabel;
 }
 
 export default async function SalaryComparisonPage({ searchParams }: PageProps) {
+  const { t, tf, locale } = await getServerTranslator();
+  const numberLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = numberLocale;
   const sp = await searchParams;
   const supabase = await createClient();
   const {
@@ -237,33 +281,66 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
     cityBLabel: cityB?.city || '',
   });
   const roleComparisonUrl = `${siteUrl}/salaires/comparaison?${roleComparisonSearch.toString()}`;
+  const loginToUnlockText = t('salaryComparisonPage.common.loginToUnlock', 'Log in');
+  const insufficientDataText = t('salaryComparisonPage.common.insufficientData', 'Insufficient data');
+  const lockedDataText = t('salaryComparisonPage.common.lockedData', 'Locked data');
+  const notDefinedText = t('salaryComparisonPage.common.notDefined', 'Not set');
+  const advantageTemplate = (side: string) =>
+    tf('salaryComparisonPage.common.advantage', 'Advantage {side}', { side });
   const companySalaryDeltaDisplay = companyAHasData && companyBHasData
-    ? (isUnlocked ? `${companyGap >= 0 ? '+' : ''}${companyGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
-    : 'Donnees insuffisantes';
+    ? (isUnlocked ? `${companyGap >= 0 ? '+' : ''}${companyGap.toLocaleString(numberLocale)} MAD` : loginToUnlockText)
+    : insufficientDataText;
   const companyRatingDeltaDisplay = isUnlocked
-    ? (reviewRatingGap === null ? 'Non defini' : `${reviewRatingGap >= 0 ? '+' : ''}${reviewRatingGap.toFixed(1)} / 5`)
-    : 'Connectez-vous';
+    ? (reviewRatingGap === null ? notDefinedText : `${reviewRatingGap >= 0 ? '+' : ''}${reviewRatingGap.toFixed(1)} / 5`)
+    : loginToUnlockText;
   const companyVolumeDeltaDisplay = isUnlocked
-    ? `${reviewVolumeGap >= 0 ? '+' : ''}${reviewVolumeGap.toLocaleString('fr-MA')}`
-    : 'Connectez-vous';
+    ? `${reviewVolumeGap >= 0 ? '+' : ''}${reviewVolumeGap.toLocaleString(numberLocale)}`
+    : loginToUnlockText;
   const roleSalaryDeltaDisplay = roleAHasData && roleBHasData
-    ? (isUnlocked ? `${roleGap >= 0 ? '+' : ''}${roleGap.toLocaleString('fr-MA')} MAD` : 'Connectez-vous')
-    : 'Donnees insuffisantes';
+    ? (isUnlocked ? `${roleGap >= 0 ? '+' : ''}${roleGap.toLocaleString(numberLocale)} MAD` : loginToUnlockText)
+    : insufficientDataText;
   const companySalaryLeader = (isUnlocked && companyAHasData && companyBHasData)
-    ? leaderLabel(companyGap, 'A', 'B')
-    : 'Donnees verrouillees';
-  const companyRatingLeader = isUnlocked ? leaderLabel(reviewRatingGap, 'A', 'B') : 'Donnees verrouillees';
+    ? leaderLabel(
+      companyGap,
+      t('salaryComparisonPage.common.leftLabelA', 'A'),
+      t('salaryComparisonPage.common.rightLabelB', 'B'),
+      t('salaryComparisonPage.common.tie', 'Tie'),
+      advantageTemplate
+    )
+    : lockedDataText;
+  const companyRatingLeader = isUnlocked
+    ? leaderLabel(
+      reviewRatingGap,
+      t('salaryComparisonPage.common.leftLabelA', 'A'),
+      t('salaryComparisonPage.common.rightLabelB', 'B'),
+      t('salaryComparisonPage.common.tie', 'Tie'),
+      advantageTemplate
+    )
+    : lockedDataText;
   const roleSalaryLeader = (isUnlocked && roleAHasData && roleBHasData)
-    ? leaderLabel(roleGap, cityA?.city || 'A', cityB?.city || 'B')
-    : 'Donnees verrouillees';
+    ? leaderLabel(
+      roleGap,
+      cityA?.city || t('salaryComparisonPage.common.leftLabelA', 'A'),
+      cityB?.city || t('salaryComparisonPage.common.rightLabelB', 'B'),
+      t('salaryComparisonPage.common.tie', 'Tie'),
+      advantageTemplate
+    )
+    : lockedDataText;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
       <section className="space-y-3">
-        <Badge variant="outline" className="uppercase tracking-widest text-[10px]">Comparateur</Badge>
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight">Comparaison: salaires et reputation</h1>
+        <Badge variant="outline" className="uppercase tracking-widest text-[10px]">
+          {t('salaryComparisonPage.hero.badge', 'Comparison tool')}
+        </Badge>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+          {t('salaryComparisonPage.hero.title', 'Comparison: salary and reputation')}
+        </h1>
         <p className="text-muted-foreground">
-          Comparez entreprise vs entreprise (salaires + avis) et role dans deux villes. URL partageable via les filtres.
+          {t(
+            'salaryComparisonPage.hero.subtitle',
+            'Compare company vs company (salary + reviews) and role across two cities. Shareable URL via filters.'
+          )}
         </p>
       </section>
 
@@ -271,29 +348,34 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
       <Card className="border-primary/20 shadow-sm">
         <CardHeader>
-          <CardTitle>Entreprise vs entreprise</CardTitle>
-          <CardDescription>Comparez les salaires publies et la reputation basee sur les avis.</CardDescription>
+          <CardTitle>{t('salaryComparisonPage.company.title', 'Company vs company')}</CardTitle>
+          <CardDescription>
+            {t('salaryComparisonPage.company.description', 'Compare published salaries and review-based reputation.')}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form method="get" className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <select name="companyA" defaultValue={companyAId} className="h-11 rounded-md border bg-background px-3 text-sm">
-              <option value="">Selectionner entreprise A</option>
+              <option value="">{t('salaryComparisonPage.company.selectCompanyA', 'Select company A')}</option>
               {previewCompanyMetrics.map((c) => (
                 <option key={`a-${c.business_id}`} value={c.business_id}>{c.business_name}</option>
               ))}
             </select>
             <select name="companyB" defaultValue={companyBId} className="h-11 rounded-md border bg-background px-3 text-sm">
-              <option value="">Selectionner entreprise B</option>
+              <option value="">{t('salaryComparisonPage.company.selectCompanyB', 'Select company B')}</option>
               {previewCompanyMetrics.map((c) => (
                 <option key={`b-${c.business_id}`} value={c.business_id}>{c.business_name}</option>
               ))}
             </select>
-            <Button type="submit">Comparer</Button>
+            <Button type="submit">{t('salaryComparisonPage.company.compare', 'Compare')}</Button>
           </form>
 
           {(!companyAId || !companyBId) && (
             <p className="text-sm text-muted-foreground rounded-xl border border-dashed p-4">
-              Selectionnez deux entreprises puis cliquez sur "Comparer".
+              {t(
+                'salaryComparisonPage.company.emptyHint',
+                'Select two companies then click "Compare".'
+              )}
             </p>
           )}
 
@@ -304,15 +386,19 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
                   <CardContent className="pt-5">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       <span>{companyA.business_name}</span>
-                      <span>vs</span>
+                      <span>{t('salaryComparisonPage.common.vs', 'vs')}</span>
                       <span>{companyB.business_name}</span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">Vue comparee des salaires et de la reputation.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {t('salaryComparisonPage.company.summary', 'Compared view of salaries and reputation.')}
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Delta median salaire</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t('salaryComparisonPage.common.medianSalaryDelta', 'Median salary delta')}
+                    </p>
                     <p className={`mt-2 text-2xl font-black ${valueTone(isUnlocked && companyAHasData && companyBHasData ? companyGap : null)}`}>
                       {companySalaryDeltaDisplay}
                     </p>
@@ -323,59 +409,67 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
               <div className="rounded-2xl border border-primary/15 overflow-hidden shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/20 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <div className="px-4 py-3">Indicateur</div>
+                  <div className="px-4 py-3">{t('salaryComparisonPage.table.indicator', 'Indicator')}</div>
                   <div className="px-4 py-3">{companyA.business_name}</div>
                   <div className="px-4 py-3">{companyB.business_name}</div>
-                  <div className="px-4 py-3">Delta A-B</div>
+                  <div className="px-4 py-3">{t('salaryComparisonPage.table.deltaAB', 'Delta A-B')}</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t">
-                  <div className="px-4 py-3 text-sm font-medium">Salaire median</div>
-                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatMoney(companyA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
-                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatMoney(companyB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.medianSalary', 'Median salary')}</div>
+                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatMoney(companyA.median_monthly_salary, numberLocale) : loginToUnlockText) : insufficientDataText}</div>
+                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatMoney(companyB.median_monthly_salary, numberLocale) : loginToUnlockText) : insufficientDataText}</div>
                   <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked && companyAHasData && companyBHasData ? companyGap : null)}`}>{companySalaryDeltaDisplay}</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
-                  <div className="px-4 py-3 text-sm font-medium">Salaire moyen</div>
-                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatMoney(companyA.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
-                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatMoney(companyB.avg_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.averageSalary', 'Average salary')}</div>
+                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatMoney(companyA.avg_monthly_salary, numberLocale) : loginToUnlockText) : tf('salaryComparisonPage.table.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}</div>
+                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatMoney(companyB.avg_monthly_salary, numberLocale) : loginToUnlockText) : tf('salaryComparisonPage.table.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t">
-                  <div className="px-4 py-3 text-sm font-medium">Position vs ville</div>
-                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatPct(companyA.pct_above_city_avg) : 'Connectez-vous') : '-'}</div>
-                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatPct(companyB.pct_above_city_avg) : 'Connectez-vous') : '-'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.positionVsCity', 'Position vs city')}</div>
+                  <div className="px-4 py-3 text-sm">{companyAHasData ? (isUnlocked ? formatPct(companyA.pct_above_city_avg) : loginToUnlockText) : '-'}</div>
+                  <div className="px-4 py-3 text-sm">{companyBHasData ? (isUnlocked ? formatPct(companyB.pct_above_city_avg) : loginToUnlockText) : '-'}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
-                  <div className="px-4 py-3 text-sm font-medium">Note moyenne avis</div>
-                  <div className="px-4 py-3 text-sm">{isUnlocked ? formatRating(companyARating) : 'Connectez-vous'}</div>
-                  <div className="px-4 py-3 text-sm">{isUnlocked ? formatRating(companyBRating) : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.reviewRating', 'Average review rating')}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? formatRating(companyARating, notDefinedText) : loginToUnlockText}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? formatRating(companyBRating, notDefinedText) : loginToUnlockText}</div>
                   <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked ? reviewRatingGap : null)}`}>{companyRatingDeltaDisplay}</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t">
-                  <div className="px-4 py-3 text-sm font-medium">Volume avis</div>
-                  <div className="px-4 py-3 text-sm">{isUnlocked ? companyAReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</div>
-                  <div className="px-4 py-3 text-sm">{isUnlocked ? companyBReviewCount.toLocaleString('fr-MA') : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.reviewVolume', 'Review volume')}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? companyAReviewCount.toLocaleString(numberLocale) : loginToUnlockText}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? companyBReviewCount.toLocaleString(numberLocale) : loginToUnlockText}</div>
                   <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked ? reviewVolumeGap : null)}`}>{companyVolumeDeltaDisplay}</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
-                  <div className="px-4 py-3 text-sm font-medium">Confiance avis</div>
-                  <div className="px-4 py-3 text-sm">{isUnlocked ? getConfidenceLabel(companyAReviewCount) : 'Connectez-vous'}</div>
-                  <div className="px-4 py-3 text-sm">{isUnlocked ? getConfidenceLabel(companyBReviewCount) : 'Connectez-vous'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.reviewConfidence', 'Review confidence')}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? getConfidenceLabel(companyAReviewCount, t) : loginToUnlockText}</div>
+                  <div className="px-4 py-3 text-sm">{isUnlocked ? getConfidenceLabel(companyBReviewCount, t) : loginToUnlockText}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t">
-                  <div className="px-4 py-3 text-sm font-medium">Derniere mise a jour</div>
-                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(companyA.refreshed_at)}</div>
-                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(companyB.refreshed_at)}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.lastUpdated', 'Last updated')}</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(companyA.refreshed_at, dateLocale, t('salaryComparisonPage.common.unavailable', 'Unavailable'))}</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(companyB.refreshed_at, dateLocale, t('salaryComparisonPage.common.unavailable', 'Unavailable'))}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">{companyRatingLeader}</div>
                 </div>
               </div>
               <div className="flex justify-end">
                 <ContentShareButton
                   url={companyComparisonUrl}
-                  title={`Comparaison entreprise: ${companyA.business_name} vs ${companyB.business_name}`}
-                  text={`Comparaison salaires et reputation entre ${companyA.business_name} et ${companyB.business_name}.`}
+                  title={tf(
+                    'salaryComparisonPage.share.companyTitle',
+                    'Company comparison: {companyA} vs {companyB}',
+                    { companyA: companyA.business_name, companyB: companyB.business_name }
+                  )}
+                  text={tf(
+                    'salaryComparisonPage.share.companyText',
+                    'Salary and reputation comparison between {companyA} and {companyB}.',
+                    { companyA: companyA.business_name, companyB: companyB.business_name }
+                  )}
                   contentType="salary_company_comparison"
                   contentId={`${companyA.business_id}_${companyB.business_id}`}
                   cardType="company_delta"
@@ -388,35 +482,35 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
       <Card className="border-primary/20 shadow-sm">
         <CardHeader>
-          <CardTitle>Role: ville A vs ville B</CardTitle>
-          <CardDescription>Comparez un poste identique entre deux villes.</CardDescription>
+          <CardTitle>{t('salaryComparisonPage.role.title', 'Role: city A vs city B')}</CardTitle>
+          <CardDescription>{t('salaryComparisonPage.role.description', 'Compare the same role across two cities.')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form method="get" className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <select name="role" defaultValue={roleSlug} className="h-11 rounded-md border bg-background px-3 text-sm">
-              <option value="">Selectionner un role</option>
+              <option value="">{t('salaryComparisonPage.role.selectRole', 'Select a role')}</option>
               {previewRoleCatalog.map((r) => (
                 <option key={r.slug} value={r.slug}>{r.label}</option>
               ))}
             </select>
             <select name="cityA" defaultValue={cityASlug} className="h-11 rounded-md border bg-background px-3 text-sm">
-              <option value="">Selectionner ville A</option>
+              <option value="">{t('salaryComparisonPage.role.selectCityA', 'Select city A')}</option>
               {previewCityMetrics.map((c) => (
                 <option key={`ca-${c.city_slug}`} value={c.city_slug}>{c.city}</option>
               ))}
             </select>
             <select name="cityB" defaultValue={cityBSlug} className="h-11 rounded-md border bg-background px-3 text-sm">
-              <option value="">Selectionner ville B</option>
+              <option value="">{t('salaryComparisonPage.role.selectCityB', 'Select city B')}</option>
               {previewCityMetrics.map((c) => (
                 <option key={`cb-${c.city_slug}`} value={c.city_slug}>{c.city}</option>
               ))}
             </select>
-            <Button type="submit">Comparer</Button>
+            <Button type="submit">{t('salaryComparisonPage.role.compare', 'Compare')}</Button>
           </form>
 
           {(!roleSlug || !cityASlug || !cityBSlug) && (
             <p className="text-sm text-muted-foreground rounded-xl border border-dashed p-4">
-              Selectionnez un role et deux villes pour lancer la comparaison.
+              {t('salaryComparisonPage.role.emptyHint', 'Select one role and two cities to start the comparison.')}
             </p>
           )}
 
@@ -429,15 +523,19 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
                       <span>{selectedRole}</span>
                       <span>|</span>
                       <span>{cityA.city}</span>
-                      <span>vs</span>
+                      <span>{t('salaryComparisonPage.common.vs', 'vs')}</span>
                       <span>{cityB.city}</span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">Comparaison du meme role entre deux marches locaux.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {t('salaryComparisonPage.role.summary', 'Comparison of the same role across two local markets.')}
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Delta median salaire</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t('salaryComparisonPage.common.medianSalaryDelta', 'Median salary delta')}
+                    </p>
                     <p className={`mt-2 text-2xl font-black ${valueTone(isUnlocked && roleAHasData && roleBHasData ? roleGap : null)}`}>
                       {roleSalaryDeltaDisplay}
                     </p>
@@ -448,41 +546,49 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
               <div className="rounded-2xl border border-primary/15 overflow-hidden shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/20 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <div className="px-4 py-3">Indicateur</div>
+                  <div className="px-4 py-3">{t('salaryComparisonPage.table.indicator', 'Indicator')}</div>
                   <div className="px-4 py-3">{cityA.city}</div>
                   <div className="px-4 py-3">{cityB.city}</div>
-                  <div className="px-4 py-3">Delta A-B</div>
+                  <div className="px-4 py-3">{t('salaryComparisonPage.table.deltaAB', 'Delta A-B')}</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t">
-                  <div className="px-4 py-3 text-sm font-medium">Salaire median</div>
-                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
-                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.median_monthly_salary) : 'Connectez-vous') : 'Donnees insuffisantes'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.medianSalary', 'Median salary')}</div>
+                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.median_monthly_salary, numberLocale) : loginToUnlockText) : insufficientDataText}</div>
+                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.median_monthly_salary, numberLocale) : loginToUnlockText) : insufficientDataText}</div>
                   <div className={`px-4 py-3 text-sm font-semibold ${valueTone(isUnlocked && roleAHasData && roleBHasData ? roleGap : null)}`}>{roleSalaryDeltaDisplay}</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
-                  <div className="px-4 py-3 text-sm font-medium">Bande junior</div>
-                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
-                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.junior_median_monthly_salary) : 'Connectez-vous') : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.juniorBand', 'Junior band')}</div>
+                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.junior_median_monthly_salary, numberLocale) : loginToUnlockText) : tf('salaryComparisonPage.table.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}</div>
+                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.junior_median_monthly_salary, numberLocale) : loginToUnlockText) : tf('salaryComparisonPage.table.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t">
-                  <div className="px-4 py-3 text-sm font-medium">Bande senior+</div>
-                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</div>
-                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.senior_median_monthly_salary) : 'Connectez-vous') : '-'}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.seniorBand', 'Senior+ band')}</div>
+                  <div className="px-4 py-3 text-sm">{roleAHasData ? (isUnlocked ? formatMoney(roleCityA.senior_median_monthly_salary, numberLocale) : loginToUnlockText) : '-'}</div>
+                  <div className="px-4 py-3 text-sm">{roleBHasData ? (isUnlocked ? formatMoney(roleCityB.senior_median_monthly_salary, numberLocale) : loginToUnlockText) : '-'}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 border-t bg-muted/10">
-                  <div className="px-4 py-3 text-sm font-medium">Derniere mise a jour</div>
-                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(roleCityA.refreshed_at)}</div>
-                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(roleCityB.refreshed_at)}</div>
+                  <div className="px-4 py-3 text-sm font-medium">{t('salaryComparisonPage.table.lastUpdated', 'Last updated')}</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(roleCityA.refreshed_at, dateLocale, t('salaryComparisonPage.common.unavailable', 'Unavailable'))}</div>
+                  <div className="px-4 py-3 text-sm">{formatRefreshedDate(roleCityB.refreshed_at, dateLocale, t('salaryComparisonPage.common.unavailable', 'Unavailable'))}</div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">-</div>
                 </div>
               </div>
               <div className="flex justify-end">
                 <ContentShareButton
                   url={roleComparisonUrl}
-                  title={`Comparaison salaire ${selectedRole}: ${cityA.city} vs ${cityB.city}`}
-                  text={`Comparaison de salaire pour ${selectedRole} entre ${cityA.city} et ${cityB.city}.`}
+                  title={tf(
+                    'salaryComparisonPage.share.roleTitle',
+                    'Salary comparison {role}: {cityA} vs {cityB}',
+                    { role: selectedRole, cityA: cityA.city, cityB: cityB.city }
+                  )}
+                  text={tf(
+                    'salaryComparisonPage.share.roleText',
+                    'Salary comparison for {role} between {cityA} and {cityB}.',
+                    { role: selectedRole, cityA: cityA.city, cityB: cityB.city }
+                  )}
                   contentType="salary_role_city_comparison"
                   contentId={`${roleSlug}_${cityASlug}_${cityBSlug}`}
                   cardType="role_city_delta"
@@ -495,18 +601,26 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
       {!isUnlocked && (
         <section className="rounded-2xl border p-5 bg-muted/20">
-          <h2 className="font-bold text-lg mb-1">Debloquez la comparaison detaillee</h2>
+          <h2 className="font-bold text-lg mb-1">{t('salaryComparisonPage.locked.title', 'Unlock detailed comparison')}</h2>
           <p className="text-sm text-muted-foreground mb-4">
             {isAuthenticated
-              ? 'Partagez au moins un salaire pour debloquer les details junior/senior, les ecarts complets et les benchmarks avances.'
-              : 'Creez un compte ou connectez-vous, puis partagez un salaire pour debloquer les details junior/senior, les ecarts complets et les benchmarks avances.'}
+              ? t(
+                'salaryComparisonPage.locked.authenticatedDescription',
+                'Share at least one salary to unlock junior/senior details, full deltas, and advanced benchmarks.'
+              )
+              : t(
+                'salaryComparisonPage.locked.guestDescription',
+                'Create an account or log in, then share a salary to unlock junior/senior details, full deltas, and advanced benchmarks.'
+              )}
           </p>
           <p className="text-xs text-muted-foreground mb-4">
-            En mode apercu, les listes et indicateurs sont volontairement limites.
+            {t('salaryComparisonPage.locked.previewNote', 'In preview mode, lists and indicators are intentionally limited.')}
           </p>
           <Button asChild>
             <Link href={isAuthenticated ? '/salaires/partager' : '/login?next=/salaires/comparaison'}>
-              {isAuthenticated ? 'Partager mon salaire' : 'Se connecter'}
+              {isAuthenticated
+                ? t('salaryComparisonPage.locked.ctaShareSalary', 'Share my salary')
+                : t('salaryComparisonPage.locked.ctaLogin', 'Log in')}
             </Link>
           </Button>
         </section>
@@ -514,11 +628,13 @@ export default async function SalaryComparisonPage({ searchParams }: PageProps) 
 
       <section className="rounded-2xl border p-6 bg-muted/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 className="font-bold text-lg">Contribuez au barometre</h2>
-          <p className="text-sm text-muted-foreground">Partagez votre salaire pour debloquer des analyses encore plus fines.</p>
+          <h2 className="font-bold text-lg">{t('salaryComparisonPage.contribute.title', 'Contribute to the barometer')}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t('salaryComparisonPage.contribute.subtitle', 'Share your salary to unlock even deeper analysis.')}
+          </p>
         </div>
         <Button asChild>
-          <Link href="/salaires/partager">Partager votre salaire</Link>
+          <Link href="/salaires/partager">{t('salaryComparisonPage.contribute.cta', 'Share your salary')}</Link>
         </Button>
       </section>
     </div>

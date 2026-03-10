@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 const INITIAL_STATE: ActionState = { status: 'idle', message: '' };
 
@@ -30,42 +31,57 @@ export function DemandResponseForm({ demandListingId, existingResponse }: Props)
   const [retractState, retractAction] = useActionState(retractReferralDemandResponse, INITIAL_STATE);
   const { toast } = useToast();
   const router = useRouter();
+  const { t } = useI18n();
   const createErrors = (createState.errors || {}) as Record<string, string[] | undefined>;
 
   useEffect(() => {
     if (createState.status === 'success') {
-      toast({ title: 'Succes', description: createState.message });
+      toast({
+        title: t('referralDemandDetailPage.form.toasts.successTitle', 'Success'),
+        description: createState.message,
+      });
       router.refresh();
       return;
     }
     if (createState.status === 'error') {
-      toast({ title: 'Erreur', description: createState.message, variant: 'destructive' });
+      toast({
+        title: t('referralDemandDetailPage.form.toasts.errorTitle', 'Error'),
+        description: createState.message,
+        variant: 'destructive',
+      });
     }
-  }, [createState, toast, router]);
+  }, [createState, toast, router, t]);
 
   useEffect(() => {
     if (retractState.status === 'success') {
-      toast({ title: 'Succes', description: retractState.message });
+      toast({
+        title: t('referralDemandDetailPage.form.toasts.successTitle', 'Success'),
+        description: retractState.message,
+      });
       router.refresh();
       return;
     }
     if (retractState.status === 'error') {
-      toast({ title: 'Erreur', description: retractState.message, variant: 'destructive' });
+      toast({
+        title: t('referralDemandDetailPage.form.toasts.errorTitle', 'Error'),
+        description: retractState.message,
+        variant: 'destructive',
+      });
     }
-  }, [retractState, toast, router]);
+  }, [retractState, toast, router, t]);
 
   if (existingResponse?.status === 'active') {
     return (
       <Card className="rounded-2xl" id="respond-form">
         <CardHeader>
-          <CardTitle>Votre reponse</CardTitle>
+          <CardTitle>{t('referralDemandDetailPage.form.active.title', 'Your response')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>Vous avez deja propose votre aide pour cette demande.</p>
+          <p>{t('referralDemandDetailPage.form.active.description', 'You have already offered help for this demand.')}</p>
           <form action={retractAction}>
             <input type="hidden" name="demandResponseId" value={existingResponse.id} />
             <Button type="submit" variant="outline" className="w-full rounded-xl">
-              Retirer ma reponse
+              {t('referralDemandDetailPage.form.active.retractCta', 'Withdraw my response')}
             </Button>
           </form>
         </CardContent>
@@ -76,13 +92,13 @@ export function DemandResponseForm({ demandListingId, existingResponse }: Props)
   return (
     <Card className="rounded-2xl" id="respond-form">
       <CardHeader>
-        <CardTitle>Proposer un parrainage</CardTitle>
+        <CardTitle>{t('referralDemandDetailPage.form.create.title', 'Propose a referral')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={createAction} className="space-y-4">
           <input type="hidden" name="demandListingId" value={demandListingId} />
           <div className="space-y-2">
-            <Label htmlFor="message">Votre message</Label>
+            <Label htmlFor="message">{t('referralDemandDetailPage.form.create.messageLabel', 'Your message')}</Label>
             <Textarea
               id="message"
               name="message"
@@ -90,14 +106,17 @@ export function DemandResponseForm({ demandListingId, existingResponse }: Props)
               minLength={20}
               maxLength={2000}
               className="min-h-[120px]"
-              placeholder="Decrivez comment vous pouvez aider ce candidat (process interne, recommandations, timing...)."
+              placeholder={t(
+                'referralDemandDetailPage.form.create.messagePlaceholder',
+                'Describe how you can help this candidate (internal process, referrals, timing...).'
+              )}
             />
             {createErrors.message?.[0] ? (
               <p className="text-xs text-destructive">{createErrors.message[0]}</p>
             ) : null}
           </div>
           <Button type="submit" className="w-full rounded-xl">
-            Envoyer ma reponse
+            {t('referralDemandDetailPage.form.create.submitCta', 'Send my response')}
           </Button>
         </form>
       </CardContent>

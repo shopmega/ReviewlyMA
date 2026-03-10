@@ -11,19 +11,20 @@ import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-po
 import { getSalaryAlertSubscriptionStatus } from '@/app/actions/salary-alerts';
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { roleSlug: string; citySlug: string };
 
-function formatMoney(value: number | null | undefined) {
+function formatMoney(value: number | null | undefined, locale: string, currencyLabel: string) {
   if (value === null || value === undefined) return '-';
-  return `${value.toLocaleString('fr-MA')} MAD`;
+  return `${value.toLocaleString(locale)} ${currencyLabel}`;
 }
 
-function formatRefreshedDate(value: string | null | undefined) {
-  if (!value) return 'Indisponible';
+function formatRefreshedDate(value: string | null | undefined, locale: string, unavailableLabel: string) {
+  if (!value) return unavailableLabel;
   const ts = Date.parse(value);
-  if (Number.isNaN(ts)) return 'Indisponible';
-  return new Date(ts).toLocaleDateString('fr-MA', { day: '2-digit', month: 'short', year: 'numeric' });
+  if (Number.isNaN(ts)) return unavailableLabel;
+  return new Date(ts).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 async function loadRoleCityMetrics(roleSlug: string, citySlug: string) {
@@ -32,16 +33,29 @@ async function loadRoleCityMetrics(roleSlug: string, citySlug: string) {
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t, tf } = await getServerTranslator();
   const { roleSlug, citySlug } = await params;
   const metric = await loadRoleCityMetrics(roleSlug, citySlug);
   if (!metric) {
-    return { title: 'Salaire non trouve' };
+    return { title: t('salaryRoleCityPage.metadata.notFoundTitle', 'Salary not found') };
   }
 
-  const title = `Salaire ${metric.job_title} a ${metric.city} | Barometre`;
+  const title = tf(
+    'salaryRoleCityPage.metadata.title',
+    'Salary {role} in {city} | Barometer',
+    { role: metric.job_title, city: metric.city }
+  );
   const description = hasSufficientSampleSize(metric.submission_count)
-    ? `Comparez ${metric.job_title} a ${metric.city} avec la moyenne nationale. Connectez-vous pour les valeurs detaillees.`
-    : `Donnees insuffisantes (moins de ${MIN_PUBLIC_SAMPLE_SIZE} soumissions) pour afficher des valeurs detaillees sur ${metric.job_title} a ${metric.city}.`;
+    ? tf(
+      'salaryRoleCityPage.metadata.descriptionWithData',
+      'Compare {role} in {city} with the national average. Log in to view detailed values.',
+      { role: metric.job_title, city: metric.city }
+    )
+    : tf(
+      'salaryRoleCityPage.metadata.descriptionInsufficient',
+      'Insufficient data (fewer than {count} submissions) to show detailed values for {role} in {city}.',
+      { count: MIN_PUBLIC_SAMPLE_SIZE, role: metric.job_title, city: metric.city }
+    );
   const siteUrl = getServerSiteUrl();
 
   return {
@@ -54,6 +68,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function SalaryRoleCityPage({ params }: { params: Promise<Params> }) {
+  const { t, tf, locale } = await getServerTranslator();
+  const numberLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = numberLocale;
+  const currencyLabel = t('salaryRoleCityPage.common.currencyMad', 'MAD');
+  const loginToUnlockText = t('salaryRoleCityPage.common.loginToUnlock', 'Log in');
+  const insufficientDataText = t('salaryRoleCityPage.common.insufficientData', 'Insufficient data');
+  const unavailableText = t('salaryRoleCityPage.common.unavailable', 'Unavailable');
   const { roleSlug, citySlug } = await params;
   const supabase = await createClient();
   const {
@@ -79,14 +100,25 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
       <section className="space-y-2">
-        <p className="text-sm text-muted-foreground">Barometre des salaires</p>
+        <p className="text-sm text-muted-foreground">{t('salaryRoleCityPage.hero.badge', 'Salary barometer')}</p>
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">
-          Salaire {metric.job_title} a {metric.city}
+          {tf('salaryRoleCityPage.hero.title', 'Salary {role} in {city}', {
+            role: metric.job_title,
+            city: metric.city,
+          })}
         </h1>
         <p className="text-muted-foreground">
-          Donnees basees sur {metric.submission_count} soumissions publiees.
+          {tf(
+            'salaryRoleCityPage.hero.submissions',
+            'Data based on {count} published submissions.',
+            { count: metric.submission_count }
+          )}
         </p>
-        <p className="text-xs text-muted-foreground">Derniere mise a jour: {formatRefreshedDate(metric.refreshed_at)}</p>
+        <p className="text-xs text-muted-foreground">
+          {tf('salaryRoleCityPage.hero.lastUpdated', 'Last updated: {date}', {
+            date: formatRefreshedDate(metric.refreshed_at, dateLocale, unavailableText),
+          })}
+        </p>
       </section>
 
       <InternalAdsSlot
@@ -96,27 +128,29 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader><CardTitle className="text-base">Mediane</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('salaryRoleCityPage.cards.median', 'Median')}</CardTitle></CardHeader>
           <CardContent className="text-2xl font-bold">
             {hasEnoughData
-              ? (isUnlocked ? formatMoney(metric.median_monthly_salary) : 'Connectez-vous')
-              : 'Donnees insuffisantes'}
+              ? (isUnlocked ? formatMoney(metric.median_monthly_salary, numberLocale, currencyLabel) : loginToUnlockText)
+              : insufficientDataText}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Fourchette</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('salaryRoleCityPage.cards.range', 'Range')}</CardTitle></CardHeader>
           <CardContent className="text-lg font-bold">
             {hasEnoughData
-              ? (isUnlocked ? `${formatMoney(metric.min_monthly_salary)} - ${formatMoney(metric.max_monthly_salary)}` : 'Connectez-vous')
-              : `< ${MIN_PUBLIC_SAMPLE_SIZE} soumissions`}
+              ? (isUnlocked
+                ? `${formatMoney(metric.min_monthly_salary, numberLocale, currencyLabel)} - ${formatMoney(metric.max_monthly_salary, numberLocale, currencyLabel)}`
+                : loginToUnlockText)
+              : tf('salaryRoleCityPage.common.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Vs national</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('salaryRoleCityPage.cards.vsNational', 'Vs national')}</CardTitle></CardHeader>
           <CardContent className="text-2xl font-bold">
             {hasEnoughData
-              ? (isUnlocked ? (metric.pct_vs_national_role_median === null ? '-' : `${metric.pct_vs_national_role_median}%`) : 'Connectez-vous')
-              : 'Donnees insuffisantes'}
+              ? (isUnlocked ? (metric.pct_vs_national_role_median === null ? '-' : `${metric.pct_vs_national_role_median}%`) : loginToUnlockText)
+              : insufficientDataText}
           </CardContent>
         </Card>
       </section>
@@ -124,25 +158,38 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
       {isUnlocked && hasEnoughData ? (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">Junior median</CardTitle></CardHeader>
-            <CardContent className="text-xl font-semibold">{formatMoney(metric.junior_median_monthly_salary)}</CardContent>
+            <CardHeader><CardTitle className="text-base">{t('salaryRoleCityPage.cards.juniorMedian', 'Junior median')}</CardTitle></CardHeader>
+            <CardContent className="text-xl font-semibold">{formatMoney(metric.junior_median_monthly_salary, numberLocale, currencyLabel)}</CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-base">Senior+ median</CardTitle></CardHeader>
-            <CardContent className="text-xl font-semibold">{formatMoney(metric.senior_median_monthly_salary)}</CardContent>
+            <CardHeader><CardTitle className="text-base">{t('salaryRoleCityPage.cards.seniorMedian', 'Senior+ median')}</CardTitle></CardHeader>
+            <CardContent className="text-xl font-semibold">{formatMoney(metric.senior_median_monthly_salary, numberLocale, currencyLabel)}</CardContent>
           </Card>
         </section>
       ) : (
         <section className="rounded-2xl border p-5 bg-muted/20">
-          <h2 className="font-bold text-lg mb-1">{hasEnoughData ? 'Debloquez les analyses detaillees' : 'Donnees insuffisantes pour une statistique fiable'}</h2>
+          <h2 className="font-bold text-lg mb-1">
+            {hasEnoughData
+              ? t('salaryRoleCityPage.locked.title', 'Unlock detailed analysis')
+              : t('salaryRoleCityPage.locked.insufficientTitle', 'Insufficient data for a reliable statistic')}
+          </h2>
           <p className="text-sm text-muted-foreground mb-4">
             {hasEnoughData
-              ? 'Connectez-vous pour voir la fourchette complete, les bandes junior/senior et la comparaison nationale.'
-              : `Cette page affiche les details uniquement a partir de ${MIN_PUBLIC_SAMPLE_SIZE} soumissions pour proteger la confidentialite.`}
+              ? t(
+                'salaryRoleCityPage.locked.withDataDescription',
+                'Log in to view full range, junior/senior bands, and national comparison.'
+              )
+              : tf(
+                'salaryRoleCityPage.locked.insufficientDescription',
+                'This page only shows details from {count} submissions to protect confidentiality.',
+                { count: MIN_PUBLIC_SAMPLE_SIZE }
+              )}
           </p>
           {hasEnoughData && (
             <Button asChild>
-              <Link href={`/login?next=/salaires/role/${roleSlug}/${citySlug}`}>Se connecter</Link>
+              <Link href={`/login?next=/salaires/role/${roleSlug}/${citySlug}`}>
+                {t('salaryRoleCityPage.locked.ctaLogin', 'Log in')}
+              </Link>
             </Button>
           )}
         </section>
@@ -150,16 +197,26 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
 
       {city && (
         <section className="rounded-2xl border p-5 bg-muted/20">
-          <h2 className="font-bold text-lg mb-1">Contexte ville: {city.city}</h2>
+          <h2 className="font-bold text-lg mb-1">
+            {tf('salaryRoleCityPage.cityContext.title', 'City context: {city}', { city: city.city })}
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Mediane ville: {isUnlocked ? formatMoney(city.median_monthly_salary) : 'Connectez-vous'} | Junior: {isUnlocked ? formatMoney(city.junior_median_monthly_salary) : 'Connectez-vous'} | Senior+: {isUnlocked ? formatMoney(city.senior_median_monthly_salary) : 'Connectez-vous'}
+            {tf(
+              'salaryRoleCityPage.cityContext.summary',
+              'City median: {median} | Junior: {junior} | Senior+: {senior}',
+              {
+                median: isUnlocked ? formatMoney(city.median_monthly_salary, numberLocale, currencyLabel) : loginToUnlockText,
+                junior: isUnlocked ? formatMoney(city.junior_median_monthly_salary, numberLocale, currencyLabel) : loginToUnlockText,
+                senior: isUnlocked ? formatMoney(city.senior_median_monthly_salary, numberLocale, currencyLabel) : loginToUnlockText,
+              }
+            )}
           </p>
         </section>
       )}
 
       <section className="flex gap-3">
         <Button asChild>
-          <Link href="/salaires/partager">Partager votre salaire</Link>
+          <Link href="/salaires/partager">{t('salaryRoleCityPage.actions.shareSalary', 'Share your salary')}</Link>
         </Button>
         {isUnlocked && (
           <SalaryAlertToggleButton
@@ -170,7 +227,7 @@ export default async function SalaryRoleCityPage({ params }: { params: Promise<P
           />
         )}
         <Button variant="outline" asChild>
-          <Link href="/salaires">Voir plus d'analyses</Link>
+          <Link href="/salaires">{t('salaryRoleCityPage.actions.moreAnalyses', 'View more analyses')}</Link>
         </Button>
       </section>
     </div>
