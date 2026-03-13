@@ -4,7 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { blockReferralUserForm, sendReferralMessageForm, updateMyReferralOfferStatusForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
+import { blockReferralUser, updateMyReferralOfferStatus, updateReferralRequestStatus } from '@/app/actions/referrals';
+import { ReferralConversationComposer } from '@/components/referrals/ReferralConversationComposer';
+import { ReferralMutationButton } from '@/components/referrals/ReferralMutationButton';
 import { getServerTranslator } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
@@ -167,13 +169,13 @@ export default async function MyReferralOffersPage() {
                 <CardContent className="space-y-5 pt-5">
                   <div className="flex flex-wrap gap-2">
                     {['active', 'paused', 'closed'].map((status) => (
-                      <form key={status} action={updateMyReferralOfferStatusForm}>
-                        <input type="hidden" name="offerId" value={offer.id} />
-                        <input type="hidden" name="status" value={status} />
-                        <Button type="submit" size="sm" variant={offer.status === status ? 'default' : 'outline'}>
-                          {OFFER_STATUS_LABELS[status] || status}
-                        </Button>
-                      </form>
+                      <ReferralMutationButton
+                        key={status}
+                        action={updateMyReferralOfferStatus}
+                        fields={{ offerId: offer.id, status }}
+                        label={OFFER_STATUS_LABELS[status] || status}
+                        variant={offer.status === status ? 'default' : 'outline'}
+                      />
                     ))}
                     <Button asChild size="sm" variant="ghost">
                       <Link href={`/parrainages/${offer.id}`}>{t('referralMyOffersPage.actions.viewOfferPage', 'View offer page')}</Link>
@@ -228,23 +230,27 @@ export default async function MyReferralOffersPage() {
                               </p>
                             ) : null}
 
-                            <form action={blockReferralUserForm}>
-                              <input type="hidden" name="offerId" value={offer.id} />
-                              <input type="hidden" name="blockedUserId" value={request.candidate_user_id} />
-                              <input type="hidden" name="reason" value="blocked_by_offer_owner" />
-                              <Button type="submit" size="sm" variant="destructive">{t('referralMyOffersPage.actions.block', 'Block')}</Button>
-                            </form>
+                            <ReferralMutationButton
+                              action={blockReferralUser}
+                              fields={{
+                                offerId: offer.id,
+                                blockedUserId: request.candidate_user_id,
+                                reason: 'blocked_by_offer_owner',
+                              }}
+                              label={t('referralMyOffersPage.actions.block', 'Block')}
+                              variant="destructive"
+                            />
                           </div>
 
                           <div className="flex flex-wrap gap-2 pt-1">
                             {['in_review', 'referred', 'interview', 'hired', 'rejected'].map((status) => (
-                              <form key={status} action={updateReferralRequestStatusForm}>
-                                <input type="hidden" name="requestId" value={request.id} />
-                                <input type="hidden" name="status" value={status} />
-                                <Button type="submit" size="sm" variant={request.status === status ? 'default' : 'outline'}>
-                                  {REQUEST_STATUS_LABELS[status] || status}
-                                </Button>
-                              </form>
+                              <ReferralMutationButton
+                                key={status}
+                                action={updateReferralRequestStatus}
+                                fields={{ requestId: request.id, status }}
+                                label={REQUEST_STATUS_LABELS[status] || status}
+                                variant={request.status === status ? 'default' : 'outline'}
+                              />
                             ))}
                           </div>
 
@@ -270,19 +276,11 @@ export default async function MyReferralOffersPage() {
                               )}
                             </div>
 
-                            <form action={sendReferralMessageForm} className="space-y-2">
-                              <input type="hidden" name="requestId" value={request.id} />
-                              <textarea
-                                name="message"
-                                required
-                                minLength={2}
-                                className="min-h-[72px] w-full rounded-md border bg-background px-3 py-2 text-sm"
-                                placeholder={t('referralMyOffersPage.conversation.placeholder', 'Send a message to candidate...')}
-                              />
-                              <div className="flex justify-end">
-                                <Button type="submit" size="sm">{t('referralMyOffersPage.conversation.send', 'Send')}</Button>
-                              </div>
-                            </form>
+                            <ReferralConversationComposer
+                              requestId={request.id}
+                              placeholder={t('referralMyOffersPage.conversation.placeholder', 'Send a message to candidate...')}
+                              submitLabel={t('referralMyOffersPage.conversation.send', 'Send')}
+                            />
                           </div>
                         </div>
                       ))}

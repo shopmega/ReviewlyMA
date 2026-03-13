@@ -195,7 +195,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const canonicalTarget = PREFER_NEW_COMPANY_ROUTE_CANONICAL ? canonicalNew : canonicalLegacy;
 
   return {
-    title: `${companyLabel} referrals | Reviewly MA`,
+    title: `${companyLabel} referrals | Reviewly`,
     description: `Active referral offers for ${companyLabel}, including role, city, trust, and review sentiment signals.`,
     alternates: {
       canonical: canonicalTarget,

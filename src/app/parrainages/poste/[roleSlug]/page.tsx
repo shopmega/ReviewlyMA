@@ -38,8 +38,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { t, tf } = await getServerTranslator();
   const { roleSlug } = await params;
   return {
-    title: tf('referralRolePage.metaTitle', 'Referrals role | {role} | Reviewly MA', { role: roleSlug }),
-    description: tf('referralRolePage.metaDescription', 'Active referral offers for role {role} on Reviewly MA.', { role: roleSlug }),
+    title: tf('referralRolePage.metaTitle', 'Referrals role | {role} | Reviewly', { role: roleSlug }),
+    description: tf('referralRolePage.metaDescription', 'Active referral offers for role {role} on Reviewly.', { role: roleSlug }),
     alternates: { canonical: `/parrainages/poste/${roleSlug}` },
   };
 }

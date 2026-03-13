@@ -300,7 +300,7 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
         }
 
         // No valid pro access or pending claim
-        return NextResponse.redirect(new URL('/pour-les-pros', request.url));
+        return NextResponse.redirect(new URL('/pro', request.url));
       }
     }
   }

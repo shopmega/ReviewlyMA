@@ -10,6 +10,7 @@ import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-po
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { ArrowRight, BarChart3, CircleHelp, TrendingUp } from 'lucide-react';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 export const revalidate = 3600;
 
@@ -54,6 +55,8 @@ export default async function SalariesIndexPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
+      <Breadcrumb items={[{ label: t('salaryIndexPage.hero.badge', 'Barometer'), href: '/salaires' }]} />
+
       <section className="relative overflow-hidden rounded-2xl border border-border bg-secondary/30 p-6 md:p-10">
         <div className="space-y-4 max-w-3xl">
           <Badge variant="outline" className="uppercase tracking-widest text-[10px]">
@@ -116,7 +119,7 @@ export default async function SalariesIndexPage() {
               return (
                 <Link
                   key={`chart-${item.job_title}-${item.city_slug}`}
-                  href={`/salaires/role/${roleSlug}/${item.city_slug}`}
+                  href={`/salaires/${roleSlug}/${item.city_slug}`}
                   className="block rounded-xl border border-border/70 p-3 hover:bg-secondary/50 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3 mb-2">
@@ -159,7 +162,7 @@ export default async function SalariesIndexPage() {
               return (
                 <Link
                   key={`${item.job_title}-${item.city_slug}`}
-                  href={`/salaires/role/${roleSlug}/${item.city_slug}`}
+                  href={`/salaires/${roleSlug}/${item.city_slug}`}
                   className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 hover:bg-secondary transition-colors"
                 >
                   <div>

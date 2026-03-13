@@ -22,7 +22,7 @@ export type BlogPost = {
   clusterLinks: BlogLink[];
 };
 
-export const REQUIRED_CLUSTER_LINKS = ['/referral-demand', '/salary', '/companies', '/reports'] as const;
+export const REQUIRED_CLUSTER_LINKS = ['/referral-demand', '/salaires', '/companies', '/reports'] as const;
 
 const BLOG_POSTS: BlogPost[] = [
   {
@@ -67,7 +67,7 @@ const BLOG_POSTS: BlogPost[] = [
     ],
     clusterLinks: [
       { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salary', label: 'Salary Intelligence Hub' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
       { href: '/reports', label: 'Monthly Reports' },
       { href: '/referral-demand/roles', label: 'Top Demand Roles' },
@@ -104,7 +104,7 @@ const BLOG_POSTS: BlogPost[] = [
     ],
     clusterLinks: [
       { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salary', label: 'Salary Intelligence Hub' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
       { href: '/reports', label: 'Monthly Reports' },
     ],
@@ -138,7 +138,7 @@ const BLOG_POSTS: BlogPost[] = [
     ],
     clusterLinks: [
       { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salary', label: 'Salary Intelligence Hub' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
       { href: '/reports', label: 'Monthly Reports' },
       { href: '/referral-demand/roles', label: 'Top Demand Roles' },
@@ -174,7 +174,7 @@ const BLOG_POSTS: BlogPost[] = [
     ],
     clusterLinks: [
       { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salary', label: 'Salary Intelligence Hub' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
       { href: '/reports', label: 'Monthly Reports' },
     ],
@@ -208,7 +208,7 @@ const BLOG_POSTS: BlogPost[] = [
     ],
     clusterLinks: [
       { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salary', label: 'Salary Intelligence Hub' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
       { href: '/reports', label: 'Monthly Reports' },
     ],

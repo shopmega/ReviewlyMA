@@ -10,6 +10,7 @@ import { Button } from '../ui/button';
 import { useState, useEffect } from 'react';
 import { getSiteSettings, getStoragePublicUrl } from '@/lib/data';
 import { BusinessLogo } from '@/components/shared/BusinessLogo';
+import { getSiteName } from '@/lib/site-config';
 
 type BusinessWidgetProps = {
   business: Business & { logo_hint?: string; overall_rating?: number; review_count?: number; hours?: DayHours[] };
@@ -48,7 +49,7 @@ export function BusinessWidget({
   const overallRating = business.overall_rating ?? business.overallRating ?? 0;
   const reviewCount = business.review_count ?? (business.reviews ? business.reviews.length : 0);
 
-  const [siteName, setSiteName] = useState('Platform'); // Default fallback
+  const [siteName, setSiteName] = useState('Reviewly');
 
   const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long' });
   const todayHours = business.hours?.find(h => h.day.toLowerCase() === today.toLowerCase());
@@ -58,7 +59,7 @@ export function BusinessWidget({
     const fetchSiteSettings = async () => {
       try {
         const settings = await getSiteSettings();
-        setSiteName(settings.site_name || 'Platform');
+        setSiteName(getSiteName(settings));
       } catch (error) {
         console.error('Error fetching site settings:', error);
         // Keep default value

@@ -5,7 +5,7 @@ type SiteSettingsLike = {
 };
 
 const DEFAULT_SITE_URL = 'https://example.com';
-const DEFAULT_SITE_NAME = 'Platform';
+const DEFAULT_SITE_NAME = 'Reviewly';
 const DEFAULT_FROM_EMAIL = 'noreply@example.com';
 const DEFAULT_ADMIN_EMAIL = 'admin@example.com';
 const DEFAULT_SUPPORT_EMAIL = 'support@example.com';

@@ -73,7 +73,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getServerSiteUrl();
   return {
-    title: 'Top referral demand roles | Reviewly MA',
+    title: 'Top referral demand roles | Reviewly',
     description: 'Role-level referral demand leaderboard with role-to-city drill-down links.',
     alternates: {
       canonical: `${siteUrl}/referral-demand/roles`,

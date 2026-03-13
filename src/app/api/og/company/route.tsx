@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>AVis - Entreprises</div>
+          <div style={{ fontSize: 28, fontWeight: 700 }}>Reviewly - Entreprises</div>
           <div style={{ fontSize: 22, opacity: 0.82 }}>{city}</div>
         </div>
 

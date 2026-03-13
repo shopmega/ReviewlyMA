@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { type Profile } from '@/lib/types';
+import { type Profile, type SubscriptionTier } from '@/lib/types';
 import { syncProProfile } from '@/app/actions/user';
 import { useBusiness } from '@/contexts/BusinessContext';
+import { getEffectiveTier, hasEffectivePaidAccess, hasEffectiveTierAccess } from '@/lib/tier-utils';
 
 export function useBusinessProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [businessTier, setBusinessTier] = useState<SubscriptionTier | null>(null);
+    const [businessTierLoading, setBusinessTierLoading] = useState(false);
+    const searchParams = useSearchParams();
     const { currentBusiness, allBusinesses, isLoading: businessLoading } = useBusiness();
 
     const sanitizeBusinessId = (rawId: string | null | undefined): string | null => {
@@ -87,16 +92,66 @@ export function useBusinessProfile() {
         load();
     }, []);
 
-    // Get businessId from current business context or fallback to profile
-    const businessId = currentBusiness?.id || profile?.business_id || null;
+    const requestedBusinessId = sanitizeBusinessId(searchParams.get('id'));
+    const requestedBusiness =
+        requestedBusinessId
+            ? allBusinesses.find((business) => business.id === requestedBusinessId) || null
+            : null;
+
+    const resolvedCurrentBusiness = requestedBusiness || currentBusiness;
+    const businessId = resolvedCurrentBusiness?.id || profile?.business_id || null;
+
+    useEffect(() => {
+        async function loadBusinessTier(activeBusinessId: string) {
+            try {
+                setBusinessTierLoading(true);
+                const supabase = createClient();
+                const { data: business, error: businessError } = await supabase
+                    .from('businesses')
+                    .select('tier')
+                    .eq('id', activeBusinessId)
+                    .maybeSingle();
+
+                if (businessError) {
+                    console.error('Error loading business tier:', businessError);
+                    setBusinessTier(null);
+                    return;
+                }
+
+                setBusinessTier((business?.tier ?? 'standard') as SubscriptionTier);
+            } catch (tierError) {
+                console.error('Unexpected error while loading business tier:', tierError);
+                setBusinessTier(null);
+            } finally {
+                setBusinessTierLoading(false);
+            }
+        }
+
+        if (businessLoading) return;
+
+        if (!businessId) {
+            setBusinessTier(null);
+            setBusinessTierLoading(false);
+            return;
+        }
+
+        void loadBusinessTier(businessId);
+    }, [businessId, businessLoading]);
+
+    const profileTier = (profile?.tier ?? 'standard') as SubscriptionTier;
+    const effectiveTier = getEffectiveTier(profileTier, businessTier);
 
     return { 
         businessId, 
         profile, 
-        loading: loading || businessLoading, 
+        loading: loading || businessLoading || businessTierLoading, 
         error,
-        currentBusiness,
+        currentBusiness: resolvedCurrentBusiness,
         allBusinesses,
-        isMultiBusiness: allBusinesses.length > 1
+        isMultiBusiness: allBusinesses.length > 1,
+        businessTier,
+        effectiveTier,
+        hasPaidAccess: hasEffectivePaidAccess(profileTier, businessTier),
+        hasGoldAccess: hasEffectiveTierAccess('gold', profileTier, businessTier),
     };
 }

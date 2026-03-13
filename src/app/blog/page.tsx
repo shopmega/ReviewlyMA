@@ -15,8 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getServerSiteUrl();
 
   return {
-    title: t('blogPage.metaTitle', 'Blog | Reviewly MA'),
-    description: t('blogPage.metaDescription', 'Editorial guides and referral execution playbooks.'),
+    title: t('blogPage.metaTitle', 'Blog | Reviewly'),
+    description: t('blogPage.metaDescription', 'Guides and analysis to evaluate employers through reviews, salaries, and referral signals.'),
     alternates: { canonical: `${siteUrl}/blog` },
     robots: {
       index: ENABLE_BLOG_HUB_INDEXING,
@@ -51,7 +51,7 @@ export default async function BlogHubPage() {
         <Badge variant="outline" className="w-fit">{t('blogPage.badge', 'Editorial Hub')}</Badge>
         <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('blogPage.title', 'Blog and playbooks')}</h1>
         <p className="text-muted-foreground max-w-3xl">
-          {t('blogPage.subtitle', 'Guides and playbooks that connect referral-demand signals, salary intelligence, company targeting, and monthly reports.')}
+          {t('blogPage.subtitle', 'Guides and analysis connecting reviews, salaries, referral signals, and monthly reports.')}
         </p>
       </section>
 
@@ -79,7 +79,7 @@ export default async function BlogHubPage() {
             </Button>
             <ContentShareButton
               url={`${getServerSiteUrl()}/blog/${pillar.slug}`}
-              title={`${pillar.title} | Reviewly MA`}
+              title={`${pillar.title} | Reviewly`}
               text={pillar.description}
               contentType="blog_post"
               contentId={pillar.slug}
@@ -98,7 +98,7 @@ export default async function BlogHubPage() {
               {t('blogPage.cards.howToTitle', 'How-to guides')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.howToDesc', 'Referral request tactics and actionable templates.')}</CardContent>
+          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.howToDesc', 'Practical playbooks for referrals, company research, and application prep.')}</CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardHeader>
@@ -107,7 +107,7 @@ export default async function BlogHubPage() {
               {t('blogPage.cards.dataTitle', 'Data insights')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.dataDesc', 'Interpreted analysis from demand and salary signals.')}</CardContent>
+          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.dataDesc', 'Analysis built from review, salary, and demand signals.')}</CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardHeader>
@@ -116,7 +116,7 @@ export default async function BlogHubPage() {
               {t('blogPage.cards.reportsTitle', 'Reports linking')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.reportsDesc', 'Direct links to monthly reports to strengthen topical authority.')}</CardContent>
+          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.reportsDesc', 'Monthly reports and sector snapshots to strengthen your research.')}</CardContent>
         </Card>
       </section>
 
@@ -145,7 +145,7 @@ export default async function BlogHubPage() {
                   </Button>
                   <ContentShareButton
                     url={`${getServerSiteUrl()}/blog/${post.slug}`}
-                    title={`${post.title} | Reviewly MA`}
+                    title={`${post.title} | Reviewly`}
                     text={post.description}
                     contentType="blog_post"
                     contentId={post.slug}

@@ -13,11 +13,11 @@ import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { getServerSiteUrl } from '@/lib/site-config';
-import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 
 type OfferRecord = {
   id: string;
   user_id: string;
+  business_id: string | null;
   company_name: string;
   job_title: string;
   city: string | null;
@@ -118,7 +118,7 @@ async function getOfferById(id: string) {
   const query = await supabase
     .from('job_referral_offers')
     .select(
-      'id, user_id, company_name, job_title, city, contract_type, work_mode, seniority, description, requirements, slots, expires_at, status, created_at, identity_level, verification_status, trust_score, response_rate, response_hours_avg'
+      'id, user_id, business_id, company_name, job_title, city, contract_type, work_mode, seniority, description, requirements, slots, expires_at, status, created_at, identity_level, verification_status, trust_score, response_rate, response_hours_avg'
     )
     .eq('id', id)
     .single();
@@ -128,7 +128,7 @@ async function getOfferById(id: string) {
 
   const fallback = await supabase
     .from('job_referral_offers')
-    .select('id, user_id, company_name, job_title, city, contract_type, work_mode, seniority, description, requirements, slots, expires_at, status, created_at')
+    .select('id, user_id, business_id, company_name, job_title, city, contract_type, work_mode, seniority, description, requirements, slots, expires_at, status, created_at')
     .eq('id', id)
     .single();
 
@@ -149,14 +149,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const offer = await getOfferById(id);
   if (!offer) {
     return {
-      title: 'Offre de parrainage | Reviewly MA',
+      title: 'Offre de parrainage | Reviewly',
       alternates: { canonical: `${siteUrl}/parrainages/${id}` },
     };
   }
 
   const citySuffix = offer.city ? ` - ${offer.city}` : '';
   const title = `${offer.job_title} chez ${offer.company_name}${citySuffix} | Parrainage`;
-  const description = `Offre de parrainage pour ${offer.job_title} chez ${offer.company_name}${citySuffix}. Demande securisee sur Reviewly MA.`;
+  const description = `Offre de parrainage pour ${offer.job_title} chez ${offer.company_name}${citySuffix}. Demande securisee sur Reviewly.`;
   const ogQuery = new URLSearchParams({
     company: offer.company_name,
     role: offer.job_title,
@@ -219,6 +219,10 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
     : offer.description;
   const offerShareUrl = `${siteUrl}/parrainages/${offer.id}`;
   const offerShareText = `Parrainage ouvert: ${offer.job_title} chez ${offer.company_name}${offer.city ? ` (${offer.city})` : ''}.`;
+  const companyHref = offer.business_id
+    ? `/businesses/${offer.business_id}?tab=referrals`
+    : `/parrainages/entreprise/${slugify(offer.company_name)}`;
+  const applyLoginHref = `/login?next=${encodeURIComponent(`/parrainages/${offer.id}#apply-form`)}`;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -271,14 +275,11 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
                 </Link>
               </Button>
             ) : (
-              <SoftAuthTriggerButton
-                label={t('referrals.detail.goToLogin', 'Aller a la connexion')}
-                nextPath={`/parrainages/${offer.id}`}
-                intent="referral_apply"
-                className="rounded-xl"
-                title="Demandez un parrainage en quelques clics"
-                description="Connectez-vous pour envoyer votre demande, suivre les reponses et gerer vos candidatures."
-              />
+              <Button asChild className="rounded-xl">
+                <Link href={applyLoginHref}>
+                  {t('referrals.detail.goToLogin', 'Aller a la connexion')}
+                </Link>
+              </Button>
             )}
             {canApply ? (
               <Button asChild variant="outline" className="rounded-xl">
@@ -298,7 +299,7 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
           <p className="text-xs text-muted-foreground">
             Explorer aussi:
             {' '}
-            <Link className="text-primary hover:underline" href={`/parrainages/entreprise/${slugify(offer.company_name)}`}>
+            <Link className="text-primary hover:underline" href={companyHref}>
               offres de {offer.company_name}
             </Link>
             {offer.city ? (
@@ -337,15 +338,9 @@ export default async function ParrainageDetailPage({ params }: { params: Promise
               <CardContent className="pt-6 text-sm text-muted-foreground">
                 {t('referrals.detail.loginPrompt', 'Connectez-vous pour demander un parrainage.')}
                 <div className="mt-3">
-                  <SoftAuthTriggerButton
-                    label={t('referrals.detail.goToLogin', 'Aller a la connexion')}
-                    nextPath={`/parrainages/${offer.id}`}
-                    intent="referral_apply_sidebar"
-                    variant="link"
-                    className="h-auto p-0 text-primary"
-                    title="Demandez un parrainage en quelques clics"
-                    description="Connectez-vous pour envoyer votre demande, suivre les reponses et gerer vos candidatures."
-                  />
+                  <Link href={applyLoginHref} className="text-primary hover:underline">
+                    {t('referrals.detail.goToLogin', 'Aller a la connexion')}
+                  </Link>
                 </div>
               </CardContent>
             </Card>

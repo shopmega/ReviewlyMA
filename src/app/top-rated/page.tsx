@@ -8,7 +8,7 @@ import { Trophy, Star, TrendingUp } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Les Établissements les Mieux Notés du Maroc | Platform',
+    title: 'Les Établissements les Mieux Notés du Maroc | Reviewly',
     description: 'Découvrez la crème de la crème. Notre sélection des entreprises les mieux notées par la communauté à travers tout le Maroc.'
 };
 

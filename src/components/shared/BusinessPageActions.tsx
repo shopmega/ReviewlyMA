@@ -63,14 +63,14 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                     </Button>
 
                     <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
-                        <Link href={`/businesses/${business.id}/reviews`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_reviews', 'action_bar_secondary')}>
+                        <Link href={`/businesses/${business.id}?tab=reviews#insights`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_reviews', 'action_bar_secondary')}>
                             <Star className="w-4 h-4" />
                             <span>Voir avis</span>
                         </Link>
                     </Button>
 
                     <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
-                        <Link href={`/businesses/${business.id}/salaries`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_salaries', 'action_bar_secondary')}>
+                        <Link href={`/businesses/${business.id}?tab=salaries#salaries`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_salaries', 'action_bar_secondary')}>
                             <BarChart3 className="w-4 h-4" />
                             <span>Voir salaires</span>
                         </Link>

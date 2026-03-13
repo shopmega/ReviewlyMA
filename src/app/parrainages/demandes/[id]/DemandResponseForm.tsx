@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   createReferralDemandResponse,
   retractReferralDemandResponse,
@@ -31,8 +31,22 @@ export function DemandResponseForm({ demandListingId, existingResponse }: Props)
   const [retractState, retractAction] = useActionState(retractReferralDemandResponse, INITIAL_STATE);
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
   const createErrors = (createState.errors || {}) as Record<string, string[] | undefined>;
+  const createAuthRequired = Boolean(
+    createState.data &&
+    typeof createState.data === 'object' &&
+    'authRequired' in createState.data &&
+    (createState.data as { authRequired?: boolean }).authRequired
+  );
+  const retractAuthRequired = Boolean(
+    retractState.data &&
+    typeof retractState.data === 'object' &&
+    'authRequired' in retractState.data &&
+    (retractState.data as { authRequired?: boolean }).authRequired
+  );
 
   useEffect(() => {
     if (createState.status === 'success') {
@@ -44,13 +58,20 @@ export function DemandResponseForm({ demandListingId, existingResponse }: Props)
       return;
     }
     if (createState.status === 'error') {
+      if (createAuthRequired) {
+        const currentQuery = searchParams.toString();
+        const nextPath = `${currentQuery ? `${pathname}?${currentQuery}` : pathname}#respond-form`;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
+
       toast({
         title: t('referralDemandDetailPage.form.toasts.errorTitle', 'Error'),
         description: createState.message,
         variant: 'destructive',
       });
     }
-  }, [createState, toast, router, t]);
+  }, [createState, toast, router, t, createAuthRequired, pathname, searchParams]);
 
   useEffect(() => {
     if (retractState.status === 'success') {
@@ -62,13 +83,20 @@ export function DemandResponseForm({ demandListingId, existingResponse }: Props)
       return;
     }
     if (retractState.status === 'error') {
+      if (retractAuthRequired) {
+        const currentQuery = searchParams.toString();
+        const nextPath = `${currentQuery ? `${pathname}?${currentQuery}` : pathname}#respond-form`;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
+
       toast({
         title: t('referralDemandDetailPage.form.toasts.errorTitle', 'Error'),
         description: retractState.message,
         variant: 'destructive',
       });
     }
-  }, [retractState, toast, router, t]);
+  }, [retractState, toast, router, t, retractAuthRequired, pathname, searchParams]);
 
   if (existingResponse?.status === 'active') {
     return (

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
 import { AnalyticsPageTracker } from '@/components/shared/AnalyticsPageTracker';
+import { cookies, headers } from 'next/headers';
 
 
 export const metadata: Metadata = {
@@ -14,11 +15,15 @@ export const metadata: Metadata = {
   }
 };
 
-export default function WidgetLayout({
+export default async function WidgetLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headerStore = await headers();
+  const cookieStore = await cookies();
+  const cspNonce = headerStore.get('x-csp-nonce') || cookieStore.get('__csp_nonce')?.value;
+
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
        <head>
@@ -32,9 +37,10 @@ export default function WidgetLayout({
           defaultTheme="light"
           enableSystem={false}
           disableTransitionOnChange
+          nonce={cspNonce}
         >
           {children}
-          <AnalyticsConfig />
+          <AnalyticsConfig nonce={cspNonce} />
           <AnalyticsPageTracker />
         </ThemeProvider>
       </body>

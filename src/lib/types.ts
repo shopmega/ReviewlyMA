@@ -415,6 +415,25 @@ export type SalaryRoleCityMetrics = {
   refreshed_at: string;
 };
 
+export type ReferralOfferSummary = {
+  id: string;
+  business_id?: string | null;
+  company_name: string;
+  job_title: string;
+  city: string | null;
+  slots: number;
+  created_at: string;
+};
+
+export type ReferralDemandSummary = {
+  id: string;
+  title: string;
+  target_role: string;
+  city: string | null;
+  summary: string;
+  created_at: string;
+};
+
 export const businessProfileUpdateSchema = z.object({
   name: z.string().min(2, { message: 'Le nom de l\'établissement est requis.' }),
   description: z.string().optional(),

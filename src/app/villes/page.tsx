@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { getServerTranslator } from '@/lib/i18n/server';
 
 export const metadata: Metadata = {
-  title: 'Parcourir par Ville | Platform',
+  title: 'Parcourir par Ville | Reviewly',
   description: 'Decouvrez les meilleures entreprises et services dans toutes les villes du Maroc.',
 };
 

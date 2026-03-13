@@ -99,7 +99,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const canonical = `${siteUrl}/referral-demand/${role}/${city}`;
 
   return {
-    title: `${roleLabel} referral demand in ${cityLabel} | Reviewly MA`,
+    title: `${roleLabel} referral demand in ${cityLabel} | Reviewly`,
     description: `Live referral demand signals for ${roleLabel} in ${cityLabel}, including active listings and recent trend.`,
     alternates: { canonical },
     robots: {

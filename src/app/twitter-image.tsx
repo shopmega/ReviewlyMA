@@ -38,9 +38,9 @@ export default function TwitterImage() {
               fontWeight: 800,
             }}
           >
-            A
+            R
           </div>
-          <div style={{ fontSize: 46, fontWeight: 800 }}>AVis</div>
+          <div style={{ fontSize: 46, fontWeight: 800 }}>Reviewly</div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

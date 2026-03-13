@@ -7,6 +7,7 @@ import { StarRating } from './StarRating';
 import { Button } from '../ui/button';
 import { getSiteSettings } from '@/lib/data';
 import { BusinessLogo } from '@/components/shared/BusinessLogo';
+import { getSiteName } from '@/lib/site-config';
 
 type BusinessWidgetProps = {
   business: Business & { logo_hint?: string; overall_rating?: number; review_count?: number };
@@ -32,7 +33,7 @@ export async function BusinessWidgetServer({ business }: BusinessWidgetProps) {
   
   // Get site settings for dynamic site name
   const siteSettings = await getSiteSettings();
-  const siteName = siteSettings.site_name || 'Platform';
+  const siteName = getSiteName(siteSettings);
 
   return (
     <Card className="w-full max-w-sm mx-auto shadow-lg overflow-hidden flex flex-col h-full">

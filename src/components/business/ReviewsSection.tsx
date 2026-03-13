@@ -20,7 +20,7 @@ export function ReviewsSection({ business }: ReviewsSectionProps) {
             {business.reviews && business.reviews.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-border/50 text-center">
                     <Button variant="outline" asChild className="rounded-xl font-bold border-primary/20 text-primary hover:bg-primary/5 group">
-                        <Link href={`/businesses/${business.id}/reviews`}>
+                        <Link href={`/businesses/${business.id}?tab=reviews#insights`}>
                             {tf('business.reviews.seeAll', 'Voir tous les {count} avis sur {name}', {
                                 count: business.reviews.length,
                                 name: business.name,

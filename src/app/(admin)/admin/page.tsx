@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSiteSettings } from "@/lib/data";
+import { getSiteName } from "@/lib/site-config";
 import {
   Building,
   Star,
@@ -53,7 +54,7 @@ export default async function AdminDashboard() {
   const stats = await getAdminStats();
   const siteSettings = await getSiteSettings();
   const pendingReports = await getPendingReportCount();
-  const siteName = siteSettings.site_name || 'Platform';
+  const siteName = getSiteName(siteSettings);
 
   const statCards = [
     {
@@ -180,7 +181,7 @@ export default async function AdminDashboard() {
                 </p>
               </div>
               <Button variant="secondary" className="w-full rounded-xl font-bold h-11" asChild>
-                <Link href="/admin/avis-signalements">
+                <Link href="/admin/moderation">
                   Voir les alertes
                   <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Link>

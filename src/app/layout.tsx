@@ -13,7 +13,7 @@ import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
 import { AnalyticsPageTracker } from '@/components/shared/AnalyticsPageTracker';
 import { AdSense } from '@/components/shared/AdSense';
 import { TrackingConsentBridge } from '@/components/shared/TrackingConsentBridge';
-import { getServerSiteUrl } from '@/lib/site-config';
+import { getServerSiteUrl, getSiteName } from '@/lib/site-config';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
@@ -44,7 +44,7 @@ const plexMono = IBM_Plex_Mono({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSiteSettings();
   const siteUrl = getServerSiteUrl();
-  const title = settings.site_name || 'CityGuide App';
+  const title = getSiteName(settings);
   const description = settings.site_description || 'Decouvrez les meilleurs commerces de votre ville';
   const ogImage = '/opengraph-image';
 
@@ -103,6 +103,7 @@ export default async function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          nonce={cspNonce}
         >
           <I18nProvider locale={locale} messages={messages}>
             <BusinessProvider>

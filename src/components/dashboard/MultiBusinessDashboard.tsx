@@ -16,9 +16,11 @@ import {
   Users
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { getUserBusinesses, setPrimaryBusiness, addBusinessToUser } from '@/app/actions/premium';
+import { getUserBusinesses, setPrimaryBusiness } from '@/app/actions/premium';
+import { useBusiness } from '@/contexts/BusinessContext';
+import { buildDashboardBusinessHref } from '@/lib/dashboard-business-routing';
 
 interface Business {
   id: string;
@@ -43,7 +45,10 @@ export default function MultiBusinessDashboard() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { currentBusiness, switchBusiness, refreshBusinesses } = useBusiness();
 
   useEffect(() => {
     loadData();
@@ -69,11 +74,17 @@ export default function MultiBusinessDashboard() {
         subscriptionTier: businessesData.maxAllowed > 1 ? 'premium' : 'basic'
       });
 
-      // Set selected business to primary
-      const primaryBusiness = businessesData.businesses.find(b => b.isPrimary);
-      if (primaryBusiness) {
-        setSelectedBusiness(primaryBusiness.id);
-      }
+      const requestedBusinessId = searchParams.get('id');
+      const activeBusinessId =
+        (requestedBusinessId && businessesData.businesses.some((business) => business.id === requestedBusinessId)
+          ? requestedBusinessId
+          : null) ||
+        currentBusiness?.id ||
+        businessesData.businesses.find(b => b.isPrimary)?.id ||
+        businessesData.businesses[0]?.id ||
+        '';
+
+      setSelectedBusiness(activeBusinessId);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
@@ -83,6 +94,13 @@ export default function MultiBusinessDashboard() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncDashboardRoute = (businessId: string) => {
+    const nextHref = buildDashboardBusinessHref(pathname, searchParams.toString(), businessId);
+    if (nextHref) {
+      router.replace(nextHref);
     }
   };
 
@@ -97,6 +115,9 @@ export default function MultiBusinessDashboard() {
       const result = await setPrimaryBusiness(user.id, businessId);
 
       if (result.status === 'success') {
+        await switchBusiness(businessId);
+        syncDashboardRoute(businessId);
+        await refreshBusinesses();
         await loadData();
         toast({
           title: 'Success',
@@ -121,12 +142,18 @@ export default function MultiBusinessDashboard() {
     }
   };
 
+  const handleSelectBusiness = async (businessId: string) => {
+    setSelectedBusiness(businessId);
+    await switchBusiness(businessId);
+    syncDashboardRoute(businessId);
+  };
+
   const handleAddBusiness = () => {
     const maxBusinesses = premiumStatus?.maxBusinesses || 1;
     if (businesses.length >= maxBusinesses) {
       toast({
         title: 'Business limit reached',
-        description: 'Each account can manage only one business.',
+        description: `This account can manage up to ${maxBusinesses} business${maxBusinesses > 1 ? 'es' : ''}.`,
         variant: 'destructive'
       });
       return;
@@ -191,7 +218,7 @@ export default function MultiBusinessDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+              <Select value={selectedBusiness} onValueChange={(value) => void handleSelectBusiness(value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a business" />
                 </SelectTrigger>
@@ -268,7 +295,7 @@ export default function MultiBusinessDashboard() {
                   <Button
                     size="sm"
                     variant={selectedBusiness === business.id ? "default" : "outline"}
-                    onClick={() => setSelectedBusiness(business.id)}
+                    onClick={() => void handleSelectBusiness(business.id)}
                     className="flex-1"
                   >
                     {selectedBusiness === business.id ? 'Active' : 'Select'}

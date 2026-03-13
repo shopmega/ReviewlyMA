@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
-import { isPaidTier, hasTierAccess } from '@/lib/tier-utils';
+import { hasTierAccess } from '@/lib/tier-utils';
 import { SubscriptionTier } from '@/lib/types';
 
 interface PremiumFeatureGateProps {
@@ -32,20 +32,13 @@ export function PremiumFeatureGate({
     description,
     inline = false,
 }: PremiumFeatureGateProps) {
-    const { profile, loading } = useBusinessProfile();
+    const { effectiveTier, loading } = useBusinessProfile();
 
     if (loading) {
         return <div className="animate-pulse bg-muted rounded-lg h-32 w-full" />;
     }
 
-    const currentTier = profile?.tier || 'standard';
-
-    const canAccess = () => {
-        if (!currentTier) return false;
-        return hasTierAccess(level, currentTier);
-    };
-
-    if (canAccess()) {
+    if (hasTierAccess(level, effectiveTier)) {
         return <>{children}</>;
     }
 
@@ -59,7 +52,7 @@ export function PremiumFeatureGate({
         return (
             <span className={cn("inline-flex items-center gap-1 text-amber-600 font-bold text-xs uppercase cursor-help", className)}>
                 <Lock className="w-3 h-3" />
-                {level === 'gold' ? 'Gold' : 'Premium'}
+                {level === 'gold' ? 'Gold' : 'Growth'}
             </span>
         );
     }
@@ -74,13 +67,13 @@ export function PremiumFeatureGate({
             </div>
 
             <h3 className="font-bold text-lg mb-1 text-amber-900">
-                {title || (level === 'gold' ? 'Fonctionnalité GOLD' : 'Fonctionnalité Premium')}
+                {title || (level === 'gold' ? 'Fonctionnalité GOLD' : 'Fonctionnalité Growth')}
             </h3>
 
             <p className="text-sm text-amber-800/70 mb-6 max-w-[280px]">
                 {description || (level === 'gold'
                     ? "Débloquez cette fonctionnalité avancée avec le plan Business GOLD."
-                    : "Passez au statut Premium pour accéder à cet outil.")
+                    : "Passez au plan Business Growth pour accéder à cet outil.")
                 }
             </p>
 

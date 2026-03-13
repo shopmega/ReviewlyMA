@@ -69,13 +69,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const post = await getMergedBlogPostBySlug(slug);
   if (!post) {
     return {
-      title: 'Article de blog | Reviewly MA',
+      title: 'Article de blog | Reviewly',
     };
   }
 
   const siteUrl = getServerSiteUrl();
   return {
-    title: `${post.title} | Reviewly MA`,
+    title: `${post.title} | Reviewly`,
     description: post.description,
     alternates: {
       canonical: `${siteUrl}/blog/${post.slug}`,
@@ -126,7 +126,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
 
           <ContentShareButton
             url={`${getServerSiteUrl()}/blog/${post.slug}`}
-            title={`${post.title} | Reviewly MA`}
+            title={`${post.title} | Reviewly`}
             text={post.description}
             contentType="blog_post"
             contentId={post.slug}

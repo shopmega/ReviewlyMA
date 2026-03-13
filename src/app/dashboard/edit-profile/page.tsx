@@ -26,7 +26,6 @@ import { businessProfileUpdateSchema, type BusinessProfileUpdateData } from '@/l
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { getStoragePublicUrl, parsePostgresArray } from '@/lib/data';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
-import { isPaidTier } from '@/lib/tier-utils';
 import { useI18n } from '@/components/providers/i18n-provider';
 
 type BusinessData = {
@@ -136,7 +135,7 @@ export default function EditProfilePage() {
   const [isUploading, setIsUploading] = useState<string | null>(null); // 'logo' | 'cover' | 'gallery' | null
 
   /* Refactored to use central hook */
-  const { businessId, profile, loading: profileLoading, error: profileError } = useBusinessProfile();
+  const { businessId, hasPaidAccess, loading: profileLoading, error: profileError } = useBusinessProfile();
 
   const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
   const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
@@ -504,7 +503,7 @@ export default function EditProfilePage() {
           </CardContent>
         </Card>
         <Button asChild>
-          <Link href="/pour-les-pros">
+          <Link href="/pro">
             {t('dashboardEditProfilePage.errorState.claimBusiness', 'Claim a business')}
           </Link>
         </Button>
@@ -707,11 +706,11 @@ export default function EditProfilePage() {
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-amber-600 flex items-center gap-2">
                       <Zap className="w-4 h-4 fill-current" />
-                      {t('dashboardEditProfilePage.pro.title', 'Business PRO options')}
+                      {t('dashboardEditProfilePage.pro.title', 'Growth / Gold options')}
                     </h3>
-                    {!isPaidTier(profile?.tier) && (
+                    {!hasPaidAccess && (
                       <Badge variant="outline" className="text-[10px] bg-amber-50 uppercase tracking-tighter">
-                        {t('dashboardEditProfilePage.pro.badgeRequired', 'PRO plan required')}
+                        {t('dashboardEditProfilePage.pro.badgeRequired', 'Growth or Gold required')}
                       </Badge>
                     )}
                   </div>
@@ -730,18 +729,18 @@ export default function EditProfilePage() {
                             <Input
                               {...field}
                               placeholder={t('dashboardEditProfilePage.pro.whatsappPlaceholder', 'Ex: 212 600000000')}
-                              disabled={!isPaidTier(profile?.tier)}
+                              disabled={!hasPaidAccess}
                             />
                           </FormControl>
                           <FormDescription className="text-[11px]">
-                            {isPaidTier(profile?.tier)
+                            {hasPaidAccess
                               ? t(
                                 'dashboardEditProfilePage.pro.whatsappDescriptionEnabled',
                                 'Displays a direct contact button on your profile.'
                               )
                               : t(
                                 'dashboardEditProfilePage.pro.whatsappDescriptionDisabled',
-                                'Unlock direct WhatsApp contact with a PRO plan.'
+                                'Unlock direct WhatsApp contact with a Growth or Gold plan.'
                               )}
                           </FormDescription>
                           <FormMessage />
@@ -761,18 +760,18 @@ export default function EditProfilePage() {
                             <Input
                               {...field}
                               placeholder={t('dashboardEditProfilePage.pro.affiliatePlaceholder', 'Ex: https://booking.com/...')}
-                              disabled={!isPaidTier(profile?.tier)}
+                              disabled={!hasPaidAccess}
                             />
                           </FormControl>
                           <FormDescription className="text-[11px]">
-                            {isPaidTier(profile?.tier)
+                            {hasPaidAccess
                               ? t(
                                 'dashboardEditProfilePage.pro.affiliateDescriptionEnabled',
                                 'Direct link to your booking engine (Booking, etc.).'
                               )
                               : t(
                                 'dashboardEditProfilePage.pro.affiliateDescriptionDisabled',
-                                'Redirect customers to your booking engine with a PRO plan.'
+                                'Redirect customers to your booking engine with a Growth or Gold plan.'
                               )}
                           </FormDescription>
                           <FormMessage />
@@ -789,12 +788,12 @@ export default function EditProfilePage() {
                           {t('dashboardEditProfilePage.pro.ctaLabel', 'Button text (optional)')}
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder={t('dashboardEditProfilePage.pro.ctaPlaceholder', 'Ex: Book on Booking')}
-                            disabled={!isPaidTier(profile?.tier)}
-                          />
-                        </FormControl>
+                            <Input
+                              {...field}
+                              placeholder={t('dashboardEditProfilePage.pro.ctaPlaceholder', 'Ex: Book on Booking')}
+                              disabled={!hasPaidAccess}
+                            />
+                          </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -811,18 +810,18 @@ export default function EditProfilePage() {
                           label={t('dashboardEditProfilePage.pro.tagsLabel', 'Search keywords (tags)')}
                           tags={field.value || []}
                           onTagsChange={field.onChange}
-                          disabled={!isPaidTier(profile?.tier)}
+                          disabled={!hasPaidAccess}
                           maxTags={10}
                         />
                         <FormDescription className="text-[11px]">
-                          {isPaidTier(profile?.tier)
+                          {hasPaidAccess
                             ? t(
                               'dashboardEditProfilePage.pro.tagsDescriptionEnabled',
                               'Add up to 10 keywords to help customers find you (e.g. Terrace, Halal, Brunch).'
                             )
                             : t(
                               'dashboardEditProfilePage.pro.tagsDescriptionDisabled',
-                              'The PRO plan allows custom search keywords.'
+                              'Growth and Gold plans allow custom search keywords.'
                             )}
                         </FormDescription>
                         <FormMessage />

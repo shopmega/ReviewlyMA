@@ -638,7 +638,11 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   const { data: auth, error: authError } = await supabase.auth.getUser();
   const user = auth.user;
   if (authError || !user) {
-    return { status: 'error', message: 'Vous devez etre connecte pour demander un parrainage.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte pour demander un parrainage.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = requestReferralSchema.safeParse({
@@ -743,7 +747,11 @@ export async function updateMyReferralOfferStatus(_prev: ActionState, formData: 
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) {
-    return { status: 'error', message: 'Vous devez etre connecte.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = updateOfferStatusSchema.safeParse({
@@ -849,7 +857,11 @@ export async function createReferralDemandResponse(_prev: ActionState, formData:
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) {
-    return { status: 'error', message: 'Vous devez etre connecte.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = createDemandResponseSchema.safeParse({
@@ -1000,7 +1012,11 @@ export async function retractReferralDemandResponse(_prev: ActionState, formData
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) {
-    return { status: 'error', message: 'Vous devez etre connecte.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = retractDemandResponseSchema.safeParse({
@@ -1123,7 +1139,11 @@ export async function blockReferralUser(_prev: ActionState, formData: FormData):
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) {
-    return { status: 'error', message: 'Vous devez etre connecte.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = blockUserSchema.safeParse({
@@ -1180,7 +1200,11 @@ export async function updateReferralRequestStatus(_prev: ActionState, formData: 
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) {
-    return { status: 'error', message: 'Vous devez etre connecte.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = updateRequestStatusSchema.safeParse({
@@ -1384,7 +1408,11 @@ export async function sendReferralMessage(_prev: ActionState, formData: FormData
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) {
-    return { status: 'error', message: 'Vous devez etre connecte.' };
+    return {
+      status: 'error',
+      message: 'Vous devez etre connecte.',
+      data: { authRequired: true },
+    };
   }
 
   const parsed = sendReferralMessageSchema.safeParse({

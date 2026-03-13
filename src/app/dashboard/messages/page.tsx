@@ -7,7 +7,6 @@ import { Lock, Loader2, Sparkles, MessageSquare, User, Send } from 'lucide-react
 import { getMessages, sendMessage, type Message } from '@/app/actions/messages';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { isPaidTier } from '@/lib/tier-utils';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/lib/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,9 +15,8 @@ import Link from 'next/link';
 import { useI18n } from '@/components/providers/i18n-provider';
 
 export default function MessagesPage() {
-  const { profile, businessId, loading, currentBusiness } = useBusinessProfile();
+  const { profile, businessId, loading, currentBusiness, hasPaidAccess, effectiveTier } = useBusinessProfile();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isPremium, setIsPremium] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [activeTargetId, setActiveTargetId] = useState<string | null>(null);
@@ -27,33 +25,10 @@ export default function MessagesPage() {
   const { t, tf, locale } = useI18n();
 
   useEffect(() => {
-    async function checkStatus() {
-      const currentTier = profile?.tier;
-      if (isPaidTier(currentTier)) {
-        setIsPremium(true);
-        return;
-      }
-
-      if (businessId) {
-        const supabase = createClient();
-        const { data: business } = await supabase.from('businesses').select('tier').eq('id', businessId).single();
-
-        if (isPaidTier(business?.tier)) {
-          setIsPremium(true);
-        }
-      }
-    }
-
-    if (!loading) {
-      checkStatus();
-    }
-  }, [profile, businessId, loading]);
-
-  useEffect(() => {
-    if (businessId && isPremium) {
+    if (businessId && hasPaidAccess) {
       fetchMessages();
     }
-  }, [businessId, isPremium]);
+  }, [businessId, hasPaidAccess]);
 
   async function fetchMessages() {
     if (!businessId) return;
@@ -136,33 +111,33 @@ export default function MessagesPage() {
             {tf('dashboardMessagesPage.title', 'Messages for {name}', {
               name: currentBusiness?.name || t('dashboardMessagesPage.yourBusiness', 'your business'),
             })}
-            {!isPremium && <Lock className="h-5 w-5 text-muted-foreground" />}
+            {!hasPaidAccess && <Lock className="h-5 w-5 text-muted-foreground" />}
           </h1>
           <p className="text-muted-foreground">
-            {isPremium
+            {hasPaidAccess
               ? t('dashboardMessagesPage.subtitlePremium', 'Manage your conversations in real time.')
-              : t('dashboardMessagesPage.subtitleLocked', 'Premium messaging allows direct communication with candidates.')}
+              : t('dashboardMessagesPage.subtitleLocked', 'Upgrade to Growth or Gold to communicate directly with candidates.')}
           </p>
         </div>
-        {isPremium && (
+        {hasPaidAccess && (
           <Badge className="bg-amber-500 text-white border-none rounded-full px-3 py-1 flex gap-1 items-center">
-            <Sparkles className="w-3 h-3 fill-current" /> PREMIUM
+            <Sparkles className="w-3 h-3 fill-current" /> {effectiveTier.toUpperCase()}
           </Badge>
         )}
       </div>
 
-      {!isPremium ? (
+      {!hasPaidAccess ? (
         <div className="flex-1 flex flex-col items-center justify-center p-12 text-center border-2 border-dashed rounded-3xl bg-card/30 backdrop-blur-sm relative overflow-hidden">
           <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-6">
             <div className="bg-amber-500/10 p-4 rounded-full mb-4">
               <Sparkles className="h-8 w-8 text-amber-600" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">{t('dashboardMessagesPage.lockedTitle', 'Premium messaging')}</h3>
+            <h3 className="text-2xl font-bold mb-2">{t('dashboardMessagesPage.lockedTitle', 'Direct messaging')}</h3>
             <p className="text-muted-foreground max-w-md mb-6">
-              {t('dashboardMessagesPage.lockedDesc', 'Direct messaging is exclusive to Premium members to help you engage candidates and talent.')}
+              {t('dashboardMessagesPage.lockedDesc', 'Direct messaging is available on Growth and Gold plans to help you engage candidates and talent.')}
             </p>
             <Button asChild className="bg-amber-500 hover:bg-amber-600 rounded-full px-8 h-12 text-lg font-semibold shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
-              <Link href="/dashboard/premium">{t('dashboardMessagesPage.lockedCta', 'Upgrade to Premium')}</Link>
+              <Link href="/dashboard/premium">{t('dashboardMessagesPage.lockedCta', 'Upgrade your plan')}</Link>
             </Button>
           </div>
 

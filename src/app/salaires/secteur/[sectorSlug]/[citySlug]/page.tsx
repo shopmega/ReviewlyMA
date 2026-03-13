@@ -10,7 +10,9 @@ import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-po
 import { getSalaryAlertSubscriptionStatus } from '@/app/actions/salary-alerts';
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { GatekeeperOverlay } from '@/components/shared/GatekeeperOverlay';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 type Params = { sectorSlug: string; citySlug: string };
 
@@ -95,6 +97,7 @@ export default async function SalarySectorCityPage({ params }: { params: Promise
   const isSubscribed = isUnlocked
     ? await getSalaryAlertSubscriptionStatus('sector_city', { sectorSlug, citySlug })
     : false;
+  const pagePath = `/salaires/secteur/${sectorSlug}/${citySlug}`;
 
   const pctVsCity = city?.avg_monthly_salary
     ? Number((((metric.avg_monthly_salary || 0) - city.avg_monthly_salary) / city.avg_monthly_salary * 100).toFixed(2))
@@ -102,6 +105,14 @@ export default async function SalarySectorCityPage({ params }: { params: Promise
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+      <Breadcrumb
+        items={[
+          { label: t('salarySectorCityPage.hero.badge', 'Salary barometer'), href: '/salaires' },
+          { label: metric.city, href: `/salaires/secteur/${sectorSlug}/${citySlug}` },
+          { label: metric.sector_slug, href: `/salaires/secteur/${sectorSlug}/${citySlug}` },
+        ]}
+      />
+
       <section className="space-y-2">
         <p className="text-sm text-muted-foreground">{t('salarySectorCityPage.hero.badge', 'Salary barometer')}</p>
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">
@@ -129,72 +140,78 @@ export default async function SalarySectorCityPage({ params }: { params: Promise
         context={{ sectorSlug, citySlug }}
       />
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.median', 'Median')}</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">
-            {hasEnoughData
-              ? (isUnlocked ? formatMoney(metric.median_monthly_salary, numberLocale, currencyLabel) : loginToUnlockText)
-              : insufficientDataText}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.range', 'Range')}</CardTitle></CardHeader>
-          <CardContent className="text-lg font-bold">
-            {hasEnoughData
-              ? (isUnlocked
-                ? `${formatMoney(metric.min_monthly_salary, numberLocale, currencyLabel)} - ${formatMoney(metric.max_monthly_salary, numberLocale, currencyLabel)}`
-                : loginToUnlockText)
-              : tf('salarySectorCityPage.common.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.vsCityAverage', 'Vs city average')}</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">
-            {hasEnoughData
-              ? (isUnlocked ? (pctVsCity === null ? '-' : `${pctVsCity}%`) : loginToUnlockText)
-              : insufficientDataText}
-          </CardContent>
-        </Card>
-      </section>
-
-      {isUnlocked && hasEnoughData ? (
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <GatekeeperOverlay
+        active={!isUnlocked && hasEnoughData}
+        nextPath={pagePath}
+        intent="salary_sector_city_unlock"
+        title={t('salarySectorCityPage.locked.title', 'Unlock detailed analysis')}
+        description={t(
+          'salarySectorCityPage.locked.withDataDescription',
+          'Log in to view the full range and junior/senior details for this sector.'
+        )}
+        ctaLabel={t('salarySectorCityPage.locked.ctaLogin', 'Log in')}
+        className="rounded-3xl"
+      >
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
-            <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.juniorMedian', 'Junior median')}</CardTitle></CardHeader>
-            <CardContent className="text-xl font-semibold">{formatMoney(metric.junior_median_monthly_salary, numberLocale, currencyLabel)}</CardContent>
+            <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.median', 'Median')}</CardTitle></CardHeader>
+            <CardContent className="text-2xl font-bold">
+              {hasEnoughData ? formatMoney(metric.median_monthly_salary, numberLocale, currencyLabel) : insufficientDataText}
+            </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.seniorMedian', 'Senior+ median')}</CardTitle></CardHeader>
-            <CardContent className="text-xl font-semibold">{formatMoney(metric.senior_median_monthly_salary, numberLocale, currencyLabel)}</CardContent>
+            <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.range', 'Range')}</CardTitle></CardHeader>
+            <CardContent className="text-lg font-bold">
+              {hasEnoughData
+                ? `${formatMoney(metric.min_monthly_salary, numberLocale, currencyLabel)} - ${formatMoney(metric.max_monthly_salary, numberLocale, currencyLabel)}`
+                : tf('salarySectorCityPage.common.submissionsUnder', '< {count} submissions', { count: MIN_PUBLIC_SAMPLE_SIZE })}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.vsCityAverage', 'Vs city average')}</CardTitle></CardHeader>
+            <CardContent className="text-2xl font-bold">
+              {hasEnoughData ? (pctVsCity === null ? '-' : `${pctVsCity}%`) : insufficientDataText}
+            </CardContent>
           </Card>
         </section>
+      </GatekeeperOverlay>
+
+      {hasEnoughData ? (
+        <GatekeeperOverlay
+          active={!isUnlocked}
+          nextPath={pagePath}
+          intent="salary_sector_city_unlock"
+          title={t('salarySectorCityPage.locked.title', 'Unlock detailed analysis')}
+          description={t(
+            'salarySectorCityPage.locked.withDataDescription',
+            'Log in to view the full range and junior/senior details for this sector.'
+          )}
+          ctaLabel={t('salarySectorCityPage.locked.ctaLogin', 'Log in')}
+          className="rounded-3xl"
+        >
+          <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.juniorMedian', 'Junior median')}</CardTitle></CardHeader>
+              <CardContent className="text-xl font-semibold">{formatMoney(metric.junior_median_monthly_salary, numberLocale, currencyLabel)}</CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base">{t('salarySectorCityPage.cards.seniorMedian', 'Senior+ median')}</CardTitle></CardHeader>
+              <CardContent className="text-xl font-semibold">{formatMoney(metric.senior_median_monthly_salary, numberLocale, currencyLabel)}</CardContent>
+            </Card>
+          </section>
+        </GatekeeperOverlay>
       ) : (
         <section className="rounded-2xl border p-5 bg-muted/20">
           <h2 className="font-bold text-lg mb-1">
-            {hasEnoughData
-              ? t('salarySectorCityPage.locked.title', 'Unlock detailed analysis')
-              : t('salarySectorCityPage.locked.insufficientTitle', 'Insufficient data for a reliable statistic')}
+            {t('salarySectorCityPage.locked.insufficientTitle', 'Insufficient data for a reliable statistic')}
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {hasEnoughData
-              ? t(
-                'salarySectorCityPage.locked.withDataDescription',
-                'Log in to view the full range and junior/senior details for this sector.'
-              )
-              : tf(
-                'salarySectorCityPage.locked.insufficientDescription',
-                'This page only shows details from {count} submissions to protect confidentiality.',
-                { count: MIN_PUBLIC_SAMPLE_SIZE }
-              )}
+            {tf(
+              'salarySectorCityPage.locked.insufficientDescription',
+              'This page only shows details from {count} submissions to protect confidentiality.',
+              { count: MIN_PUBLIC_SAMPLE_SIZE }
+            )}
           </p>
-          {hasEnoughData && (
-            <Button asChild>
-              <Link href={`/login?next=/salaires/secteur/${sectorSlug}/${citySlug}`}>
-                {t('salarySectorCityPage.locked.ctaLogin', 'Log in')}
-              </Link>
-            </Button>
-          )}
         </section>
       )}
 

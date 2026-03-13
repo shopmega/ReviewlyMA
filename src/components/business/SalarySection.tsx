@@ -18,6 +18,7 @@ import { hasSufficientSampleSize, MIN_PUBLIC_SAMPLE_SIZE } from '@/lib/salary-po
 import { SalaryAlertToggleButton } from '@/components/salaries/SalaryAlertToggleButton';
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { SoftAuthDialog } from '@/components/auth/SoftAuthDialog';
+import { GatekeeperOverlay } from '@/components/shared/GatekeeperOverlay';
 
 type SalarySectionProps = {
   businessId: string;
@@ -64,6 +65,7 @@ export function SalarySection({
       router.refresh();
       return;
     }
+
     if (state.status === 'error' && state.message) {
       toast({ title: t('common.error', 'Erreur'), description: state.message, variant: 'destructive' });
     }
@@ -141,6 +143,7 @@ export function SalarySection({
     if (stats.count >= 5) return { label: t('business.salary.confidenceLow', 'Confiance en construction'), score: 45 };
     return { label: t('business.salary.confidenceVeryLow', 'Donnees encore limitees'), score: 25 };
   }, [stats.count, t]);
+
   const lastSalaryUpdate = useMemo(() => {
     if (salaries.length === 0) return t('business.salary.notAvailable', 'Indisponible');
     const latest = salaries.reduce((acc, row) => {
@@ -151,10 +154,12 @@ export function SalarySection({
     if (!latest) return t('business.salary.notAvailable', 'Indisponible');
     return new Date(latest).toLocaleDateString('fr-MA', { day: '2-digit', month: 'short', year: 'numeric' });
   }, [salaries, t]);
+
   const spread = useMemo(() => {
     if (stats.minMonthly === null || stats.maxMonthly === null) return null;
     return Math.max(0, stats.maxMonthly - stats.minMonthly);
   }, [stats.maxMonthly, stats.minMonthly]);
+
   const salaryChartData = useMemo(() => {
     if (stats.roleBreakdown.length > 0) {
       return stats.roleBreakdown.slice(0, 6).map((row) => ({
@@ -169,10 +174,12 @@ export function SalarySection({
       { label: t('business.salary.maxMonthly', 'Maximum mensuel'), salary: Math.round(stats.maxMonthly || 0) },
     ].filter((row) => row.salary > 0);
   }, [stats.roleBreakdown, stats.minMonthly, stats.medianMonthly, stats.maxMonthly, t]);
+
   const isAuthenticated = authStatus === 'authenticated';
   const hasEnoughData = hasSufficientSampleSize(stats.count);
-  const canViewDetailedStats = isAuthenticated && hasEnoughData;
-  const previewSalaries = isAuthenticated ? salaries : salaries.slice(0, 2);
+  const shouldSoftGateInsights = !isAuthenticated && hasEnoughData;
+  const previewSalaries = isAuthenticated ? salaries : salaries.slice(0, 3);
+  const salaryTabPath = `${pathname || `/businesses/${businessId}`}?tab=salaries#salaries`;
 
   return (
     <section id="salaries" className="space-y-6">
@@ -181,149 +188,168 @@ export function SalarySection({
           <CardTitle>{t('business.salary.title', 'Salaires')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="rounded-lg border border-border/70 bg-background/70 p-3 space-y-2">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="space-y-2 rounded-lg border border-border/70 bg-background/70 p-3">
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                 {t('business.salary.qualitySignal', 'Signal qualite')}
               </p>
               <p className="text-sm font-bold">{salaryConfidence.label}</p>
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
                 <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${salaryConfidence.score}%` }} />
               </div>
             </div>
             <div className="rounded-lg border border-border/70 bg-background/70 p-3">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <CalendarClock className="h-3.5 w-3.5 text-primary" />
                 {t('business.salary.lastUpdate', 'Derniere publication')}
               </p>
               <p className="mt-1 text-sm font-bold">{lastSalaryUpdate}</p>
-              <p className="mt-1 text-[11px] text-muted-foreground">{t('business.salary.moderationNote', 'Chaque entree est moderee avant publication.')}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {t('business.salary.moderationNote', 'Chaque entree est moderee avant publication.')}
+              </p>
             </div>
             <div className="rounded-lg border border-border/70 bg-background/70 p-3">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
                 {t('business.salary.rangeSignal', 'Amplitude observee')}
               </p>
-              <p className="mt-1 text-sm font-bold">
-                {spread === null ? '-' : formatMoneyMAD(spread)}
+              <p className="mt-1 text-sm font-bold">{spread === null ? '-' : formatMoneyMAD(spread)}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {t('business.salary.rangeNote', 'Entre minimum et maximum publies.')}
               </p>
-              <p className="mt-1 text-[11px] text-muted-foreground">{t('business.salary.rangeNote', 'Entre minimum et maximum publies.')}</p>
             </div>
           </div>
 
           {stats.count > 0 ? (
             <>
-              {salaryChartData.length > 0 && (
-                <div className="rounded-lg border p-3 md:p-4">
-                  <p className="text-sm font-semibold mb-3">{t('business.salary.visualOverview', 'Apercu visuel des salaires')}</p>
-                  <div className="h-48 sm:h-56">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={salaryChartData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
-                        <XAxis
-                          dataKey="label"
-                          tick={{ fontSize: 11 }}
-                          interval={0}
-                          angle={isCompactChart ? -25 : -12}
-                          textAnchor="end"
-                          height={isCompactChart ? 62 : 52}
-                        />
-                        <YAxis tick={{ fontSize: 11 }} tickFormatter={(value) => `${Math.round(Number(value) / 1000)}k`} />
-                        <Tooltip
-                          formatter={(value) => formatMoneyMAD(Number(value))}
-                          contentStyle={{ borderRadius: '0.75rem', borderColor: 'hsl(var(--border))' }}
-                        />
-                        <Bar dataKey="salary" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-                <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">{t('business.salary.medianMonthly', 'Mediane mensuelle')}</p>
-                  <p className="font-bold">{hasEnoughData ? (isAuthenticated ? formatMoneyMAD(stats.medianMonthly) : t('business.salary.loginToUnlock', 'Connectez-vous')) : t('business.salary.insufficientData', 'Donnees insuffisantes')}</p>
-                </div>
-                <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">{t('business.salary.minMonthly', 'Minimum mensuel')}</p>
-                  <p className="font-bold">{canViewDetailedStats ? formatMoneyMAD(stats.minMonthly) : t('business.salary.loginToUnlock', 'Connectez-vous')}</p>
-                </div>
-                <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">{t('business.salary.maxMonthly', 'Maximum mensuel')}</p>
-                  <p className="font-bold">{canViewDetailedStats ? formatMoneyMAD(stats.maxMonthly) : t('business.salary.loginToUnlock', 'Connectez-vous')}</p>
-                </div>
-                <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">{t('business.salary.sample', 'Echantillon')}</p>
-                  <p className="font-bold">{tf('business.salary.entriesCount', '{count} entrees', { count: stats.count })}</p>
-                </div>
-              </div>
-              {!isAuthenticated && (
-                <div className="flex justify-end">
-                  <Button type="button" variant="outline" size="sm" onClick={() => setIsAuthPromptOpen(true)}>
-                    Debloquer les details salaires
-                  </Button>
-                </div>
-              )}
-
-              {stats.roleBreakdown.length > 0 && hasEnoughData && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold">{t('business.salary.topRoles', 'Top postes')}</p>
-                  <div className="space-y-2">
-                    {stats.roleBreakdown.map((row) => (
-                      <div key={row.jobTitle} className="flex items-center justify-between rounded-lg border p-2 text-sm">
-                        <span>{row.jobTitle}</span>
-                        <span className="font-semibold">
-                          {canViewDetailedStats ? `${formatMoneyMAD(row.medianMonthly)} (${row.count})` : t('business.salary.loginToUnlock', 'Connectez-vous')}
-                        </span>
+              <GatekeeperOverlay
+                active={shouldSoftGateInsights}
+                nextPath={salaryTabPath}
+                intent="salary_unlock"
+                title="Debloquez les insights salaires"
+                description="Connectez-vous pour voir la distribution, les fourchettes detaillees et les dernieres publications."
+                ctaLabel="Voir les details"
+                className="rounded-2xl"
+              >
+                <div className="space-y-4">
+                  {salaryChartData.length > 0 && (
+                    <div className="rounded-lg border p-3 md:p-4">
+                      <p className="mb-3 text-sm font-semibold">
+                        {t('business.salary.visualOverview', 'Apercu visuel des salaires')}
+                      </p>
+                      <div className="h-48 sm:h-56">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={salaryChartData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
+                            <XAxis
+                              dataKey="label"
+                              tick={{ fontSize: 11 }}
+                              interval={0}
+                              angle={isCompactChart ? -25 : -12}
+                              textAnchor="end"
+                              height={isCompactChart ? 62 : 52}
+                            />
+                            <YAxis tick={{ fontSize: 11 }} tickFormatter={(value) => `${Math.round(Number(value) / 1000)}k`} />
+                            <Tooltip
+                              formatter={(value) => formatMoneyMAD(Number(value))}
+                              contentStyle={{ borderRadius: '0.75rem', borderColor: 'hsl(var(--border))' }}
+                            />
+                            <Bar dataKey="salary" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {salaries.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold">{t('business.salary.latestEntries', 'Dernieres entrees publiees')}</p>
-                  <div className="space-y-2">
-                    {previewSalaries.map((row) => (
-                      <div key={row.id} className="rounded-lg border p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="font-medium">{row.job_title}</p>
-                          <Badge variant="outline">{row.pay_period === 'yearly' ? t('business.salary.yearly', 'Annuel') : t('business.salary.monthly', 'Mensuel')}</Badge>
-                        </div>
-                        <p className="mt-1 text-sm font-semibold">{canViewDetailedStats ? formatMoneyMAD(row.salary) : t('business.salary.loginToUnlock', 'Connectez-vous')}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {row.location || t('business.salary.locationUnknown', 'Localisation non precisee')} · {new Date(row.created_at).toLocaleDateString('fr-MA')}
-                        </p>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">{t('business.salary.medianMonthly', 'Mediane mensuelle')}</p>
+                      <p className="font-bold">
+                        {hasEnoughData ? formatMoneyMAD(stats.medianMonthly) : t('business.salary.insufficientData', 'Donnees insuffisantes')}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">{t('business.salary.minMonthly', 'Minimum mensuel')}</p>
+                      <p className="font-bold">
+                        {hasEnoughData
+                          ? formatMoneyMAD(stats.minMonthly)
+                          : tf('business.salary.kAnonymityShort', '< {minSample} soumissions', { minSample: MIN_PUBLIC_SAMPLE_SIZE })}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">{t('business.salary.maxMonthly', 'Maximum mensuel')}</p>
+                      <p className="font-bold">
+                        {hasEnoughData
+                          ? formatMoneyMAD(stats.maxMonthly)
+                          : tf('business.salary.kAnonymityShort', '< {minSample} soumissions', { minSample: MIN_PUBLIC_SAMPLE_SIZE })}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">{t('business.salary.sample', 'Echantillon')}</p>
+                      <p className="font-bold">{tf('business.salary.entriesCount', '{count} entrees', { count: stats.count })}</p>
+                    </div>
                   </div>
-                  {!canViewDetailedStats && salaries.length > previewSalaries.length && (
-                    <p className="text-xs text-muted-foreground">
-                      {t('business.salary.previewLimited', 'Apercu limite: connectez-vous pour voir toutes les entrees et valeurs detaillees.')}
-                    </p>
+
+                  {stats.roleBreakdown.length > 0 && hasEnoughData && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">{t('business.salary.topRoles', 'Top postes')}</p>
+                      <div className="space-y-2">
+                        {stats.roleBreakdown.map((row) => (
+                          <div key={row.jobTitle} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+                            <span>{row.jobTitle}</span>
+                            <span className="font-semibold">{`${formatMoneyMAD(row.medianMonthly)} (${row.count})`}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                  {!hasEnoughData && (
-                    <p className="text-xs text-muted-foreground">
-                      {tf(
-                        'business.salary.kAnonymityNotice',
-                        'Minimum {minSample} soumissions requis pour afficher les details statistiquement sensibles.',
-                        { minSample: MIN_PUBLIC_SAMPLE_SIZE }
-                      )}
-                    </p>
+
+                  {salaries.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">{t('business.salary.latestEntries', 'Dernieres entrees publiees')}</p>
+                      <div className="space-y-2">
+                        {previewSalaries.map((row) => (
+                          <div key={row.id} className="rounded-lg border p-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-medium">{row.job_title}</p>
+                              <Badge variant="outline">
+                                {row.pay_period === 'yearly' ? t('business.salary.yearly', 'Annuel') : t('business.salary.monthly', 'Mensuel')}
+                              </Badge>
+                            </div>
+                            <p className="mt-1 text-sm font-semibold">
+                              {hasEnoughData ? formatMoneyMAD(row.salary) : t('business.salary.insufficientData', 'Donnees insuffisantes')}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {row.location || t('business.salary.locationUnknown', 'Localisation non precisee')} - {new Date(row.created_at).toLocaleDateString('fr-MA')}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
+              </GatekeeperOverlay>
+
+              {!hasEnoughData && (
+                <p className="text-xs text-muted-foreground">
+                  {tf(
+                    'business.salary.kAnonymityNotice',
+                    'Minimum {minSample} soumissions requis pour afficher les details statistiquement sensibles.',
+                    { minSample: MIN_PUBLIC_SAMPLE_SIZE }
+                  )}
+                </p>
               )}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">{t('business.salary.empty', 'Aucune donnee salaire publiee pour le moment.')}</p>
+            <p className="text-sm text-muted-foreground">
+              {t('business.salary.empty', 'Aucune donnee salaire publiee pour le moment.')}
+            </p>
           )}
         </CardContent>
       </Card>
 
-      <Card className="border border-border/50 overflow-hidden">
+      <Card className="overflow-hidden border border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -331,7 +357,9 @@ export function SalarySection({
                 <Sparkles className="h-4 w-4 text-primary" />
                 {t('business.salary.shareTitle', 'Partager un salaire (anonyme)')}
               </CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground">{t('business.salary.shareModeration', 'Moderation activee avant publication.')}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('business.salary.shareModeration', 'Moderation activee avant publication.')}
+              </p>
             </div>
             {authStatus === 'authenticated' && (
               <div className="flex items-center gap-2">
@@ -352,8 +380,8 @@ export function SalarySection({
         <CardContent>
           {authStatus === 'loading' && (
             <div className="space-y-3">
-              <div className="h-10 w-full rounded-md bg-muted/40 animate-pulse" />
-              <div className="h-10 w-2/3 rounded-md bg-muted/40 animate-pulse" />
+              <div className="h-10 w-full animate-pulse rounded-md bg-muted/40" />
+              <div className="h-10 w-2/3 animate-pulse rounded-md bg-muted/40" />
             </div>
           )}
 
@@ -366,7 +394,10 @@ export function SalarySection({
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">{t('business.salary.loginRequired', 'Connectez-vous pour publier un salaire')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('business.salary.loginRequiredDesc', 'La soumission reste reservee aux utilisateurs connectes pour limiter le spam et garder des donnees de qualite.')}
+                    {t(
+                      'business.salary.loginRequiredDesc',
+                      'La soumission reste reservee aux utilisateurs connectes pour limiter le spam et garder des donnees de qualite.'
+                    )}
                   </p>
                   <div className="pt-1">
                     <Button type="button" onClick={() => setIsAuthPromptOpen(true)}>
@@ -378,7 +409,11 @@ export function SalarySection({
             </div>
           )}
 
-          {authStatus === 'authenticated' && !isFormOpen && <p className="text-sm text-muted-foreground">{t('business.salary.clickAdd', 'Cliquez sur Ajouter pour soumettre votre salaire.')}</p>}
+          {authStatus === 'authenticated' && !isFormOpen && (
+            <p className="text-sm text-muted-foreground">
+              {t('business.salary.clickAdd', 'Cliquez sur Ajouter pour soumettre votre salaire.')}
+            </p>
+          )}
 
           {authStatus === 'authenticated' && isFormOpen && (
             <form ref={formRef} action={formAction} className="space-y-4">
@@ -386,7 +421,7 @@ export function SalarySection({
               <input type="hidden" name="location" value={businessCity || ''} />
               <input type="hidden" name="isCurrent" value="true" />
 
-              <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-4">
+              <div className="space-y-4 rounded-xl border bg-muted/20 p-4 md:p-5">
                 <h4 className="text-sm font-semibold">{t('business.salary.mainInfo', 'Informations principales')}</h4>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-1">
@@ -416,7 +451,7 @@ export function SalarySection({
                 </div>
               </div>
 
-              <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-4">
+              <div className="space-y-4 rounded-xl border bg-muted/20 p-4 md:p-5">
                 <h4 className="text-sm font-semibold">{t('business.salary.context', 'Contexte du poste')}</h4>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                   <div className="space-y-1">
@@ -481,7 +516,7 @@ export function SalarySection({
                 </div>
               </div>
 
-              <div className="rounded-xl border bg-muted/20 p-4 md:p-5 space-y-3">
+              <div className="space-y-3 rounded-xl border bg-muted/20 p-4 md:p-5">
                 <h4 className="text-sm font-semibold">{t('business.salary.bonusOptional', 'Bonus (optionnel)')}</h4>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <label className="flex items-center gap-2 text-sm">
@@ -503,7 +538,9 @@ export function SalarySection({
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground">{t('business.salary.anonymousNotice', 'Votre soumission est anonyme et passera par moderation avant publication.')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('business.salary.anonymousNotice', 'Votre soumission est anonyme et passera par moderation avant publication.')}
+              </p>
               <Button type="submit" className="w-full sm:w-auto">
                 {t('business.salary.submit', 'Soumettre un salaire')}
               </Button>
@@ -511,10 +548,11 @@ export function SalarySection({
           )}
         </CardContent>
       </Card>
+
       <SoftAuthDialog
         open={isAuthPromptOpen}
         onOpenChange={setIsAuthPromptOpen}
-        nextPath={`${pathname || `/businesses/${businessId}`}?tab=salaries#salaries`}
+        nextPath={salaryTabPath}
         intent="salary_unlock"
         title="Debloquez les insights salaires"
         description="Connectez-vous pour voir les details salaires et publier votre salaire de facon anonyme."

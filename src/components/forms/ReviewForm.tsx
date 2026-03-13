@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { submitReview } from '@/app/actions/review';
 import { reviewSchema, ReviewFormState, ReviewFormData } from '@/lib/types';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,6 +41,8 @@ export function ReviewForm({ businessId }: ReviewFormProps) {
   const [state, formAction] = useActionState(submitReview, initialState);
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
 
   const form = useForm<ReviewFormData>({
@@ -65,8 +67,17 @@ export function ReviewForm({ businessId }: ReviewFormProps) {
     },
   });
 
+  const errorCode = (state as ReviewFormState & { code?: string }).code;
+
   useEffect(() => {
     if (state.status === 'error' && state.message && !state.errors) {
+      if (errorCode === 'AUTHENTICATION_ERROR') {
+        const currentQuery = searchParams.toString();
+        const nextPath = currentQuery ? `${pathname}?${currentQuery}` : pathname;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
+
       toast({
         variant: 'destructive',
         title: t('reviewForm.submitErrorTitle', 'Erreur de soumission'),
@@ -103,7 +114,7 @@ export function ReviewForm({ businessId }: ReviewFormProps) {
         });
       }
     }
-  }, [state.status, state.message, state.errors, state.data, toast, router, businessId, form, t]);
+  }, [state.status, state.message, state.errors, state.data, toast, router, businessId, form, t, errorCode, pathname, searchParams]);
 
   return (
     <Card className="w-full border border-border/50 shadow-none bg-card">

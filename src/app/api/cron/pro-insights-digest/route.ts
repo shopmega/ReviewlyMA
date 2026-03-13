@@ -257,7 +257,7 @@ export async function GET(req: NextRequest) {
           title: 'Alerte reputation',
           message: `${unansweredReviews} avis sans reponse sur les ${safeDays} derniers jours.`,
           type: 'pro_reputation_alert',
-          link: '/dashboard/reviews',
+          link: '/dashboard/avis',
           is_read: false,
         });
       }
@@ -305,4 +305,3 @@ export async function GET(req: NextRequest) {
     windowDays: safeDays,
   }, { status: 200 });
 }
-

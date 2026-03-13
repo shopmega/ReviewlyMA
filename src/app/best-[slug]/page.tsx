@@ -192,7 +192,7 @@ export default async function BestOfPage({ params }: SEOPageProps) {
                                     Augmentez votre visibilité à {parsed.city} en passant au statut Premium.
                                 </p>
                                 <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 border-none rounded-xl font-bold" asChild>
-                                    <Link href="/pour-les-pros">En savoir plus</Link>
+                                    <Link href="/pro">En savoir plus</Link>
                                 </Button>
                             </Card>
                         </div>

@@ -7,6 +7,7 @@ import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, isValidLocale } from '@/lib/i18n/co
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
 const CSP_NONCE_COOKIE = '__csp_nonce';
 const CSP_NONCE_HEADER = 'x-csp-nonce';
+const IS_DEVELOPMENT = process.env.NODE_ENV !== 'production';
 
 function isInternalNavigationRequest(request: NextRequest): boolean {
   const pathname = request.nextUrl.pathname;
@@ -25,15 +26,42 @@ function isInternalNavigationRequest(request: NextRequest): boolean {
 }
 
 function buildContentSecurityPolicy(nonce: string): string {
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    'https://cdn.jsdelivr.net',
+    'https://www.googletagmanager.com',
+    'https://pagead2.googlesyndication.com',
+    'https://partner.googleadservices.com',
+    'https://connect.facebook.net',
+    'https://vercel.live',
+  ];
+
+  const connectSrc = [
+    "'self'",
+    'https://*.supabase.co',
+    'https://www.googletagmanager.com',
+    'https://www.google-analytics.com',
+    'https://pagead2.googlesyndication.com',
+    'https://googleads.g.doubleclick.net',
+    'https://www.facebook.com',
+    'https://connect.facebook.net',
+    'https://*.adtrafficquality.google',
+  ];
+
+  if (IS_DEVELOPMENT) {
+    scriptSrc.push("'unsafe-eval'");
+    connectSrc.push('ws:', 'wss:');
+  }
+
   return [
     "default-src 'self'",
-    // NOTE: 'unsafe-inline' has been removed (C4 fix). All inline scripts must use the nonce.
-    `script-src 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
-    `script-src-elem 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net https://www.googletagmanager.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://connect.facebook.net https://vercel.live`,
+    `script-src ${scriptSrc.join(' ')}`,
+    `script-src-elem ${scriptSrc.join(' ')}`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: https://www.facebook.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://*.adtrafficquality.google",
+    `connect-src ${connectSrc.join(' ')}`,
     "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://vercel.live https://*.adtrafficquality.google https://www.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",

@@ -79,7 +79,7 @@ export default async function SalaryBenchmarkPage(props: {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/pour-les-pros">
+            <Link href="/pro">
               Revendiquer une entreprise
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

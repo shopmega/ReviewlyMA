@@ -16,7 +16,7 @@ export function ShareButton({ businessId, businessName, className }: ShareButton
     <ContentShareButton
       url={shareUrl}
       title={`${businessName} | Avis et salaires`}
-      text={`Decouvrez ${businessName} sur AVis.`}
+      text={`Decouvrez ${businessName} sur Reviewly.`}
       contentType="company_profile"
       contentId={businessId}
       cardType="company_snapshot"

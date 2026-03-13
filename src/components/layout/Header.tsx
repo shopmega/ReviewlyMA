@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
-import { LayoutDashboard, Store, User, LogOut, Search, MapPin, Sparkles, ChevronDown, Menu, X, Bell, Heart, Briefcase, Building2, UserCircle, Home, BookOpen, Pencil, Settings, ChevronRight, Info, Users } from 'lucide-react';
-import { isPaidTier } from '@/lib/tier-utils';
-import { usePathname, useRouter } from 'next/navigation';
+import { LayoutDashboard, Store, User, LogOut, Search, Sparkles, Menu, Briefcase, Home, Pencil, Settings, ChevronRight, Info, Users } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '../shared/ThemeToggle';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
@@ -14,25 +13,30 @@ import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { getSiteSettings, SiteSettings } from '@/lib/data';
-import { useBusiness } from '@/contexts/BusinessContext';
 import { NotificationBell } from './NotificationBell';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { getSiteName } from '@/lib/site-config';
 
-const navLinks = [
+const desktopNavLinks = [
+  { href: '/businesses', labelKey: 'businesses', fallback: 'Etablissements', icon: Search },
+  { href: '/salaires', labelKey: 'salaries', fallback: 'Salaires', icon: Sparkles },
+  { href: '/parrainages', labelKey: 'referrals', fallback: 'Parrainages', icon: Users },
+];
+
+const mobileNavLinks = [
+  { href: '/businesses', labelKey: 'search', fallback: 'Recherche', icon: Search },
   { href: '/', labelKey: 'home', fallback: 'Accueil', icon: Home },
   { href: '/businesses', labelKey: 'businesses', fallback: 'Etablissements', icon: Search },
   { href: '/salaires', labelKey: 'salaries', fallback: 'Salaires', icon: Sparkles },
-  { href: '/categories', labelKey: 'categories', fallback: 'Categories', icon: BookOpen },
-  { href: '/villes', labelKey: 'cities', fallback: 'Villes', icon: MapPin },
   { href: '/parrainages', labelKey: 'referrals', fallback: 'Parrainages', icon: Users },
-  { href: '/pour-les-pros', labelKey: 'forPros', fallback: 'Pour les pros', icon: Briefcase },
+  { href: '/pro', labelKey: 'forPros', fallback: 'Pour les pros', icon: Briefcase },
 ];
 
 export function Header({ settings }: { settings: SiteSettings }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { currentBusiness, isMultiBusiness, isLoading: businessLoading } = useBusiness();
   const { locale, locales, setLocale, t } = useI18n();
+  const { effectiveTier, hasPaidAccess, loading: businessProfileLoading } = useBusinessProfile();
 
   // Handle scroll effect for transparent header on home
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,7 +54,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
   const [profile, setProfile] = useState<any>(null);
   const [hasClaim, setHasClaim] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const siteName = settings.site_name || 'CityGuide App';
+  const siteName = getSiteName(settings);
 
   useEffect(() => {
     const supabase = createClient();
@@ -91,6 +95,12 @@ export function Header({ settings }: { settings: SiteSettings }) {
   const isAdminRoute = pathname.startsWith('/admin');
   const isDashboard = pathname.startsWith('/dashboard');
   const isMaintenance = pathname === '/maintenance';
+  const showEffectiveTier = !businessProfileLoading && (profile?.role === 'pro' || profile?.role === 'admin');
+  const displayTier = showEffectiveTier ? effectiveTier : profile?.tier || 'standard';
+  const showGoldBadge = displayTier === 'gold';
+  const showGrowthBadge = displayTier === 'growth';
+  const showPaidBadge = showGoldBadge || showGrowthBadge || hasPaidAccess;
+  const dashboardLabelSuffix = showGoldBadge ? 'GOLD' : showGrowthBadge ? 'GROWTH' : '';
 
   // Admin routes and maintenance page don't show the main Header
   if (isAdminRoute || isMaintenance) {
@@ -102,6 +112,15 @@ export function Header({ settings }: { settings: SiteSettings }) {
     await supabase.auth.signOut();
     window.location.href = '/';
   };
+
+  const isLinkActive = (href: string) =>
+    href === '/' ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const mobileDrawerLinks = user
+    ? mobileNavLinks
+    : [
+      ...mobileNavLinks,
+      { href: '/login', labelKey: 'login', fallback: 'Connexion', icon: User },
+    ];
 
   if (isDashboard) {
     return (
@@ -151,10 +170,10 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-bold text-foreground leading-none">{profile?.full_name || 'Utilisateur'}</p>
-                      {profile?.tier === 'gold' && (
+                      {showGoldBadge && (
                         <Badge variant="success" className="h-4 px-1 text-[8px] font-bold">GOLD</Badge>
                       )}
-                      {profile?.tier === 'growth' && (
+                      {showGrowthBadge && (
                         <Badge variant="secondary" className="h-4 px-1 text-[8px] font-bold">GROWTH</Badge>
                       )}
                     </div>
@@ -168,7 +187,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <DropdownMenuItem asChild className="rounded-lg">
                     <Link href="/dashboard" className="flex items-center">
                       <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
-                      <span>Tableau de bord {profile?.tier === 'gold' ? 'gold' : ''}</span>
+                      <span>{`Tableau de bord${dashboardLabelSuffix ? ` ${dashboardLabelSuffix}` : ''}`}</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
@@ -181,7 +200,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild className="rounded-lg mt-1">
-                  <Link href="/profile" className="flex items-center">
+                  <Link href="/profil" className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-muted-foreground" />
                     <span>{t('nav.profile', 'Mon profil')}</span>
                   </Link>
@@ -229,13 +248,13 @@ export function Header({ settings }: { settings: SiteSettings }) {
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center justify-center flex-1">
           <nav className="flex items-center gap-1 bg-secondary/30 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/10 shadow-inner">
-            {navLinks.map((link) => (
+            {desktopNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
                   'text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 relative overflow-hidden',
-                  (pathname.startsWith(link.href) && link.href !== '/') || pathname === link.href
+                  isLinkActive(link.href)
                     ? 'bg-background text-primary shadow-sm font-bold'
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/10'
                 )}
@@ -248,6 +267,12 @@ export function Header({ settings }: { settings: SiteSettings }) {
 
         {/* Right Actions */}
         <div className="flex items-center justify-end gap-3 shrink-0">
+          <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex rounded-full border border-border/50 hover:bg-secondary/60">
+            <Link href="/businesses" aria-label={t('nav.search', 'Recherche')}>
+              <Search className="h-4 w-4" />
+            </Link>
+          </Button>
+
           <div className="hidden md:flex">
             <Button asChild variant="outline" className="rounded-full border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all font-medium">
               <Link href="/review">
@@ -322,12 +347,12 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   <div className="flex-1 overflow-y-auto pt-4 pb-6 px-4 custom-scrollbar">
                     <nav className="flex flex-col gap-1.5">
                       <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-2">{t('nav.navigation', 'Navigation')}</p>
-                      {navLinks.map((link) => {
+                      {mobileDrawerLinks.map((link) => {
                         const Icon = link.icon;
-                        const isActive = pathname === link.href;
+                        const isActive = link.labelKey === 'search' ? false : isLinkActive(link.href);
                         return (
                           <Link
-                            key={link.href}
+                            key={`${link.href}-${link.labelKey}`}
                             href={link.href}
                             className={cn(
                               "flex items-center justify-between p-3.5 rounded-2xl text-sm font-semibold transition-all group",
@@ -409,7 +434,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                         {profile?.full_name?.substring(0, 1).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    {isPaidTier(profile?.tier) && (
+                    {showPaidBadge && (
                       <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] text-white ring-2 ring-background shadow-sm">
                         *
                       </span>
@@ -421,10 +446,10 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <div className="flex flex-col space-y-1">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-bold text-foreground leading-none">{profile?.full_name || 'Utilisateur'}</p>
-                        {profile?.tier === 'gold' && (
+                        {showGoldBadge && (
                           <Badge variant="default" className="h-4 px-1.5 text-[9px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 border-none">GOLD</Badge>
                         )}
-                        {profile?.tier === 'growth' && (
+                        {showGrowthBadge && (
                           <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold border-none">GROWTH</Badge>
                         )}
                       </div>
@@ -439,7 +464,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                     <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-primary/10 focus:text-primary cursor-pointer">
                       <Link href="/dashboard" className="flex items-center py-2.5 px-3">
                         <LayoutDashboard className="mr-3 h-4 w-4 text-primary" />
-                        <span className="font-medium">Tableau de bord {isPaidTier(profile?.tier) ? 'PRO' : ''}</span>
+                        <span className="font-medium">{`Tableau de bord${dashboardLabelSuffix ? ` ${dashboardLabelSuffix}` : ''}`}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -454,7 +479,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                   )}
 
                   <DropdownMenuItem asChild className="rounded-xl my-1 focus:bg-accent focus:text-foreground cursor-pointer">
-                    <Link href="/profile" className="flex items-center py-2.5 px-3">
+                    <Link href="/profil" className="flex items-center py-2.5 px-3">
                       <User className="mr-3 h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">{t('nav.profile', 'Mon profil')}</span>
                     </Link>
@@ -481,8 +506,8 @@ export function Header({ settings }: { settings: SiteSettings }) {
                 <Button variant="ghost" asChild className="rounded-full px-5 hover:bg-secondary/50 font-medium">
                   <Link href="/login">{t('nav.login', 'Connexion')}</Link>
                 </Button>
-                <Button asChild className="rounded-full shadow-lg shadow-primary/25 px-6 bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 border-0 transition-all hover:scale-105 active:scale-95 duration-300">
-                  <Link href="/signup">{t('nav.signup', "S'inscrire")}</Link>
+                <Button asChild variant="outline" className="rounded-full px-6 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/50 font-medium">
+                  <Link href="/pro">{t('nav.forPros', 'Pour les pros')}</Link>
                 </Button>
               </div>
             )}

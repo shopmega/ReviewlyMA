@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getSiteSettings } from '@/lib/data';
 import Link from 'next/link';
 import { isPaidTier } from '@/lib/tier-utils';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { getSiteName } from '@/lib/site-config';
 
 export default function DashboardPremiumPage() {
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,7 @@ export default function DashboardPremiumPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [selectedTier, setSelectedTier] = useState<'growth' | 'gold'>('gold');
   const { toast } = useToast();
+  const { businessTier, effectiveTier, hasPaidAccess, loading: accessLoading } = useBusinessProfile();
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -138,7 +141,7 @@ export default function DashboardPremiumPage() {
     }
   };
 
-  if (loading) {
+  if (loading || accessLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -146,10 +149,12 @@ export default function DashboardPremiumPage() {
     );
   }
 
-  const isPremium = profile?.tier && isPaidTier(profile.tier);
-  const currentTier = (profile?.tier as 'standard' | 'growth' | 'gold') || 'standard';
+  const isProfilePremium = profile?.tier && isPaidTier(profile.tier);
+  const isPremium = hasPaidAccess;
+  const currentTier = effectiveTier;
   const premiumExpiresAt = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : null;
-  const isExpired = premiumExpiresAt && premiumExpiresAt < new Date();
+  const isProfileExpired = premiumExpiresAt ? premiumExpiresAt < new Date() : false;
+  const isExpired = !isPremium && isProfileExpired;
 
   const daysRemaining = premiumExpiresAt
     ? Math.ceil((premiumExpiresAt.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
@@ -405,7 +410,7 @@ export default function DashboardPremiumPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Bénéficiaire:</span>
-                    <span className="font-medium">{siteSettings?.payment_beneficiary || `${siteSettings?.site_name || 'Platform'} SARL`}</span>
+                    <span className="font-medium">{siteSettings?.payment_beneficiary || `${getSiteName(siteSettings)} SARL`}</span>
                   </div>
                 </div>
               )}

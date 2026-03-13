@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock3, MapPin } from 'lucide-react';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
-import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { DemandResponseForm } from './DemandResponseForm';
 import { getServerTranslator } from '@/lib/i18n/server';
@@ -68,7 +67,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const item = await getDemandListingById(id);
   if (!item) {
     return {
-      title: t('referralDemandDetailPage.metadata.notFoundTitle', 'Referral demand | Reviewly MA'),
+      title: t('referralDemandDetailPage.metadata.notFoundTitle', 'Referral demand | Reviewly'),
       alternates: { canonical: `${siteUrl}/parrainages/demandes/${id}` },
     };
   }
@@ -169,6 +168,7 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
     'Referral demand: {role}{cityPart}.',
     { role: item.target_role, cityPart: item.city ? tf('referralDemandDetailPage.share.cityPart', ' in {city}', { city: item.city }) : '' }
   );
+  const respondLoginHref = `/login?next=${encodeURIComponent(`/parrainages/demandes/${item.id}#respond-form`)}`;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -230,14 +230,11 @@ export default async function ReferralDemandDetailPage({ params }: { params: Pro
           </Card>
 
           {!currentUserId ? (
-            <SoftAuthTriggerButton
-              label={t('referralDemandDetailPage.authPrompt.label', 'Log in to reply')}
-              nextPath={`/parrainages/demandes/${item.id}#respond-form`}
-              intent="referral_demand_reply"
-              className="w-full rounded-xl"
-              title={t('referralDemandDetailPage.authPrompt.title', 'Propose a referral in a few clicks')}
-              description={t('referralDemandDetailPage.authPrompt.description', 'Log in to send your response and help this candidate.')}
-            />
+            <Button asChild className="w-full rounded-xl">
+              <Link href={respondLoginHref}>
+                {t('referralDemandDetailPage.authPrompt.label', 'Log in to reply')}
+              </Link>
+            </Button>
           ) : null}
 
           {currentUserId && !isOwner ? (

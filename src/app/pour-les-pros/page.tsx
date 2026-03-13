@@ -7,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import PremiumFeatures from '@/components/shared/PremiumFeatures';
 import { getUserProfile } from '@/lib/session';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { getSiteName } from '@/lib/site-config';
 
 export default async function ForProsPage() {
   const siteSettings = await getSiteSettings();
-  const siteName = siteSettings.site_name || 'Platform';
+  const siteName = getSiteName(siteSettings);
   const user = await getUserProfile();
   const userTier = user?.tier || 'standard';
   const { t, tf } = await getServerTranslator();
@@ -25,7 +26,7 @@ export default async function ForProsPage() {
     t('forProsPage.features.basic.2', 'Update your information'),
     t('forProsPage.features.basic.3', 'Reply to employee reviews'),
     t('forProsPage.features.basic.4', 'Basic analytics (views)'),
-    t('forProsPage.features.basic.5', 'Receive messages (limited)'),
+    t('forProsPage.features.basic.5', 'Contact requests available after upgrade'),
   ];
 
   const growthFeatures = [
@@ -69,11 +70,11 @@ export default async function ForProsPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" asChild className="rounded-md px-8 py-6 text-lg font-bold shadow-none">
-                <Link href="/pour-les-pros/signup">{t('forProsPage.hero.ctaStart', 'Start for free')}</Link>
+                <Link href="/pro/signup">{t('forProsPage.hero.ctaStart', 'Start for free')}</Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="rounded-md px-8 py-6 text-lg font-bold border-2 border-border hover:bg-secondary/20">
                 <Link href="#premium">
-                  {t('forProsPage.hero.ctaPremium', 'Discover Premium')} <ArrowRight className="ml-2 w-5 h-5" />
+                  {t('forProsPage.hero.ctaPremium', 'See Business Plans')} <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </Button>
             </div>
@@ -113,7 +114,7 @@ export default async function ForProsPage() {
                 ))}
               </ul>
               <Button variant="outline" className="w-full h-14 rounded-md border-border text-foreground hover:bg-secondary/20 text-lg font-bold" asChild>
-                <Link href="/pour-les-pros/signup">{t('forProsPage.pricing.basic.cta', 'Start Basic')}</Link>
+                <Link href="/pro/signup">{t('forProsPage.pricing.basic.cta', 'Start Basic')}</Link>
               </Button>
             </div>
 
@@ -184,13 +185,13 @@ export default async function ForProsPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
             <Badge variant="outline" className="border-info/20 bg-info/10 text-info px-4 py-1">
-              {t('forProsPage.premium.badge', 'PREMIUM BENEFITS')}
+              {t('forProsPage.premium.badge', 'BUSINESS PLANS')}
             </Badge>
             <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
-              {t('forProsPage.premium.title', 'Exclusive premium features')}
+              {t('forProsPage.premium.title', 'Growth & Gold features')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('forProsPage.premium.subtitle', 'Powerful tools to transform your online presence and attract top talent.')}
+              {t('forProsPage.premium.subtitle', 'Choose the plan that fits one business or up to five.')}
             </p>
           </div>
 
@@ -253,7 +254,7 @@ export default async function ForProsPage() {
               <CardHeader className="pb-6">
                 <CardTitle className="flex items-center gap-2 text-xl font-bold text-info">
                   <Crown className="w-5 h-5" />
-                  {t('forProsPage.multi.premium.title', 'Premium plan')}
+                  {t('forProsPage.multi.premium.title', 'Gold plan')}
                 </CardTitle>
                 <div className="text-2xl font-black text-foreground">{t('forProsPage.multi.premium.count', 'Up to 5 businesses')}</div>
               </CardHeader>
@@ -322,10 +323,10 @@ export default async function ForProsPage() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
-              {t('forProsPage.how.title', 'How to join Pro?')}
+              {t('forProsPage.how.title', 'How to activate your plan?')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('forProsPage.how.subtitle', 'Simple and fast to activate your premium features.')}
+              {t('forProsPage.how.subtitle', 'Simple and fast to activate your Growth or Gold plan.')}
             </p>
           </div>
 
@@ -357,11 +358,11 @@ export default async function ForProsPage() {
             <Card className="text-center border-border bg-secondary/20 rounded-2xl p-6 hover:bg-secondary/30 transition-colors">
               <CardHeader>
                 <div className="mx-auto bg-info text-white rounded-md shadow-none w-16 h-16 flex items-center justify-center mb-4 text-2xl font-black italic">3</div>
-                <CardTitle className="text-xl font-bold text-foreground">{t('forProsPage.how.step3.title', 'Activate premium')}</CardTitle>
+                <CardTitle className="text-xl font-bold text-foreground">{t('forProsPage.how.step3.title', 'Activate your plan')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground font-medium leading-relaxed">
-                  {t('forProsPage.how.step3.desc', 'Once verified, your pro badge and premium features are activated immediately.')}
+                  {t('forProsPage.how.step3.desc', 'Once verified, your business badge and plan features are activated immediately.')}
                 </p>
               </CardContent>
             </Card>
@@ -383,10 +384,10 @@ export default async function ForProsPage() {
           </h2>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Button size="lg" asChild className="rounded-md bg-info text-white hover:opacity-90 px-10 py-8 text-xl font-bold shadow-none">
-              <Link href="/pour-les-pros/signup">{t('forProsPage.cta.start', 'Start my pro account')}</Link>
+              <Link href="/pro/signup">{t('forProsPage.cta.start', 'Start my business account')}</Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="rounded-md border-border px-10 py-8 text-xl font-bold">
-              <Link href="/dashboard">{t('forProsPage.cta.subscribe', 'Subscribe to premium')}</Link>
+              <Link href="/dashboard">{t('forProsPage.cta.subscribe', 'See Business Plans')}</Link>
             </Button>
           </div>
           <p className="text-muted-foreground font-medium">{t('forProsPage.cta.subtitle', 'Join companies turning attractiveness into success.')}</p>

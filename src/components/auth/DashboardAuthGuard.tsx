@@ -78,7 +78,7 @@ export function DashboardAuthGuard({
               router.push('/dashboard/pending');
               return;
             } else if (!pendingClaim) {
-              router.push('/pour-les-pros');
+              router.push('/pro');
               return;
             } else {
               hasAccess = true; // Allow access to pending page

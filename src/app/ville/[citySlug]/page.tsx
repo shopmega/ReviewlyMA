@@ -3,9 +3,10 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { BusinessList } from '@/components/shared/BusinessList';
 import { getFilteredBusinesses, getAllCategories, getAllBenefits } from '@/lib/data';
-import { getCityFromSlug, slugify } from '@/lib/utils';
+import { getCityFromSlug } from '@/lib/utils';
 import { Suspense } from 'react';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 interface CityPageProps {
     params: Promise<{ citySlug: string }>;
@@ -55,6 +56,13 @@ export default async function CityPage({ params, searchParams }: CityPageProps) 
         <div className="container mx-auto px-4 md:px-6 py-12">
             <div className="mb-12 space-y-6">
                 <div className="space-y-2">
+                    <Breadcrumb
+                        items={[
+                            { label: 'Villes', href: '/villes' },
+                            { label: city, href: `/ville/${citySlug}` },
+                        ]}
+                        className="mb-3"
+                    />
                     <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight">
                         Entreprises à <span className="text-primary">{city}</span>
                     </h1>

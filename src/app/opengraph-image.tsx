@@ -38,10 +38,10 @@ export default function OpenGraphImage() {
               fontWeight: 800,
             }}
           >
-            A
+            R
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 52, fontWeight: 800, letterSpacing: 0.3 }}>AVis</div>
+            <div style={{ fontSize: 52, fontWeight: 800, letterSpacing: 0.3 }}>Reviewly</div>
             <div style={{ fontSize: 26, opacity: 0.88 }}>Avis et confiance pour les entreprises</div>
           </div>
         </div>

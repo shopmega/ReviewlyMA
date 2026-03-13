@@ -311,7 +311,7 @@ export const emailTemplates = {
     `,
   },
   verificationCode: {
-    subject: (code: string, siteName: string = 'Platform') => `Votre code de vérification ${siteName} : ${code}`,
+    subject: (code: string, siteName: string = 'Reviewly') => `Votre code de vérification ${siteName} : ${code}`,
     html: (data: { code: string; siteName: string }) => `
 <!DOCTYPE html>
 <html>

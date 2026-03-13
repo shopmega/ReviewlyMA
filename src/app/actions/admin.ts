@@ -1385,7 +1385,7 @@ export async function requestLogo(businessId: string): Promise<AdminActionResult
           title: 'Demande de logo reçue',
           message: `Un administrateur a demandé un logo pour votre établissement "${business.name}". Veuillez ajouter un logo dans votre tableau de bord pour améliorer la visibilité de votre entreprise.`,
           type: 'logo_request',
-          link: '/dashboard/edit-profile',
+          link: '/dashboard/etablissement',
           is_read: false
         });
 

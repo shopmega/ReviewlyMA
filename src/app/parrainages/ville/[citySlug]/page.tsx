@@ -40,8 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { citySlug } = await params;
   const city = getCityFromSlug(citySlug) || citySlug;
   return {
-    title: tf('referralCityPage.metaTitle', 'Referrals in {city} | Reviewly MA', { city }),
-    description: tf('referralCityPage.metaDescription', 'Active internal referral offers in {city} on Reviewly MA.', { city }),
+    title: tf('referralCityPage.metaTitle', 'Referrals in {city} | Reviewly', { city }),
+    description: tf('referralCityPage.metaDescription', 'Active internal referral offers in {city} on Reviewly.', { city }),
     alternates: { canonical: `/parrainages/ville/${citySlug}` },
   };
 }

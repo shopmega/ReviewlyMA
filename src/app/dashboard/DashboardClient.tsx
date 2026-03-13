@@ -22,7 +22,6 @@ import { StarRating } from '@/components/shared/StarRating';
 import { cn } from '@/lib/utils';
 import { getAuthorDisplayName, getAuthorInitials } from '@/lib/utils/anonymous-reviews';
 import { type Profile } from '@/lib/types';
-import { isPaidTier } from '@/lib/tier-utils';
 
 // Re-defining internal types if not available globally
 export type BusinessData = {
@@ -87,6 +86,8 @@ export type DashboardStats = {
         missingProfileFields: string[];
         hasContactChannel: boolean;
         hasPremiumAccess: boolean;
+        hasGoldAccess: boolean;
+        effectiveTier: 'standard' | 'growth' | 'gold';
     };
     salaryBenchmark?: {
         medianMonthlySalary: number | null;
@@ -111,7 +112,7 @@ interface DashboardClientProps {
     otherBusinesses?: { id: string, name: string }[];
 }
 
-export default function DashboardClient({ stats, profile, error, otherBusinesses = [] }: DashboardClientProps) {
+export default function DashboardClient({ stats, error, otherBusinesses = [] }: DashboardClientProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -145,7 +146,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         {error || "Nous n'avons pas trouvé votre entreprise associée."}
                     </p>
                     <Button asChild size="lg" className="px-8 font-bold">
-                        <Link href="/pour-les-pros">Revendiquer mon entreprise</Link>
+                        <Link href="/pro">Revendiquer mon entreprise</Link>
                     </Button>
                 </div>
             </div>
@@ -168,7 +169,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 ? `${stats.actionChecklist.pendingReviewReplies} avis attendent une reponse.`
                 : 'Aucun avis en attente.',
             cta: stats.actionChecklist.pendingReviewReplies > 0 ? 'Traiter' : 'Voir',
-            href: '/dashboard/reviews',
+            href: '/dashboard/avis',
         },
         {
             key: 'profile',
@@ -178,7 +179,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 ? `Profil a ${stats.actionChecklist.profileCompletion}%`
                 : `Profil a ${stats.actionChecklist.profileCompletion}%. Champs manquants: ${stats.actionChecklist.missingProfileFields.slice(0, 2).join(', ') || 'a verifier'}.`,
             cta: 'Mettre a jour',
-            href: '/dashboard/edit-profile',
+            href: '/dashboard/etablissement',
         },
         {
             key: 'contact',
@@ -188,7 +189,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 ? 'Canal de contact actif.'
                 : 'Ajoutez au moins un telephone, site web ou WhatsApp.',
             cta: 'Configurer',
-            href: '/dashboard/edit-profile',
+            href: '/dashboard/etablissement',
         },
     ];
     const pendingChecklistItems = checklistItems.filter((item) => !item.done);
@@ -303,16 +304,16 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                 <span className="text-primary">{stats.business.name}</span>
                             )}
                         </h1>
-                        {profile?.tier && isPaidTier(profile.tier) && (
+                        {stats.actionChecklist.hasPremiumAccess && (
                             <Badge className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide" variant="info">
                                 <Sparkles className="w-3 h-3 fill-white" />
-                                {profile?.tier.toUpperCase()}
+                                {stats.actionChecklist.effectiveTier.toUpperCase()}
                             </Badge>
                         )}
                     </div>
                     <p className="text-base font-medium text-muted-foreground">
-                        {profile?.tier && isPaidTier(profile.tier)
-                            ? `Propulsé par Avis ${profile.tier.toUpperCase()} • Votre entreprise se démarque.`
+                        {stats.actionChecklist.hasPremiumAccess
+                            ? `Propulsé par Avis ${stats.actionChecklist.effectiveTier.toUpperCase()} • Votre entreprise se démarque.`
                             : "Voici les performances de votre entreprise aujourd'hui."}
                     </p>
                 </div>
@@ -332,14 +333,14 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         ))}
                     </div>
                     <div className="flex flex-wrap gap-3">
-                    {(!profile?.tier || !isPaidTier(profile.tier)) && (
+                    {!stats.actionChecklist.hasPremiumAccess && (
                         <Button
                             asChild
                             className="h-11 rounded-md border border-border bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80"
                         >
                             <Link href="/dashboard/premium">
                                 <Sparkles className="w-4 h-4 mr-2" />
-                                Découvrir Premium
+                                Voir les plans
                             </Link>
                         </Button>
                     )}
@@ -409,10 +410,10 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     )}
                     <div className="flex flex-wrap gap-2">
                         <Button asChild size="sm" variant="outline" className="rounded-lg">
-                            <Link href="/dashboard/reviews">Repondre aux avis</Link>
+                            <Link href="/dashboard/avis">Repondre aux avis</Link>
                         </Button>
                         <Button asChild size="sm" variant="outline" className="rounded-lg">
-                            <Link href="/dashboard/edit-profile">Completer le profil</Link>
+                            <Link href="/dashboard/etablissement">Completer le profil</Link>
                         </Button>
                         <Button asChild size="sm" variant="outline" className="rounded-lg">
                             <Link href={`/businesses/${stats.business.id}`}>Voir la page publique</Link>
@@ -482,7 +483,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                 ))}
             </div>
 
-            {profile?.tier === 'gold' && (
+            {stats.actionChecklist.hasGoldAccess && (
                 <Card className="border-warning/30 bg-warning/10 shadow-none rounded-xl overflow-hidden">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-foreground text-xl font-bold flex items-center gap-2">
@@ -543,7 +544,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                     <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                         <CardTitle className="font-headline text-xl text-foreground">Derniers Avis Employés</CardTitle>
                         <Button variant="ghost" size="sm" className="text-info hover:bg-info/10 font-bold rounded-md" asChild>
-                            <Link href="/dashboard/reviews">Gérer les avis</Link>
+                            <Link href="/dashboard/avis">Gérer les avis</Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -594,7 +595,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                             </p>
                                             <div className="pt-3 flex justify-end">
                                                 <Button size="sm" variant="outline" className="text-info hover:text-info hover:bg-info/10 h-9 px-4 rounded-md text-xs font-bold border-info/20" asChild>
-                                                    <Link href="/dashboard/reviews">
+                                                    <Link href="/dashboard/avis">
                                                         Répondre <ArrowRight className="ml-1.5 w-3 h-3" />
                                                     </Link>
                                                 </Button>
@@ -617,7 +618,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-                                {profile?.tier === 'growth'
+                                {stats.actionChecklist.effectiveTier === 'growth'
                                     ? <>Passez au niveau <span className="font-bold text-info">Business GOLD</span> pour débloquer :</>
                                     : <>Passez au niveau supérieur avec <span className="font-bold text-info">GOLD</span> :</>
                                 }
@@ -633,13 +634,13 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                     <Star className="w-4 h-4 text-info" /> Meilleure visibilité pour attirer les talents
                                 </li>
                             </ul>
-                            {!profile?.tier || profile.tier !== 'gold' ? (
+                            {!stats.actionChecklist.hasGoldAccess ? (
                                 <Button
                                     asChild
                                     className="w-full rounded-md bg-info hover:opacity-90 text-white font-bold h-12 shadow-none"
                                 >
                                     <Link href="/dashboard/premium">
-                                        {profile?.tier === 'growth' ? "Passer GOLD" : "Découvrir Avis Premium"}
+                                        {stats.actionChecklist.effectiveTier === 'growth' ? "Passer GOLD" : "Voir les plans Business"}
                                     </Link>
                                 </Button>
                             ) : (
@@ -659,7 +660,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                         </CardHeader>
                         <CardContent className="grid gap-3">
                             <Button variant="secondary" className="w-full justify-start h-12 bg-secondary text-foreground font-bold hover:bg-secondary/80 border-border" asChild>
-                                <Link href="/dashboard/reviews">
+                                <Link href="/dashboard/avis">
                                     <MessageSquare className="mr-3 w-4 h-4 text-info" /> Répondre aux avis
                                 </Link>
                             </Button>
@@ -669,7 +670,7 @@ export default function DashboardClient({ stats, profile, error, otherBusinesses
                                 </Link>
                             </Button>
                             <Button variant="secondary" className="w-full justify-start h-12 bg-secondary text-foreground font-bold hover:bg-secondary/80 border-border" asChild>
-                                <Link href="/dashboard/edit-profile">
+                                <Link href="/dashboard/etablissement">
                                     <Eye className="mr-3 w-4 h-4 text-info" /> Éditer mon profil
                                 </Link>
                             </Button>

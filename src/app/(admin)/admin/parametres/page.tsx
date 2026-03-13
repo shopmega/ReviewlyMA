@@ -111,7 +111,7 @@ type SiteSettings = {
 
 const defaultSettings: SiteSettings = {
     id: 'main',
-    site_name: 'Avis Platform',
+    site_name: 'Reviewly',
     site_description: '',
     contact_email: '',
     support_phone: '',
@@ -168,7 +168,7 @@ const defaultSettings: SiteSettings = {
     // Default payment settings
     payment_bank_name: 'BMCE Bank',
     payment_rib_number: '011 780 0000 1234567890 12 34',
-    payment_beneficiary: 'Platform SARL',
+    payment_beneficiary: 'Reviewly SARL',
     payment_chari_url: 'https://chari.ma/avis',
     payment_methods_enabled: ['bank_transfer'],
     partner_app_name: 'MOR RH',
@@ -893,7 +893,7 @@ export default function SettingsPage() {
                                         id="payment_beneficiary"
                                         value={settings.payment_beneficiary || ''}
                                         onChange={(e) => updateSetting('payment_beneficiary', e.target.value)}
-                                        placeholder={t('adminSettings.payments.beneficiaryPlaceholder', 'Ex: Platform SARL')}
+                                        placeholder={t('adminSettings.payments.beneficiaryPlaceholder', 'Ex: Reviewly SARL')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>
@@ -1053,7 +1053,7 @@ export default function SettingsPage() {
                                         id="copyright_text"
                                         value={settings.copyright_text || ''}
                                         onChange={(e) => updateSetting('copyright_text', e.target.value)}
-                                        placeholder={t('adminSettings.support.copyrightPlaceholder', '&copy; 2024 Platform. Tous droits reserves.')}
+                                        placeholder={t('adminSettings.support.copyrightPlaceholder', '&copy; 2024 Reviewly. Tous droits reserves.')}
                                         className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
                                     />
                                 </div>

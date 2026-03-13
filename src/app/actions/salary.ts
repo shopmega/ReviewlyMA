@@ -265,7 +265,7 @@ export async function moderateSalary(
       const notificationsByUser = new Map<string, { title: string; message: string; link: string }>();
 
       const companyLink = `/businesses/${salary.business_id}?tab=salaries#salaries`;
-      const roleLink = roleSlug && citySlug ? `/salaires/role/${roleSlug}/${citySlug}` : companyLink;
+      const roleLink = roleSlug && citySlug ? `/salaires/${roleSlug}/${citySlug}` : companyLink;
       const sectorLink = salary.sector_slug && citySlug ? `/salaires/secteur/${salary.sector_slug}/${citySlug}` : companyLink;
       const roleName = salary.job_title || 'ce poste';
       const cityName = salary.location || 'votre ville';

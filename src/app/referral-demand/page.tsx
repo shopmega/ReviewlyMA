@@ -69,9 +69,9 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getServerSiteUrl();
   return {
-    title: 'Referral Demand Dashboard | Reviewly MA',
+    title: 'Referral Demand Dashboard | Reviewly',
     description:
-      'Live referral demand dashboard with active listings, top roles, top cities, and 30-day trend signals.',
+      'Track live referral demand, top roles, top cities, and hiring momentum across the market.',
     alternates: {
       canonical: `${siteUrl}/referral-demand`,
     },
@@ -109,8 +109,8 @@ export default async function ReferralDemandDashboardPage() {
         <Badge variant="outline" className="w-fit">Referral Demand Intelligence</Badge>
         <h1 className="text-3xl md:text-4xl font-bold font-headline">Live referral demand dashboard</h1>
         <p className="text-muted-foreground max-w-3xl">
-          Hub data pour la nouvelle architecture SEO. Cette page centralise la demande active, les tendances et les points
-          d&apos;entree vers les pages cluster.
+          Track where referral demand is growing, which roles are requested most often, and which cities are moving right now.
+          Use these signals alongside salary guides and company reviews to target your next application.
         </p>
         <p className="text-xs text-muted-foreground">
           Last refreshed: {refreshedAt.toLocaleString('fr-MA')}
@@ -249,11 +249,11 @@ export default async function ReferralDemandDashboardPage() {
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg">Cluster links</CardTitle>
+          <CardTitle className="text-lg">Related research</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
-            <Link href="/salary">Salary intelligence</Link>
+            <Link href="/salaires">Salary intelligence</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/companies">Company insights</Link>

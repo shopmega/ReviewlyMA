@@ -1,9 +1,10 @@
 import { Wrench } from "lucide-react";
 import { getSiteSettings } from "@/lib/data";
+import { getSiteName } from "@/lib/site-config";
 
 export default async function MaintenancePage() {
     const siteSettings = await getSiteSettings();
-    const siteName = siteSettings.site_name || 'Platform';
+    const siteName = getSiteName(siteSettings);
 
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950">

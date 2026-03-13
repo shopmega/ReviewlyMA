@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getServerTranslator();
   return {
-    title: t('referralDemandBoardPage.metaTitle', 'Referral requests | Reviewly MA'),
+    title: t('referralDemandBoardPage.metaTitle', 'Referral requests | Reviewly'),
     description: t(
       'referralDemandBoardPage.metaDescription',
       'Browse public requests from candidates looking for a referral.'

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition, useActionState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,6 +49,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 type UserProfile = {
   id: string;
@@ -92,6 +94,17 @@ type ReviewAppeal = {
 
 type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'account';
 
+function resolveProfileTab(value: string | null): ProfileTab {
+  if (value === 'saved' || value === 'referrals' || value === 'account') {
+    return value;
+  }
+  return 'reviews';
+}
+
+function buildProfileTabHref(tab: ProfileTab) {
+  return tab === 'reviews' ? '/profil' : `/profil?tab=${tab}`;
+}
+
 function ProfileSkeleton() {
   return (
     <div className="container mx-auto px-4 md:px-6 py-12">
@@ -116,15 +129,18 @@ function ProfileSkeleton() {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const REVIEWS_PAGE_SIZE = 20;
   const SAVED_BUSINESSES_PAGE_SIZE = 12;
+  const requestedTab = resolveProfileTab(searchParams.get('tab'));
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [reviewsPage, setReviewsPage] = useState(0);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'helpful' | 'rating'>('newest');
-  const [activeTab, setActiveTab] = useState<ProfileTab>('reviews');
+  const [activeTab, setActiveTab] = useState<ProfileTab>(requestedTab);
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([]);
   const [savedVisibleCount, setSavedVisibleCount] = useState(SAVED_BUSINESSES_PAGE_SIZE);
   const [referralStats, setReferralStats] = useState({ offers: 0, requests: 0 });
@@ -136,6 +152,14 @@ export default function ProfilePage() {
   const [isPending, startTransition] = useTransition();
   const { t, tf, locale } = useI18n();
   const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const loginNextPath = buildProfileTabHref(requestedTab);
+  const breadcrumbItems = useMemo(() => {
+    const base = [{ label: 'Profil', href: '/profil' }];
+    if (activeTab === 'saved') return [...base, { label: 'Favoris', href: buildProfileTabHref('saved') }];
+    if (activeTab === 'referrals') return [...base, { label: 'Parrainages', href: buildProfileTabHref('referrals') }];
+    if (activeTab === 'account') return [...base, { label: 'Compte', href: buildProfileTabHref('account') }];
+    return base;
+  }, [activeTab]);
 
   // Sort reviews based on selected option
   const sortedReviews = useMemo(() => {
@@ -329,6 +353,10 @@ export default function ProfilePage() {
   }, [form]);
 
   useEffect(() => {
+    setActiveTab(requestedTab);
+  }, [requestedTab]);
+
+  useEffect(() => {
     if (state?.status === 'success') {
       toast({ title: t('profilePage.toasts.profileUpdated', 'Profile updated'), description: state.message });
       // Update local profile state
@@ -453,6 +481,12 @@ export default function ProfilePage() {
     setSavedVisibleCount((prev) => Math.min(prev + SAVED_BUSINESSES_PAGE_SIZE, savedBusinesses.length));
   };
 
+  const handleTabChange = (value: string) => {
+    const nextTab = resolveProfileTab(value);
+    setActiveTab(nextTab);
+    router.replace(buildProfileTabHref(nextTab), { scroll: false });
+  };
+
   if (loading) return <ProfileSkeleton />;
 
   if (!isAuthenticated) {
@@ -467,7 +501,7 @@ export default function ProfilePage() {
             {t('profilePage.authRequired.description', 'Join the community to manage your profile, reviews and favorites.')}
           </p>
           <Button asChild size="lg" className="w-full rounded-full shadow-lg">
-            <Link href="/login?next=/profile">{t('profilePage.authRequired.cta', 'Log in')}</Link>
+            <Link href={`/login?next=${encodeURIComponent(loginNextPath)}`}>{t('profilePage.authRequired.cta', 'Log in')}</Link>
           </Button>
         </Card>
       </div>
@@ -495,6 +529,9 @@ export default function ProfilePage() {
 
       <div className="container mx-auto px-4 md:px-6 -mt-32 relative z-10 pb-20">
         <div className="max-w-5xl mx-auto">
+          <div className="mb-6 inline-flex rounded-full border border-border/60 bg-background/90 px-4 py-2 shadow-sm backdrop-blur-sm">
+            <Breadcrumb items={breadcrumbItems} />
+          </div>
           {/* Enhanced Profile Header */}
           <Card className="border-none shadow-2xl bg-card/90 backdrop-blur-md overflow-hidden mb-8">
             <CardContent className="p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
@@ -573,7 +610,7 @@ export default function ProfilePage() {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-full">
-                  <Link href="/profile/saved-businesses">
+                  <Link href={buildProfileTabHref('saved')}>
                     <Heart className="mr-2 h-4 w-4" />
                     {t('profilePage.recommended.viewFavorites', 'View my favorites')}
                   </Link>
@@ -583,7 +620,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Main Content Tabs */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ProfileTab)} className="space-y-8">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
             <div className="flex justify-start overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
               <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 backdrop-blur-sm h-14 w-max min-w-full md:min-w-0">
                 <TabsTrigger value="reviews" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
@@ -761,7 +798,7 @@ export default function ProfilePage() {
                     {tf('profilePage.saved.count', 'Showing {visible} favorites out of {total}.', { visible: savedVisibleCount, total: savedBusinesses.length })}
                   </p>
                   <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link href="/profile/saved-businesses">{t('profilePage.saved.viewAll', 'View all my favorites')}</Link>
+                    <Link href={buildProfileTabHref('saved')}>{t('profilePage.saved.viewAll', 'View all my favorites')}</Link>
                   </Button>
                 </div>
               )}
@@ -1054,5 +1091,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-

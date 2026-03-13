@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
       link = `/businesses/${sub.business_id}?tab=salaries#salaries`;
     } else if (sub.scope === 'role_city' && sub.role_slug && sub.city_slug) {
       matched = roleCityKeys.has(`${sub.role_slug}::${sub.city_slug}`);
-      link = `/salaires/role/${sub.role_slug}/${sub.city_slug}`;
+      link = `/salaires/${sub.role_slug}/${sub.city_slug}`;
     } else if (sub.scope === 'sector_city' && sub.sector_slug && sub.city_slug) {
       matched = sectorCityKeys.has(`${sub.sector_slug}::${sub.city_slug}`);
       link = `/salaires/secteur/${sub.sector_slug}/${sub.city_slug}`;
@@ -142,4 +142,3 @@ export async function GET(req: NextRequest) {
     { status: 200 }
   );
 }
-

@@ -56,7 +56,7 @@ export async function GET(request: Request) {
               backgroundColor: '#22C55E',
             }}
           />
-          <div style={{ fontSize: 30, fontWeight: 700 }}>AVis - Salaires Maroc</div>
+          <div style={{ fontSize: 30, fontWeight: 700 }}>Reviewly - Salaires Maroc</div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

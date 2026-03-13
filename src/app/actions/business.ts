@@ -602,7 +602,7 @@ export async function updateBusinessProfile(
                             dedupeMinutes: 15,
                         });
 
-                        revalidatePath(`/dashboard/edit-profile`);
+                        revalidatePath(`/dashboard/etablissement`);
                         revalidatePath(`/businesses/${fallbackBusinessId}`);
                         revalidatePath(`/dashboard`);
 
@@ -635,7 +635,7 @@ export async function updateBusinessProfile(
             dedupeMinutes: 15,
         });
 
-        revalidatePath(`/dashboard/edit-profile`);
+        revalidatePath(`/dashboard/etablissement`);
         revalidatePath(`/businesses/${businessIdToUpdate}`);
         revalidatePath(`/dashboard`);
 
@@ -714,7 +714,7 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
             dedupeMinutes: 15,
         });
 
-        revalidatePath(`/dashboard/edit-profile`);
+        revalidatePath(`/dashboard/etablissement`);
         revalidatePath(`/businesses/${businessId}`);
 
         return { status: 'success', message: 'Images mises à jour avec succès' };
@@ -779,7 +779,7 @@ export async function saveBusinessHours(hours: any[], businessId: string): Promi
             dedupeMinutes: 15,
         });
 
-        revalidatePath(`/dashboard/edit-profile`);
+        revalidatePath(`/dashboard/etablissement`);
         revalidatePath(`/businesses/${businessId}`);
 
         return { status: 'success', message: 'Horaires enregistrés avec succès' };

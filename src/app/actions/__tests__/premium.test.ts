@@ -128,7 +128,33 @@ describe('premium actions', () => {
 
     expect(result.isPremium).toBe(true);
     expect(result.subscriptionTier).toBe('gold');
-    expect(result.maxBusinesses).toBe(1);
+    expect(result.maxBusinesses).toBe(5);
+  });
+
+  it('uses the Gold multi-business cap for legacy premium users without an explicit tier row', async () => {
+    createServerClientMock.mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === 'premium_users') {
+          return createPremiumUsersQuery({ data: null });
+        }
+        if (table === 'profiles') {
+          return createProfilesQuery({
+            data: {
+              is_premium: true,
+              tier: null,
+              premium_expires_at: '2099-01-01T00:00:00.000Z',
+            },
+          });
+        }
+        return createProfilesQuery({ data: null });
+      }),
+    });
+
+    const result = await getUserPremiumStatus('user-legacy-premium');
+
+    expect(result.isPremium).toBe(true);
+    expect(result.subscriptionTier).toBe('gold');
+    expect(result.maxBusinesses).toBe(5);
   });
 
   it('returns standard and logs when query throws', async () => {
@@ -446,6 +472,62 @@ describe('premium actions', () => {
     expect(profileUpdateMock).toHaveBeenCalledWith({
       business_id: 'biz-new',
       role: 'pro',
+    });
+  });
+
+  it('addBusinessToUser allows adding another business when Gold capacity remains', async () => {
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+
+    createServerClientMock.mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === 'premium_users') {
+          return createPremiumUsersQuery({
+            data: {
+              max_businesses: 5,
+              subscription_tier: 'gold',
+              subscription_expires_at: '2099-01-01T00:00:00.000Z',
+            },
+          });
+        }
+        if (table === 'user_businesses') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    business_id: 'biz-existing',
+                    role: 'owner',
+                    is_primary: true,
+                    businesses: { name: 'Existing Biz', overall_rating: 4.8, reviews: [{ count: 7 }] },
+                  },
+                ],
+                error: null,
+              }),
+            })),
+            insert: insertMock,
+          };
+        }
+        if (table === 'profiles') {
+          return createProfilesQuery({ data: { is_premium: false, tier: 'standard' } });
+        }
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            })),
+          })),
+        };
+      }),
+    });
+
+    const result = await addBusinessToUser('user-1', 'biz-second');
+
+    expect(result.status).toBe('success');
+    expect(insertMock).toHaveBeenCalledWith({
+      user_id: 'user-1',
+      business_id: 'biz-second',
+      role: 'owner',
+      is_primary: false,
     });
   });
 

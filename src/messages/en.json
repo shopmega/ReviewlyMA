@@ -73,10 +73,10 @@
       "subtitle": "Dive into our themed collections and find the perfect company for your career."
     },
     "hero": {
-      "badge": "Immediate value for your career decisions",
+      "badge": "Clearer employer signals",
       "titleLine1": "Understand a company",
       "titleLine2": "before joining it.",
-      "subtitle": "Reviews, salaries, and reputation of Moroccan companies.",
+      "subtitle": "Reviews, salaries, and referral signals to evaluate Moroccan employers.",
       "searchPlaceholder": "Company, role, or keyword...",
       "searchCta": "Search a company",
       "writeReview": "Write a review",
@@ -813,7 +813,7 @@
       "titleHighlight": "business",
       "subtitle": "Take control of your online reputation, engage your employees, and improve your talent attractiveness.",
       "ctaStart": "Start for free",
-      "ctaPremium": "Discover Premium"
+      "ctaPremium": "See Business Plans"
     },
     "stats": {
       "1": "Registered businesses",
@@ -852,7 +852,7 @@
         "2": "Update your information",
         "3": "Reply to employee reviews",
         "4": "Basic analytics (views)",
-        "5": "Receive messages (limited)"
+        "5": "Contact requests available after upgrade"
       },
       "growth": {
         "1": "GOLD trust badge",
@@ -874,9 +874,9 @@
       }
     },
     "premium": {
-      "badge": "PREMIUM BENEFITS",
-      "title": "Exclusive premium features",
-      "subtitle": "Powerful tools to transform your online presence and attract top talent."
+      "badge": "BUSINESS PLANS",
+      "title": "Growth & Gold features",
+      "subtitle": "Choose the plan that fits one business or up to five."
     },
     "multi": {
       "badge": "MULTI-BUSINESS",
@@ -892,7 +892,7 @@
         "priceDesc": "Included with your account"
       },
       "premium": {
-        "title": "Premium plan",
+        "title": "Gold plan",
         "count": "Up to 5 businesses",
         "f1": "Multi-business management",
         "f2": "Unified dashboard",
@@ -909,8 +909,8 @@
       }
     },
     "how": {
-      "title": "How to join Pro?",
-      "subtitle": "Simple and fast to activate your premium features.",
+      "title": "How to activate your plan?",
+      "subtitle": "Simple and fast to activate your Growth or Gold plan.",
       "step1": {
         "title": "Make the payment",
         "desc": "Transfer the agreed amount via bank account or secure payment partners."
@@ -920,14 +920,14 @@
         "desc": "Submit your transaction reference from dashboard or contact dedicated support."
       },
       "step3": {
-        "title": "Activate premium",
-        "desc": "Once verified, your pro badge and premium features are activated immediately."
+        "title": "Activate your plan",
+        "desc": "Once verified, your business badge and plan features are activated immediately."
       }
     },
     "cta": {
       "title": "Ready to dominate your local market?",
-      "start": "Start my pro account",
-      "subscribe": "Subscribe to premium",
+      "start": "Start my business account",
+      "subscribe": "See Business Plans",
       "subtitle": "Join companies turning attractiveness into success."
     }
   },
@@ -935,14 +935,14 @@
     "title": "Messages for {name}",
     "yourBusiness": "your business",
     "subtitlePremium": "Manage your conversations in real time.",
-    "subtitleLocked": "Premium messaging allows direct communication with candidates.",
+    "subtitleLocked": "Upgrade to Growth or Gold to communicate directly with candidates.",
     "businessSender": "Business",
     "replySent": "Reply sent",
     "errorTitle": "Error",
     "replyError": "Unable to send reply.",
-    "lockedTitle": "Premium messaging",
-    "lockedDesc": "Direct messaging is exclusive to Premium members to help you engage candidates and talent.",
-    "lockedCta": "Upgrade to Premium",
+    "lockedTitle": "Direct messaging",
+    "lockedDesc": "Direct messaging is available on Growth and Gold plans to help you engage candidates and talent.",
+    "lockedCta": "Upgrade your plan",
     "nextUnread": "Go to next unread",
     "currentTarget": "Current target",
     "candidate": "Candidate",
@@ -1066,8 +1066,8 @@
       "a1": "Go to Business in your dashboard, then Services tab. You can edit opening hours for each day there.",
       "q2": "How can I reply to reviews?",
       "a2": "Go to My Reviews in your dashboard, open a review, then click Reply to publish your public response.",
-      "q3": "What is the difference between Growth and PRO?",
-      "a3": "Growth supports one business with core features. PRO supports up to 5 businesses with advanced analytics and communication features."
+      "q3": "What is the difference between Growth and Gold?",
+      "a3": "Growth supports one business with core visibility tools. Gold supports up to 5 businesses with advanced analytics and communication features."
     }
   },
   "dashboardPage": {
@@ -1260,11 +1260,11 @@
     }
   },
   "blogPage": {
-    "metaTitle": "Blog | Reviewly MA",
-    "metaDescription": "Editorial guides and referral execution playbooks.",
+    "metaTitle": "Blog | Reviewly",
+    "metaDescription": "Guides and analysis to evaluate employers through reviews, salaries, and referral signals.",
     "badge": "Editorial Hub",
     "title": "Blog and playbooks",
-    "subtitle": "Guides and playbooks that connect referral-demand signals, salary intelligence, company targeting, and monthly reports.",
+    "subtitle": "Guides and analysis connecting reviews, salaries, referral signals, and monthly reports.",
     "empty": "No article has been published yet.",
     "pillarBadge": "Pillar guide",
     "published": "Published: {date}",
@@ -1279,11 +1279,11 @@
     "referralDashboardCta": "View referral demand dashboard",
     "cards": {
       "howToTitle": "How-to guides",
-      "howToDesc": "Referral request tactics and actionable templates.",
+      "howToDesc": "Practical playbooks for referrals, company research, and application prep.",
       "dataTitle": "Data insights",
-      "dataDesc": "Interpreted analysis from demand and salary signals.",
+      "dataDesc": "Analysis built from review, salary, and demand signals.",
       "reportsTitle": "Reports linking",
-      "reportsDesc": "Direct links to monthly reports to strengthen topical authority."
+      "reportsDesc": "Monthly reports and sector snapshots to strengthen your research."
     },
     "shareLabel": "Share"
   },
@@ -1426,7 +1426,7 @@
     }
   },
   "referralDemandBoardPage": {
-    "metaTitle": "Referral requests | Reviewly MA",
+    "metaTitle": "Referral requests | Reviewly",
     "metaDescription": "Browse public requests from candidates looking for a referral.",
     "badge": "Demand board",
     "title": "Referral requests",
@@ -1446,7 +1446,7 @@
     "empty": "No public request at the moment."
   },
   "referralDemandCreatePage": {
-    "metaTitle": "Publish a referral request | Reviewly MA",
+    "metaTitle": "Publish a referral request | Reviewly",
     "metaDescription": "Publish your referral request and get contacted by employees who can refer you.",
     "title": "Publish a request",
     "subtitle": "This listing is public. Do not include direct email or phone number in the text.",
@@ -1482,8 +1482,8 @@
     }
   },
   "referralCityPage": {
-    "metaTitle": "Referrals in {city} | Reviewly MA",
-    "metaDescription": "Active internal referral offers in {city} on Reviewly MA.",
+    "metaTitle": "Referrals in {city} | Reviewly",
+    "metaDescription": "Active internal referral offers in {city} on Reviewly.",
     "title": "Referrals in {city}",
     "activeCount": "{count} active offer(s)",
     "empty": "No active offer for this city.",
@@ -1492,8 +1492,8 @@
     "viewOffer": "View offer"
   },
   "referralRolePage": {
-    "metaTitle": "Referrals role | {role} | Reviewly MA",
-    "metaDescription": "Active referral offers for role {role} on Reviewly MA.",
+    "metaTitle": "Referrals role | {role} | Reviewly",
+    "metaDescription": "Active referral offers for role {role} on Reviewly.",
     "title": "Referrals for {role}",
     "activeCount": "{count} active offer(s)",
     "empty": "No active offer for this role.",
@@ -1502,8 +1502,8 @@
     "viewOffer": "View offer"
   },
   "referralCompanyPage": {
-    "metaTitle": "Referrals company | {company} | Reviewly MA",
-    "metaDescription": "Active referral offers for company {company} on Reviewly MA.",
+    "metaTitle": "Referrals company | {company} | Reviewly",
+    "metaDescription": "Active referral offers for company {company} on Reviewly.",
     "title": "Referrals at {company}",
     "activeCount": "{count} active offer(s)",
     "empty": "No active offer for this company.",
@@ -1985,9 +1985,9 @@
       "convertTitle": "Convertissez Plus",
       "convertDesc": "Repondez aux avis et interagissez avec vos futurs clients.",
       "launchOffer": "Offre Lancement",
-      "launchOfferDesc": "1 mois de visibilite PRO offert apres approbation.",
+      "launchOfferDesc": "1 month of Growth visibility included after approval.",
       "needHelp": "Besoin aide ?",
-      "support24": "Support Premium 7j/7"
+      "support24": "Priority support 7/7"
     },
     "loadingForm": "Chargement du formulaire...",
     "placeholders": {
@@ -2525,7 +2525,7 @@
         "step3": "- Full dashboard access after approval"
       },
       "limitTitle": "Current limitation",
-      "limitDescription": "At the moment, each user can claim only one business. This limitation will be updated with premium tiers.",
+      "limitDescription": "Growth supports one business. Gold supports up to 5 businesses after approval.",
       "actions": {
         "track": "Track my request",
         "backHome": "Back to home"
@@ -2545,10 +2545,10 @@
     },
     "notice": {
       "title": "Important information",
-      "oneBusinessTitle": "One business per user",
-      "oneBusinessDescription": "Each user can currently claim one business to keep management quality high.",
+      "oneBusinessTitle": "Business limits by plan",
+      "oneBusinessDescription": "Standard and Growth users manage one business. Gold supports up to 5 managed businesses on one account.",
       "importantLabel": "Important:",
-      "importantText": " Growth/Pro accounts remain limited to a single business for now."
+      "importantText": " If you need to manage multiple businesses on one account, use a Gold plan."
     },
     "step1": {
       "title": "Step 1: Find your business",
@@ -2606,9 +2606,9 @@
       "bookingTitle": "Booking tracking",
       "bookingDescription": "Track external bookings with the GOLD plan.",
       "advancedTitle": "Advanced analytics",
-      "advancedDescription": "Upgrade to Premium to unlock full review history.",
+      "advancedDescription": "Upgrade to Growth or Gold to unlock full review history.",
       "distributionTitle": "Detailed distribution",
-      "distributionDescription": "Analyze your rating distribution in detail with Premium."
+      "distributionDescription": "Analyze your rating distribution in detail with Growth or Gold."
     },
     "whatsapp": {
       "cardTitle": "WhatsApp clicks",
@@ -2768,21 +2768,21 @@
       "websitePlaceholder": "www.example.com"
     },
     "pro": {
-      "title": "Business PRO options",
-      "badgeRequired": "PRO plan required",
+      "title": "Growth / Gold options",
+      "badgeRequired": "Growth or Gold required",
       "whatsappLabel": "WhatsApp number",
       "whatsappPlaceholder": "Ex: 212 600000000",
       "whatsappDescriptionEnabled": "Displays a direct contact button on your profile.",
-      "whatsappDescriptionDisabled": "Unlock direct WhatsApp contact with a PRO plan.",
+      "whatsappDescriptionDisabled": "Unlock direct WhatsApp contact with a Growth or Gold plan.",
       "affiliateLabel": "Booking / affiliate link",
       "affiliatePlaceholder": "Ex: https://booking.com/...",
       "affiliateDescriptionEnabled": "Direct link to your booking engine (Booking, etc.).",
-      "affiliateDescriptionDisabled": "Redirect customers to your booking engine with a PRO plan.",
+      "affiliateDescriptionDisabled": "Redirect customers to your booking engine with a Growth or Gold plan.",
       "ctaLabel": "Button text (optional)",
       "ctaPlaceholder": "Ex: Book on Booking",
       "tagsLabel": "Search keywords (tags)",
       "tagsDescriptionEnabled": "Add up to 10 keywords to help customers find you (e.g. Terrace, Halal, Brunch).",
-      "tagsDescriptionDisabled": "The PRO plan allows custom search keywords."
+      "tagsDescriptionDisabled": "Growth and Gold plans allow custom search keywords."
     },
     "media": {
       "title": "Media & images",
@@ -2820,9 +2820,9 @@
       "description": "Share announcements, special offers, or news with your customers."
     },
     "pro": {
-      "title": "PRO / GOLD feature",
-      "description": "Posting updates is reserved for PRO or GOLD subscribers.",
-      "cta": "Upgrade to PRO"
+      "title": "Growth / Gold feature",
+      "description": "Posting updates is reserved for Growth and Gold subscribers.",
+      "cta": "Upgrade your plan"
     },
     "form": {
       "title": "Post a new update",
@@ -3149,7 +3149,7 @@
   },
   "referralDemandDetailPage": {
     "metadata": {
-      "notFoundTitle": "Referral demand | Reviewly MA",
+      "notFoundTitle": "Referral demand | Reviewly",
       "title": "{role}{citySuffix} | Referral demand",
       "description": "Public referral demand for {role}{citySuffix}. Data is anonymized and moderated.",
       "ogAlt": "Referral demand"

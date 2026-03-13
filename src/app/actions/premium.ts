@@ -93,10 +93,11 @@ export async function getUserPremiumStatus(userId: string): Promise<{
           expiresAt: profile.premium_expires_at
         };
       }
+      const fallbackTier: SubscriptionTier = 'gold';
       return {
         isPremium: true,
-        maxBusinesses: 1, // Pro/Growth are limited to one business
-        subscriptionTier: 'gold',
+        maxBusinesses: getMaxBusinessesForTier(fallbackTier),
+        subscriptionTier: fallbackTier,
         expiresAt: profile.premium_expires_at
       };
     }
@@ -236,12 +237,12 @@ export async function addBusinessToUser(
 
   try {
     // Check premium status and limits
-    const { businesses, canAddMore } = await getUserBusinesses(userId);
+    const { businesses, canAddMore, maxAllowed } = await getUserBusinesses(userId);
 
     if (!canAddMore) {
       return {
         status: 'error',
-        message: 'Business limit reached. Each account can manage only one business.'
+        message: `Business limit reached. This plan can manage up to ${maxAllowed} business${maxAllowed > 1 ? 'es' : ''}.`
       };
     }
 

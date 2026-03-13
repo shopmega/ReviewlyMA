@@ -12,6 +12,7 @@ import { ContactDialog } from './ContactDialog';
 import { toggleBookmark, getIsBookmarked } from '@/app/actions/user';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { getSiteName } from '@/lib/site-config';
 
 type BusinessActionsProps = {
   businessId: string;
@@ -23,7 +24,7 @@ type BusinessActionsProps = {
 export function BusinessActions({ businessId, businessName, phone, website }: BusinessActionsProps) {
   const { toast } = useToast();
   const { t, tf } = useI18n();
-  const [siteName, setSiteName] = useState('Platform');
+  const [siteName, setSiteName] = useState('Reviewly');
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loadingBookmark, setLoadingBookmark] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
@@ -36,7 +37,7 @@ export function BusinessActions({ businessId, businessName, phone, website }: Bu
           getSiteSettings(),
           getIsBookmarked(businessId),
         ]);
-        setSiteName(settings.site_name || 'Platform');
+        setSiteName(getSiteName(settings));
         setIsBookmarked(bookmarked);
         setEnableReviews(settings.enable_reviews !== false);
       } catch (error) {

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import DashboardClient from './DashboardClient';
 import type { DashboardStats, RecentReview } from './DashboardClient';
 import { redirect } from 'next/navigation';
-import { isPaidTier } from '@/lib/tier-utils';
+import { getEffectiveTier, hasEffectivePaidAccess, hasEffectiveTierAccess } from '@/lib/tier-utils';
 import { buildKpiWindows, computeStdDev } from './kpi';
 import { getServerTranslator } from '@/lib/i18n/server';
 
@@ -127,9 +127,9 @@ export default async function DashboardPage(props: {
     const profileCompletion = Math.round((completedProfileFields / profileFields.length) * 100);
     const missingProfileFields = profileFields.filter((field) => !field.filled).map((field) => field.label);
     const hasContactChannel = Boolean(business.website || business.phone || business.whatsapp_number);
-    const hasPremiumAccess = isPaidTier(profileData?.tier) || isPaidTier(business?.tier);
-
-    const hasGoldAccess = profileData?.tier === 'gold' || business?.tier === 'gold';
+    const effectiveTier = getEffectiveTier(profileData?.tier ?? null, business?.tier ?? null);
+    const hasPremiumAccess = hasEffectivePaidAccess(profileData?.tier ?? null, business?.tier ?? null);
+    const hasGoldAccess = hasEffectiveTierAccess('gold', profileData?.tier ?? null, business?.tier ?? null);
     let salaryBenchmark: DashboardStats['salaryBenchmark'] = null;
 
     if (hasGoldAccess) {
@@ -198,6 +198,8 @@ export default async function DashboardPage(props: {
         missingProfileFields,
         hasContactChannel,
         hasPremiumAccess,
+        hasGoldAccess,
+        effectiveTier,
       },
       salaryBenchmark,
       proAlerts: [

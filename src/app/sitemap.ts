@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/salaires/comparaison',
         '/about',
         '/contact',
-        '/pour-les-pros',
+        '/pro',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date(),
@@ -219,7 +219,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ]);
 
         salaryRoleCityPages = roleCityPairs.map((item) => ({
-            url: `${baseUrl}/salaires/role/${slugify(item.job_title)}/${item.city_slug}`,
+            url: `${baseUrl}/salaires/${slugify(item.job_title)}/${item.city_slug}`,
             lastModified: new Date(),
             changeFrequency: 'weekly' as const,
             priority: 0.7,

@@ -271,7 +271,7 @@ export default function ReviewsPage() {
         <h1 className="text-2xl font-bold font-headline">{t('dashboardReviewsPage.accessDenied', 'Access denied')}</h1>
         <p className="text-muted-foreground">{profileError || t('dashboardReviewsPage.unknownError', 'Unknown error')}</p>
         <Button asChild>
-          <Link href="/pour-les-pros">{t('dashboardReviewsPage.claimBusiness', 'Claim a business')}</Link>
+          <Link href="/pro">{t('dashboardReviewsPage.claimBusiness', 'Claim a business')}</Link>
         </Button>
       </div>
     );

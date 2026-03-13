@@ -14,6 +14,7 @@ import { isValidImageUrl } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { getSiteName } from '@/lib/site-config';
 
 type SearchBusiness = {
   id: string;
@@ -29,7 +30,7 @@ export default function ClaimPage() {
   const [searchResults, setSearchResults] = useState<SearchBusiness[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<SearchBusiness | null>(null);
-  const [siteName, setSiteName] = useState('Platform');
+  const [siteName, setSiteName] = useState('Reviewly');
   const [userClaimStatus, setUserClaimStatus] = useState<'none' | 'pending' | 'approved'>('none');
   const [existingClaim, setExistingClaim] = useState<any>(null);
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function ClaimPage() {
     const fetchSiteSettings = async () => {
       try {
         const settings = await getSiteSettings();
-        setSiteName(settings.site_name || t('claimPage.defaults.siteName', 'Platform'));
+        setSiteName(getSiteName(settings));
       } catch (error) {
         console.error('Error fetching site settings:', error);
       }
@@ -175,7 +176,7 @@ export default function ClaimPage() {
                 <p className="text-sm text-muted-foreground">
                   {t(
                     'claimPage.pending.limitDescription',
-                    'At the moment, each user can claim only one business. This limitation will be updated with premium tiers.'
+                    'Growth supports one business. Gold supports up to 5 businesses after approval.'
                   )}
                 </p>
               </div>
@@ -256,7 +257,7 @@ export default function ClaimPage() {
                   <strong>{t('claimPage.notice.importantLabel', 'Important:')}</strong>
                   {t(
                     'claimPage.notice.importantText',
-                    ' Growth/Pro accounts remain limited to a single business for now.'
+                    ' If you need to manage multiple businesses on one account, use a Gold plan.'
                   )}
                 </p>
               </div>

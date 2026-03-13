@@ -4,6 +4,7 @@ import { ActionState } from "@/lib/types";
 import { getSiteSettings } from "@/lib/data";
 import { sendEmail, emailTemplates } from "@/lib/email-service";
 import { logger } from "@/lib/logger";
+import { getSiteName } from "@/lib/site-config";
 
 // Simple email service - you can replace with SendGrid, Resend, etc.
 export async function sendClaimApprovalEmail(
@@ -13,7 +14,7 @@ export async function sendClaimApprovalEmail(
 ): Promise<ActionState> {
     try {
         const settings = await getSiteSettings();
-        const siteName = settings.site_name || 'Platform';
+        const siteName = getSiteName(settings);
         const contactEmail = settings.contact_email || 'support@example.com';
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
 
@@ -99,7 +100,7 @@ export async function sendClaimRejectionEmail(
 ): Promise<ActionState> {
     try {
         const settings = await getSiteSettings();
-        const siteName = settings.site_name || 'Platform';
+        const siteName = getSiteName(settings);
         const contactEmail = settings.contact_email || 'support@example.com';
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
 
@@ -143,7 +144,7 @@ export async function sendClaimRejectionEmail(
                 <li>💬 Contactez notre support si vous avez des questions</li>
             </ul>
             
-            <a href="${siteUrl}/pour-les-pros" class="button">Soumettre une nouvelle demande</a>
+            <a href="${siteUrl}/pro" class="button">Soumettre une nouvelle demande</a>
             
             <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
                 Questions? Contactez-nous à <strong>${contactEmail}</strong>
@@ -180,7 +181,7 @@ export async function sendPremiumActivationEmail(
 ): Promise<ActionState> {
     try {
         const settings = await getSiteSettings();
-        const siteName = settings.site_name || 'Platform';
+        const siteName = getSiteName(settings);
         const contactEmail = settings.contact_email || 'support@example.com';
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
 
@@ -258,7 +259,7 @@ export async function sendPremiumRejectionEmail(
 ): Promise<ActionState> {
     try {
         const settings = await getSiteSettings();
-        const siteName = settings.site_name || 'Platform';
+        const siteName = getSiteName(settings);
         const contactEmail = settings.contact_email || 'support@example.com';
 
         const htmlContent = `

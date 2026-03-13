@@ -299,6 +299,7 @@ export function BusinessList({
 
   return (
     <div className="space-y-6">
+      <div className="sticky top-16 z-20 -mx-4 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:static md:z-auto md:mx-0 md:border-b-0 md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-0">
       <div className="rounded-2xl border border-border bg-card p-4 md:p-5 shadow-sm">
         <div className="flex flex-col gap-3">
           <Label htmlFor="search-top" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -338,227 +339,221 @@ export function BusinessList({
               </Button>
             </div>
           </div>
-        </div>
-      </div>
+          <div className="md:hidden">
+            <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full h-11 rounded-xl border-border hover:bg-secondary/50 font-semibold gap-2"
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
+                  {t('listing.filters', 'Filtres')}
+                  {activeFilters.length > 0 && (
+                    <Badge variant="default" className="ml-auto h-5 px-2 bg-primary text-primary-foreground">
+                      {activeFilters.length}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[310px] sm:w-[420px] p-0 border-r border-white/10 glass overflow-hidden">
+                <SheetTitle className="sr-only">{t('listing.searchFiltersTitle', 'Filtres de recherche')}</SheetTitle>
+                <SheetDescription className="sr-only">{t('listing.searchFiltersDesc', "Utilisez ces filtres pour affiner votre recherche d'etablissements.")}</SheetDescription>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Mobile Filter Button - Only visible on mobile */}
-        <div className="md:hidden">
-          <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full h-12 rounded-xl border-border hover:bg-secondary/50 font-semibold gap-2"
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-                {t('listing.filters', 'Filtres')}
-                {activeFilters.length > 0 && (
-                  <Badge variant="default" className="ml-auto h-5 px-2 bg-primary text-primary-foreground">
-                    {activeFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[310px] sm:w-[420px] p-0 border-r border-white/10 glass overflow-hidden">
-              <SheetTitle className="sr-only">{t('listing.searchFiltersTitle', 'Filtres de recherche')}</SheetTitle>
-              <SheetDescription className="sr-only">{t('listing.searchFiltersDesc', "Utilisez ces filtres pour affiner votre recherche d'etablissements.")}</SheetDescription>
-
-              <div className="flex flex-col h-full bg-background/95 backdrop-blur-xl">
-                {/* Drawer Header */}
-                <div className="px-6 py-8 border-b border-border/50 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <Filter className="w-5 h-5" />
+                <div className="flex flex-col h-full bg-background/95 backdrop-blur-xl">
+                  <div className="px-6 py-8 border-b border-border/50 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                          <Filter className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-bold font-headline text-foreground leading-none">{t('listing.filters', 'Filtres')}</h2>
+                          <p className="text-xs text-muted-foreground mt-1.5 font-medium">{t('listing.refineSearch', 'Affiner votre recherche')}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h2 className="text-xl font-bold font-headline text-foreground leading-none">{t('listing.filters', 'Filtres')}</h2>
-                        <p className="text-xs text-muted-foreground mt-1.5 font-medium">{t('listing.refineSearch', 'Affiner votre recherche')}</p>
-                      </div>
-                    </div>
-                    {activeFilters.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => { resetFilters(); setMobileFiltersOpen(false); }}
-                        className="text-xs h-8 px-2.5 rounded-lg text-primary hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 font-bold"
-                      >
-                        <RefreshCw className="w-3 h-3" />
-                        {t('listing.reset', 'Reinitialiser')}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Filter Content */}
-                <div className="flex-1 overflow-y-auto py-6 px-6 custom-scrollbar">
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="search-mobile" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('listing.search', 'Rechercher')}</Label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="search-mobile"
-                          placeholder={t('listing.searchPlaceholder', 'Etablissement...')}
-                          className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
-                          value={searchInput}
-                          onChange={(e) => setSearchInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              applySearchQuery();
-                            }
-                          }}
-                        />
+                      {activeFilters.length > 0 && (
                         <Button
-                          type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={applySearchQuery}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
+                          onClick={() => { resetFilters(); setMobileFiltersOpen(false); }}
+                          className="text-xs h-8 px-2.5 rounded-lg text-primary hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 font-bold"
                         >
-                          {t('common.ok', 'OK')}
+                          <RefreshCw className="w-3 h-3" />
+                          {t('listing.reset', 'Reinitialiser')}
                         </Button>
-                      </div>
+                      )}
                     </div>
+                  </div>
 
-                    <div className="h-px bg-border" />
+                  <div className="flex-1 overflow-y-auto py-6 px-6 custom-scrollbar">
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="search-mobile" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('listing.search', 'Rechercher')}</Label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="search-mobile"
+                            placeholder={t('listing.searchPlaceholder', 'Etablissement...')}
+                            className="pl-9 h-10 border-border focus-visible:ring-primary/20 focus-visible:border-primary rounded-lg text-sm"
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                applySearchQuery();
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={applySearchQuery}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs"
+                          >
+                            {t('common.ok', 'OK')}
+                          </Button>
+                        </div>
+                      </div>
 
-                    <Accordion type="multiple" defaultValue={['category', 'city']} className="w-full">
-                      <AccordionItem value="category" className="border-none">
-                        <AccordionTrigger className={`text-sm py-2 hover:no-underline ${categoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.category', 'Categorie')}</AccordionTrigger>
-                        <AccordionContent className="pt-2">
-                          <Select onValueChange={handleCategoryChange} value={categoryFilter}>
-                            <SelectTrigger id="category-mobile" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
-                              <SelectValue placeholder={t('listing.allCategories', 'Toutes les categories')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">{t('listing.allCategories', 'Toutes les categories')}</SelectItem>
-                              {[...new Set(categories)].map(category => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </AccordionContent>
-                      </AccordionItem>
+                      <div className="h-px bg-border" />
 
-                      {categoryFilter !== 'all' && subcategories.length > 0 && (
-                        <AccordionItem value="subcategory" className="border-none mt-2">
-                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${subcategoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.subcategory', 'Sous-categorie')}</AccordionTrigger>
+                      <Accordion type="multiple" defaultValue={['category', 'city']} className="w-full">
+                        <AccordionItem value="category" className="border-none">
+                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${categoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.category', 'Categorie')}</AccordionTrigger>
                           <AccordionContent className="pt-2">
-                            <Select onValueChange={setSubcategoryFilter} value={subcategoryFilter}>
-                              <SelectTrigger id="subcategory-mobile" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
-                                <SelectValue placeholder={t('listing.all', 'Toutes')} />
+                            <Select onValueChange={handleCategoryChange} value={categoryFilter}>
+                              <SelectTrigger id="category-mobile" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
+                                <SelectValue placeholder={t('listing.allCategories', 'Toutes les categories')} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="all">{t('listing.all', 'Toutes')}</SelectItem>
-                                {subcategories.map(sub => (
-                                  <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                                <SelectItem value="all">{t('listing.allCategories', 'Toutes les categories')}</SelectItem>
+                                {[...new Set(categories)].map(category => (
+                                  <SelectItem key={category} value={category}>{category}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </AccordionContent>
                         </AccordionItem>
-                      )}
 
-                      <AccordionItem value="city" className="border-none mt-2">
-                        <AccordionTrigger className={`text-sm py-2 hover:no-underline ${cityFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.city', 'Ville')}</AccordionTrigger>
-                        <AccordionContent className="pt-2">
-                          <Select onValueChange={(val) => { setCityFilter(val); setQuartierFilter('all'); }} value={cityFilter}>
-                            <SelectTrigger id="city-mobile" className="h-10 border-border focus:ring-primary/20 rounded-lg text-sm bg-muted/50">
-                              <SelectValue placeholder={t('listing.allCities', 'Toutes les villes')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">{t('listing.allCities', 'Toutes les villes')}</SelectItem>
-                              {cities.map(city => (
-                                <SelectItem key={city} value={city}>{city}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </AccordionContent>
-                      </AccordionItem>
+                        {categoryFilter !== 'all' && subcategories.length > 0 && (
+                          <AccordionItem value="subcategory" className="border-none mt-2">
+                            <AccordionTrigger className={`text-sm py-2 hover:no-underline ${subcategoryFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.subcategory', 'Sous-categorie')}</AccordionTrigger>
+                            <AccordionContent className="pt-2">
+                              <Select onValueChange={setSubcategoryFilter} value={subcategoryFilter}>
+                                <SelectTrigger id="subcategory-mobile" className="h-10 border-border focus:ring-ring/20 rounded-lg text-sm bg-muted/50">
+                                  <SelectValue placeholder={t('listing.all', 'Toutes')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">{t('listing.all', 'Toutes')}</SelectItem>
+                                  {subcategories.map(sub => (
+                                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )}
 
-                      <AccordionItem value="rating" className="border-none mt-2">
-                        <AccordionTrigger className={`text-sm py-2 hover:no-underline ${ratingFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.minRating', 'Note minimale')}</AccordionTrigger>
-                        <AccordionContent className="pt-2">
-                          <RadioGroup value={ratingFilter} onValueChange={setRatingFilter} className="flex flex-col space-y-2.5">
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="all" id="rating-all-mobile" className="text-primary border-border" />
-                              <Label htmlFor="rating-all-mobile" className="text-sm text-muted-foreground cursor-pointer">{t('listing.all', 'Toutes')}</Label>
-                            </div>
-                            {[4.5, 4, 3, 2].map(rating => (
-                              <div key={rating} className="flex items-center space-x-2">
-                                <RadioGroupItem value={rating.toString()} id={`rating-${rating}-mobile`} className="text-primary border-border" />
-                                <Label htmlFor={`rating-${rating}-mobile`} className="text-sm text-muted-foreground cursor-pointer flex items-center">
-                                  {rating}+ <Star className="w-3 h-3 ml-1 fill-primary text-primary" />
-                                </Label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      {availableBenefits.length > 0 && (
-                        <AccordionItem value="benefits" className="border-none mt-2">
-                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${benefitsFilter.length > 0 ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.benefits', 'Avantages')}</AccordionTrigger>
-                          <AccordionContent className="pt-2 max-h-72 overflow-y-auto px-1 custom-scrollbar">
-                            <div className="space-y-4">
-                              {BENEFITS.map(group => (
-                                <div key={group.group}>
-                                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-widest">{group.group}</p>
-                                  <div className="space-y-2 ml-1">
-                                    {group.amenities.filter((a: string) => availableBenefits.includes(a)).map((amenity: string) => (
-                                      <div key={amenity} className="flex items-center space-x-2">
-                                        <Checkbox
-                                          id={`benefit-mobile-${amenity}`}
-                                          checked={benefitsFilter.includes(amenity)}
-                                          onCheckedChange={(checked) => {
-                                            if (checked) {
-                                              setBenefitsFilter([...benefitsFilter, amenity]);
-                                            } else {
-                                              setBenefitsFilter(benefitsFilter.filter((a: string) => a !== amenity));
-                                            }
-                                          }}
-                                        />
-                                        <Label htmlFor={`benefit-mobile-${amenity}`} className="text-sm font-medium cursor-pointer">
-                                          {amenity}
-                                        </Label>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                        <AccordionItem value="city" className="border-none mt-2">
+                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${cityFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.city', 'Ville')}</AccordionTrigger>
+                          <AccordionContent className="pt-2">
+                            <Select onValueChange={(val) => { setCityFilter(val); setQuartierFilter('all'); }} value={cityFilter}>
+                              <SelectTrigger id="city-mobile" className="h-10 border-border focus:ring-primary/20 rounded-lg text-sm bg-muted/50">
+                                <SelectValue placeholder={t('listing.allCities', 'Toutes les villes')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">{t('listing.allCities', 'Toutes les villes')}</SelectItem>
+                                {cities.map(city => (
+                                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </AccordionContent>
                         </AccordionItem>
-                      )}
-                    </Accordion>
+
+                        <AccordionItem value="rating" className="border-none mt-2">
+                          <AccordionTrigger className={`text-sm py-2 hover:no-underline ${ratingFilter !== 'all' ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.minRating', 'Note minimale')}</AccordionTrigger>
+                          <AccordionContent className="pt-2">
+                            <RadioGroup value={ratingFilter} onValueChange={setRatingFilter} className="flex flex-col space-y-2.5">
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="all" id="rating-all-mobile" className="text-primary border-border" />
+                                <Label htmlFor="rating-all-mobile" className="text-sm text-muted-foreground cursor-pointer">{t('listing.all', 'Toutes')}</Label>
+                              </div>
+                              {[4.5, 4, 3, 2].map(rating => (
+                                <div key={rating} className="flex items-center space-x-2">
+                                  <RadioGroupItem value={rating.toString()} id={`rating-${rating}-mobile`} className="text-primary border-border" />
+                                  <Label htmlFor={`rating-${rating}-mobile`} className="text-sm text-muted-foreground cursor-pointer flex items-center">
+                                    {rating}+ <Star className="w-3 h-3 ml-1 fill-primary text-primary" />
+                                  </Label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          </AccordionContent>
+                        </AccordionItem>
+
+                        {availableBenefits.length > 0 && (
+                          <AccordionItem value="benefits" className="border-none mt-2">
+                            <AccordionTrigger className={`text-sm py-2 hover:no-underline ${benefitsFilter.length > 0 ? 'text-primary font-bold' : 'text-muted-foreground font-semibold'}`}>{t('listing.benefits', 'Avantages')}</AccordionTrigger>
+                            <AccordionContent className="pt-2 max-h-72 overflow-y-auto px-1 custom-scrollbar">
+                              <div className="space-y-4">
+                                {BENEFITS.map(group => (
+                                  <div key={group.group}>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-widest">{group.group}</p>
+                                    <div className="space-y-2 ml-1">
+                                      {group.amenities.filter((a: string) => availableBenefits.includes(a)).map((amenity: string) => (
+                                        <div key={amenity} className="flex items-center space-x-2">
+                                          <Checkbox
+                                            id={`benefit-mobile-${amenity}`}
+                                            checked={benefitsFilter.includes(amenity)}
+                                            onCheckedChange={(checked) => {
+                                              if (checked) {
+                                                setBenefitsFilter([...benefitsFilter, amenity]);
+                                              } else {
+                                                setBenefitsFilter(benefitsFilter.filter((a: string) => a !== amenity));
+                                              }
+                                            }}
+                                          />
+                                          <Label htmlFor={`benefit-mobile-${amenity}`} className="text-sm font-medium cursor-pointer">
+                                            {amenity}
+                                          </Label>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )}
+                      </Accordion>
+                    </div>
+
+                    <div className="mt-8">
+                      <AdSlot slot="mobile-sidebar-ad" className="min-h-[250px]" />
+                    </div>
                   </div>
 
-                  {/* Ad after filters on mobile */}
-                  <div className="mt-8">
-                    <AdSlot slot="mobile-sidebar-ad" className="min-h-[250px]" />
+                  <div className="p-6 border-t border-border/50 bg-secondary/10 backdrop-blur-md">
+                    <Button
+                      onClick={() => setMobileFiltersOpen(false)}
+                      className="w-full h-12 rounded-xl text-sm font-bold shadow-xl shadow-primary/20 relative group overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-700 group-hover:scale-110 transition-transform duration-500" />
+                      <span className="relative flex items-center justify-center gap-2">
+                        {tf('listing.seeCount', 'Voir {count} etablissement(s)', { count: totalCount })}
+                        <ChevronRight className="w-4 h-4" />
+                      </span>
+                    </Button>
                   </div>
                 </div>
-
-                {/* Footer Actions */}
-                <div className="p-6 border-t border-border/50 bg-secondary/10 backdrop-blur-md">
-                  <Button
-                    onClick={() => setMobileFiltersOpen(false)}
-                    className="w-full h-12 rounded-xl text-sm font-bold shadow-xl shadow-primary/20 relative group overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-700 group-hover:scale-110 transition-transform duration-500" />
-                    <span className="relative flex items-center justify-center gap-2">
-                      {tf('listing.seeCount', 'Voir {count} etablissement(s)', { count: totalCount })}
-                      <ChevronRight className="w-4 h-4" />
-                    </span>
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-
+      </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Desktop Sidebar - Hidden on mobile */}
         <aside className="hidden md:block md:col-span-1">
           <div className="sticky top-24 bg-background border border-border rounded-xl p-5 shadow-sm space-y-6">

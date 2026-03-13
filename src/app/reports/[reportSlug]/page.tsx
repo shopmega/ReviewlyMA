@@ -118,14 +118,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { reportSlug } = await params;
   const parsed = parseMonthlyReferralReportSlug(reportSlug);
   if (!parsed) {
-    return { title: 'Report | Reviewly MA' };
+    return { title: 'Report | Reviewly' };
   }
 
   const monthLabel = formatReportMonthLabel(parsed.reportDateUtc);
   const siteUrl = getServerSiteUrl();
 
   return {
-    title: `Monthly referral report: ${monthLabel} | Reviewly MA`,
+    title: `Monthly referral report: ${monthLabel} | Reviewly`,
     description: `Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`,
     alternates: { canonical: `${siteUrl}/reports/${reportSlug}` },
   };
@@ -176,7 +176,7 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
           </Button>
           <ContentShareButton
             url={`${getServerSiteUrl()}/reports/${reportSlug}`}
-            title={`Monthly referral report: ${monthLabel} | Reviewly MA`}
+            title={`Monthly referral report: ${monthLabel} | Reviewly`}
             text={`Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`}
             contentType="report"
             contentId={reportSlug}
@@ -318,7 +318,7 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
             <Link href="/referral-demand">Referral demand intelligence</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/salary">Salary intelligence</Link>
+            <Link href="/salaires">Salary intelligence</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/companies">Company insights</Link>

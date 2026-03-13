@@ -234,7 +234,7 @@ export default function BusinessDashboardPage() {
             </Link>
           </Button>
           <Button asChild variant="outline" className="rounded-full font-bold">
-            <Link href={`/dashboard/edit-profile`}>
+            <Link href={`/dashboard/etablissement`}>
               <Settings className="mr-2 w-4 h-4" /> Éditer le profil
             </Link>
           </Button>
@@ -272,7 +272,7 @@ export default function BusinessDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-xl">Derniers Avis</CardTitle>
             <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80" asChild>
-              <Link href={`/dashboard/reviews?business=${stats.business.id}`}>Tout voir</Link>
+              <Link href={`/dashboard/avis?business=${stats.business.id}`}>Tout voir</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -328,7 +328,7 @@ export default function BusinessDashboardPage() {
                       </p>
                       <div className="pt-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button size="sm" variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10 h-8 px-3 rounded-full text-xs font-semibold" asChild>
-                          <Link href={`/dashboard/reviews?business=${stats.business.id}`}>
+                          <Link href={`/dashboard/avis?business=${stats.business.id}`}>
                             Répondre <MessageSquare className="ml-1 w-3 h-3" />
                           </Link>
                         </Button>
@@ -350,7 +350,7 @@ export default function BusinessDashboardPage() {
             </CardHeader>
             <CardContent className="grid gap-3 relative z-10">
               <Button variant="secondary" className="w-full justify-start h-12 text-primary font-bold hover:bg-white/90" asChild>
-                <Link href={`/dashboard/reviews?business=${stats.business.id}`}>
+                <Link href={`/dashboard/avis?business=${stats.business.id}`}>
                   <MessageSquare className="mr-2 w-4 h-4" /> Répondre aux avis
                 </Link>
               </Button>
@@ -360,7 +360,7 @@ export default function BusinessDashboardPage() {
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start h-12 bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white" asChild>
-                <Link href={`/dashboard/edit-profile?business=${stats.business.id}`}>
+                <Link href={`/dashboard/etablissement?business=${stats.business.id}`}>
                   <Eye className="mr-2 w-4 h-4" /> Modifier le profil
                 </Link>
               </Button>
@@ -378,7 +378,7 @@ export default function BusinessDashboardPage() {
                 Ajoutez de <strong>belles photos</strong> de votre entreprise pour augmenter vos vues de <strong>40%</strong>. Les employés adorent voir l'ambiance !
               </p>
               <Button variant="link" className="text-amber-600 dark:text-amber-500 p-0 h-auto mt-2 text-sm" asChild>
-                <Link href={`/dashboard/edit-profile?business=${stats.business.id}`}>Ajouter des photos &rarr;</Link>
+                <Link href={`/dashboard/etablissement?business=${stats.business.id}`}>Ajouter des photos &rarr;</Link>
               </Button>
             </CardContent>
           </Card>

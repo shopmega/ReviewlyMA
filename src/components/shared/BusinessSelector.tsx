@@ -1,23 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Store, 
-  ChevronDown, 
   Star, 
   Eye, 
-  Crown, 
   Check, 
   Plus,
   Settings
 } from 'lucide-react';
 import { useBusiness } from '@/contexts/BusinessContext';
-import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { buildDashboardBusinessHref } from '@/lib/dashboard-business-routing';
 
 interface BusinessSelectorProps {
   variant?: 'header' | 'card' | 'dropdown';
@@ -37,16 +35,21 @@ export function BusinessSelector({
     switchBusiness, 
     setPrimaryBusiness,
     isMultiBusiness,
-    canManageBusiness
   } = useBusiness();
-  const { toast } = useToast();
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedBusinessId = searchParams.get('id');
+  const activeBusiness =
+    (requestedBusinessId
+      ? allBusinesses.find((business) => business.id === requestedBusinessId)
+      : null) || currentBusiness;
 
   if (isLoading) {
     return <BusinessSelectorSkeleton variant={variant} className={className} />;
   }
 
-  if (!currentBusiness) {
+  if (!activeBusiness) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <Store className="h-4 w-4" />
@@ -55,14 +58,21 @@ export function BusinessSelector({
     );
   }
 
+  const syncDashboardRoute = (businessId: string) => {
+    const nextHref = buildDashboardBusinessHref(pathname, searchParams.toString(), businessId);
+    if (nextHref) {
+      router.replace(nextHref);
+    }
+  };
+
   const handleSetPrimary = async (businessId: string) => {
     await setPrimaryBusiness(businessId);
-    setIsOpen(false);
+    syncDashboardRoute(businessId);
   };
 
   const handleSwitch = async (businessId: string) => {
     await switchBusiness(businessId);
-    setIsOpen(false);
+    syncDashboardRoute(businessId);
   };
 
   if (variant === 'header') {
@@ -70,12 +80,12 @@ export function BusinessSelector({
       <div className={`flex items-center gap-2 ${className}`}>
         <Store className="h-4 w-4" />
         {isMultiBusiness ? (
-          <Select value={currentBusiness.id} onValueChange={handleSwitch}>
+          <Select value={activeBusiness.id} onValueChange={handleSwitch}>
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue>
                 <div className="flex items-center gap-2">
-                  <span className="truncate">{currentBusiness.name}</span>
-                  {currentBusiness.isPrimary && (
+                  <span className="truncate">{activeBusiness.name}</span>
+                  {activeBusiness.isPrimary && (
                     <Badge variant="secondary" className="text-xs">
                       Primary
                     </Badge>
@@ -100,14 +110,14 @@ export function BusinessSelector({
             </SelectContent>
           </Select>
         ) : (
-          <span className="font-medium">{currentBusiness.name}</span>
+          <span className="font-medium">{activeBusiness.name}</span>
         )}
         
         {showStats && (
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Star className="h-3 w-3" />
-              <span>{currentBusiness.overall_rating?.toFixed(1) || 'N/A'}</span>
+              <span>{activeBusiness.overall_rating?.toFixed(1) || 'N/A'}</span>
             </div>
             <div className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
@@ -141,7 +151,7 @@ export function BusinessSelector({
                 <div
                   key={business.id}
                   className={`flex items-center justify-between p-3 rounded-lg border ${
-                    currentBusiness.id === business.id 
+                    activeBusiness.id === business.id 
                       ? 'border-primary bg-primary/5' 
                       : 'border-border'
                   }`}
@@ -159,7 +169,7 @@ export function BusinessSelector({
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    {currentBusiness.id !== business.id && (
+                    {activeBusiness.id !== business.id && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -207,13 +217,13 @@ export function BusinessSelector({
 
   if (variant === 'dropdown') {
     return (
-      <Select value={currentBusiness.id} onValueChange={handleSwitch}>
+      <Select value={activeBusiness.id} onValueChange={handleSwitch}>
         <SelectTrigger className={`w-full ${className}`}>
           <SelectValue>
             <div className="flex items-center gap-2">
               <Store className="h-4 w-4" />
-              <span className="truncate">{currentBusiness.name}</span>
-              {currentBusiness.isPrimary && (
+              <span className="truncate">{activeBusiness.name}</span>
+              {activeBusiness.isPrimary && (
                 <Badge variant="secondary" className="text-xs">
                   Primary
                 </Badge>
@@ -243,7 +253,7 @@ export function BusinessSelector({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Store className="h-4 w-4" />
-      <span>{currentBusiness.name}</span>
+      <span>{activeBusiness.name}</span>
     </div>
   );
 }

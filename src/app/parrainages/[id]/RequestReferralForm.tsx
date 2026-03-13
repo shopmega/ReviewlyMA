@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { requestReferral } from '@/app/actions/referrals';
 import type { ActionState } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,9 +17,18 @@ const initialState: ActionState = { status: 'idle', message: '' };
 export function RequestReferralForm({ offerId }: { offerId: string }) {
   const [state, formAction] = useActionState(requestReferral, initialState);
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
   const fieldErrors = (state.errors || {}) as Record<string, string[] | undefined>;
   const fieldError = (name: string) => fieldErrors[name]?.[0];
+  const authRequired = Boolean(
+    state.data &&
+    typeof state.data === 'object' &&
+    'authRequired' in state.data &&
+    (state.data as { authRequired?: boolean }).authRequired
+  );
 
   useEffect(() => {
     if (state.status === 'success') {
@@ -26,9 +36,16 @@ export function RequestReferralForm({ offerId }: { offerId: string }) {
       return;
     }
     if (state.status === 'error') {
+      if (authRequired) {
+        const currentQuery = searchParams.toString();
+        const nextPath = `${currentQuery ? `${pathname}?${currentQuery}` : pathname}#apply-form`;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
+
       toast({ title: t('common.error', 'Erreur'), description: state.message, variant: 'destructive' });
     }
-  }, [state, toast, t]);
+  }, [state, toast, t, authRequired, pathname, router, searchParams]);
 
   return (
     <Card className="rounded-2xl">

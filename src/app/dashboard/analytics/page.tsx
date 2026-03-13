@@ -157,7 +157,7 @@ export default function AnalyticsPage() {
         </h1>
         <p className="text-muted-foreground">{profileError || t('dashboardAnalyticsPage.errors.unknown', 'Unknown error')}</p>
         <Button asChild>
-          <Link href="/pour-les-pros">{t('dashboardAnalyticsPage.errors.claimBusiness', 'Claim a business')}</Link>
+          <Link href="/pro">{t('dashboardAnalyticsPage.errors.claimBusiness', 'Claim a business')}</Link>
         </Button>
       </div>
     );
@@ -281,7 +281,7 @@ export default function AnalyticsPage() {
           <PremiumFeatureGate
             level="growth"
             title={t('dashboardAnalyticsPage.gates.advancedTitle', 'Advanced analytics')}
-            description={t('dashboardAnalyticsPage.gates.advancedDescription', 'Upgrade to Premium to unlock full review history.')}
+            description={t('dashboardAnalyticsPage.gates.advancedDescription', 'Upgrade to Growth or Gold to unlock full review history.')}
           >
             <CardHeader>
               <CardTitle className="font-headline">
@@ -330,7 +330,7 @@ export default function AnalyticsPage() {
           <PremiumFeatureGate
             level="growth"
             title={t('dashboardAnalyticsPage.gates.distributionTitle', 'Detailed distribution')}
-            description={t('dashboardAnalyticsPage.gates.distributionDescription', 'Analyze your rating distribution in detail with Premium.')}
+            description={t('dashboardAnalyticsPage.gates.distributionDescription', 'Analyze your rating distribution in detail with Growth or Gold.')}
           >
             <CardHeader>
               <CardTitle className="font-headline">

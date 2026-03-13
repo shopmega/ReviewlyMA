@@ -169,6 +169,50 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/pour-les-pros/signup',
+        destination: '/pro/signup',
+        permanent: true,
+      },
+      {
+        source: '/pour-les-pros',
+        destination: '/pro',
+        permanent: true,
+      },
+      {
+        source: '/profile/settings',
+        destination: '/profil?tab=account',
+        permanent: true,
+      },
+      {
+        source: '/profile/saved-businesses',
+        destination: '/profil?tab=saved',
+        permanent: true,
+      },
+      {
+        source: '/profile',
+        destination: '/profil',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/reviews',
+        destination: '/dashboard/avis',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/analytics',
+        destination: '/dashboard/statistiques',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/edit-profile',
+        destination: '/dashboard/etablissement',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

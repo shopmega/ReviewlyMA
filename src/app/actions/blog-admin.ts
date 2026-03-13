@@ -11,7 +11,7 @@ export type BlogAdminActionState = {
 
 const DEFAULT_LINK_LABELS: Record<string, string> = {
   '/referral-demand': 'Referral Demand Dashboard',
-  '/salary': 'Salary Intelligence Hub',
+  '/salaires': 'Salary Intelligence Hub',
   '/companies': 'Company Insights Hub',
   '/reports': 'Monthly Reports',
 };

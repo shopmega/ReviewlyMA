@@ -442,7 +442,7 @@ export default function PendingPage() {
                             )}
                         </p>
                         <Button asChild className="w-full">
-                            <Link href="/pour-les-pros/signup">{t('dashboardPendingPage.empty.createPro', 'Create pro account')}</Link>
+                            <Link href="/pro/signup">{t('dashboardPendingPage.empty.createPro', 'Create pro account')}</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -754,7 +754,7 @@ export default function PendingPage() {
                     </Button>
                     {claim.status === 'rejected' && (
                         <Button asChild className="flex-1">
-                            <Link href="/pour-les-pros/signup">{t('dashboardPendingPage.actions.tryAgain', 'Try again')}</Link>
+                            <Link href="/pro/signup">{t('dashboardPendingPage.actions.tryAgain', 'Try again')}</Link>
                         </Button>
                     )}
                 </div>

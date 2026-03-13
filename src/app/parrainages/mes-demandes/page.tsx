@@ -4,7 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { blockReferralUserForm, sendReferralMessageForm, updateReferralRequestStatusForm } from '@/app/actions/referrals';
+import { blockReferralUser, updateReferralRequestStatus } from '@/app/actions/referrals';
+import { ReferralConversationComposer } from '@/components/referrals/ReferralConversationComposer';
+import { ReferralMutationButton } from '@/components/referrals/ReferralMutationButton';
 import { getServerTranslator } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
@@ -181,23 +183,24 @@ export default async function MyReferralRequestsPage() {
                     </Button>
                   ) : null}
                   {!['withdrawn', 'hired', 'rejected'].includes(request.status) && (
-                    <form action={updateReferralRequestStatusForm}>
-                      <input type="hidden" name="requestId" value={request.id} />
-                      <input type="hidden" name="status" value="withdrawn" />
-                      <Button type="submit" size="sm" variant="destructive">
-                        {t('referralMyRequestsPage.actions.withdraw', 'Withdraw my request')}
-                      </Button>
-                    </form>
+                    <ReferralMutationButton
+                      action={updateReferralRequestStatus}
+                      fields={{ requestId: request.id, status: 'withdrawn' }}
+                      label={t('referralMyRequestsPage.actions.withdraw', 'Withdraw my request')}
+                      variant="destructive"
+                    />
                   )}
                   {request.offer?.user_id ? (
-                    <form action={blockReferralUserForm}>
-                      <input type="hidden" name="offerId" value={request.offer.id} />
-                      <input type="hidden" name="blockedUserId" value={request.offer.user_id} />
-                      <input type="hidden" name="reason" value="blocked_by_candidate" />
-                      <Button type="submit" size="sm" variant="destructive">
-                        {t('referralMyRequestsPage.actions.blockRecruiter', 'Block recruiter')}
-                      </Button>
-                    </form>
+                    <ReferralMutationButton
+                      action={blockReferralUser}
+                      fields={{
+                        offerId: request.offer.id,
+                        blockedUserId: request.offer.user_id,
+                        reason: 'blocked_by_candidate',
+                      }}
+                      label={t('referralMyRequestsPage.actions.blockRecruiter', 'Block recruiter')}
+                      variant="destructive"
+                    />
                   ) : null}
                 </div>
 
@@ -223,19 +226,11 @@ export default async function MyReferralRequestsPage() {
                     )}
                   </div>
                   {!['withdrawn', 'hired', 'rejected'].includes(request.status) ? (
-                    <form action={sendReferralMessageForm} className="space-y-2">
-                      <input type="hidden" name="requestId" value={request.id} />
-                      <textarea
-                        name="message"
-                        required
-                        minLength={2}
-                        className="min-h-[72px] w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        placeholder={t('referralMyRequestsPage.conversation.placeholder', 'Send a message to the recruiter...')}
-                      />
-                      <div className="flex justify-end">
-                        <Button type="submit" size="sm">{t('referralMyRequestsPage.conversation.send', 'Send')}</Button>
-                      </div>
-                    </form>
+                    <ReferralConversationComposer
+                      requestId={request.id}
+                      placeholder={t('referralMyRequestsPage.conversation.placeholder', 'Send a message to the recruiter...')}
+                      submitLabel={t('referralMyRequestsPage.conversation.send', 'Send')}
+                    />
                   ) : null}
                 </div>
               </CardContent>

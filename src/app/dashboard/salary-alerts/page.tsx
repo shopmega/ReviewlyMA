@@ -115,7 +115,7 @@ export default async function SalaryAlertsPage() {
             }
 
             if (sub.scope === 'role_city' && sub.role_slug && sub.city_slug) {
-              const pagePath = `/salaires/role/${sub.role_slug}/${sub.city_slug}`;
+              const pagePath = `/salaires/${sub.role_slug}/${sub.city_slug}`;
               return (
                 <Card key={sub.id} className="rounded-2xl">
                   <CardHeader className="pb-3">
@@ -195,4 +195,3 @@ export default async function SalaryAlertsPage() {
     </div>
   );
 }
-

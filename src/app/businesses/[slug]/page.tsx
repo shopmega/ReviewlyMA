@@ -3,6 +3,7 @@ import sanitizer from '@/lib/sanitizer';
 import { LazyBusinessHero, LazyPhotoGallery } from '@/components/shared/performance';
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
 import { BusinessSidebar } from '@/components/business/BusinessSidebar';
+import { BusinessMobileActionBar } from '@/components/business/BusinessMobileActionBar';
 import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
@@ -12,12 +13,14 @@ import { BusinessInsightsTabs } from '@/components/business/BusinessInsightsTabs
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
-import { Business } from '@/lib/types';
+import { Business, SalaryEntry, SalaryStats } from '@/lib/types';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
+import { getBusinessReferralActivity } from '@/lib/data/referrals';
 import { applyBusinessQaPreview, parseQaPreviewState, REAL_QA_PREVIEW_STATE, type QaPreviewState } from '@/lib/qa-preview';
 import { AdminQaPreviewToggle } from '@/components/business/AdminQaPreviewToggle';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { cookies } from 'next/headers';
 
 interface PageProps {
@@ -109,12 +112,30 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
     redirect('/businesses');
   }
 
-  const [salaryStats, salaryEntries] = settings.enable_salaries
-    ? await Promise.all([
+  const emptySalaryStats: SalaryStats = {
+    count: 0,
+    medianMonthly: null,
+    minMonthly: null,
+    maxMonthly: null,
+    currency: 'MAD',
+    roleBreakdown: [],
+  };
+  const emptySalaryEntries: SalaryEntry[] = [];
+  const salaryDataPromise = settings.enable_salaries
+    ? Promise.all([
       getSalaryStatsByBusiness(business.id),
       getPublishedSalariesByBusiness(business.id, 10),
     ])
-    : [{ count: 0, medianMonthly: null, minMonthly: null, maxMonthly: null, currency: 'MAD', roleBreakdown: [] }, []];
+    : Promise.resolve([emptySalaryStats, emptySalaryEntries] as [SalaryStats, SalaryEntry[]]);
+
+  const [salaryData, referralActivity] = await Promise.all([
+    salaryDataPromise,
+    getBusinessReferralActivity({
+      businessId: business.id,
+      businessName: business.name,
+    }),
+  ]);
+  const [salaryStats, salaryEntries] = salaryData;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -255,17 +276,25 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
       <LazyBusinessHero business={displayedBusiness} />
 
       {/* Dedicated actions section to avoid hero overflow on mobile */}
-      <section className="w-full border-b border-border/30 bg-background/95 backdrop-blur-sm">
+      <section className="hidden w-full border-b border-border/30 bg-background/95 backdrop-blur-sm md:block">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <BusinessPageActions business={displayedBusiness} isFollowing={isFollowing} />
         </div>
       </section>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 pb-28 md:pb-8">
+        <div className="mb-6">
+          <Breadcrumb
+            items={[
+              { label: 'Entreprises', href: '/businesses' },
+              { label: displayedBusiness.name, href: `/businesses/${displayedBusiness.id}` },
+            ]}
+          />
+        </div>
         <div className="flex flex-col lg:flex-row gap-8 xl:gap-10">
 
           {/* Main Content (Left) */}
-          <div className="lg:w-3/4 space-y-8 order-last lg:order-first">
+          <div className="order-first space-y-8 lg:w-3/4">
             <BusinessInsightsTabs
               business={displayedBusiness}
               enableSalaries={settings.enable_salaries}
@@ -274,6 +303,8 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
               salaryRoles={settings.salary_roles || []}
               salaryDepartments={settings.salary_departments || []}
               salaryIntervals={settings.salary_intervals || []}
+              referralOffers={referralActivity.offers}
+              referralDemands={referralActivity.demands}
             />
 
             {hasAboutContent && <AboutSection business={displayedBusiness} />}
@@ -304,7 +335,7 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
           </div>
 
           {/* Sidebar (Right) - Sticky */}
-          <aside className="lg:w-1/4 order-first lg:order-last">
+          <aside className="order-last lg:w-1/4">
             <div className="mb-6">
               <InternalAdsSlot
                 placement="business_profile_sidebar"
@@ -317,6 +348,8 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
 
         </div>
       </main>
+
+      <BusinessMobileActionBar business={displayedBusiness} isFollowing={isFollowing} />
     </div>
   );
 }

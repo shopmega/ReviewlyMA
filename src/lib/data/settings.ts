@@ -67,7 +67,7 @@ export type SiteSettings = {
 };
 
 export const getDefaultSettings = (): SiteSettings => ({
-    site_name: 'Platform',
+    site_name: 'Reviewly',
     site_description: 'Trouvez des avis sur les établissements, les services et les produits.',
     contact_email: 'contact@example.com',
     maintenance_mode: false,
@@ -97,7 +97,7 @@ export const getDefaultSettings = (): SiteSettings => ({
     adsense_auto_ads_enabled: false,
     office_address: 'Casablanca, Morocco',
     office_phone: undefined,
-    copyright_text: `&copy; ${new Date().getFullYear()} Platform. Designé avec excellence à Casablanca.`,
+    copyright_text: `&copy; ${new Date().getFullYear()} Reviewly. Designé avec excellence à Casablanca.`,
     home_sections_config: [
         { id: 'hero', visible: true },
         { id: 'stats', visible: true },

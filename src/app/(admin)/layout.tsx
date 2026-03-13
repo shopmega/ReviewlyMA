@@ -26,6 +26,7 @@ import {
   DollarSign,
   Building2,
   Target,
+  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { getSiteName } from '@/lib/site-config';
 
 const menuGroups = [
   {
@@ -63,6 +65,7 @@ const menuGroups = [
     labelKey: 'adminLayout.group.moderation',
     labelFallback: 'Moderation',
     items: [
+      { href: '/admin/moderation', labelKey: 'adminLayout.nav.moderationHub', labelFallback: 'Moderation Hub', icon: ShieldAlert },
       { href: '/admin/avis', labelKey: 'adminLayout.nav.allReviews', labelFallback: 'Tous les avis', icon: Star },
       { href: '/admin/salaires', labelKey: 'adminLayout.nav.salaries', labelFallback: 'Salaires', icon: DollarSign },
       { href: '/admin/parrainages', labelKey: 'adminLayout.nav.referrals', labelFallback: 'Parrainages', icon: BriefcaseBusiness },
@@ -162,14 +165,14 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [siteName, setSiteName] = useState('Platform');
+  const [siteName, setSiteName] = useState('Reviewly');
   const { t } = useI18n();
 
   useEffect(() => {
     const fetchSiteSettings = async () => {
       try {
         const settings = await getSiteSettings();
-        setSiteName(settings.site_name || 'Platform');
+        setSiteName(getSiteName(settings));
       } catch (error) {
         console.error('Error fetching site settings:', error);
       }

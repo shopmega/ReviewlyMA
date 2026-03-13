@@ -14,7 +14,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { createClient } from '@/lib/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { isPaidTier } from '@/lib/tier-utils';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useI18n } from '@/components/providers/i18n-provider';
 
@@ -36,7 +35,7 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 export default function UpdatesPage() {
-  const { businessId, profile, loading: profileLoading } = useBusinessProfile();
+  const { businessId, hasPaidAccess, loading: profileLoading } = useBusinessProfile();
   const initialState: BusinessActionState = { status: 'idle', message: '' };
   const [state, formAction] = useActionState(submitUpdate, initialState);
   const { toast } = useToast();
@@ -54,8 +53,6 @@ export default function UpdatesPage() {
     updateId: '',
     title: '',
   });
-
-  const isPro = profile?.tier && isPaidTier(profile.tier);
 
   useEffect(() => {
     void fetchUpdates();
@@ -170,7 +167,7 @@ export default function UpdatesPage() {
         </p>
       </div>
 
-      {!isPro && !loading && (
+      {!hasPaidAccess && !loading && (
         <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center space-y-4">
             <div className="p-4 bg-amber-100 dark:bg-amber-900/20 rounded-full">
@@ -178,23 +175,23 @@ export default function UpdatesPage() {
             </div>
             <div className="space-y-2 max-w-md">
               <h3 className="text-xl font-bold text-amber-800 dark:text-amber-400">
-                {t('dashboardUpdatesPage.pro.title', 'PRO / GOLD feature')}
+                {t('dashboardUpdatesPage.pro.title', 'Growth / Gold feature')}
               </h3>
               <p className="text-sm text-amber-700/80 dark:text-amber-500/80">
                 {t(
                   'dashboardUpdatesPage.pro.description',
-                  'Posting updates is reserved for PRO or GOLD subscribers.'
+                  'Posting updates is reserved for Growth and Gold subscribers.'
                 )}
               </p>
             </div>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl" asChild>
-              <Link href="/dashboard/premium">{t('dashboardUpdatesPage.pro.cta', 'Upgrade to PRO')}</Link>
+              <Link href="/dashboard/premium">{t('dashboardUpdatesPage.pro.cta', 'Upgrade your plan')}</Link>
             </Button>
           </CardContent>
         </Card>
       )}
 
-      {isPro && (
+      {hasPaidAccess && (
         <>
           {state.status === 'error' && (
             <Alert variant="destructive">

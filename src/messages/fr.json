@@ -73,10 +73,10 @@
       "subtitle": "Plongez dans nos collections thematiques et trouvez la societe parfaite pour votre carriere."
     },
     "hero": {
-      "badge": "Valeur immediate pour vos decisions de carriere",
+      "badge": "Des signaux plus clairs sur les employeurs",
       "titleLine1": "Comprendre une entreprise",
       "titleLine2": "avant d’y entrer.",
-      "subtitle": "Avis, salaires et reputation des entreprises marocaines.",
+      "subtitle": "Avis, salaires et signaux de parrainage pour evaluer les employeurs marocains.",
       "searchPlaceholder": "Entreprise, poste ou mot-cle...",
       "searchCta": "Rechercher une entreprise",
       "writeReview": "Ecrire un avis",
@@ -813,7 +813,7 @@
       "titleHighlight": "entreprise",
       "subtitle": "Prenez le controle de votre reputation en ligne, engagez vos employes et ameliorez votre attractivite.",
       "ctaStart": "Commencer gratuitement",
-      "ctaPremium": "Decouvrir Premium"
+      "ctaPremium": "Voir les plans Business"
     },
     "stats": {
       "1": "Entreprises inscrites",
@@ -852,7 +852,7 @@
         "2": "Mettre a jour vos informations",
         "3": "Repondre aux avis employes",
         "4": "Statistiques de base (vues)",
-        "5": "Recevoir des messages (limite)"
+        "5": "Demandes de contact disponibles apres upgrade"
       },
       "growth": {
         "1": "Badge de confiance GOLD",
@@ -874,9 +874,9 @@
       }
     },
     "premium": {
-      "badge": "AVANTAGES PREMIUM",
-      "title": "Fonctionnalites premium exclusives",
-      "subtitle": "Des outils puissants pour transformer votre presence en ligne et attirer les meilleurs talents."
+      "badge": "PLANS BUSINESS",
+      "title": "Fonctionnalites Growth & Gold",
+      "subtitle": "Choisissez le plan adapte a une entreprise ou jusqu a cinq."
     },
     "multi": {
       "badge": "MULTI-ENTREPRISES",
@@ -892,7 +892,7 @@
         "priceDesc": "Inclus avec votre compte"
       },
       "premium": {
-        "title": "Plan Premium",
+        "title": "Plan Gold",
         "count": "Jusqu a 5 entreprises",
         "f1": "Multi-gestion d entreprises",
         "f2": "Tableau de bord unifie",
@@ -909,8 +909,8 @@
       }
     },
     "how": {
-      "title": "Comment rejoindre Pro ?",
-      "subtitle": "Simple et rapide pour activer vos fonctionnalites premium.",
+      "title": "Comment activer votre plan ?",
+      "subtitle": "Simple et rapide pour activer votre plan Growth ou Gold.",
       "step1": {
         "title": "Effectuez le paiement",
         "desc": "Transferez le montant convenu via compte bancaire ou partenaires de paiement securises."
@@ -920,14 +920,14 @@
         "desc": "Soumettez votre reference de transaction depuis le dashboard ou contactez le support dedie."
       },
       "step3": {
-        "title": "Activez premium",
-        "desc": "Une fois verifie, votre badge Pro et vos fonctionnalites premium sont actives immediatement."
+        "title": "Activez votre plan",
+        "desc": "Une fois verifie, votre badge entreprise et les fonctionnalites de votre plan sont actives immediatement."
       }
     },
     "cta": {
       "title": "Pret a dominer votre marche local ?",
-      "start": "Demarrer mon compte Pro",
-      "subscribe": "S abonner a Premium",
+      "start": "Demarrer mon compte Business",
+      "subscribe": "Voir les plans Business",
       "subtitle": "Rejoignez les entreprises qui transforment leur attractivite en succes."
     }
   },
@@ -935,14 +935,14 @@
     "title": "Messages pour {name}",
     "yourBusiness": "votre entreprise",
     "subtitlePremium": "Gerez vos conversations en temps reel.",
-    "subtitleLocked": "La messagerie Premium permet de communiquer directement avec les candidats.",
+    "subtitleLocked": "Passez a Growth ou Gold pour communiquer directement avec les candidats.",
     "businessSender": "Etablissement",
     "replySent": "Reponse envoyee",
     "errorTitle": "Erreur",
     "replyError": "Impossible d envoyer la reponse.",
-    "lockedTitle": "Messagerie Premium",
-    "lockedDesc": "La messagerie directe est reservee aux membres Premium pour echanger avec les candidats et talents.",
-    "lockedCta": "Passer a Premium",
+    "lockedTitle": "Messagerie directe",
+    "lockedDesc": "La messagerie directe est disponible avec les plans Growth et Gold pour echanger avec les candidats et talents.",
+    "lockedCta": "Mettre a niveau mon plan",
     "nextUnread": "Aller au prochain non lu",
     "currentTarget": "Cible actuelle",
     "candidate": "Candidat",
@@ -1066,8 +1066,8 @@
       "a1": "Allez dans Etablissement depuis votre dashboard, puis onglet Services. Vous pourrez modifier les horaires d'ouverture.",
       "q2": "Comment repondre aux avis sur mon etablissement ?",
       "a2": "Rendez-vous dans Mes Avis, ouvrez un avis puis cliquez sur Repondre pour publier votre reponse publique.",
-      "q3": "Quelle difference entre Growth et PRO ?",
-      "a3": "Growth permet de gerer un seul etablissement avec les fonctions essentielles. PRO permet de gerer jusqu a 5 etablissements avec des fonctions avancees."
+      "q3": "Quelle difference entre Growth et Gold ?",
+      "a3": "Growth permet de gerer un seul etablissement avec les outils essentiels de visibilite. Gold permet de gerer jusqu a 5 etablissements avec des analytics et outils avances."
     }
   },
   "dashboardPage": {
@@ -1260,11 +1260,11 @@
     }
   },
   "blogPage": {
-    "metaTitle": "Blog | Reviewly MA",
-    "metaDescription": "Guides editoriaux et playbooks d execution referral.",
+    "metaTitle": "Blog | Reviewly",
+    "metaDescription": "Guides et analyses pour evaluer les employeurs a travers les avis, les salaires et les signaux de parrainage.",
     "badge": "Hub editorial",
     "title": "Blog et playbooks",
-    "subtitle": "Guides et playbooks qui relient les signaux de demande de parrainage, l intelligence salariale, le ciblage entreprises et les rapports mensuels.",
+    "subtitle": "Guides et analyses qui relient avis, salaires, signaux de parrainage et rapports mensuels.",
     "empty": "Aucun article n est publie pour le moment.",
     "pillarBadge": "Guide pilier",
     "published": "Publie: {date}",
@@ -1279,11 +1279,11 @@
     "referralDashboardCta": "Voir le dashboard referral demand",
     "cards": {
       "howToTitle": "Guides pratiques",
-      "howToDesc": "Tactiques de demande de parrainage et templates actionnables.",
+      "howToDesc": "Guides pratiques pour les parrainages, la recherche d entreprises et la preparation des candidatures.",
       "dataTitle": "Insights data",
-      "dataDesc": "Analyses interpretees a partir des signaux de demande et de salaires.",
+      "dataDesc": "Analyses construites a partir des avis, des salaires et des signaux de demande.",
       "reportsTitle": "Liaison rapports",
-      "reportsDesc": "Connexions directes avec les rapports mensuels pour renforcer l autorite topique."
+      "reportsDesc": "Rapports mensuels et panoramas sectoriels pour renforcer votre recherche."
     },
     "shareLabel": "Partager"
   },
@@ -1426,7 +1426,7 @@
     }
   },
   "referralDemandBoardPage": {
-    "metaTitle": "Demandes de parrainage | Reviewly MA",
+    "metaTitle": "Demandes de parrainage | Reviewly",
     "metaDescription": "Consultez les demandes publiques de candidats a la recherche d un parrainage.",
     "badge": "Demand board",
     "title": "Demandes de parrainage",
@@ -1446,7 +1446,7 @@
     "empty": "Aucune demande publique pour le moment."
   },
   "referralDemandCreatePage": {
-    "metaTitle": "Publier une demande de parrainage | Reviewly MA",
+    "metaTitle": "Publier une demande de parrainage | Reviewly",
     "metaDescription": "Publiez votre demande de parrainage et soyez contacte par des employes qui peuvent vous recommander.",
     "title": "Publier une demande",
     "subtitle": "Cette annonce est publique. N incluez pas d email ou de numero de telephone direct dans le texte.",
@@ -1482,8 +1482,8 @@
     }
   },
   "referralCityPage": {
-    "metaTitle": "Parrainages a {city} | Reviewly MA",
-    "metaDescription": "Offres de parrainage internes actives a {city} sur Reviewly MA.",
+    "metaTitle": "Parrainages a {city} | Reviewly",
+    "metaDescription": "Offres de parrainage internes actives a {city} sur Reviewly.",
     "title": "Parrainages a {city}",
     "activeCount": "{count} offre(s) active(s)",
     "empty": "Aucune offre active pour cette ville.",
@@ -1492,8 +1492,8 @@
     "viewOffer": "Voir l offre"
   },
   "referralRolePage": {
-    "metaTitle": "Parrainages poste | {role} | Reviewly MA",
-    "metaDescription": "Offres de parrainage actives pour le poste {role} sur Reviewly MA.",
+    "metaTitle": "Parrainages poste | {role} | Reviewly",
+    "metaDescription": "Offres de parrainage actives pour le poste {role} sur Reviewly.",
     "title": "Parrainages pour {role}",
     "activeCount": "{count} offre(s) active(s)",
     "empty": "Aucune offre active pour ce poste.",
@@ -1502,8 +1502,8 @@
     "viewOffer": "Voir l offre"
   },
   "referralCompanyPage": {
-    "metaTitle": "Parrainages entreprise | {company} | Reviewly MA",
-    "metaDescription": "Offres de parrainage actives pour l entreprise {company} sur Reviewly MA.",
+    "metaTitle": "Parrainages entreprise | {company} | Reviewly",
+    "metaDescription": "Offres de parrainage actives pour l entreprise {company} sur Reviewly.",
     "title": "Parrainages chez {company}",
     "activeCount": "{count} offre(s) active(s)",
     "empty": "Aucune offre active pour cette entreprise.",
@@ -1985,9 +1985,9 @@
       "convertTitle": "Convertissez Plus",
       "convertDesc": "Repondez aux avis et interagissez avec vos futurs clients.",
       "launchOffer": "Offre Lancement",
-      "launchOfferDesc": "1 mois de visibilite PRO offert apres approbation.",
+      "launchOfferDesc": "1 mois de visibilite Growth offert apres approbation.",
       "needHelp": "Besoin aide ?",
-      "support24": "Support Premium 7j/7"
+      "support24": "Support prioritaire 7j/7"
     },
     "loadingForm": "Chargement du formulaire...",
     "placeholders": {
@@ -2525,7 +2525,7 @@
         "step3": "- Acces complet au tableau de bord apres approbation"
       },
       "limitTitle": "Limitation actuelle",
-      "limitDescription": "Actuellement, chaque utilisateur peut revendiquer une seule entreprise. Cette limitation sera ajustee avec les offres premium.",
+      "limitDescription": "Growth permet de gerer un seul etablissement. Gold permet de gerer jusqu a 5 etablissements apres approbation.",
       "actions": {
         "track": "Suivre ma demande",
         "backHome": "Retour a l'accueil"
@@ -2545,10 +2545,10 @@
     },
     "notice": {
       "title": "Information importante",
-      "oneBusinessTitle": "Une entreprise par utilisateur",
-      "oneBusinessDescription": "Chaque utilisateur peut actuellement revendiquer une seule entreprise pour garantir une gestion de qualite.",
+      "oneBusinessTitle": "Limites par offre",
+      "oneBusinessDescription": "Les comptes Standard et Growth gerent un seul etablissement. Gold permet de gerer jusqu a 5 etablissements sur un meme compte.",
       "importantLabel": "Important :",
-      "importantText": " Les comptes Growth/Pro restent limites a un seul etablissement pour le moment."
+      "importantText": " Si vous devez gerer plusieurs etablissements sur un meme compte, choisissez l'offre Gold."
     },
     "step1": {
       "title": "Etape 1 : Trouvez votre entreprise",
@@ -2606,9 +2606,9 @@
       "bookingTitle": "Suivi reservations",
       "bookingDescription": "Suivez vos reservations externes avec le plan GOLD.",
       "advancedTitle": "Analyses avancees",
-      "advancedDescription": "Passez Premium pour debloquer l'historique complet des avis.",
+      "advancedDescription": "Passez a Growth ou Gold pour debloquer l'historique complet des avis.",
       "distributionTitle": "Distribution detaillee",
-      "distributionDescription": "Analysez finement la repartition de vos notes avec Premium."
+      "distributionDescription": "Analysez finement la repartition de vos notes avec Growth ou Gold."
     },
     "whatsapp": {
       "cardTitle": "Clics WhatsApp",
@@ -2768,21 +2768,21 @@
       "websitePlaceholder": "www.example.com"
     },
     "pro": {
-      "title": "Options Business PRO",
-      "badgeRequired": "Plan PRO requis",
+      "title": "Options Growth / Gold",
+      "badgeRequired": "Growth ou Gold requis",
       "whatsappLabel": "Numero WhatsApp",
       "whatsappPlaceholder": "Ex: 212 600000000",
       "whatsappDescriptionEnabled": "Affiche un bouton de contact direct sur votre fiche.",
-      "whatsappDescriptionDisabled": "Debloquez le contact direct WhatsApp avec un plan PRO.",
+      "whatsappDescriptionDisabled": "Debloquez le contact direct WhatsApp avec un plan Growth ou Gold.",
       "affiliateLabel": "Lien de reservation / affiliation",
       "affiliatePlaceholder": "Ex: https://booking.com/...",
       "affiliateDescriptionEnabled": "Lien direct vers votre moteur de reservation (Booking, etc.).",
-      "affiliateDescriptionDisabled": "Redirigez vos clients vers votre moteur de reservation avec un plan PRO.",
+      "affiliateDescriptionDisabled": "Redirigez vos clients vers votre moteur de reservation avec un plan Growth ou Gold.",
       "ctaLabel": "Texte du bouton (optionnel)",
       "ctaPlaceholder": "Ex: Reserver sur Booking",
       "tagsLabel": "Mots-cles de recherche (tags)",
       "tagsDescriptionEnabled": "Ajoutez jusqu a 10 mots-cles pour aider les clients a vous trouver (ex: Terrasse, Halal, Brunch).",
-      "tagsDescriptionDisabled": "Le plan PRO permet d ajouter des mots-cles de recherche personnalises."
+      "tagsDescriptionDisabled": "Les plans Growth et Gold permettent d ajouter des mots-cles de recherche personnalises."
     },
     "media": {
       "title": "Medias et images",
@@ -2820,9 +2820,9 @@
       "description": "Partagez des annonces, offres speciales ou actualites avec vos clients."
     },
     "pro": {
-      "title": "Fonctionnalite PRO / GOLD",
-      "description": "La diffusion de nouveautes est reservee aux abonnes PRO ou GOLD.",
-      "cta": "Passer en version PRO"
+      "title": "Fonctionnalite Growth / Gold",
+      "description": "La diffusion de nouveautes est reservee aux abonnes Growth et Gold.",
+      "cta": "Mettre a niveau mon plan"
     },
     "form": {
       "title": "Poster une nouvelle nouveaute",
@@ -3149,7 +3149,7 @@
   },
   "referralDemandDetailPage": {
     "metadata": {
-      "notFoundTitle": "Demande de parrainage | Reviewly MA",
+      "notFoundTitle": "Demande de parrainage | Reviewly",
       "title": "{role}{citySuffix} | Demande de parrainage",
       "description": "Demande publique de parrainage pour {role}{citySuffix}. Donnees anonymisees et moderees.",
       "ogAlt": "Demande de parrainage"

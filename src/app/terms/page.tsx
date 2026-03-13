@@ -1,9 +1,10 @@
 
 import { getSiteSettings } from '@/lib/data';
+import { getSiteName } from '@/lib/site-config';
 
 export default async function TermsPage() {
   const siteSettings = await getSiteSettings();
-  const siteName = siteSettings.site_name || 'Platform';
+  const siteName = getSiteName(siteSettings);
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">

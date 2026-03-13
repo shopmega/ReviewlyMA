@@ -354,7 +354,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
                       </div>
                     )}
                     <ContentShareButton
-                      url={`${getClientSiteUrl()}/businesses/${business.id}/reviews?reviewId=${review.id}`}
+                      url={`${getClientSiteUrl()}/businesses/${business.id}?tab=reviews&reviewId=${review.id}#insights`}
                       title={`Avis sur ${business.name}`}
                       text={`"${sanitizeReviewSnippet(review.text)}" - ${business.name}`}
                       contentType="review_snippet"

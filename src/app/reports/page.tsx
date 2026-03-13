@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getServerSiteUrl();
   return {
-    title: 'Reports | Reviewly MA',
+    title: 'Reports | Reviewly',
     description: 'Periodic referral market reports and cluster summaries.',
     alternates: { canonical: `${siteUrl}/reports` },
     robots: {

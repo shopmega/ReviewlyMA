@@ -99,7 +99,7 @@ export async function assignBusinessToUser(
       }
     }
 
-    // Enforce business limits (pro & growth can only have 1 business)
+    // Enforce business limits based on the resolved commercial tier.
     const { data: existingAssignments } = await supabase
       .from('user_businesses')
       .select('business_id, is_primary')
@@ -143,7 +143,7 @@ export async function assignBusinessToUser(
       if (existingBusinessIds.size >= maxBusinesses) {
         return {
           status: 'error',
-          message: 'This user already manages another business. Non-admin users are limited to one business. Remove the existing assignment/claim first.'
+          message: `This user already reached the business limit for their plan (${maxBusinesses}). Remove an existing assignment/claim first or upgrade the plan.`
         }
       }
     }

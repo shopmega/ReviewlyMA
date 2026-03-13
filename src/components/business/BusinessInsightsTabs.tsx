@@ -3,7 +3,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReviewsSection } from '@/components/business/ReviewsSection';
 import { SalarySection } from '@/components/business/SalarySection';
-import type { Business, SalaryEntry, SalaryStats } from '@/lib/types';
+import { BusinessReferralsSection } from '@/components/business/BusinessReferralsSection';
+import type { Business, ReferralDemandSummary, ReferralOfferSummary, SalaryEntry, SalaryStats } from '@/lib/types';
 import { useI18n } from '@/components/providers/i18n-provider';
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -20,6 +21,8 @@ type BusinessInsightsTabsProps = {
   salaryRoles?: string[];
   salaryDepartments?: string[];
   salaryIntervals?: Array<{ id: string; label: string; min: number; max: number }>;
+  referralOffers?: ReferralOfferSummary[];
+  referralDemands?: ReferralDemandSummary[];
 };
 
 export function BusinessInsightsTabs({
@@ -30,14 +33,18 @@ export function BusinessInsightsTabs({
   salaryRoles = [],
   salaryDepartments = [],
   salaryIntervals = [],
+  referralOffers = [],
+  referralDemands = [],
 }: BusinessInsightsTabsProps) {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const ctaExperiment = 'business_profile_trust_panel_v1';
   const reviewCount = business.reviews.length;
   const salaryCount = salaryStats.count;
+  const referralCount = referralOffers.length + referralDemands.length;
   const defaultTab = useMemo(() => {
     const requestedTab = searchParams.get('tab');
+    if (requestedTab === 'referrals') return 'referrals';
     if (enableSalaries && requestedTab === 'salaries') return 'salaries';
     if (enableSalaries && reviewCount === 0 && salaryCount > 0) return 'salaries';
     return 'reviews';
@@ -136,6 +143,9 @@ export function BusinessInsightsTabs({
               {t('business.tabs.salaries', 'Salaires')} ({salaryCount})
             </TabsTrigger>
           )}
+          <TabsTrigger value="referrals" className="rounded-lg px-5 font-semibold">
+            {t('business.tabs.referrals', 'Parrainages')} ({referralCount})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="reviews" className="mt-0">
@@ -155,6 +165,15 @@ export function BusinessInsightsTabs({
             />
           </TabsContent>
         )}
+
+        <TabsContent value="referrals" className="mt-0">
+          <BusinessReferralsSection
+            businessId={business.id}
+            businessName={business.name}
+            offers={referralOffers}
+            demands={referralDemands}
+          />
+        </TabsContent>
       </Tabs>
     </section>
   );

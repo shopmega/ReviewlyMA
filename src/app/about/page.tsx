@@ -1,9 +1,10 @@
 import { getSiteSettings } from '@/lib/data';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { getSiteName } from '@/lib/site-config';
 
 export default async function AboutPage() {
   const siteSettings = await getSiteSettings();
-  const siteName = siteSettings.site_name || 'Platform';
+  const siteName = getSiteName(siteSettings);
   const { t, tf } = await getServerTranslator();
 
   return (

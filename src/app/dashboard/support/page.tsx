@@ -474,10 +474,10 @@ export default function SupportPage() {
 
           <details className="group">
             <summary className="flex items-center justify-between cursor-pointer p-4 rounded-lg hover:bg-muted transition-colors">
-              <span className="font-medium">{t('dashboardSupportPage.faq.q3', 'What is the difference between Growth and PRO?')}</span>
+              <span className="font-medium">{t('dashboardSupportPage.faq.q3', 'What is the difference between Growth and Gold?')}</span>
               <span className="text-muted-foreground group-open:rotate-180 transition-transform">?</span>
             </summary>
-            <div className="p-4 text-sm text-muted-foreground">{t('dashboardSupportPage.faq.a3', 'Growth supports one business with core features. PRO supports up to 5 businesses with advanced analytics and communication features.')}</div>
+            <div className="p-4 text-sm text-muted-foreground">{t('dashboardSupportPage.faq.a3', 'Growth supports one business with core features. Gold supports up to 5 businesses with advanced analytics, salary benchmarks, and communication features.')}</div>
           </details>
         </CardContent>
       </Card>

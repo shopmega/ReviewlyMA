@@ -305,7 +305,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         <div className="relative z-10 container mx-auto px-4 flex flex-col items-center gap-6 md:gap-8">
                             <div className="space-y-5 md:space-y-6 max-w-4xl animate-fade-in-up">
                                 <Badge variant="outline" className="px-5 py-2 border-primary/20 text-primary bg-primary/5 backdrop-blur-md rounded-full transition-all hover:bg-primary/10 hover:border-primary/40 shadow-sm">
-                                    {t('home.hero.badge', 'Valeur immediate pour vos decisions de carriere')}
+                                    {t('home.hero.badge', 'Des signaux plus clairs sur les employeurs')}
                                 </Badge>
 
                                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-headline text-foreground leading-[1.08] tracking-tight drop-shadow-sm">
@@ -316,7 +316,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 </h1>
 
                                 <p className="text-lg md:text-xl text-muted-foreground font-body max-w-2xl mx-auto leading-relaxed">
-                                    {t('home.hero.subtitle', 'Avis, salaires et r\u00e9putation des entreprises marocaines.')}
+                                    {t('home.hero.subtitle', 'Avis, salaires et signaux de parrainage pour evaluer les employeurs marocains.')}
                                 </p>
                             </div>
 
@@ -416,7 +416,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         </Link>
                                     </Button>
                                     <Link
-                                        href="/pour-les-pros"
+                                        href="/pro"
                                         onClick={() => trackHomeCta('claim_listing', 'hero_text_link')}
                                         className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
                                     >
@@ -560,7 +560,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                         </Link>
                                     </Button>
                                     <Button asChild size="lg" variant="outline" className="rounded-xl font-bold border-primary/30 text-primary">
-                                        <Link href="/pour-les-pros" onClick={() => trackHomeCta('pro_offers', 'claim_business_section_secondary')}>
+                                        <Link href="/pro" onClick={() => trackHomeCta('pro_offers', 'claim_business_section_secondary')}>
                                             {t('home.claim.learnMore', 'Voir les offres pro')}
                                             <ChevronRight className="ml-2 h-4 w-4" />
                                         </Link>

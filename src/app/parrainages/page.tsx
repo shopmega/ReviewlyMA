@@ -8,10 +8,10 @@ import { AlertTriangle, ArrowRight, Clock3, MapPin, ShieldCheck, TrendingUp, Use
 import { getServerTranslator } from '@/lib/i18n/server';
 import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
-import { SoftAuthTriggerButton } from '@/components/auth/SoftAuthTriggerButton';
 
 type ReferralOffer = {
   id: string;
+  business_id: string | null;
   company_name: string;
   job_title: string;
   city: string | null;
@@ -52,9 +52,9 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Parrainages emploi au Maroc | Reviewly MA',
+    title: 'Parrainages emploi au Maroc | Reviewly',
     description:
-      'Marketplace unifiee offres + demandes de parrainage au Maroc. Filtres, signaux de confiance et echanges securises sur Reviewly MA.',
+      'Marketplace unifiee offres + demandes de parrainage au Maroc. Filtres, signaux de confiance et echanges securises sur Reviewly.',
     alternates: {
       canonical: '/parrainages',
     },
@@ -205,7 +205,7 @@ export default async function ParrainagesPage({
     let offerQuery = supabase
       .from('job_referral_offers')
       .select(
-        'id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at, identity_level, verification_status, trust_score, response_rate, response_hours_avg',
+        'id, business_id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at, identity_level, verification_status, trust_score, response_rate, response_hours_avg',
         { count: 'exact' }
       )
       .eq('status', 'active');
@@ -242,7 +242,7 @@ export default async function ParrainagesPage({
     if (offerError && (offerError.message.includes('identity_level') || offerError.message.includes('verification_status'))) {
       const fallback = await supabase
         .from('job_referral_offers')
-        .select('id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at', { count: 'exact' })
+        .select('id, business_id, company_name, job_title, city, contract_type, work_mode, seniority, slots, created_at, expires_at', { count: 'exact' })
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(60);
@@ -303,6 +303,12 @@ export default async function ParrainagesPage({
   const allHref = buildMarketHref({ kind: 'all', search, city, contract, mode, seniority, sort });
   const offersHref = buildMarketHref({ kind: 'offers', search, city, contract, mode, seniority, sort });
   const demandsHref = buildMarketHref({ kind: 'demands', search, city, contract, mode, seniority, sort });
+  const publishOfferHref = currentUserId
+    ? '/parrainages/new?type=offer'
+    : `/login?next=${encodeURIComponent('/parrainages/new?type=offer')}`;
+  const publishDemandHref = currentUserId
+    ? '/parrainages/new?type=demand'
+    : `/login?next=${encodeURIComponent('/parrainages/new?type=demand')}`;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
@@ -336,20 +342,9 @@ export default async function ParrainagesPage({
                 </Button>
               </>
             ) : null}
-            {currentUserId ? (
-              <Button asChild className="rounded-xl">
-                <Link href="/parrainages/new?type=offer">{t('referrals.list.publish', 'Publier une offre')}</Link>
-              </Button>
-            ) : (
-              <SoftAuthTriggerButton
-                label={t('referrals.list.publish', 'Publier une offre')}
-                nextPath="/parrainages/new?type=offer"
-                intent="referral_publish"
-                className="rounded-xl"
-                title="Publiez une offre de parrainage"
-                description="Connectez-vous pour publier une offre et gerer les demandes en toute securite."
-              />
-            )}
+            <Button asChild className="rounded-xl">
+              <Link href={publishOfferHref}>{t('referrals.list.publish', 'Publier une offre')}</Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -450,10 +445,10 @@ export default async function ParrainagesPage({
             </p>
             <div className="flex justify-center gap-2">
               <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/parrainages/new?type=offer">Publier une offre</Link>
+                <Link href={publishOfferHref}>Publier une offre</Link>
               </Button>
               <Button asChild className="rounded-xl">
-                <Link href={currentUserId ? '/parrainages/new?type=demand' : '/signup'}>Publier une demande</Link>
+                <Link href={publishDemandHref}>Publier une demande</Link>
               </Button>
             </div>
           </CardContent>
@@ -465,13 +460,16 @@ export default async function ParrainagesPage({
               const offer = item.data;
               const expiresAt = offer.expires_at ? new Date(offer.expires_at).toLocaleDateString(locale) : null;
               const responseLabel = offer.response_hours_avg ? `Repond en ~${offer.response_hours_avg}h` : 'Reactivite en cours';
+              const companyHref = offer.business_id
+                ? `/businesses/${offer.business_id}?tab=referrals`
+                : `/parrainages/entreprise/${slugify(offer.company_name)}`;
 
               return (
                 <Card key={`offer-${offer.id}`} className="rounded-2xl border-border bg-card transition-colors hover:border-primary/30">
                   <CardHeader className="space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <Badge variant="outline">
-                        <Link href={`/parrainages/entreprise/${slugify(offer.company_name)}`}>{offer.company_name}</Link>
+                        <Link href={companyHref}>{offer.company_name}</Link>
                       </Badge>
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock3 className="h-3.5 w-3.5" />
@@ -558,7 +556,15 @@ export default async function ParrainagesPage({
                       </Link>
                     </Button>
                     <Button asChild className="w-full rounded-md">
-                      <Link href={`/parrainages/demandes/${demand.id}#respond-form`}>Proposer un parrainage</Link>
+                      <Link
+                        href={
+                          currentUserId
+                            ? `/parrainages/demandes/${demand.id}#respond-form`
+                            : `/login?next=${encodeURIComponent(`/parrainages/demandes/${demand.id}#respond-form`)}`
+                        }
+                      >
+                        Proposer un parrainage
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>

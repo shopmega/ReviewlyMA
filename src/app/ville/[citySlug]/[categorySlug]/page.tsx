@@ -7,6 +7,7 @@ import { getCategoryBySlug } from '@/app/actions/categories';
 import { getCityFromSlug } from '@/lib/utils';
 import { Suspense } from 'react';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 
 interface CombinedPageProps {
     params: Promise<{ citySlug: string; categorySlug: string }>;
@@ -71,6 +72,14 @@ export default async function CombinedPage({ params, searchParams }: CombinedPag
         <div className="container mx-auto px-4 md:px-6 py-12">
             <div className="mb-12 space-y-6">
                 <div className="space-y-2">
+                    <Breadcrumb
+                        items={[
+                            { label: 'Villes', href: '/villes' },
+                            { label: city, href: `/ville/${citySlug}` },
+                            { label: categoryData.name, href: `/ville/${citySlug}/${categorySlug}` },
+                        ]}
+                        className="mb-3"
+                    />
                     <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight">
                         {categoryData.name} à <span className="text-primary">{city}</span>
                     </h1>

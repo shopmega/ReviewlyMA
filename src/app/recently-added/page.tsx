@@ -7,7 +7,7 @@ import { Sparkles, Calendar, Zap } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Nouveaux Etablissements au Maroc | Platform',
+  title: 'Nouveaux Etablissements au Maroc | Reviewly',
   description:
     'Soyez les premiers a decouvrir les dernieres adresses ajoutees sur la plateforme. Restaurants, boutiques et services recemment inscrits dans toutes les villes du Maroc.',
 };
@@ -69,4 +69,3 @@ export default async function RecentlyAddedPage() {
     </div>
   );
 }
-
