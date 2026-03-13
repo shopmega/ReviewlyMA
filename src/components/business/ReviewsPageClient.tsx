@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Filter, TrendingUp, Users, Building2, MapPin, Star, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getStoragePublicUrl } from '@/lib/data';
 import { useI18n } from '@/components/providers/i18n-provider';
 
 interface ReviewsPageClientProps {
@@ -111,8 +112,14 @@ export function ReviewsPageClient({ business }: ReviewsPageClientProps) {
               <CardContent className="px-8 pb-8 pt-0 -mt-12">
                 <div className="relative mb-6 inline-block">
                   <div className="group flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm">
-                    {business.logo_url ? (
-                      <Image src={business.logo_url} alt={business.name} width={80} height={80} className="object-contain group-hover:scale-110 transition-transform duration-500" />
+                    {business.logo_url && getStoragePublicUrl(business.logo_url) ? (
+                      <Image
+                        src={getStoragePublicUrl(business.logo_url) || ''}
+                        alt={business.name}
+                        width={80}
+                        height={80}
+                        className="object-contain group-hover:scale-110 transition-transform duration-500"
+                      />
                     ) : (
                       <Building2 className="h-10 w-10 text-primary/40" />
                     )}

@@ -44,17 +44,17 @@ const FILE_TYPE_CONFIG: Record<ProofFileType, FileUploadConfig> = {
     allowedMimeTypes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'],
   },
   logo: {
-    bucket: 'claim-proofs',
+    bucket: 'business-images',
     maxFileSize: 2 * 1024 * 1024, // 2MB
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   },
   cover: {
-    bucket: 'claim-proofs',
+    bucket: 'business-images',
     maxFileSize: 5 * 1024 * 1024, // 5MB
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   },
   gallery: {
-    bucket: 'claim-proofs',
+    bucket: 'business-images',
     maxFileSize: 5 * 1024 * 1024, // 5MB
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   },
@@ -193,21 +193,26 @@ export async function handleMultipleProofFiles(
   const failedUploads: ProofFileType[] = [];
   const successfulUploads: ProofFileType[] = [];
 
-  // Process each file type
-  for (const [fileType, file] of Object.entries(files)) {
-    const result = await handleProofFile(
-      file as File | string | null,
-      fileType as ProofFileType,
-      claimId,
-      supabaseClient
-    );
+  const entries = Object.entries(files) as Array<[ProofFileType, File | string | null]>;
+  const uploads = await Promise.all(
+    entries.map(async ([fileType, file]) => {
+      const result = await handleProofFile(file, fileType, claimId, supabaseClient);
+      return [fileType, result] as const;
+    })
+  );
 
-    results[fileType as ProofFileType] = result;
+  for (const [fileType, result] of uploads) {
+    results[fileType] = result;
+    const originalFile = files[fileType];
+
+    if (!originalFile) {
+      continue;
+    }
 
     if (!result.uploaded) {
-      failedUploads.push(fileType as ProofFileType);
+      failedUploads.push(fileType);
     } else {
-      successfulUploads.push(fileType as ProofFileType);
+      successfulUploads.push(fileType);
     }
   }
 

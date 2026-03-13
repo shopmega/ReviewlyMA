@@ -12,7 +12,7 @@ import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import Image from "next/image";
-import { extractStoragePath, parsePostgresArray } from "@/lib/data";
+import { extractStoragePath, getStoragePublicUrl, parsePostgresArray } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 // Helper function to convert relative URLs to absolute URLs
@@ -26,7 +26,7 @@ const getMediaUrl = (url: string) => {
 
   // If it's a Supabase storage path, convert to public URL
   if (url.startsWith('businesses/')) {
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${url}`;
+    return getStoragePublicUrl(url) || '/placeholders/logo-placeholder.svg';
   }
 
   // If it's a relative path starting with /, return as-is

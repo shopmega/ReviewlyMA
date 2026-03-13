@@ -35,7 +35,14 @@ export const getStoragePublicUrl = (path: string | null, bucket: string = 'busin
  */
 export const extractStoragePath = (url: string | null, bucket: string = 'business-images') => {
     if (!url) return null;
-    if (!url.includes(`/public/${bucket}/`)) return null;
+    if (!url.includes(`/public/${bucket}/`)) {
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
+            return null;
+        }
+
+        const cleanPath = url.trim();
+        return cleanPath.length > 0 ? cleanPath : null;
+    }
 
     const parts = url.split(`/public/${bucket}/`);
     return parts.length > 1 ? parts[1] : null;

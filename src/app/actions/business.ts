@@ -8,7 +8,11 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { logger, LogLevel } from '@/lib/logger';
 import { notifyAdmins } from '@/lib/notifications';
 import { isPaidTier } from '@/lib/tier-utils';
-import { sanitizeBusinessGalleryUrls, sanitizeBusinessMediaPath } from '@/lib/business-media';
+import {
+    getRemovedBusinessImagePaths,
+    sanitizeBusinessGalleryUrls,
+    sanitizeBusinessMediaPath,
+} from '@/lib/business-media';
 import sanitizer from '@/lib/sanitizer';
 
 export async function suggestBusiness(formData: FormData): Promise<ActionState> {
@@ -528,7 +532,6 @@ export async function updateBusinessProfile(
 
         // CRITICAL FIX: Use service client to bypass RLS policies
         const supabaseService = await createServiceClient();
-
         // Update the business record using service client
         const { error, data: updatedBusiness } = await supabaseService
             .from('businesses')
@@ -692,6 +695,35 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
         }
 
         const supabaseService = await createServiceClient();
+        const { data: existingBusiness, error: existingBusinessError } = await supabaseService
+            .from('businesses')
+            .select('logo_url, cover_url, gallery_urls')
+            .eq('id', businessId)
+            .single();
+
+        if (existingBusinessError || !existingBusiness) {
+            console.error('Error loading existing business images:', existingBusinessError);
+            return { status: 'error', message: 'Erreur lors du chargement des images existantes' };
+        }
+
+        const nextLogoUrl = 'logo_url' in updateData ? updateData.logo_url ?? null : existingBusiness.logo_url;
+        const nextCoverUrl = 'cover_url' in updateData ? updateData.cover_url ?? null : existingBusiness.cover_url;
+        const nextGalleryUrls = 'gallery_urls' in updateData
+            ? updateData.gallery_urls ?? []
+            : sanitizeBusinessGalleryUrls(existingBusiness.gallery_urls);
+
+        const removedStoragePaths = getRemovedBusinessImagePaths(
+            [
+                existingBusiness.logo_url,
+                existingBusiness.cover_url,
+                ...sanitizeBusinessGalleryUrls(existingBusiness.gallery_urls),
+            ],
+            [
+                nextLogoUrl,
+                nextCoverUrl,
+                ...nextGalleryUrls,
+            ]
+        );
 
         // Update the business images with service role after ownership verification.
         const { error } = await supabaseService
@@ -704,6 +736,16 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
             return { status: 'error', message: 'Erreur lors de la mise à jour des images' };
         }
 
+        if (removedStoragePaths.length > 0) {
+            const { error: storageDeleteError } = await supabaseService.storage
+                .from('business-images')
+                .remove(removedStoragePaths);
+
+            if (storageDeleteError) {
+                console.error('Error deleting removed business media:', storageDeleteError);
+            }
+        }
+
         await notifyBusinessFollowers({
             businessId,
             actorUserId: user.id,
@@ -714,7 +756,6 @@ export async function updateBusinessImagesAction(businessId: string, imageData: 
             dedupeMinutes: 15,
         });
 
-        revalidatePath(`/dashboard/etablissement`);
         revalidatePath(`/businesses/${businessId}`);
 
         return { status: 'success', message: 'Images mises à jour avec succès' };
