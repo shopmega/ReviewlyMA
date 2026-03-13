@@ -8,7 +8,6 @@ import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
-import CompetitorAds from '@/components/business/CompetitorAds';
 import { BusinessInsightsTabs } from '@/components/business/BusinessInsightsTabs';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -313,13 +312,6 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
 
             {displayedBusiness.updates && displayedBusiness.updates.length > 0 && (
               <UpdatesSection updates={displayedBusiness.updates} />
-            )}
-
-            {settings.enable_competitor_ads && (
-              <CompetitorAds
-                businessId={displayedBusiness.id}
-                trackingEnabled={settings.enable_competitor_ads_tracking}
-              />
             )}
 
             <InternalAdsSlot

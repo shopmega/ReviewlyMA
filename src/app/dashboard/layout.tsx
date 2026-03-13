@@ -45,7 +45,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/avis', label: 'Mes Avis', icon: Star },
     { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
     { href: '/dashboard/premium', label: 'Abonnement', icon: Zap },
-    { href: '/dashboard/advertising', label: 'Ads', icon: Megaphone },
     {
       href: hasGoldAccess ? '/dashboard/salary-benchmark' : '/dashboard/premium',
       label: 'Benchmark salaires',

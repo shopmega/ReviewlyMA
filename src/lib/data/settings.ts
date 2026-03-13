@@ -20,8 +20,6 @@ export type SiteSettings = {
     enable_interviews: boolean;
     enable_messaging: boolean;
     enable_claims: boolean;
-    enable_competitor_ads: boolean;
-    enable_competitor_ads_tracking: boolean;
     premium_annual_price: number;
     premium_monthly_price: number;
     tier_growth_monthly_price: number;
@@ -79,8 +77,6 @@ export const getDefaultSettings = (): SiteSettings => ({
     enable_interviews: true,
     enable_messaging: false,
     enable_claims: true,
-    enable_competitor_ads: true,
-    enable_competitor_ads_tracking: true,
     premium_annual_price: 500.00,
     premium_monthly_price: 50.00,
     tier_growth_monthly_price: 99.00,
@@ -226,8 +222,6 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                     enable_interviews: data.enable_interviews ?? true,
                     enable_messaging: data.enable_messaging ?? false,
                     enable_claims: data.enable_claims ?? true,
-                    enable_competitor_ads: data.enable_competitor_ads ?? true,
-                    enable_competitor_ads_tracking: data.enable_competitor_ads_tracking ?? true,
                     site_logo_url: data.site_logo_url || '/app-logo.png',
                     google_analytics_id: data.google_analytics_id || null,
                     facebook_pixel_id: data.facebook_pixel_id || null,

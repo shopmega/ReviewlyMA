@@ -31,12 +31,6 @@ type SalaryMetricRow = {
   submission_count: number | null;
 };
 
-type CompetitorEventRow = {
-  target_business_id: string;
-  event_type: 'impression' | 'click';
-  created_at: string;
-};
-
 type ReferralOfferRow = {
   business_id: string | null;
   status: string;
@@ -110,7 +104,7 @@ export async function GET(req: NextRequest) {
 
   const businessIds = paidBusinesses.map((b) => b.id);
 
-  const [reviewsResult, analyticsResult, salaryResult, competitorResult, referralResult, teamsResult] = await Promise.all([
+  const [reviewsResult, analyticsResult, salaryResult, referralResult, teamsResult] = await Promise.all([
     service
       .from('reviews')
       .select('business_id, rating, owner_reply, created_at')
@@ -126,11 +120,6 @@ export async function GET(req: NextRequest) {
       .select('business_id, pct_above_city_avg, pct_above_sector_avg, submission_count')
       .in('business_id', businessIds),
     service
-      .from('competitor_ad_events')
-      .select('target_business_id, event_type, created_at')
-      .in('target_business_id', businessIds)
-      .gte('created_at', sinceIso),
-    service
       .from('job_referral_offers')
       .select('business_id, status, created_at')
       .in('business_id', businessIds)
@@ -143,15 +132,14 @@ export async function GET(req: NextRequest) {
       .in('role', ['owner', 'manager', 'hr_manager', 'communications_officer', 'analyst']),
   ]);
 
-  if (reviewsResult.error || analyticsResult.error || salaryResult.error || competitorResult.error || referralResult.error || teamsResult.error) {
-    const firstError = reviewsResult.error || analyticsResult.error || salaryResult.error || competitorResult.error || referralResult.error || teamsResult.error;
+  if (reviewsResult.error || analyticsResult.error || salaryResult.error || referralResult.error || teamsResult.error) {
+    const firstError = reviewsResult.error || analyticsResult.error || salaryResult.error || referralResult.error || teamsResult.error;
     return NextResponse.json({ ok: false, error: firstError?.message || 'Failed to load datasets' }, { status: 500 });
   }
 
   const reviews = (reviewsResult.data || []) as ReviewRow[];
   const analytics = (analyticsResult.data || []) as AnalyticsRow[];
   const salaryMetrics = (salaryResult.data || []) as SalaryMetricRow[];
-  const competitorEvents = (competitorResult.data || []) as CompetitorEventRow[];
   const referralOffers = (referralResult.data || []) as ReferralOfferRow[];
   const teams = (teamsResult.data || []) as TeamRow[];
 
@@ -195,7 +183,6 @@ export async function GET(req: NextRequest) {
     const prevReviews = reviews.filter((r) => r.business_id === business.id && r.created_at < sinceIso);
     const currentAnalytics = analytics.filter((a) => a.business_id === business.id && a.created_at >= sinceIso);
     const prevAnalytics = analytics.filter((a) => a.business_id === business.id && a.created_at < sinceIso);
-    const businessCompetitorEvents = competitorEvents.filter((e) => e.target_business_id === business.id);
     const businessReferrals = referralOffers.filter((o) => o.business_id === business.id);
 
     const reviewRatings = currentReviews
@@ -214,7 +201,6 @@ export async function GET(req: NextRequest) {
     const viewsPrev = prevAnalytics.filter((a) => a.event_type === 'page_view').length;
     const leadsNow = currentAnalytics.filter((a) => ['phone_click', 'website_click', 'contact_form', 'whatsapp_click', 'affiliate_click'].includes(a.event_type)).length;
     const leadsPrev = prevAnalytics.filter((a) => ['phone_click', 'website_click', 'contact_form', 'whatsapp_click', 'affiliate_click'].includes(a.event_type)).length;
-    const competitorPressure = businessCompetitorEvents.filter((e) => e.event_type === 'impression').length;
 
     const salary = salaryByBusiness.get(business.id);
     const cityGap = salary?.pct_above_city_avg ?? null;
@@ -269,17 +255,6 @@ export async function GET(req: NextRequest) {
           message: 'Vos salaires sont sous les references locales/secteur. Risque d attrition.',
           type: 'pro_salary_alert',
           link: '/dashboard/salary-benchmark',
-          is_read: false,
-        });
-      }
-      if (competitorPressure >= 100 && business.tier === 'gold') {
-        alertsGenerated += 1;
-        notificationsPayload.push({
-          user_id: userId,
-          title: 'Alerte pression concurrentielle',
-          message: `${competitorPressure} impressions d annonces concurrentes ont ete detectees.`,
-          type: 'pro_competitor_alert',
-          link: '/dashboard/advertising?tab=competitor',
           is_read: false,
         });
       }

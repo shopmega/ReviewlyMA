@@ -65,8 +65,6 @@ type SiteSettings = {
     enable_interviews: boolean;
     enable_messaging: boolean;
     enable_claims: boolean;
-    enable_competitor_ads: boolean;
-    enable_competitor_ads_tracking: boolean;
     tier_growth_monthly_price?: number;
     tier_growth_annual_price?: number;
     tier_gold_monthly_price?: number;
@@ -128,8 +126,6 @@ const defaultSettings: SiteSettings = {
     enable_interviews: true,
     enable_messaging: false,
     enable_claims: true,
-    enable_competitor_ads: true,
-    enable_competitor_ads_tracking: true,
     tier_growth_monthly_price: 99.00,
     tier_growth_annual_price: 990.00,
     tier_gold_monthly_price: 299.00,
@@ -729,8 +725,6 @@ export default function SettingsPage() {
                                     { id: 'enable_reviews', label: t('adminSettings.modules.reviews.label', 'Moteur avis'), desc: t('adminSettings.modules.reviews.desc', 'Gestion des notes et commentaires utilisateurs'), icon: <Layers className="h-5 w-5" /> },
                                     { id: 'enable_salaries', label: t('adminSettings.modules.salaries.label', 'Section Salaires'), desc: t('adminSettings.modules.salaries.desc', 'Base anonyme des remunerations'), icon: <DollarSign className="h-5 w-5" /> },
                                     { id: 'enable_claims', label: t('adminSettings.modules.claims.label', 'Claims Engine'), desc: t('adminSettings.modules.claims.desc', 'Systeme de revendication entreprises'), icon: <ShieldCheck className="h-5 w-5" /> },
-                                    { id: 'enable_competitor_ads', label: t('adminSettings.modules.competitorAds.label', 'Annonces concurrentes'), desc: t('adminSettings.modules.competitorAds.desc', 'Reseau publicitaire entre pages entreprises'), icon: <Activity className="h-5 w-5" /> },
-                                    { id: 'enable_competitor_ads_tracking', label: t('adminSettings.modules.competitorAdsTracking.label', 'Tracking annonces concurrentes'), desc: t('adminSettings.modules.competitorAdsTracking.desc', 'Collecte des impressions et clics annonces'), icon: <Database className="h-5 w-5" /> },
                                 ].map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-6 rounded-[2rem] border border-border/10 bg-white/40 dark:bg-slate-950/20 hover:bg-white/70 dark:hover:bg-slate-950/40 transition-all group">
                                         <div className="flex gap-4 items-center">

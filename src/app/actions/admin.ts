@@ -1427,6 +1427,9 @@ export async function updateSiteSettings(settings: any): Promise<AdminActionResu
     const serviceClient = await createAdminClient();
     await enforceAdminPermission(serviceClient, adminId, 'settings.write');
     const payload = { ...settings, id: 'main', updated_at: new Date().toISOString() };
+    // Defensive cleanup: ensure removed ad toggles are never sent to DB.
+    delete payload.enable_competitor_ads;
+    delete payload.enable_competitor_ads_tracking;
 
     // Keep legacy/new pricing aliases synchronized to prevent UI drift:
     // admin page writes tier_pro_* while parts of the app still read tier_gold_* first.
