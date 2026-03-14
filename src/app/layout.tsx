@@ -19,6 +19,7 @@ import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
 import { cookies, headers } from 'next/headers';
 import { SoftAuthPromptController } from '@/components/auth/SoftAuthPromptController';
+import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
 
 const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -50,6 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(siteUrl),
+    manifest: '/manifest.webmanifest',
     title,
     description,
     icons: {
@@ -121,6 +123,7 @@ export default async function RootLayout({
               <TrackingConsentBridge />
               <AnalyticsPageTracker />
               <SoftAuthPromptController />
+              <ServiceWorkerRegistration />
               <AdSense
                 enabled={settings.adsense_enabled ?? false}
                 pubId={settings.adsense_client_id || undefined}
