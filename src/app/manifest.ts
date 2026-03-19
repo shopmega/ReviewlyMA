@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+// Triggering new Vercel deployment for slug fix
 import { getServerSiteUrl, getSiteName } from '@/lib/site-config';
 
 export default function manifest(): MetadataRoute.Manifest {
