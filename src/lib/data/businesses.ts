@@ -231,6 +231,23 @@ export const getBusinessById = async (id: string): Promise<Business | null> => {
     }
 };
 
+export const findBusinessRedirect = async (oldSlug: string): Promise<string | null> => {
+    try {
+        const supabase = getPublicClient();
+        const { data, error } = await supabase
+            .from('business_redirects')
+            .select('new_slug')
+            .eq('old_slug', oldSlug)
+            .maybeSingle();
+
+        if (error || !data) return null;
+        return data.new_slug;
+    } catch (error) {
+        console.error('findBusinessRedirect failed:', error);
+        return null;
+    }
+};
+
 /**
  * Backward-compatible helper used by legacy tests and call sites.
  */

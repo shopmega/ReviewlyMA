@@ -1,4 +1,4 @@
-import { getBusinessById, getFilteredBusinesses, getSiteSettings } from '@/lib/data';
+import { getBusinessById, getFilteredBusinesses, getSiteSettings, findBusinessRedirect } from '@/lib/data';
 import sanitizer from '@/lib/sanitizer';
 import { LazyBusinessHero, LazyPhotoGallery } from '@/components/shared/performance';
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
@@ -9,7 +9,7 @@ import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
 import { SimilarBusinesses } from '@/components/business/SimilarBusinesses';
 import { BusinessInsightsTabs } from '@/components/business/BusinessInsightsTabs';
-import { redirect } from 'next/navigation';
+import { redirect, permanentRedirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { Business, SalaryEntry, SalaryStats } from '@/lib/types';
@@ -32,6 +32,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const business = await getBusinessById(slug);
 
   if (!business) {
+    const redirectSlug = await findBusinessRedirect(slug);
+    if (redirectSlug) {
+      const siteUrl = getServerSiteUrl();
+      return {
+        alternates: {
+          canonical: `${siteUrl}/businesses/${redirectSlug}`,
+        },
+      };
+    }
     return {
       title: 'Établissement non trouvé',
     };
@@ -108,6 +117,10 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
   const settings = await getSiteSettings();
 
   if (!business) {
+    const redirectSlug = await findBusinessRedirect(slug);
+    if (redirectSlug) {
+      permanentRedirect(`/businesses/${redirectSlug}`);
+    }
     redirect('/businesses');
   }
 

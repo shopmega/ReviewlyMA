@@ -132,14 +132,55 @@ function slugifyForBusinessId(value: string): string {
   return value
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^\w\s-]/g, '')     // Remove non-alphanumeric except spaces and hyphens
+    .replace(/\s+/g, '-')         // Replace spaces with hyphens
+    .replace(/-+/g, '-')         // Replace multiple hyphens with single hyphen
+    .replace(/^-+/, '')           // Trim leading hyphens
+    .replace(/-+$/, '');          // Trim trailing hyphens
 }
 
+async function generateUniqueBusinessId(serviceClient: any, name: string, city: string): Promise<string> {
+  const baseSlug = slugifyForBusinessId(name);
+  const citySlug = slugifyForBusinessId(city);
+
+  // 1. Try name only
+  let candidate = baseSlug;
+  let { data: existing } = await serviceClient
+    .from('businesses')
+    .select('id')
+    .eq('id', candidate)
+    .maybeSingle();
+
+  if (!existing) return candidate;
+
+  // 2. Try name-city
+  candidate = `${baseSlug}-${citySlug}`;
+  ({ data: existing } = await serviceClient
+    .from('businesses')
+    .select('id')
+    .eq('id', candidate)
+    .maybeSingle());
+
+  if (!existing) return candidate;
+
+  // 3. Try name-city-N
+  let counter = 2;
+  while (true) {
+    candidate = `${baseSlug}-${citySlug}-${counter}`;
+    ({ data: existing } = await serviceClient
+      .from('businesses')
+      .select('id')
+      .eq('id', candidate)
+      .maybeSingle());
+
+    if (!existing) return candidate;
+    counter++;
+    if (counter > 100) throw new Error('Could not generate unique slug after 100 attempts');
+  }
+}
+
+// buildDeterministicBusinessId is now deprecated in favor of generateUniqueBusinessId
 function buildDeterministicBusinessId(name: string, city: string): string {
   return slugifyForBusinessId(`${name}-${city}`);
 }
@@ -404,7 +445,7 @@ export async function createBusiness(data: {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
 
-    const businessId = buildDeterministicBusinessId(data.name, data.city);
+    const businessId = await generateUniqueBusinessId(serviceClient, data.name, data.city);
 
     // Sanitize
     const safeName = sanitizer.stripHTML(data.name);
@@ -474,7 +515,7 @@ export async function approveBusinessSuggestion(suggestionId: string, reviewNote
       return { status: 'error', message: 'Cette suggestion a déjà été traitée.' };
     }
 
-    const businessId = buildDeterministicBusinessId(suggestion.name, suggestion.city);
+    const businessId = await generateUniqueBusinessId(serviceClient, suggestion.name, suggestion.city);
 
     // Create or update the business idempotently.
     const { data: business, error: createError } = await serviceClient
