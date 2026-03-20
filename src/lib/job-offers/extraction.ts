@@ -23,6 +23,24 @@ function stripHtml(html: string) {
     .trim();
 }
 
+function extractHostnameLabel(url: string) {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const root = hostname.split('.')[0] || hostname;
+    return root
+      .split(/[-_]/g)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  } catch {
+    return '';
+  }
+}
+
+function extractHtmlTitle(html: string) {
+  const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  return match?.[1]?.replace(/\s+/g, ' ').trim() || '';
+}
+
 async function fetchUrlText(url: string) {
   const response = await fetch(url, {
     headers: {
@@ -37,7 +55,9 @@ async function fetchUrlText(url: string) {
   }
 
   const html = await response.text();
-  return stripHtml(html).slice(0, 20000);
+  const title = extractHtmlTitle(html);
+  const body = stripHtml(html);
+  return `${title}\n${body}`.trim().slice(0, 20000);
 }
 
 function extractSalaryNumbers(text: string) {
@@ -59,10 +79,66 @@ function extractBenefits(text: string) {
   return BENEFIT_KEYWORDS.filter((keyword) => lower.includes(keyword)).slice(0, 8);
 }
 
+function cleanCandidate(value: string | null | undefined, max = 120) {
+  const normalized = value?.replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  return normalized.slice(0, max);
+}
+
+function detectJobTitle(text: string, lines: string[]) {
+  const patterns = [
+    /(?:job title|position|role|poste)\s*[:\-]\s*([^\n|]+)/i,
+    /we are hiring(?: an?| for)?\s+([^\n.,|]+)/i,
+    /we're hiring(?: an?| for)?\s+([^\n.,|]+)/i,
+    /looking for(?: an?| a)?\s+([^\n.,|]+)/i,
+    /recherche(?: un| une)?\s+([^\n.,|]+)/i,
+    /hiring(?: an?| for)?\s+([^\n.,|]+)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) return cleanCandidate(match[1], 90);
+  }
+
+  const lineCandidate = lines.find((line) =>
+    line.length > 4
+    && line.length < 90
+    && !/apply|postuler|salary|salaire|company|entreprise|about|description/i.test(line)
+  );
+  if (lineCandidate) return cleanCandidate(lineCandidate, 90);
+
+  const firstSentence = text.split(/[.!?]/)[0];
+  return cleanCandidate(firstSentence, 90);
+}
+
+function detectCompany(text: string, lines: string[], url?: string) {
+  const patterns = [
+    /(?:company|entreprise|employer)\s*[:\-]\s*([^\n|]+)/i,
+    /join\s+([A-Z][A-Za-z0-9&.' -]{2,60})/i,
+    /about\s+([A-Z][A-Za-z0-9&.' -]{2,60})/i,
+    /at\s+([A-Z][A-Za-z0-9&.' -]{2,60})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) return cleanCandidate(match[1], 80);
+  }
+
+  const lineCandidate = lines.slice(0, 8).find((line) =>
+    line.length > 2
+    && line.length < 80
+    && /[A-Za-z]/.test(line)
+    && !/remote|hybrid|full time|temps plein|casablanca|rabat|marrakech|salary|salaire/i.test(line)
+  );
+  if (lineCandidate) return cleanCandidate(lineCandidate, 80);
+
+  return cleanCandidate(url ? extractHostnameLabel(url) : '', 80);
+}
+
 function heuristicExtract(text: string, sourceType: 'paste' | 'url'): JobOfferExtractionResult {
   const lines = text.split(/[\n\r]+/).map((line) => line.trim()).filter(Boolean);
-  const titleCandidate = lines.find((line) => line.length > 4 && line.length < 120) || '';
-  const companyCandidate = lines.slice(1, 6).find((line) => /[A-Za-z]/.test(line)) || '';
+  const titleCandidate = detectJobTitle(text, lines);
+  const companyCandidate = detectCompany(text, lines);
   const cityMatch = text.match(/\b(Casablanca|Rabat|Marrakech|Tanger|Tangier|Agadir|Fes|Riyadh|Dubai|Paris|Lyon)\b/i);
   const workModel = /hybrid/i.test(text) ? 'hybrid' : /remote/i.test(text) ? 'remote' : /onsite|on-site|presentiel/i.test(text) ? 'onsite' : null;
   const contractType = /freelance/i.test(text)
@@ -108,11 +184,21 @@ function heuristicExtract(text: string, sourceType: 'paste' | 'url'): JobOfferEx
 
 export async function extractJobOfferInput(input: JobOfferIngestionInput): Promise<JobOfferExtractionResult & { rawContent: string }> {
   const sourceType: 'paste' | 'url' = input.sourceUrl ? 'url' : 'paste';
-  const rawContent = sourceType === 'url'
-    ? await fetchUrlText(input.sourceUrl || '')
-    : (input.sourceText || '');
+  let rawContent = input.sourceText || '';
+  if (sourceType === 'url') {
+    rawContent = await fetchUrlText(input.sourceUrl || '');
+  }
 
   const heuristic = heuristicExtract(rawContent, sourceType);
+  if (!heuristic.companyName && input.sourceUrl) {
+    heuristic.companyName = extractHostnameLabel(input.sourceUrl) || '';
+  }
+  if (!heuristic.companyName) {
+    heuristic.companyName = 'Entreprise non identifiee';
+  }
+  if (!heuristic.jobTitle) {
+    heuristic.jobTitle = 'Poste non identifie';
+  }
 
   try {
     const aiResult = await extractJobOffer({

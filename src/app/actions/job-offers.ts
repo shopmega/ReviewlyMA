@@ -59,11 +59,22 @@ export async function submitJobOfferAnalysis(
     }
 
     const effectiveSourceType = parsed.data.sourceUrl ? 'url' : 'paste';
-    const extracted = await extractJobOfferInput({
-      sourceType: effectiveSourceType,
-      sourceUrl: parsed.data.sourceUrl || '',
-      sourceText: parsed.data.sourceText || '',
-    });
+    let extracted;
+    try {
+      extracted = await extractJobOfferInput({
+        sourceType: effectiveSourceType,
+        sourceUrl: parsed.data.sourceUrl || '',
+        sourceText: parsed.data.sourceText || '',
+      });
+    } catch (error) {
+      logError('job_offer_extract_input', error, { sourceType: effectiveSourceType });
+      return createErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        effectiveSourceType === 'url'
+          ? 'Impossible de lire ce lien pour le moment. Collez le texte de l annonce directement.'
+          : 'Impossible de lire correctement cette offre. Essayez avec un texte plus complet.'
+      ) as JobOfferActionState;
+    }
 
     if (!extracted.companyName || !extracted.jobTitle) {
       return createErrorResponse(
