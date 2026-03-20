@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@supabase/supabase-js';
 import type { User } from '@supabase/supabase-js';
 
 // Analytics event types
@@ -42,7 +41,6 @@ export interface AnalyticsData {
 }
 
 class AnalyticsService {
-  private supabase: any;
   private sessionId: string;
   private userId: string | null = null;
   private isInitialized = false;
@@ -58,10 +56,6 @@ class AnalyticsService {
 
   private async initializeSupabase() {
     try {
-      this.supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
       this.isInitialized = true;
     } catch (error) {
       console.error('Analytics service initialization failed:', error);
@@ -109,19 +103,19 @@ class AnalyticsService {
     };
 
     try {
-      // Store in Supabase analytics table
-      const { error } = await this.supabase
-        .from('analytics_events')
-        .insert(analyticsData);
+      const response = await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'analytics_event',
+          payload: analyticsData,
+        }),
+        keepalive: true,
+      });
 
-      if (error) {
-        if (error.code === 'PGRST204' || error.code === 'PGRST205') {
-          console.warn(`Analytics table missing for event "${event}", skipping. Please run migrations.`);
-        } else if (error.code === '401' || error.code === '403' || error.code === '42501') {
-          // Analytics should not create noisy console errors when RLS or auth blocks a write.
-        } else {
-          console.error('Analytics tracking failed:', error);
-        }
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        console.error('Analytics tracking failed:', payload || { status: response.status });
       }
     } catch (error) {
       console.error('Analytics tracking error:', error);
@@ -269,30 +263,32 @@ class AnalyticsService {
     });
 
     // Also track in dedicated carousel analytics table
-    if (this.isInitialized && this.supabase) {
+    if (this.isInitialized) {
       try {
-        const { error } = await this.supabase
-          .from('carousel_analytics')
-          .insert({
-            collection_id: collectionId,
-            event_type: 'click',
-            user_id: this.userId,
-            session_id: this.sessionId,
-            metadata: {
-              collection_title: collectionTitle,
-              collection_subtitle: collectionSubtitle,
-              link_type: linkType,
-              link_destination: linkDestination,
-              position
+        const response = await fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'carousel_event',
+            payload: {
+              collection_id: collectionId,
+              event_type: 'click',
+              user_id: this.userId,
+              session_id: this.sessionId,
+              metadata: {
+                collection_title: collectionTitle,
+                collection_subtitle: collectionSubtitle,
+                link_type: linkType,
+                link_destination: linkDestination,
+                position
+              }
             }
-          });
+          }),
+          keepalive: true,
+        });
 
-        if (error) {
-          if (error.code === 'PGRST204' || error.code === 'PGRST205') {
-            console.warn('Carousel analytics table missing, skipping. Please run migrations.');
-          } else {
-            console.error('Carousel analytics tracking failed:', error);
-          }
+        if (!response.ok) {
+          console.error('Carousel analytics tracking failed:', { status: response.status });
         }
       } catch (error) {
         console.error('Carousel analytics tracking error:', error);
@@ -309,27 +305,29 @@ class AnalyticsService {
     });
 
     // Also track in dedicated carousel analytics table
-    if (this.isInitialized && this.supabase) {
+    if (this.isInitialized) {
       try {
-        const { error } = await this.supabase
-          .from('carousel_analytics')
-          .insert({
-            collection_id: collectionId,
-            event_type: 'impression',
-            user_id: this.userId,
-            session_id: this.sessionId,
-            metadata: {
-              collection_title: collectionTitle,
-              position
+        const response = await fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'carousel_event',
+            payload: {
+              collection_id: collectionId,
+              event_type: 'impression',
+              user_id: this.userId,
+              session_id: this.sessionId,
+              metadata: {
+                collection_title: collectionTitle,
+                position
+              }
             }
-          });
+          }),
+          keepalive: true,
+        });
 
-        if (error) {
-          if (error.code === 'PGRST204' || error.code === 'PGRST205') {
-            console.warn('Carousel analytics table missing, skipping. Please run migrations.');
-          } else {
-            console.error('Carousel impression tracking failed:', error);
-          }
+        if (!response.ok) {
+          console.error('Carousel impression tracking failed:', { status: response.status });
         }
       } catch (error) {
         console.error('Carousel impression tracking error:', error);
