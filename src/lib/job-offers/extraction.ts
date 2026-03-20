@@ -12,6 +12,7 @@ import type {
   JobOfferWorkModel,
 } from '@/lib/types';
 import { extractJobOffer } from '@/ai/flows/extract-job-offer';
+import { getConfiguredAiProviders, hasConfiguredAiModel } from '@/ai/genkit';
 
 const BENEFIT_KEYWORDS = [
   'bonus',
@@ -378,15 +379,19 @@ export async function extractJobOfferInput(input: JobOfferIngestionInput): Promi
 
   diagnostics.currentStage = 'extract_ai';
   let aiResult: Partial<JobOfferExtractionResult> | null = null;
-  try {
-    aiResult = await extractJobOffer({
-      sourceType,
-      content: cleanedContent.slice(0, 16000),
-    });
-    diagnostics.usedAi = true;
-    diagnostics.notes.push('AI extraction completed.');
-  } catch (error) {
-    diagnostics.notes.push(`AI extraction skipped: ${error instanceof Error ? error.message : String(error)}`);
+  if (hasConfiguredAiModel()) {
+    try {
+      aiResult = await extractJobOffer({
+        sourceType,
+        content: cleanedContent.slice(0, 16000),
+      });
+      diagnostics.usedAi = true;
+      diagnostics.notes.push(`AI extraction completed using ${getConfiguredAiProviders().map((item) => item.label).join(', ')}.`);
+    } catch (error) {
+      diagnostics.notes.push(`AI extraction skipped: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  } else {
+    diagnostics.notes.push('AI extraction skipped: no configured AI provider.');
   }
 
   diagnostics.currentStage = 'merge_fields';
