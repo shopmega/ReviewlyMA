@@ -434,6 +434,148 @@ export type ReferralDemandSummary = {
   created_at: string;
 };
 
+export const jobOfferSourceTypeSchema = z.enum(['manual', 'paste', 'url', 'document']);
+export const jobOfferPayPeriodSchema = z.enum(['monthly', 'yearly']);
+export const jobOfferContractTypeSchema = z.enum(['cdi', 'cdd', 'freelance', 'internship', 'temporary', 'other']);
+export const jobOfferWorkModelSchema = z.enum(['onsite', 'hybrid', 'remote']);
+export const jobOfferSenioritySchema = z.enum(['junior', 'mid', 'senior', 'lead', 'manager', 'executive']);
+
+export const jobOfferSubmissionSchema = z.object({
+  sourceType: jobOfferSourceTypeSchema.default('manual'),
+  sourceUrl: z.string().trim().url({ message: 'URL invalide.' }).optional().or(z.literal('')),
+  documentName: z.string().trim().max(200, { message: 'Nom du document trop long.' }).optional().or(z.literal('')),
+  companyName: z.string().trim().min(2, { message: 'Entreprise requise.' }).max(160, { message: 'Entreprise trop longue.' }),
+  jobTitle: z.string().trim().min(2, { message: 'Poste requis.' }).max(160, { message: 'Poste trop long.' }),
+  city: z.string().trim().max(120, { message: 'Ville trop longue.' }).optional().or(z.literal('')),
+  salaryMin: z.coerce.number().min(0, { message: 'Salaire minimum invalide.' }).max(100000000, { message: 'Salaire minimum trop élevé.' }).optional(),
+  salaryMax: z.coerce.number().min(0, { message: 'Salaire maximum invalide.' }).max(100000000, { message: 'Salaire maximum trop élevé.' }).optional(),
+  payPeriod: jobOfferPayPeriodSchema.default('monthly'),
+  contractType: jobOfferContractTypeSchema.optional(),
+  workModel: jobOfferWorkModelSchema.optional(),
+  seniorityLevel: jobOfferSenioritySchema.optional(),
+  yearsExperienceRequired: z.coerce.number().min(0).max(60).optional(),
+  benefits: z.array(z.string().trim().min(1).max(80)).max(20).optional().default([]),
+  sourceText: z.string().trim().max(10000, { message: 'Contenu source trop long.' }).optional().or(z.literal('')),
+}).superRefine((data, ctx) => {
+  if (typeof data.salaryMin === 'number' && typeof data.salaryMax === 'number' && data.salaryMax < data.salaryMin) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['salaryMax'],
+      message: 'Le salaire maximum doit être supérieur ou égal au salaire minimum.',
+    });
+  }
+
+  if (data.sourceType === 'url' && !data.sourceUrl) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['sourceUrl'],
+      message: 'URL requise pour une analyse par lien.',
+    });
+  }
+
+  if (data.sourceType === 'document' && !data.documentName) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['documentName'],
+      message: 'Nom du document requis pour une analyse PDF.',
+    });
+  }
+});
+
+export type JobOfferSubmissionInput = z.infer<typeof jobOfferSubmissionSchema>;
+export type JobOfferSourceType = z.infer<typeof jobOfferSourceTypeSchema>;
+export type JobOfferPayPeriod = z.infer<typeof jobOfferPayPeriodSchema>;
+export type JobOfferContractType = z.infer<typeof jobOfferContractTypeSchema>;
+export type JobOfferWorkModel = z.infer<typeof jobOfferWorkModelSchema>;
+export type JobOfferSeniorityLevel = z.infer<typeof jobOfferSenioritySchema>;
+export type JobOfferStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
+export type JobOfferVisibility = 'private' | 'aggregate_only' | 'public';
+export type JobOfferRecommendationLabel = 'below_market' | 'fair_market' | 'above_market' | 'strong_offer' | 'insufficient_data';
+export type JobOfferConfidenceLevel = 'low' | 'medium' | 'high';
+export type JobOfferRiskFlag =
+  | 'missing_salary'
+  | 'wide_salary_range'
+  | 'missing_location'
+  | 'missing_contract_type'
+  | 'missing_work_model'
+  | 'missing_seniority'
+  | 'low_benchmark_confidence';
+
+export type JobOfferRecord = {
+  id: string;
+  user_id?: string | null;
+  business_id?: string | null;
+  company_name: string;
+  job_title: string;
+  job_title_normalized?: string | null;
+  city?: string | null;
+  city_slug?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_currency: string;
+  pay_period: JobOfferPayPeriod;
+  contract_type?: JobOfferContractType | null;
+  work_model?: JobOfferWorkModel | null;
+  seniority_level?: JobOfferSeniorityLevel | null;
+  years_experience_required?: number | null;
+  benefits: string[];
+  source_text?: string | null;
+  source_type: JobOfferSourceType;
+  source_url?: string | null;
+  document_name?: string | null;
+  status: JobOfferStatus;
+  visibility: JobOfferVisibility;
+  submitted_at: string;
+  approved_at?: string | null;
+  rejected_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type JobOfferAnalysisRecord = {
+  id: string;
+  job_offer_id: string;
+  analysis_version: string;
+  overall_offer_score: number;
+  compensation_score: number;
+  market_alignment_score: number;
+  transparency_score: number;
+  quality_score: number;
+  market_position_label: JobOfferRecommendationLabel;
+  confidence_level: JobOfferConfidenceLevel;
+  benchmark_role_city_median?: number | null;
+  benchmark_company_median?: number | null;
+  benchmark_city_median?: number | null;
+  benchmark_primary_source?: string | null;
+  risk_flags: JobOfferRiskFlag[];
+  missing_information: string[];
+  strengths: string[];
+  analysis_summary: string;
+  created_at: string;
+};
+
+export type JobOfferCompanyMetrics = {
+  business_id: string;
+  business_name: string;
+  city_slug: string | null;
+  approved_offer_count: number;
+  median_offer_monthly: number | null;
+  avg_offer_monthly: number | null;
+  avg_offer_score: number | null;
+  transparency_score_avg: number | null;
+  refreshed_at: string;
+};
+
+export type JobOfferRoleCityMetrics = {
+  job_title_normalized: string;
+  city_slug: string;
+  approved_offer_count: number;
+  median_offer_monthly: number | null;
+  avg_offer_monthly: number | null;
+  avg_offer_score: number | null;
+  refreshed_at: string;
+};
+
 export const businessProfileUpdateSchema = z.object({
   name: z.string().min(2, { message: 'Le nom de l\'établissement est requis.' }),
   description: z.string().optional(),
