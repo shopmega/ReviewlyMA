@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { JobOfferAnalysisRecord } from '@/lib/types';
+import type { JobOfferAnalysisRecord, JobOfferExtractionResult } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,32 @@ function scoreTone(score: number) {
 
 type Props = {
   analysis: Omit<JobOfferAnalysisRecord, 'id' | 'job_offer_id' | 'created_at'>;
+  extractedOffer?: JobOfferExtractionResult;
   analysisId?: string;
 };
 
-export function JobOfferAnalysisResult({ analysis, analysisId }: Props) {
+export function JobOfferAnalysisResult({ analysis, extractedOffer, analysisId }: Props) {
   return (
     <div className="space-y-4">
+      {extractedOffer ? (
+        <Card className="rounded-3xl border-slate-200 bg-slate-50/70">
+          <CardHeader>
+            <CardTitle className="text-lg">Extracted offer</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 text-sm md:grid-cols-2">
+            <p><span className="font-semibold">Company:</span> {extractedOffer.companyName}</p>
+            <p><span className="font-semibold">Role:</span> {extractedOffer.jobTitle}</p>
+            <p><span className="font-semibold">City:</span> {extractedOffer.city || 'Unknown'}</p>
+            <p><span className="font-semibold">Pay period:</span> {extractedOffer.payPeriod}</p>
+            <p><span className="font-semibold">Salary:</span> {extractedOffer.salaryMin ?? '-'} {extractedOffer.salaryMax ? `to ${extractedOffer.salaryMax}` : ''}</p>
+            <p><span className="font-semibold">Contract:</span> {extractedOffer.contractType || 'Not specified'}</p>
+            <p><span className="font-semibold">Work model:</span> {extractedOffer.workModel || 'Not specified'}</p>
+            <p><span className="font-semibold">Seniority:</span> {extractedOffer.seniorityLevel || 'Not specified'}</p>
+            <p className="md:col-span-2"><span className="font-semibold">Summary:</span> {extractedOffer.sourceSummary}</p>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card className="rounded-3xl border-slate-200 bg-white/95 shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div>

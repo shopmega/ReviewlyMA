@@ -440,6 +440,28 @@ export const jobOfferContractTypeSchema = z.enum(['cdi', 'cdd', 'freelance', 'in
 export const jobOfferWorkModelSchema = z.enum(['onsite', 'hybrid', 'remote']);
 export const jobOfferSenioritySchema = z.enum(['junior', 'mid', 'senior', 'lead', 'manager', 'executive']);
 
+export const jobOfferIngestionSchema = z.object({
+  sourceType: z.enum(['paste', 'url']),
+  sourceText: z.string().trim().max(20000, { message: 'Contenu trop long.' }).optional().or(z.literal('')),
+  sourceUrl: z.string().trim().url({ message: 'URL invalide.' }).optional().or(z.literal('')),
+}).superRefine((data, ctx) => {
+  if (data.sourceType === 'paste' && !data.sourceText) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['sourceText'],
+      message: 'Collez le texte de l offre.',
+    });
+  }
+
+  if (data.sourceType === 'url' && !data.sourceUrl) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['sourceUrl'],
+      message: 'URL requise.',
+    });
+  }
+});
+
 export const jobOfferSubmissionSchema = z.object({
   sourceType: jobOfferSourceTypeSchema.default('manual'),
   sourceUrl: z.string().trim().url({ message: 'URL invalide.' }).optional().or(z.literal('')),
@@ -483,6 +505,7 @@ export const jobOfferSubmissionSchema = z.object({
 });
 
 export type JobOfferSubmissionInput = z.infer<typeof jobOfferSubmissionSchema>;
+export type JobOfferIngestionInput = z.infer<typeof jobOfferIngestionSchema>;
 export type JobOfferSourceType = z.infer<typeof jobOfferSourceTypeSchema>;
 export type JobOfferPayPeriod = z.infer<typeof jobOfferPayPeriodSchema>;
 export type JobOfferContractType = z.infer<typeof jobOfferContractTypeSchema>;
@@ -574,6 +597,21 @@ export type JobOfferRoleCityMetrics = {
   avg_offer_monthly: number | null;
   avg_offer_score: number | null;
   refreshed_at: string;
+};
+
+export type JobOfferExtractionResult = {
+  companyName: string;
+  jobTitle: string;
+  city?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  payPeriod: JobOfferPayPeriod;
+  contractType?: JobOfferContractType | null;
+  workModel?: JobOfferWorkModel | null;
+  seniorityLevel?: JobOfferSeniorityLevel | null;
+  yearsExperienceRequired?: number | null;
+  benefits: string[];
+  sourceSummary: string;
 };
 
 export const businessProfileUpdateSchema = z.object({

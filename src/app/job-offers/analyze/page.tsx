@@ -6,7 +6,7 @@ import { JobOfferAnalysisForm } from '@/components/job-offers/JobOfferAnalysisFo
 
 export const metadata: Metadata = {
   title: 'Analyze Job Offer',
-  description: 'Submit a job offer and receive an explainable market analysis.',
+  description: 'Paste a job offer text or URL and receive an explainable market analysis.',
 };
 
 export default async function AnalyzeJobOfferPage() {

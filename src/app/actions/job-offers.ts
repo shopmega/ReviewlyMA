@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { checkRateLimit, RATE_LIMIT_CONFIG, recordAttempt } from '@/lib/rate-limiter-enhanced';
 import { createClient } from '@/lib/supabase/server';
 import type { ActionState } from '@/lib/types';
-import { jobOfferSubmissionSchema } from '@/lib/types';
+import { jobOfferIngestionSchema } from '@/lib/types';
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -16,6 +16,7 @@ import {
 import { normalizeJobOfferInput } from '@/lib/job-offers/normalization';
 import { getJobOfferBenchmarks } from '@/lib/job-offers/benchmarks';
 import { computeJobOfferAnalysis } from '@/lib/job-offers/scoring';
+import { extractJobOfferInput } from '@/lib/job-offers/extraction';
 
 export type JobOfferActionState = ActionState;
 
@@ -44,33 +45,45 @@ export async function submitJobOfferAnalysis(
     }
     await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
 
-    const benefitValues = formData.getAll('benefits').map((value) => String(value));
-    const parsed = jobOfferSubmissionSchema.safeParse({
+    const parsed = jobOfferIngestionSchema.safeParse({
       sourceType: formData.get('sourceType'),
       sourceUrl: formData.get('sourceUrl'),
-      documentName: formData.get('documentName'),
-      companyName: formData.get('companyName'),
-      jobTitle: formData.get('jobTitle'),
-      city: formData.get('city'),
-      salaryMin: formData.get('salaryMin') || undefined,
-      salaryMax: formData.get('salaryMax') || undefined,
-      payPeriod: formData.get('payPeriod'),
-      contractType: formData.get('contractType') || undefined,
-      workModel: formData.get('workModel') || undefined,
-      seniorityLevel: formData.get('seniorityLevel') || undefined,
-      yearsExperienceRequired: formData.get('yearsExperienceRequired') || undefined,
-      benefits: benefitValues,
       sourceText: formData.get('sourceText'),
     });
 
     if (!parsed.success) {
       return handleValidationError(
-        'Veuillez corriger les erreurs du formulaire offre.',
+        'Veuillez corriger les erreurs de l extraction.',
         parsed.error.flatten().fieldErrors
       ) as JobOfferActionState;
     }
 
-    const normalizedInput = normalizeJobOfferInput(parsed.data);
+    const extracted = await extractJobOfferInput(parsed.data);
+
+    if (!extracted.companyName || !extracted.jobTitle) {
+      return createErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Impossible d extraire assez d informations depuis cette offre. Essayez un texte plus complet.'
+      ) as JobOfferActionState;
+    }
+
+    const normalizedInput = normalizeJobOfferInput({
+      sourceType: parsed.data.sourceType,
+      sourceUrl: parsed.data.sourceUrl || '',
+      documentName: '',
+      companyName: extracted.companyName,
+      jobTitle: extracted.jobTitle,
+      city: extracted.city || '',
+      salaryMin: extracted.salaryMin ?? undefined,
+      salaryMax: extracted.salaryMax ?? undefined,
+      payPeriod: extracted.payPeriod,
+      contractType: extracted.contractType ?? undefined,
+      workModel: extracted.workModel ?? undefined,
+      seniorityLevel: extracted.seniorityLevel ?? undefined,
+      yearsExperienceRequired: extracted.yearsExperienceRequired ?? undefined,
+      benefits: extracted.benefits,
+      sourceText: extracted.rawContent,
+    });
     const benchmarks = await getJobOfferBenchmarks(normalizedInput);
     const computedAnalysis = computeJobOfferAnalysis(normalizedInput, benchmarks);
 
@@ -135,6 +148,7 @@ export async function submitJobOfferAnalysis(
       {
         analysisId: analysisData.id,
         offerId: offerData.id,
+        extractedOffer: extracted,
         analysis: computedAnalysis,
       }
     ) as JobOfferActionState;
