@@ -31,59 +31,78 @@ export function JobOfferAnalysisForm() {
       <Card className="rounded-[2rem] border-slate-200 shadow-sm">
         <CardHeader className="space-y-3">
           <Badge variant="outline" className="w-fit uppercase tracking-[0.18em] text-[10px]">
-            Ingestion first
+            Analyse privee
           </Badge>
-          <CardTitle className="text-3xl font-black tracking-tight">Paste a job offer or a URL</CardTitle>
+          <CardTitle className="text-3xl font-black tracking-tight md:text-4xl">
+            Analyser une offre d&apos;emploi
+          </CardTitle>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Drop the raw offer text or a job URL. The module extracts structured fields first, then runs benchmark-based analysis.
+            Comprenez ce qu&apos;une annonce dit, ce qu&apos;elle oublie, et ce qu&apos;il faut verifier avant de postuler.
           </p>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-8">
             <input type="hidden" name="sourceType" value={sourceType} />
 
-            <div className="flex flex-wrap gap-3">
-              <Button
-                type="button"
-                variant={sourceType === 'paste' ? 'default' : 'outline'}
-                onClick={() => setSourceType('paste')}
-              >
-                Paste text
-              </Button>
-              <Button
-                type="button"
-                variant={sourceType === 'url' ? 'default' : 'outline'}
-                onClick={() => setSourceType('url')}
-              >
-                Paste URL
-              </Button>
-            </div>
+            <section className="grid gap-4 md:grid-cols-4">
+              {[
+                'Red flags detectes',
+                'Salaire estime',
+                "Clarte de l'annonce",
+                'Questions a poser',
+              ].map((item) => (
+                <div key={item} className="rounded-2xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                  {item}
+                </div>
+              ))}
+            </section>
 
-            {sourceType === 'paste' ? (
-              <section className="space-y-2">
-                <Label htmlFor="sourceText">Job offer text</Label>
-                <Textarea
-                  id="sourceText"
-                  name="sourceText"
-                  placeholder="Paste the full job description, recruiter message, or offer text here."
-                  className="min-h-64"
-                />
-                <FieldError state={state} name="sourceText" />
-              </section>
-            ) : (
-              <section className="space-y-2">
-                <Label htmlFor="sourceUrl">Offer URL</Label>
-                <Input
-                  id="sourceUrl"
-                  name="sourceUrl"
-                  placeholder="https://www.linkedin.com/jobs/view/..."
-                />
-                <FieldError state={state} name="sourceUrl" />
-                <p className="text-xs text-muted-foreground">
-                  The extractor will fetch the page content and try to recover the job information. Some websites may block access.
-                </p>
-              </section>
-            )}
+            <section className="space-y-2">
+              <Label htmlFor="sourceText">Texte de l&apos;offre</Label>
+              <Textarea
+                id="sourceText"
+                name="sourceText"
+                placeholder="Collez ici le texte d'une annonce LinkedIn, Rekrute, Indeed, Emploi.ma..."
+                className="min-h-72"
+              />
+              <FieldError state={state} name="sourceText" />
+            </section>
+
+            <section className="space-y-3 rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">Ou collez un lien d&apos;annonce</p>
+                  <p className="text-xs text-muted-foreground">
+                    Fonctionne pour les liens publics quand la page peut etre lue.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={sourceType === 'paste' ? 'default' : 'outline'}
+                    onClick={() => setSourceType('paste')}
+                  >
+                    Texte
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={sourceType === 'url' ? 'default' : 'outline'}
+                    onClick={() => setSourceType('url')}
+                  >
+                    Lien
+                  </Button>
+                </div>
+              </div>
+              <Input
+                id="sourceUrl"
+                name="sourceUrl"
+                placeholder="https://www.linkedin.com/jobs/view/..."
+                disabled={sourceType !== 'url'}
+              />
+              <FieldError state={state} name="sourceUrl" />
+            </section>
 
             {state.message ? (
               <div className={`rounded-2xl border px-4 py-3 text-sm ${state.status === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
@@ -93,11 +112,16 @@ export function JobOfferAnalysisForm() {
 
             <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" disabled={isPending}>
-                {isPending ? 'Extracting and analyzing...' : 'Extract and analyze'}
+                {isPending ? "Analyse en cours..." : "Analyser l'offre"}
               </Button>
-              <Button type="button" variant="outline" asChild>
-                <Link href="/job-offers/history">View my history</Link>
-              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+              <span>Fonctionne meme si l&apos;annonce est incomplete</span>
+              <span>Analyse privee</span>
+              <span>
+                Enregistrez vos resultats apres <Link href="/login" className="underline underline-offset-4">connexion</Link>
+              </span>
             </div>
           </form>
         </CardContent>
