@@ -27,6 +27,7 @@ export function JobOfferAnalysisForm() {
   const [state, formAction, isPending] = useActionState(submitJobOfferAnalysis, initialState);
   const analysis = state.data?.analysis;
   const extractedOffer = state.data?.extractedOffer;
+  const extractionDiagnostics = state.data?.extractionDiagnostics as Record<string, unknown> | undefined;
   const debugInfo = state.details?.debug as Record<string, unknown> | undefined;
 
   return (
@@ -118,6 +119,15 @@ export function JobOfferAnalysisForm() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Debug</p>
                 <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-slate-700">
                   {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </div>
+            ) : null}
+
+            {state.status === 'success' && extractionDiagnostics ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Extraction diagnostics</p>
+                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-slate-700">
+                  {JSON.stringify(extractionDiagnostics, null, 2)}
                 </pre>
               </div>
             ) : null}

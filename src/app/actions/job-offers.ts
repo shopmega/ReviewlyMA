@@ -84,9 +84,9 @@ export async function submitJobOfferAnalysis(
       sourceTextPreview: summarizeText(parsed.data.sourceText),
     };
 
-    let extracted;
+    let extraction;
     try {
-      extracted = await extractJobOfferInput({
+      extraction = await extractJobOfferInput({
         sourceType: effectiveSourceType,
         sourceUrl: parsed.data.sourceUrl || '',
         sourceText: parsed.data.sourceText || '',
@@ -108,14 +108,12 @@ export async function submitJobOfferAnalysis(
       ) as JobOfferActionState;
     }
 
-    if (!extracted.companyName || !extracted.jobTitle) {
+    const { extracted, diagnostics } = extraction;
+
+    if (!diagnostics.minimumFieldsMet) {
       logError('job_offer_extract_incomplete', null, {
         ...debugBase,
-        extractedCompanyName: extracted.companyName,
-        extractedJobTitle: extracted.jobTitle,
-        extractedCity: extracted.city,
-        extractedSalaryMin: extracted.salaryMin,
-        extractedSalaryMax: extracted.salaryMax,
+        diagnostics,
       });
       return createErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -125,6 +123,7 @@ export async function submitJobOfferAnalysis(
             stage: 'extract_incomplete',
             ...debugBase,
             extracted,
+            diagnostics,
           },
         }
       ) as JobOfferActionState;
@@ -145,7 +144,7 @@ export async function submitJobOfferAnalysis(
       seniorityLevel: extracted.seniorityLevel ?? undefined,
       yearsExperienceRequired: extracted.yearsExperienceRequired ?? undefined,
       benefits: extracted.benefits,
-      sourceText: extracted.rawContent,
+      sourceText: extracted.cleanedContent,
     });
     const benchmarks = await getJobOfferBenchmarks(normalizedInput);
     const computedAnalysis = computeJobOfferAnalysis(normalizedInput, benchmarks);
@@ -160,6 +159,7 @@ export async function submitJobOfferAnalysis(
         salaryMax: extracted.salaryMax,
         payPeriod: extracted.payPeriod,
       },
+      extractionDiagnostics: diagnostics,
       normalized: {
         companyName: normalizedInput.companyName,
         jobTitle: normalizedInput.jobTitle,
@@ -265,6 +265,7 @@ export async function submitJobOfferAnalysis(
         offerId: offerData.id,
         extractedOffer: extracted,
         analysis: computedAnalysis,
+        extractionDiagnostics: diagnostics,
       }
     ) as JobOfferActionState;
   } catch (error) {

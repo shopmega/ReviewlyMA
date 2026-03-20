@@ -609,6 +609,61 @@ export type JobOfferExtractionResult = {
   sourceSummary: string;
 };
 
+export type JobOfferExtractionStage =
+  | 'resolve_source'
+  | 'clean_source'
+  | 'extract_heuristic'
+  | 'extract_ai'
+  | 'merge_fields'
+  | 'validate_fields';
+
+export type JobOfferExtractionFieldName =
+  | 'companyName'
+  | 'jobTitle'
+  | 'city'
+  | 'salaryMin'
+  | 'salaryMax'
+  | 'payPeriod'
+  | 'contractType'
+  | 'workModel'
+  | 'seniorityLevel'
+  | 'yearsExperienceRequired'
+  | 'benefits';
+
+export type JobOfferExtractionConfidence = 'none' | 'low' | 'medium' | 'high';
+
+export type JobOfferExtractionFieldDiagnostic = {
+  value: string | number | string[] | null;
+  confidence: JobOfferExtractionConfidence;
+  source: 'heuristic' | 'ai' | 'merged' | 'default' | 'none';
+  evidence?: string | null;
+};
+
+export type JobOfferExtractionDiagnostics = {
+  sourceType: 'paste' | 'url';
+  currentStage: JobOfferExtractionStage;
+  sourceUrl?: string | null;
+  sourceFetchStatus: 'not_applicable' | 'fetched' | 'failed';
+  sourceFetchError?: string | null;
+  rawContentLength: number;
+  cleanedContentLength: number;
+  rawContentPreview: string;
+  cleanedContentPreview: string;
+  usedAi: boolean;
+  notes: string[];
+  missingCriticalFields: Array<'companyName' | 'jobTitle'>;
+  minimumFieldsMet: boolean;
+  fieldDiagnostics: Partial<Record<JobOfferExtractionFieldName, JobOfferExtractionFieldDiagnostic>>;
+};
+
+export type JobOfferExtractionPipelineResult = {
+  extracted: JobOfferExtractionResult & {
+    rawContent: string;
+    cleanedContent: string;
+  };
+  diagnostics: JobOfferExtractionDiagnostics;
+};
+
 export const businessProfileUpdateSchema = z.object({
   name: z.string().min(2, { message: 'Le nom de l\'établissement est requis.' }),
   description: z.string().optional(),
