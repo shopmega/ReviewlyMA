@@ -23,6 +23,11 @@ function summarizeText(value: string | undefined, max = 220) {
   return value.replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
+function getFormString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === 'string' ? value : '';
+}
+
 export async function submitJobOfferAnalysis(
   _prevState: JobOfferActionState,
   formData: FormData
@@ -48,17 +53,21 @@ export async function submitJobOfferAnalysis(
     }
     await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
 
+    const rawSourceType = getFormString(formData, 'sourceType');
+    const rawSourceUrl = getFormString(formData, 'sourceUrl');
+    const rawSourceText = getFormString(formData, 'sourceText');
+
     const parsed = jobOfferIngestionSchema.safeParse({
-      sourceType: formData.get('sourceType'),
-      sourceUrl: formData.get('sourceUrl'),
-      sourceText: formData.get('sourceText'),
+      sourceType: rawSourceType || undefined,
+      sourceUrl: rawSourceUrl,
+      sourceText: rawSourceText,
     });
 
     if (!parsed.success) {
       logError('job_offer_ingestion_validation', parsed.error, {
-        sourceType: formData.get('sourceType'),
-        sourceUrl: formData.get('sourceUrl'),
-        sourceTextLength: String(formData.get('sourceText') || '').length,
+        sourceType: rawSourceType || null,
+        sourceUrl: rawSourceUrl || null,
+        sourceTextLength: rawSourceText.length,
       });
       return createErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -67,9 +76,10 @@ export async function submitJobOfferAnalysis(
           fieldErrors: parsed.error.flatten().fieldErrors,
           debug: {
             stage: 'validate_ingestion',
-            sourceType: formData.get('sourceType'),
-            sourceUrl: formData.get('sourceUrl'),
-            sourceTextLength: String(formData.get('sourceText') || '').length,
+            sourceType: rawSourceType || null,
+            sourceUrl: rawSourceUrl || null,
+            sourceTextLength: rawSourceText.length,
+            fieldErrors: parsed.error.flatten().fieldErrors,
           },
         }
       ) as JobOfferActionState;
