@@ -14,7 +14,9 @@ import { JobOfferAnalysisResult } from './JobOfferAnalysisResult';
 const initialState: JobOfferActionState = { status: 'idle', message: '' };
 
 function FieldError({ state, name }: { state: JobOfferActionState; name: string }) {
-  const fieldErrors = state.errors as Record<string, string[] | undefined> | undefined;
+  const fieldErrors =
+    (state.errors as Record<string, string[] | undefined> | undefined)
+    || (state.details?.fieldErrors as Record<string, string[] | undefined> | undefined);
   const errors = fieldErrors?.[name];
   if (!errors?.length) return null;
   return <p className="text-sm text-rose-600">{errors[0]}</p>;
@@ -25,6 +27,7 @@ export function JobOfferAnalysisForm() {
   const [state, formAction, isPending] = useActionState(submitJobOfferAnalysis, initialState);
   const analysis = state.data?.analysis;
   const extractedOffer = state.data?.extractedOffer;
+  const debugInfo = state.details?.debug as Record<string, unknown> | undefined;
 
   return (
     <div className="space-y-6">
@@ -107,6 +110,15 @@ export function JobOfferAnalysisForm() {
             {state.message ? (
               <div className={`rounded-2xl border px-4 py-3 text-sm ${state.status === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
                 {state.message}
+              </div>
+            ) : null}
+
+            {state.status === 'error' && debugInfo ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Debug</p>
+                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-slate-700">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
               </div>
             ) : null}
 

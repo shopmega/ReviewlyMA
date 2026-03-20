@@ -688,6 +688,7 @@ export type ActionState<T = any> = {
     [key in keyof T]?: string[];
   };
   data?: any;
+  details?: Record<string, unknown>;
 };
 
 export type ReviewFormState = ActionState<ReviewFormData>;
