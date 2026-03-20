@@ -726,7 +726,7 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                     <section key="cities" className="py-24 container mx-auto px-4 border-t">
                         <div className="text-center mb-16 space-y-4">
                             <h2 className="text-3xl md:text-5xl font-bold font-headline">{t('home.exploreByCity', 'Explorer par')} <span className="text-primary">{t('home.city', 'Ville')}</span></h2>
-                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('home.citySection.subtitle', 'Decouvrez les adresses les mieux notees dans les plus grandes villes du pays.')}</p>
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('home.citySection.subtitle', 'Découvrez les employeurs les mieux notés dans les plus grandes villes du pays.')}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

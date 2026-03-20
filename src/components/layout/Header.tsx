@@ -339,7 +339,7 @@ export function Header({ settings }: { settings: SiteSettings }) {
                         </Button>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground font-medium px-1 italic">{t('nav.mobileGuestHint', 'Explorez les meilleures adresses du Maroc.')}</p>
+                      <p className="text-sm text-muted-foreground font-medium px-1 italic">{t('nav.mobileGuestHint', 'Explorez les meilleurs employeurs du Maroc.')}</p>
                     )}
                   </div>
 

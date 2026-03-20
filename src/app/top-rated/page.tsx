@@ -8,8 +8,8 @@ import { Trophy, Star, TrendingUp } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Les Établissements les Mieux Notés du Maroc | Reviewly',
-    description: 'Découvrez la crème de la crème. Notre sélection des entreprises les mieux notées par la communauté à travers tout le Maroc.'
+    title: 'Les Meilleurs Employeurs du Maroc | Reviewly',
+    description: 'Découvrez les entreprises les mieux notées par leurs collaborateurs à travers tout le Maroc. Évaluez la culture, les salaires et les opportunités.'
 };
 
 export default async function TopRatedPage() {
@@ -36,7 +36,7 @@ export default async function TopRatedPage() {
                         </h1>
                         <p className="text-xl text-muted-foreground leading-relaxed">
                             Nous avons rassemblé ici les entreprises qui font l'unanimité.
-                            Gastronomie, loisirs, services... Découvrez ce qui se fait de mieux près de chez vous.
+                            Découvrez les employeurs les mieux notés par leurs collaborateurs au Maroc.
                         </p>
                     </div>
                 </div>

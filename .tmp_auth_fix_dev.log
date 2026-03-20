@@ -1,0 +1,268 @@
+
+> nextn@0.1.0 dev
+> next dev -p 9002
+
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.137.1:9002
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ serverMinification
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 6.2s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1357ms (211 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 13.8s (2980 modules)
+ GET /login 200 in 3412ms
+ ✓ Compiled in 4.4s (1042 modules)
+ GET /login 200 in 702ms
+ GET /login?next=/dashboard/companies 200 in 908ms
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ POST /login?next=/dashboard/companies 200 in 1874ms
+ ○ Compiling /dashboard/companies ...
+ ✓ Compiled /dashboard/companies in 4.3s (3087 modules)
+ GET /dashboard/companies 200 in 5609ms
+ GET /dashboard/companies 200 in 768ms
+ POST /dashboard/companies 200 in 517ms
+ POST /dashboard/companies 200 in 1232ms
+ POST /dashboard/companies 200 in 566ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 181ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 266ms
+ POST /dashboard/companies 200 in 668ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 308ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 7s (3124 modules)
+ GET /login?next=/dashboard 200 in 1325ms
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ POST /login?next=/dashboard 200 in 1255ms
+ GET /dashboard 200 in 2043ms
+ GET /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 2953ms
+ POST /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 410ms
+ ⨯ ./src/components/shared/BusinessSelector.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4mC:\Users\Zouhair\Downloads\AVis-prod\src\components\shared\BusinessSelector.tsx[0m:252:1]
+ [2m249[0m |         </SelectContent>
+ [2m250[0m |       </Select>
+ [2m251[0m |     );
+ [2m252[0m |   }
+     : [35;1m  ^[0m
+ [2m253[0m | 
+ [2m254[0m |   return (
+ [2m255[0m |     <div className={`flex items-center gap-2 ${className}`}>
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4mC:\Users\Zouhair\Downloads\AVis-prod\src\components\shared\BusinessSelector.tsx[0m:260:1]
+ [2m257[0m |       <span>{activeBusiness.name}</span>
+ [2m258[0m |     </div>
+ [2m259[0m |   );
+ [2m260[0m | }
+     : [35;1m^[0m
+ [2m261[0m | 
+ [2m262[0m | function BusinessSelectorSkeleton({ variant = 'header', className = '' }: { variant: string; className: string }) {
+ [2m262[0m |   if (variant === 'header') {
+     `----
+  [31mx[0m Expected '</', got ':'
+     ,-[[36;1;4mC:\Users\Zouhair\Downloads\AVis-prod\src\components\shared\BusinessSelector.tsx[0m:262:1]
+ [2m259[0m |   );
+ [2m260[0m | }
+ [2m261[0m | 
+ [2m262[0m | function BusinessSelectorSkeleton({ variant = 'header', className = '' }: { variant: string; className: string }) {
+     : [35;1m                                                                                   ^[0m
+ [2m263[0m |   if (variant === 'header') {
+ [2m264[0m |     return (
+ [2m264[0m |       <div className={`flex items-center gap-2 ${className}`}>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/shared/BusinessSelector.tsx
+./src/app/dashboard/layout.tsx
+ ✓ Compiled in 3.6s (3138 modules)
+ ✓ Compiled in 3.2s (3138 modules)
+ GET /login?next=/dashboard 200 in 3675ms
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ POST /login?next=/dashboard 200 in 2453ms
+ GET /login?next=/dashboard 200 in 1074ms
+ GET /login?next=/dashboard 200 in 2168ms
+ GET /login?next=/dashboard 200 in 678ms
+ POST /login?next=/dashboard 200 in 1758ms
+ ⨯ [Error: aborted]
+ ○ Compiling /_error ...
+ GET /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 5943ms
+ ✓ Compiled /_error in 10.6s (3484 modules)
+ GET /login?next=/dashboard 200 in 2545ms
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ POST /login?next=/dashboard 200 in 1521ms
+ GET /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 2394ms
+ POST /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 993ms
+ GET /login?next=/dashboard 200 in 662ms
+ POST /login?next=/dashboard 200 in 1480ms
+ GET /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 2965ms
+ POST /dashboard?id=agadir-cleaning-services-systems-xp0ib 200 in 402ms
+ GET /login?next=/dashboard/companies 200 in 682ms
+ POST /login?next=/dashboard/companies 200 in 1070ms
+ ⨯ [Error: aborted]
+ GET /dashboard/companies 200 in 725ms
+ POST /dashboard/companies 200 in 659ms
+ POST /dashboard/companies 200 in 516ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 175ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 407ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 712ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 285ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 162ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 322ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 397ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 502ms
+ GET /login?next=/dashboard/companies 200 in 605ms
+ POST /login?next=/dashboard/companies 200 in 1118ms
+ ⨯ [Error: aborted]
+ GET /dashboard/companies 200 in 541ms
+ POST /dashboard/companies 200 in 1142ms
+ POST /dashboard/companies 200 in 528ms
+ POST /dashboard/companies 200 in 404ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 160ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 181ms
+ POST /dashboard/companies 200 in 597ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 345ms
+ ○ Compiling /dashboard/reviews ...
+ ✓ Compiled /dashboard/reviews in 12.8s (4656 modules)
+ GET /login?next=/dashboard/companies 200 in 1087ms
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ POST /login?next=/dashboard/companies 200 in 1556ms
+ ⨯ [Error: aborted]
+ GET /dashboard/companies 200 in 1149ms
+ POST /dashboard/companies 200 in 404ms
+ POST /dashboard/companies 200 in 525ms
+ POST /dashboard/companies 200 in 515ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 179ms
+ GET /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 225ms
+ POST /dashboard/companies 200 in 715ms
+ POST /dashboard/companies?id=agadir-cleaning-services-systems-xp0ib 200 in 412ms
+ ✓ Compiled in 3.6s (4656 modules)
+ ✓ Compiled in 4.3s (4656 modules)
+ ✓ Compiled in 1094ms (1275 modules)
+ ✓ Compiled in 3.6s (4670 modules)
+ ✓ Compiled in 2.2s (4670 modules)
+ ✓ Compiled in 1934ms (4670 modules)
+ ✓ Compiled in 2.2s (1275 modules)
+ ✓ Compiled in 1220ms (1275 modules)
+ ✓ Compiled in 1438ms (1275 modules)
+ ✓ Compiled in 3.9s (4670 modules)
+ ✓ Compiled in 1978ms (1275 modules)
+ ✓ Compiled in 1134ms (1275 modules)
+ ✓ Compiled in 3.1s (1275 modules)
+ ✓ Compiled in 2.1s (1275 modules)
+ ✓ Compiled in 7s (4670 modules)
+ ✓ Compiled in 3.2s (4670 modules)
+ ✓ Compiled in 4.6s (4656 modules)
+ ✓ Compiled in 3.8s (4670 modules)
+ ✓ Compiled in 1956ms (4670 modules)
+ ✓ Compiled in 1640ms (4670 modules)
+ ✓ Compiled in 1424ms (3395 modules)
+ ✓ Compiled in 1103ms (1275 modules)
+ ✓ Compiled in 2.5s (4671 modules)
+ ✓ Compiled in 2.7s (4671 modules)
+ ✓ Compiled in 1447ms (3395 modules)
+ ✓ Compiled in 2.3s (1275 modules)
+ ✓ Compiled in 1229ms (1275 modules)
+ ✓ Compiled in 4.8s (1275 modules)
+ ✓ Compiled in 2.2s (1275 modules)
+ ✓ Compiled in 3.4s (1275 modules)
+ ✓ Compiled in 2.2s (1275 modules)
+ ✓ Compiled in 24s (4670 modules)
+ ✓ Compiled in 5.6s (4670 modules)
+ ✓ Compiled in 820ms (3395 modules)
+ ✓ Compiled in 748ms (3395 modules)
+ ✓ Compiled in 1046ms (1275 modules)
+ ✓ Compiled in 2.4s (4670 modules)
+ ✓ Compiled in 3.5s (3390 modules)
+ ✓ Compiled in 1117ms (2131 modules)
+ ✓ Compiled in 771ms (1274 modules)
+ ✓ Compiled in 548ms (1274 modules)
+ ✓ Compiled in 629ms (1274 modules)
+ ✓ Compiled in 790ms (1274 modules)
+ ✓ Compiled in 3.3s (3616 modules)
+ ✓ Compiled in 2.6s (3616 modules)
+ ✓ Compiled in 1585ms (3616 modules)
+ ✓ Compiled in 1567ms (3602 modules)
+ ✓ Compiled in 2.6s (3616 modules)
+ ✓ Compiled in 715ms (1274 modules)
+ ✓ Compiled in 695ms (1274 modules)
+ ✓ Compiled in 2s (3616 modules)
+ ✓ Compiled in 2s (3602 modules)
+ ✓ Compiled in 611ms (1274 modules)
+ ✓ Compiled in 1557ms (1274 modules)
+ ✓ Compiled in 2.2s (1274 modules)
+ ✓ Compiled in 1180ms (1274 modules)
+ ✓ Compiled in 1976ms (1274 modules)
+ ✓ Compiled in 5.1s (3405 modules)
+ ✓ Compiled in 1265ms (1274 modules)
+ ✓ Compiled in 1354ms (1274 modules)
+ ✓ Compiled in 1864ms (1274 modules)
+ ✓ Compiled in 839ms (1274 modules)
+ ✓ Compiled in 1031ms (1274 modules)
+ ✓ Compiled in 586ms (1274 modules)
+ ✓ Compiled in 919ms (1274 modules)
+ ✓ Compiled in 869ms (1274 modules)
+ ✓ Compiled in 2.4s (1274 modules)
+ ✓ Compiled in 1500ms (1274 modules)
+ ✓ Compiled in 1426ms (1274 modules)
+ ✓ Compiled in 2.1s (1274 modules)
+ ✓ Compiled in 1077ms (1274 modules)
+ ✓ Compiled in 2.5s (1274 modules)
+ ✓ Compiled in 1477ms (1274 modules)
+ ✓ Compiled in 2.2s (1274 modules)
+ ✓ Compiled in 2.5s (1274 modules)
+ ✓ Compiled in 2.4s (1274 modules)
+ ✓ Compiled in 3s (3602 modules)
+ ✓ Compiled in 6.9s (3405 modules)
+ ✓ Compiled in 2s (1485 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (130kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled in 4.4s (3401 modules)
+ ✓ Compiled in 1300ms (3401 modules)
+ ✓ Compiled in 1129ms (1272 modules)
+ ✓ Compiled in 899ms (1272 modules)
+ ✓ Compiled in 1492ms (1272 modules)
+ ✓ Compiled in 1181ms (1272 modules)
+ ✓ Compiled in 2.8s (1272 modules)
+ ✓ Compiled in 1951ms (1272 modules)
+ ✓ Compiled in 1382ms (1272 modules)
+ ✓ Compiled in 3.2s (1272 modules)
+ ✓ Compiled in 2.4s (1272 modules)
+ ✓ Compiled in 1399ms (1272 modules)
+ ✓ Compiled in 1454ms (1272 modules)
+ ✓ Compiled in 2.6s (1272 modules)
+ ✓ Compiled in 2.9s (1272 modules)
+ ✓ Compiled in 1096ms (1272 modules)
+ ✓ Compiled in 18.9s (3612 modules)
+ ✓ Compiled in 1432ms (1272 modules)
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.11.174:9002
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ serverMinification
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 7.5s
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.137.1:9002
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ serverMinification
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 5.6s

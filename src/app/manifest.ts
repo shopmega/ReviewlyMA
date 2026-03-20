@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name,
     short_name: 'AVis',
-    description: 'Decouvrez les meilleurs commerces de votre ville',
+    description: 'Évaluez les meilleurs employeurs au Maroc',
     start_url: '/',
     scope: '/',
     display: 'standalone',

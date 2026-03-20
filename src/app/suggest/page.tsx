@@ -57,7 +57,7 @@ export default function SuggestBusinessPage() {
             Suggérer une entreprise
           </h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Aidez la communauté à découvrir de nouvelles entreprises. Ajoutez votre entreprise ou service préféré.
+            Aidez la communauté à mieux connaître les employeurs au Maroc. Ajoutez une entreprise ou partagez votre expérience.
           </p>
         </div>
 
@@ -70,12 +70,12 @@ export default function SuggestBusinessPage() {
           <div className="bg-card p-4 rounded-xl border border-border shadow-none flex flex-col items-center text-center">
             <MapPin className="h-6 w-6 text-info mb-2" />
             <span className="font-semibold text-sm text-foreground">Localisation</span>
-            <span className="text-xs text-muted-foreground">Aidez à les trouver</span>
+            <span className="text-xs text-muted-foreground">Partagez la localisation</span>
           </div>
           <div className="bg-card p-4 rounded-xl border border-border shadow-none flex flex-col items-center text-center">
             <Store className="h-6 w-6 text-amber-500 mb-2" />
             <span className="font-semibold text-sm text-foreground">Croissance</span>
-            <span className="text-xs text-muted-foreground">Supportez le local</span>
+            <span className="text-xs text-muted-foreground">Aidez les talents</span>
           </div>
         </div>
 

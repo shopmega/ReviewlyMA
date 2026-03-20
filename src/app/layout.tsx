@@ -46,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSiteSettings();
   const siteUrl = getServerSiteUrl();
   const title = getSiteName(settings);
-  const description = settings.site_description || 'Decouvrez les meilleurs commerces de votre ville';
+  const description = settings.site_description || 'Évaluez les meilleurs employeurs du Maroc et découvrez les salaires par secteur';
   const ogImage = '/opengraph-image';
 
   return {

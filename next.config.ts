@@ -137,7 +137,27 @@ const nextConfig: NextConfig = {
   },
   // Security headers for production
   async headers() {
+    const partnerOrigin = 'https://monrh.vercel.app';
     return [
+      // CORS for partner API (MON RH) – allow browser calls from their origin
+      {
+        source: '/api/health',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: partnerOrigin },
+        ],
+      },
+      {
+        source: '/api/businesses/search',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: partnerOrigin },
+        ],
+      },
+      {
+        source: '/api/v1/businesses/search',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: partnerOrigin },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

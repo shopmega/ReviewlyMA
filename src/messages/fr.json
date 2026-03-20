@@ -925,7 +925,7 @@
       }
     },
     "cta": {
-      "title": "Pret a dominer votre marche local ?",
+      "title": "Prêt à booster votre marque employeur ?",
       "start": "Demarrer mon compte Business",
       "subscribe": "Voir les plans Business",
       "subtitle": "Rejoignez les entreprises qui transforment leur attractivite en succes."
@@ -1143,7 +1143,7 @@
       "sortHelpful": "Plus utiles",
       "sortRating": "Meilleure note",
       "emptyTitle": "Zero avis pour l instant",
-      "emptyDescription": "Partagez votre experience et aidez les autres a trouver les meilleures adresses du Maroc !",
+      "emptyDescription": "Partagez votre expérience et aidez les autres à trouver les meilleurs employeurs du Maroc !",
       "emptyCta": "Lancer ma premiere recherche",
       "untitled": "Avis sur entreprise",
       "businessLabel": "Etablissement:",
@@ -1166,7 +1166,7 @@
       "count": "Affichage de {visible} favoris sur {total}.",
       "viewAll": "Voir tous mes favoris",
       "emptyTitle": "Vos favoris sont vides",
-      "emptyDescription": "Gardez une trace des entreprises que vous adorez ou que vous projetez de visiter au Maroc.",
+      "emptyDescription": "Gardez une trace des entreprises qui vous intéressent ou que vous souhaitez rejoindre au Maroc.",
       "emptyCta": "Explorer les adresses",
       "loadMore": "Charger plus de favoris"
     },

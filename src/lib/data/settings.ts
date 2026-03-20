@@ -66,7 +66,7 @@ export type SiteSettings = {
 
 export const getDefaultSettings = (): SiteSettings => ({
     site_name: 'Reviewly',
-    site_description: 'Trouvez des avis sur les établissements, les services et les produits.',
+    site_description: 'Trouvez des avis sur les employeurs, les salaires et la culture d\'entreprise.',
     contact_email: 'contact@example.com',
     maintenance_mode: false,
     allow_new_registrations: true,
@@ -103,9 +103,9 @@ export const getDefaultSettings = (): SiteSettings => ({
         { id: 'featured', visible: true },
     ],
     popular_searches_config: [
-        { label: 'Restaurants à Casablanca', href: '/businesses?search=Restaurant&city=Casablanca' },
-        { label: 'Salons de coiffure', href: '/businesses?search=Coiffure' },
-        { label: 'Hôtels à Rabat', href: '/businesses?category=Hôtels&city=Rabat' }
+        { label: 'Tech à Casablanca', href: '/businesses?search=Tech&city=Casablanca' },
+        { label: 'Banques à Rabat', href: '/businesses?category=Finance&city=Rabat' },
+        { label: 'Offshoring à Tanger', href: '/businesses?category=Offshoring&city=Tanger' }
     ],
     email_provider: 'console',
     resend_api_key: '',
@@ -240,9 +240,9 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
                         { id: 'featured', visible: true },
                     ],
                     popular_searches_config: data.popular_searches_config || [
-                        { label: 'Restaurants à Casablanca', href: '/businesses?search=Restaurant&city=Casablanca' },
-                        { label: 'Salons de coiffure', href: '/businesses?search=Coiffure' },
-                        { label: 'Hôtels à Rabat', href: '/businesses?category=Hôtels&city=Rabat' }
+                        { label: 'Tech à Casablanca', href: '/businesses?search=Tech&city=Casablanca' },
+                        { label: 'Banques à Rabat', href: '/businesses?category=Finance&city=Rabat' },
+                        { label: 'Offshoring à Tanger', href: '/businesses?category=Offshoring&city=Tanger' }
                     ],
                     email_provider: data.email_provider || 'console',
                     resend_api_key: data.resend_api_key || '',
