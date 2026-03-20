@@ -117,6 +117,8 @@ class AnalyticsService {
       if (error) {
         if (error.code === 'PGRST204' || error.code === 'PGRST205') {
           console.warn(`Analytics table missing for event "${event}", skipping. Please run migrations.`);
+        } else if (error.code === '401' || error.code === '403' || error.code === '42501') {
+          // Analytics should not create noisy console errors when RLS or auth blocks a write.
         } else {
           console.error('Analytics tracking failed:', error);
         }

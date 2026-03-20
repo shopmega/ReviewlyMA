@@ -107,15 +107,16 @@ function heuristicExtract(text: string, sourceType: 'paste' | 'url'): JobOfferEx
 }
 
 export async function extractJobOfferInput(input: JobOfferIngestionInput): Promise<JobOfferExtractionResult & { rawContent: string }> {
-  const rawContent = input.sourceType === 'url'
+  const sourceType: 'paste' | 'url' = input.sourceUrl ? 'url' : 'paste';
+  const rawContent = sourceType === 'url'
     ? await fetchUrlText(input.sourceUrl || '')
     : (input.sourceText || '');
 
-  const heuristic = heuristicExtract(rawContent, input.sourceType);
+  const heuristic = heuristicExtract(rawContent, sourceType);
 
   try {
     const aiResult = await extractJobOffer({
-      sourceType: input.sourceType,
+      sourceType,
       content: rawContent.slice(0, 16000),
     });
 

@@ -58,7 +58,12 @@ export async function submitJobOfferAnalysis(
       ) as JobOfferActionState;
     }
 
-    const extracted = await extractJobOfferInput(parsed.data);
+    const effectiveSourceType = parsed.data.sourceUrl ? 'url' : 'paste';
+    const extracted = await extractJobOfferInput({
+      sourceType: effectiveSourceType,
+      sourceUrl: parsed.data.sourceUrl || '',
+      sourceText: parsed.data.sourceText || '',
+    });
 
     if (!extracted.companyName || !extracted.jobTitle) {
       return createErrorResponse(
@@ -68,7 +73,7 @@ export async function submitJobOfferAnalysis(
     }
 
     const normalizedInput = normalizeJobOfferInput({
-      sourceType: parsed.data.sourceType,
+      sourceType: effectiveSourceType,
       sourceUrl: parsed.data.sourceUrl || '',
       documentName: '',
       companyName: extracted.companyName,
