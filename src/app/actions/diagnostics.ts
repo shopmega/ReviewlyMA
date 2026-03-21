@@ -1,5 +1,7 @@
 'use server';
 
+import { getConfiguredAiProviders, hasConfiguredAiModel } from '@/ai/genkit';
+import { extractJobOfferInput } from '@/lib/job-offers/extraction';
 import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
 
 type CheckStatus = 'ok' | 'warn' | 'error';
@@ -27,6 +29,7 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
   await verifyAdminSession();
 
   const checks: DiagnosticCheck[] = [];
+  const configuredAiProviders = getConfiguredAiProviders();
 
   const requiredEnv = [
     'NEXT_PUBLIC_SUPABASE_URL',
@@ -99,6 +102,73 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
       name: `Env: ${key}`,
       status: 'warn',
       message: 'Missing (event conversion for this action will not fire)',
+    });
+  }
+
+  checks.push({
+    name: 'AI: job offer extraction provider',
+    status: hasConfiguredAiModel() ? 'ok' : 'warn',
+    message: hasConfiguredAiModel()
+      ? `Configured (${configuredAiProviders.map((provider) => provider.label).join(', ')})`
+      : 'No AI provider configured; job offer extraction will fall back to heuristics only',
+  });
+
+  try {
+    const extractionProbe = await extractJobOfferInput({
+      sourceType: 'paste',
+      sourceText: [
+        'Senior Product Manager',
+        'Atlas Digital',
+        'Casablanca',
+        'CDI',
+        'Hybrid',
+        'Salary: 25000 MAD per month',
+        'We are hiring a Senior Product Manager to lead roadmap and discovery.',
+        '5 years experience required.',
+      ].join('\n'),
+      sourceUrl: '',
+    });
+
+    const titleSource = extractionProbe.diagnostics.fieldDiagnostics.jobTitle?.source ?? 'none';
+    const companySource = extractionProbe.diagnostics.fieldDiagnostics.companyName?.source ?? 'none';
+    const usedAi = extractionProbe.diagnostics.usedAi;
+    const keyFieldsUsedHeuristicOnly = [titleSource, companySource].every((source) =>
+      source === 'heuristic' || source === 'merged'
+    );
+
+    let status: CheckStatus = 'ok';
+    let message = 'AI extraction is active for the probe sample.';
+
+    if (!hasConfiguredAiModel()) {
+      status = 'warn';
+      message = 'Probe ran without AI because no provider is configured.';
+    } else if (!usedAi) {
+      status = 'warn';
+      message = 'AI provider is configured but the probe fell back to heuristics.';
+    } else if (keyFieldsUsedHeuristicOnly) {
+      status = 'warn';
+      message = 'AI responded, but critical probe fields still resolved from heuristic fallback.';
+    }
+
+    checks.push({
+      name: 'AI: job offer extraction runtime probe',
+      status,
+      message,
+      details: [
+        `usedAi=${usedAi}`,
+        `jobTitleSource=${titleSource}`,
+        `companyNameSource=${companySource}`,
+        `minimumFieldsMet=${extractionProbe.diagnostics.minimumFieldsMet}`,
+      ].join(' | '),
+    });
+  } catch (error: any) {
+    checks.push({
+      name: 'AI: job offer extraction runtime probe',
+      status: hasConfiguredAiModel() ? 'error' : 'warn',
+      message: error?.message || 'Job offer extraction probe failed',
+      details: hasConfiguredAiModel()
+        ? 'The extractor could not complete a synthetic analysis run.'
+        : 'No AI provider configured, and the extractor probe failed before heuristic fallback could complete.',
     });
   }
 
