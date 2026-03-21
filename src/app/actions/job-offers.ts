@@ -274,8 +274,8 @@ export async function submitJobOfferAnalysis(
         analysisId: analysisData.id,
         offerId: offerData.id,
         extractedOffer: extracted,
-        analysis: computedAnalysis,
         extractionDiagnostics: diagnostics,
+        analysis: computedAnalysis,
       }
     ) as JobOfferActionState;
   } catch (error) {

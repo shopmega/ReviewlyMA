@@ -35,13 +35,13 @@ export function JobOfferAnalysisForm() {
       <Card className="rounded-[2rem] border-slate-200 shadow-sm">
         <CardHeader className="space-y-3">
           <Badge variant="outline" className="w-fit uppercase tracking-[0.18em] text-[10px]">
-            Analyse privee
+            Decision support
           </Badge>
           <CardTitle className="text-3xl font-black tracking-tight md:text-4xl">
-            Analyser une offre d&apos;emploi
+            Decode a job offer before you commit
           </CardTitle>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Comprenez ce qu&apos;une annonce dit, ce qu&apos;elle oublie, et ce qu&apos;il faut verifier avant de postuler.
+            See what the offer says, what it avoids saying, where the risk sits, and what to ask before applying.
           </p>
         </CardHeader>
         <CardContent>
@@ -50,10 +50,10 @@ export function JobOfferAnalysisForm() {
 
             <section className="grid gap-4 md:grid-cols-4">
               {[
-                'Red flags detectes',
-                'Salaire estime',
-                "Clarte de l'annonce",
-                'Questions a poser',
+                '10-second verdict',
+                'Missing info decoded',
+                'Questions to ask',
+                'Confidence explained',
               ].map((item) => (
                 <div key={item} className="rounded-2xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
                   {item}
@@ -142,7 +142,7 @@ export function JobOfferAnalysisForm() {
               <span>Fonctionne meme si l&apos;annonce est incomplete</span>
               <span>Analyse privee</span>
               <span>
-                Enregistrez vos resultats apres <Link href="/login" className="underline underline-offset-4">connexion</Link>
+                Connexion requise pour analyser et enregistrer vos resultats
               </span>
             </div>
           </form>
@@ -153,6 +153,7 @@ export function JobOfferAnalysisForm() {
         <JobOfferAnalysisResult
           analysis={analysis}
           extractedOffer={extractedOffer}
+          extractionDiagnostics={state.data?.extractionDiagnostics}
           analysisId={state.data?.analysisId}
         />
       ) : null}

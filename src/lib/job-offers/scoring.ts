@@ -16,14 +16,24 @@ function round(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-function getConfidenceLevel(sampleCount: number, hasPrimaryBenchmark: boolean): JobOfferConfidenceLevel {
+function getConfidenceLevel(
+  input: NormalizedJobOfferInput,
+  sampleCount: number,
+  hasPrimaryBenchmark: boolean
+): JobOfferConfidenceLevel {
+  const hasSalary = input.salaryMinMonthly != null || input.salaryMaxMonthly != null;
+  if (!hasSalary) return 'low';
   if (!hasPrimaryBenchmark || sampleCount < 5) return 'low';
   if (sampleCount < 15) return 'medium';
   return 'high';
 }
 
-function getRecommendationLabel(overallScore: number, benchmarkAvailable: boolean): JobOfferRecommendationLabel {
-  if (!benchmarkAvailable) return 'insufficient_data';
+function getRecommendationLabel(
+  overallScore: number,
+  benchmarkAvailable: boolean,
+  hasSalary: boolean
+): JobOfferRecommendationLabel {
+  if (!benchmarkAvailable || !hasSalary) return 'insufficient_data';
   if (overallScore < 45) return 'below_market';
   if (overallScore < 65) return 'fair_market';
   if (overallScore < 82) return 'above_market';
@@ -122,6 +132,10 @@ function getMissingInformation(input: NormalizedJobOfferInput): string[] {
 }
 
 function buildSummary(label: JobOfferRecommendationLabel, confidence: JobOfferConfidenceLevel, benchmarkSource: string) {
+  if (label === 'insufficient_data') {
+    return 'The offer contains useful signals, but there is not enough evidence for a reliable market verdict yet.';
+  }
+
   const labelText = label.replace(/_/g, ' ');
   const confidenceText = confidence === 'high' ? 'high' : confidence === 'medium' ? 'medium' : 'low';
   const benchmarkText = benchmarkSource === 'none' ? 'limited market data' : `${benchmarkSource.replace('_', ' ')} benchmarks`;
@@ -134,7 +148,8 @@ export function computeJobOfferAnalysis(
   input: NormalizedJobOfferInput,
   benchmarks: JobOfferBenchmarks
 ): ComputedJobOfferAnalysis {
-  const confidenceLevel = getConfidenceLevel(benchmarks.sampleCount, benchmarks.primaryMedianMonthly != null);
+  const hasSalary = input.salaryMinMonthly != null || input.salaryMaxMonthly != null;
+  const confidenceLevel = getConfidenceLevel(input, benchmarks.sampleCount, benchmarks.primaryMedianMonthly != null);
   const compensationScore = getCompensationScore(input.midpointMonthly, benchmarks.primaryMedianMonthly);
   const transparencyScore = getTransparencyScore(input);
   const qualityScore = getQualityScore(input);
@@ -147,7 +162,11 @@ export function computeJobOfferAnalysis(
     + (qualityScore * 0.2)
   );
 
-  const marketPositionLabel = getRecommendationLabel(overallOfferScore, benchmarks.primaryMedianMonthly != null);
+  const marketPositionLabel = getRecommendationLabel(
+    overallOfferScore,
+    benchmarks.primaryMedianMonthly != null,
+    hasSalary
+  );
   const riskFlags = getRiskFlags(input, confidenceLevel);
   const missingInformation = getMissingInformation(input);
   const strengths = getStrengths(input, compensationScore, transparencyScore);

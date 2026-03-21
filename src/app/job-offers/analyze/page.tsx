@@ -17,7 +17,7 @@ export default async function AnalyzeJobOfferPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 space-y-6">
       {!user ? (
         <div className="rounded-3xl border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-900">
-          You need to be logged in to save analyses in the new job-offers module.
+          You need to be logged in to run and save job offer analyses in this module.
           <div className="mt-3">
             <Button size="sm" variant="outline" asChild>
               <Link href="/login">Log in</Link>
