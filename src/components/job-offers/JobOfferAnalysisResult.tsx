@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
-  Bot,
   BriefcaseBusiness,
   Building2,
   CircleHelp,
@@ -16,8 +15,6 @@ import {
   MessageSquareMore,
   ShieldAlert,
   Sparkles,
-  Star,
-  Users,
   Wallet,
 } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
@@ -861,6 +858,8 @@ export function JobOfferAnalysisResult({
   const primaryAction = dynamicActions[0];
   const reviewAwareSignal = getReviewAwareSignal(analysis, snapshot, employerContext);
   const activeStepIndex = RESULT_STEPS.findIndex((step) => step.key === activeStep);
+  const currentStep = RESULT_STEPS[activeStepIndex] ?? RESULT_STEPS[0];
+  const progressValue = ((activeStepIndex + 1) / RESULT_STEPS.length) * 100;
   const salaryPresentation = getSalaryPresentation(snapshot, extractionDiagnostics);
   const topRecruiterQuestions = recruiterQuestions.slice(0, 3);
   const primaryDimensions = dimensions.filter((dimension) => (
@@ -874,124 +873,83 @@ export function JobOfferAnalysisResult({
 
   return (
     <div className="space-y-5">
-      <Card className="rounded-[1.8rem] border-slate-200 bg-slate-950 text-white shadow-sm" id="offer-step">
-        <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-7">
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border-white/20 bg-white/10 text-white hover:bg-white/10">AI-powered job offer analysis</Badge>
-              <Badge variant="outline" className="border-white/20 bg-transparent text-white/80">
-                Private decision workspace
-              </Badge>
-            </div>
-            <h2 className="mt-3 text-2xl font-black tracking-tight md:text-3xl">
-              AI extracted the offer, checked market signals, and assembled next actions.
-            </h2>
-            <p className="mt-2 text-sm leading-7 text-white/75 md:text-base">
-              Use this as decision support, not ground truth. Confidence depends on source quality, employer mapping, and available benchmarks.
-            </p>
-          </div>
-          <div className="grid gap-2 rounded-[1.3rem] border border-white/15 bg-white/5 p-4 text-sm">
-            <div className="flex items-center gap-2 text-white/85">
-              <Bot className="h-4 w-4" />
-              AI extraction
-            </div>
-            <div className="flex items-center gap-2 text-white/85">
-              <Star className="h-4 w-4" />
-              Employer context
-            </div>
-            <div className="flex items-center gap-2 text-white/85">
-              <Users className="h-4 w-4" />
-              Similar offers
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
-        <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Offer identity</p>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">{snapshot.jobTitle}</h2>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-              <span>{snapshot.companyName}</span>
-              <span className="text-slate-300">/</span>
-              <span>{snapshot.city || 'Location unclear'}</span>
-              <span className="text-slate-300">/</span>
-              <span>{formatSourceType(snapshot.sourceType)}</span>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {analysisId ? (
-              <TrackedActionButton
-                href={`/job-offers/${analysisId}`}
-                ctaId="open_saved_analysis_header"
-                placement="job_offer_header"
-                context="job_offer_result"
-                businessId={employerContext?.business_id || undefined}
-                size="sm"
-              >
-                <>Open saved analysis</>
-              </TrackedActionButton>
-            ) : null}
-            <TrackedActionButton
-              href="/job-offers/history"
-              ctaId="view_history_header"
-              placement="job_offer_header"
-              context="job_offer_result"
-              variant="outline"
-              size="sm"
-            >
-              <>History</>
-            </TrackedActionButton>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
         <CardContent className="space-y-4 p-5">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Step-by-step workspace</p>
-            <p className="mt-2 text-sm text-slate-600">
-              Move through the offer in order: understand the offer, check the employer, compare alternatives, then decide the next action.
-            </p>
-          </div>
-          <div className="grid gap-3 lg:grid-cols-5">
-            {RESULT_STEPS.map((step, index) => {
-              const isActive = step.key === activeStep;
-              const isComplete = index < activeStepIndex;
-
-              return (
-                <button
-                  key={step.key}
-                  type="button"
-                  onClick={() => setActiveStep(step.key)}
-                  className={cn(
-                    'rounded-[1.4rem] border px-4 py-4 text-left transition-colors',
-                    isActive
-                      ? 'border-slate-900 bg-slate-950 text-white shadow-sm'
-                      : isComplete
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
-                        : 'border-slate-200 bg-slate-50/70 text-slate-900'
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className={cn('text-[11px] font-semibold uppercase tracking-[0.18em]', isActive ? 'text-white/75' : 'text-slate-500')}>
-                      Step {index + 1}
-                    </p>
-                    {isComplete ? <BadgeCheck className="h-4 w-4" /> : null}
-                  </div>
-                  <p className="mt-2 text-sm font-semibold">{step.label}</p>
-                  <p className={cn('mt-1 text-sm leading-6', isActive ? 'text-white/80' : 'text-slate-600')}>{step.body}</p>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex items-center justify-between gap-3 rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{RESULT_STEPS[activeStepIndex]?.title}</p>
-              <p className="mt-1 text-sm text-slate-600">{RESULT_STEPS[activeStepIndex]?.body}</p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Offer identity</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">{snapshot.jobTitle}</h2>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                <span>{snapshot.companyName}</span>
+                <span className="text-slate-300">/</span>
+                <span>{snapshot.city || 'Location unclear'}</span>
+                <span className="text-slate-300">/</span>
+                <span>{formatSourceType(snapshot.sourceType)}</span>
+              </div>
             </div>
-            <Badge variant="outline">AI-powered</Badge>
+            <div className="flex flex-wrap gap-2">
+              {analysisId ? (
+                <TrackedActionButton
+                  href={`/job-offers/${analysisId}`}
+                  ctaId="open_saved_analysis_header"
+                  placement="job_offer_header"
+                  context="job_offer_result"
+                  businessId={employerContext?.business_id || undefined}
+                  size="sm"
+                >
+                  <>Open saved analysis</>
+                </TrackedActionButton>
+              ) : null}
+              <TrackedActionButton
+                href="/job-offers/history"
+                ctaId="view_history_header"
+                placement="job_offer_header"
+                context="job_offer_result"
+                variant="outline"
+                size="sm"
+              >
+                <>History</>
+              </TrackedActionButton>
+            </div>
+          </div>
+
+          <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50/80 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Step {activeStepIndex + 1} of {RESULT_STEPS.length}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-950">{currentStep.title}</p>
+              </div>
+              <Badge variant="outline" className="bg-white text-slate-700">
+                {currentStep.label}
+              </Badge>
+            </div>
+            <Progress value={progressValue} className="mt-3 h-2 bg-white" />
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {RESULT_STEPS.map((step, index) => {
+                const isActive = step.key === activeStep;
+                const isComplete = index < activeStepIndex;
+
+                return (
+                  <button
+                    key={step.key}
+                    type="button"
+                    onClick={() => setActiveStep(step.key)}
+                    className={cn(
+                      'shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'border-slate-900 bg-slate-950 text-white'
+                        : isComplete
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                          : 'border-slate-200 bg-white text-slate-700'
+                    )}
+                  >
+                    {step.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>
