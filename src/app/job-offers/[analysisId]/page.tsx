@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getJobOfferAnalysisById } from '@/lib/data/job-offers';
+import {
+  getJobOfferAnalysisById,
+  getJobOfferEmployerContext,
+  getSimilarJobOfferAnalyses,
+} from '@/lib/data/job-offers';
 import { Button } from '@/components/ui/button';
 import { JobOfferAnalysisResult } from '@/components/job-offers/JobOfferAnalysisResult';
 
@@ -18,6 +22,18 @@ export default async function JobOfferAnalysisDetailPage(
 
   if (!record) notFound();
 
+  const [employerContext, similarOffers] = await Promise.all([
+    getJobOfferEmployerContext(record.offer),
+    getSimilarJobOfferAnalyses({
+      currentOfferId: record.offer.id,
+      jobTitleNormalized: record.offer.job_title_normalized,
+      citySlug: record.offer.city_slug,
+      workModel: record.offer.work_model,
+      contractType: record.offer.contract_type,
+      limit: 4,
+    }),
+  ]);
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -33,7 +49,13 @@ export default async function JobOfferAnalysisDetailPage(
         </Button>
       </div>
 
-      <JobOfferAnalysisResult analysis={record.analysis} offer={record.offer} />
+      <JobOfferAnalysisResult
+        analysis={record.analysis}
+        offer={record.offer}
+        analysisId={record.analysis.id}
+        employerContext={employerContext}
+        similarOffers={similarOffers}
+      />
     </div>
   );
 }

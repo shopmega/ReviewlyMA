@@ -11,6 +11,10 @@ import {
   ErrorCode,
   logError,
 } from '@/lib/errors';
+import {
+  getJobOfferEmployerContext,
+  getSimilarJobOfferAnalyses,
+} from '@/lib/data/job-offers';
 import { normalizeJobOfferInput } from '@/lib/job-offers/normalization';
 import { getJobOfferBenchmarks } from '@/lib/job-offers/benchmarks';
 import { computeJobOfferAnalysis } from '@/lib/job-offers/scoring';
@@ -267,6 +271,21 @@ export async function submitJobOfferAnalysis(
       ) as JobOfferActionState;
     }
 
+    const [employerContext, similarOffers] = await Promise.all([
+      getJobOfferEmployerContext({
+        business_id: benchmarks.businessId,
+        company_match_confidence: benchmarks.companyMatch.confidence,
+      }),
+      getSimilarJobOfferAnalyses({
+        currentOfferId: offerData.id,
+        jobTitleNormalized: normalizedInput.jobTitleNormalized,
+        citySlug: normalizedInput.citySlug,
+        workModel: normalizedInput.workModel,
+        contractType: normalizedInput.contractType,
+        limit: 4,
+      }),
+    ]);
+
     revalidatePath('/job-offers');
     revalidatePath('/job-offers/history');
     revalidatePath(`/job-offers/${analysisData.id}`);
@@ -279,6 +298,8 @@ export async function submitJobOfferAnalysis(
         extractedOffer: extracted,
         extractionDiagnostics: diagnostics,
         analysis: computedAnalysis,
+        employerContext,
+        similarOffers,
       }
     ) as JobOfferActionState;
   } catch (error) {

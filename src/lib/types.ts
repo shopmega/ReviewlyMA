@@ -641,6 +641,39 @@ export type JobOfferBusinessMonthlyTrend = {
   avg_overall_offer_score: number | null;
 };
 
+export type JobOfferEmployerContext = {
+  business_id: string;
+  business_name: string;
+  business_slug: string;
+  overall_rating: number | null;
+  review_count: number;
+  is_claimed: boolean;
+  verification_badge_level?: string | null;
+  company_size?: string | null;
+  salary_median_monthly?: number | null;
+  salary_submission_count: number;
+  signal_label: 'strong' | 'mixed' | 'limited';
+  signal_summary: string;
+};
+
+export type JobOfferSimilarOffer = {
+  analysis_id: string;
+  job_offer_id: string;
+  business_id?: string | null;
+  company_name: string;
+  job_title: string;
+  city?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  pay_period: JobOfferPayPeriod;
+  work_model?: JobOfferWorkModel | null;
+  contract_type?: JobOfferContractType | null;
+  overall_offer_score: number;
+  market_position_label: JobOfferRecommendationLabel;
+  confidence_level: JobOfferConfidenceLevel;
+  similarity_label: string;
+};
+
 export type JobOfferRoleCityMetrics = {
   job_title_normalized: string;
   city_slug: string;

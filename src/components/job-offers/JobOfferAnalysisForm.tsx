@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Bot, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 import { submitJobOfferAnalysis, type JobOfferActionState } from '@/app/actions/job-offers';
 import { analytics } from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,24 @@ import { Badge } from '@/components/ui/badge';
 import { JobOfferAnalysisResult } from './JobOfferAnalysisResult';
 
 const initialState: JobOfferActionState = { status: 'idle', message: '' };
+const loadingStates = [
+  {
+    title: 'AI is reading the source',
+    body: 'We are extracting the visible role, company, salary, and work conditions from the offer.',
+  },
+  {
+    title: 'Structuring what is clear',
+    body: 'AI is identifying missing fields, confidence levels, and what still needs verification.',
+  },
+  {
+    title: 'Comparing with market and employer signals',
+    body: 'We are checking benchmarks, employer mapping, and any similar offer context available.',
+  },
+  {
+    title: 'Building your decision workspace',
+    body: 'Your verdict, next actions, recruiter questions, and context blocks are being prepared.',
+  },
+] as const;
 
 function FieldError({ state, name }: { state: JobOfferActionState; name: string }) {
   const fieldErrors =
@@ -26,11 +45,40 @@ function FieldError({ state, name }: { state: JobOfferActionState; name: string 
 export function JobOfferAnalysisForm() {
   const [sourceType, setSourceType] = useState<'paste' | 'url'>('paste');
   const [state, formAction, isPending] = useActionState(submitJobOfferAnalysis, initialState);
+  const [loadingIndex, setLoadingIndex] = useState(0);
   const lastTrackedAnalysisId = useRef<string | null>(null);
   const analysis = state.data?.analysis;
   const extractedOffer = state.data?.extractedOffer;
   const extractionDiagnostics = state.data?.extractionDiagnostics as Record<string, unknown> | undefined;
   const debugInfo = state.details?.debug as Record<string, unknown> | undefined;
+  const flowSteps = [
+    {
+      key: 'input',
+      label: 'Input',
+      title: 'Provide the offer',
+      body: 'Paste the text or add a public link to start the AI-powered review.',
+    },
+    {
+      key: 'processing',
+      label: 'AI processing',
+      title: 'Extraction and validation',
+      body: 'AI reads the source, structures the fields, checks confidence, and looks for benchmarks.',
+    },
+    {
+      key: 'workspace',
+      label: 'Workspace',
+      title: 'Decision workspace',
+      body: 'The result becomes a step-by-step workspace with verdict, employer context, and comparisons.',
+    },
+    {
+      key: 'followup',
+      label: 'Follow-up',
+      title: 'Save and act',
+      body: 'Use the analysis to compare offers, open employer context, and decide what to do next.',
+    },
+  ] as const;
+  const activeFlowIndex = isPending ? 1 : analysis ? 2 : 0;
+  const completedFlowIndex = analysis ? 3 : activeFlowIndex;
 
   useEffect(() => {
     if (state.status !== 'success' || !state.data?.analysisId || lastTrackedAnalysisId.current === state.data.analysisId) {
@@ -46,33 +94,92 @@ export function JobOfferAnalysisForm() {
     lastTrackedAnalysisId.current = state.data.analysisId;
   }, [analysis?.confidence_level, analysis?.market_position_label, sourceType, state.data?.analysisId, state.status]);
 
+  useEffect(() => {
+    if (!isPending) {
+      setLoadingIndex(0);
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setLoadingIndex((current) => (current + 1) % loadingStates.length);
+    }, 1800);
+
+    return () => window.clearInterval(timer);
+  }, [isPending]);
+
   return (
     <div className="space-y-6">
       <Card className="rounded-[2rem] border-slate-200 shadow-sm">
         <CardHeader className="space-y-3">
           <Badge variant="outline" className="w-fit uppercase tracking-[0.18em] text-[10px]">
-            Decision support
+            AI-powered analysis
           </Badge>
           <CardTitle className="text-3xl font-black tracking-tight md:text-4xl">
             Decode a job offer before you commit
           </CardTitle>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            See what the offer says, what it avoids saying, where the risk sits, and what to ask before applying.
+            AI extracts the offer, checks market signals, and turns the result into a private multi-step decision workspace.
           </p>
         </CardHeader>
         <CardContent>
+          <section className="mb-8 space-y-4 rounded-[1.8rem] border border-slate-200 bg-slate-50/70 p-4 md:p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="uppercase tracking-[0.18em] text-[10px]">
+                Guided AI workflow
+              </Badge>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-[0.18em]">
+                Private analysis
+              </Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-4">
+              {flowSteps.map((step, index) => {
+                const isActive = index === activeFlowIndex;
+                const isComplete = index < completedFlowIndex;
+
+                return (
+                  <div
+                    key={step.key}
+                    className={`rounded-[1.4rem] border px-4 py-4 transition-colors ${
+                      isActive
+                        ? 'border-slate-900 bg-white shadow-sm'
+                        : isComplete
+                          ? 'border-emerald-200 bg-emerald-50'
+                          : 'border-slate-200 bg-white/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        {step.label}
+                      </p>
+                      {isComplete ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : isActive ? (
+                        <Bot className="h-4 w-4 text-slate-950" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 text-slate-400" />
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm font-semibold text-slate-900">{step.title}</p>
+                    <p className="mt-1 text-sm text-slate-600">{step.body}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           <form action={formAction} className="space-y-8">
             <input type="hidden" name="sourceType" value={sourceType} />
 
-            <section className="grid gap-4 md:grid-cols-4">
+            <section className="grid gap-4 md:grid-cols-3">
               {[
-                '10-second verdict',
-                'Missing info decoded',
-                'Questions to ask',
-                'Confidence explained',
+                { step: '01', title: 'Input the offer', body: 'Paste text or add a public link.' },
+                { step: '02', title: 'AI reads and validates it', body: 'Extraction, confidence, employer match, and benchmark checks.' },
+                { step: '03', title: 'Decision workspace appears', body: 'Offer verdict, employer context, similar offers, and next actions.' },
               ].map((item) => (
-                <div key={item} className="rounded-2xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
-                  {item}
+                <div key={item.step} className="rounded-2xl border bg-slate-50 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Step {item.step}</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-1 text-sm text-slate-600">{item.body}</p>
                 </div>
               ))}
             </section>
@@ -150,20 +257,71 @@ export function JobOfferAnalysisForm() {
 
             <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Analyse en cours..." : "Analyser l'offre"}
+                {isPending ? "AI analysis in progress..." : "Analyze with AI"}
               </Button>
             </div>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-              <span>Fonctionne meme si l&apos;annonce est incomplete</span>
-              <span>Analyse privee</span>
-              <span>
-                Connexion requise pour analyser et enregistrer vos resultats
-              </span>
+              <span>Works even when the offer is incomplete</span>
+              <span>Private AI analysis</span>
+              <span>Login required to save and compare your results</span>
             </div>
           </form>
         </CardContent>
       </Card>
+
+      {isPending ? (
+        <Card className="rounded-[2rem] border-slate-200 shadow-sm">
+          <CardContent className="space-y-6 p-6 md:p-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="max-w-3xl">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">AI-powered analysis</Badge>
+                  <Badge variant="outline">Private workspace</Badge>
+                </div>
+                <h3 className="mt-3 text-2xl font-black tracking-tight text-slate-950">
+                  {loadingStates[loadingIndex].title}
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-slate-600">
+                  {loadingStates[loadingIndex].body}
+                </p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-950 text-white">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              {loadingStates.map((item, index) => (
+                <div
+                  key={item.title}
+                  className={`rounded-[1.3rem] border px-4 py-4 transition-colors ${
+                    index <= loadingIndex
+                      ? 'border-emerald-200 bg-emerald-50'
+                      : 'border-slate-200 bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {index < loadingIndex ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : index === loadingIndex ? (
+                      <Bot className="h-4 w-4 text-slate-950" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 text-slate-400" />
+                    )}
+                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600">{item.body}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+              Some offers are incomplete. AI will still surface useful questions, confidence levels, and the best next action instead of pretending the evidence is stronger than it is.
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {analysis ? (
         <JobOfferAnalysisResult
@@ -171,6 +329,8 @@ export function JobOfferAnalysisForm() {
           extractedOffer={extractedOffer}
           extractionDiagnostics={state.data?.extractionDiagnostics}
           analysisId={state.data?.analysisId}
+          employerContext={state.data?.employerContext}
+          similarOffers={state.data?.similarOffers}
         />
       ) : null}
     </div>
