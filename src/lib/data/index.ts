@@ -8,4 +8,3 @@ export * from './businesses';
 export * from './salaries';
 export * from './referrals';
 export * from './blog';
-export * from './job-offers';
