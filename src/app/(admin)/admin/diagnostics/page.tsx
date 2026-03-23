@@ -66,7 +66,7 @@ export default function AdminDiagnosticsPage() {
                     <div className="space-y-1">
                       <p className="text-sm font-bold">{check.name}</p>
                       <p className="text-xs text-muted-foreground">{check.message}</p>
-                      {check.details && <p className="text-xs text-muted-foreground/80">{check.details}</p>}
+                      {check.details && <p className="whitespace-pre-wrap text-xs text-muted-foreground/80">{check.details}</p>}
                     </div>
                     <div>
                       {check.status === 'ok' && <ShieldCheck className="h-5 w-5 text-emerald-500" />}
@@ -83,4 +83,3 @@ export default function AdminDiagnosticsPage() {
     </div>
   );
 }
-

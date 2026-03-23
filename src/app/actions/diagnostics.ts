@@ -159,7 +159,8 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
         `jobTitleSource=${titleSource}`,
         `companyNameSource=${companySource}`,
         `minimumFieldsMet=${extractionProbe.diagnostics.minimumFieldsMet}`,
-      ].join(' | '),
+        ...extractionProbe.diagnostics.notes.map((note) => `note: ${note}`),
+      ].join('\n'),
     });
   } catch (error: any) {
     checks.push({
