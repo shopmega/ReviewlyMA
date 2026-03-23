@@ -2,6 +2,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import type { modelRef } from 'genkit';
 
 const ExtractJobOfferInputSchema = z.object({
   sourceType: z.enum(['paste', 'url']),
@@ -26,11 +27,8 @@ const ExtractJobOfferOutputSchema = z.object({
 export type ExtractJobOfferInput = z.infer<typeof ExtractJobOfferInputSchema>;
 export type ExtractJobOfferOutput = z.infer<typeof ExtractJobOfferOutputSchema>;
 
-const extractJobOfferPrompt = ai.definePrompt({
-  name: 'extractJobOfferPrompt',
-  input: { schema: ExtractJobOfferInputSchema },
-  output: { schema: ExtractJobOfferOutputSchema },
-  prompt: `You extract structured data from a job offer.
+function buildExtractJobOfferPrompt(input: ExtractJobOfferInput) {
+  return `You extract structured data from a job offer.
 
 Return only structured output based on the provided schema.
 Rules:
@@ -43,23 +41,37 @@ Rules:
 - Keep sourceSummary short and factual.
 - Benefits should be a short list, deduplicated.
 
-Source type: {{{sourceType}}}
+Source type: ${input.sourceType}
 Content:
-{{{content}}}`,
-});
+${input.content}`;
+}
 
-const extractJobOfferFlow = ai.defineFlow(
-  {
-    name: 'extractJobOfferFlow',
-    inputSchema: ExtractJobOfferInputSchema,
-    outputSchema: ExtractJobOfferOutputSchema,
-  },
-  async (input) => {
-    const { output } = await extractJobOfferPrompt(input);
-    return output!;
+export async function extractJobOfferWithModel(
+  input: ExtractJobOfferInput,
+  model: ReturnType<typeof modelRef>
+): Promise<ExtractJobOfferOutput> {
+  const { output } = await ai.generate({
+    model,
+    prompt: buildExtractJobOfferPrompt(input),
+    output: { schema: ExtractJobOfferOutputSchema },
+  });
+
+  if (!output) {
+    throw new Error('AI extraction returned no structured output');
   }
-);
+
+  return output;
+}
 
 export async function extractJobOffer(input: ExtractJobOfferInput): Promise<ExtractJobOfferOutput> {
-  return extractJobOfferFlow(input);
+  const { output } = await ai.generate({
+    prompt: buildExtractJobOfferPrompt(input),
+    output: { schema: ExtractJobOfferOutputSchema },
+  });
+
+  if (!output) {
+    throw new Error('AI extraction returned no structured output');
+  }
+
+  return output;
 }

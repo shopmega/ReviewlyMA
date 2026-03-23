@@ -11,8 +11,8 @@ import type {
   JobOfferSeniorityLevel,
   JobOfferWorkModel,
 } from '@/lib/types';
-import { extractJobOffer } from '@/ai/flows/extract-job-offer';
-import { getConfiguredAiProviders, hasConfiguredAiModel } from '@/ai/genkit';
+import { extractJobOfferWithModel } from '@/ai/flows/extract-job-offer';
+import { getConfiguredAiProviderRegistrations, hasConfiguredAiModel } from '@/ai/genkit';
 
 const BENEFIT_KEYWORDS = [
   'bonus',
@@ -380,15 +380,24 @@ export async function extractJobOfferInput(input: JobOfferIngestionInput): Promi
   diagnostics.currentStage = 'extract_ai';
   let aiResult: Partial<JobOfferExtractionResult> | null = null;
   if (hasConfiguredAiModel()) {
-    try {
-      aiResult = await extractJobOffer({
-        sourceType,
-        content: cleanedContent.slice(0, 16000),
-      });
-      diagnostics.usedAi = true;
-      diagnostics.notes.push(`AI extraction completed using ${getConfiguredAiProviders().map((item) => item.label).join(', ')}.`);
-    } catch (error) {
-      diagnostics.notes.push(`AI extraction skipped: ${error instanceof Error ? error.message : String(error)}`);
+    const providers = getConfiguredAiProviderRegistrations();
+    for (const provider of providers) {
+      try {
+        diagnostics.notes.push(`AI extraction attempt: ${provider.label}`);
+        aiResult = await extractJobOfferWithModel({
+          sourceType,
+          content: cleanedContent.slice(0, 16000),
+        }, provider.model);
+        diagnostics.usedAi = true;
+        diagnostics.notes.push(`AI extraction completed using ${provider.label}.`);
+        break;
+      } catch (error) {
+        diagnostics.notes.push(`AI extraction failed using ${provider.label}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    if (!diagnostics.usedAi) {
+      diagnostics.notes.push('AI extraction skipped: all configured AI providers failed.');
     }
   } else {
     diagnostics.notes.push('AI extraction skipped: no configured AI provider.');
