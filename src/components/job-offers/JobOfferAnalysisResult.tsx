@@ -210,6 +210,41 @@ function formatSalary(snapshot: OfferSnapshot) {
   return `${formatMoney(salaryMin ?? salaryMax ?? 0)} MAD / ${formatPayPeriod(payPeriod)}`;
 }
 
+function getSalaryPresentation(
+  snapshot: OfferSnapshot,
+  diagnostics: JobOfferExtractionDiagnostics | undefined
+) {
+  const minConfidence = diagnostics?.fieldDiagnostics.salaryMin?.confidence;
+  const maxConfidence = diagnostics?.fieldDiagnostics.salaryMax?.confidence;
+  const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
+  const highConfidence = minConfidence === 'high' || maxConfidence === 'high';
+
+  if (!hasSalary) {
+    return {
+      label: 'Salary missing',
+      value: 'Not disclosed',
+      note: 'Compensation was not visible in the source.',
+      tone: 'border-amber-200 bg-amber-50 text-amber-900',
+    };
+  }
+
+  if (!highConfidence) {
+    return {
+      label: 'Salary mentioned',
+      value: formatSalary(snapshot),
+      note: 'Needs verification before you treat this range as firm.',
+      tone: 'border-amber-200 bg-amber-50 text-amber-900',
+    };
+  }
+
+  return {
+    label: 'Salary visible',
+    value: formatSalary(snapshot),
+    note: 'Visible enough to use in the current market read.',
+    tone: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  };
+}
+
 function getConfidenceMeta(analysis: AnalysisView, snapshot: OfferSnapshot) {
   const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
 
@@ -826,6 +861,12 @@ export function JobOfferAnalysisResult({
   const primaryAction = dynamicActions[0];
   const reviewAwareSignal = getReviewAwareSignal(analysis, snapshot, employerContext);
   const activeStepIndex = RESULT_STEPS.findIndex((step) => step.key === activeStep);
+  const salaryPresentation = getSalaryPresentation(snapshot, extractionDiagnostics);
+  const topRecruiterQuestions = recruiterQuestions.slice(0, 3);
+  const primaryDimensions = dimensions.filter((dimension) => (
+    dimension.title === 'Clarity' || dimension.title === 'Benchmark confidence' || dimension.title === 'Risk level'
+  ));
+  const secondaryDimensions = dimensions.filter((dimension) => !primaryDimensions.some((item) => item.title === dimension.title));
 
   useEffect(() => {
     setActiveStep('offer');
@@ -873,9 +914,9 @@ export function JobOfferAnalysisResult({
             <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">{snapshot.jobTitle}</h2>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
               <span>{snapshot.companyName}</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300">/</span>
               <span>{snapshot.city || 'Location unclear'}</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300">/</span>
               <span>{formatSourceType(snapshot.sourceType)}</span>
             </div>
           </div>
@@ -1034,7 +1075,7 @@ export function JobOfferAnalysisResult({
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <QuickStat
                   title="Best signal"
                   body={positives[0] || 'The offer includes at least a few structured details instead of being completely opaque.'}
@@ -1055,6 +1096,21 @@ export function JobOfferAnalysisResult({
                   body={nextStep}
                   tone="border-sky-200 bg-sky-50/80 text-sky-950"
                 />
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: salaryPresentation.label, value: salaryPresentation.value, note: salaryPresentation.note, tone: salaryPresentation.tone },
+                  { label: 'City', value: snapshot.city || 'Needs verification', note: 'Location affects benchmarking and commute reality.', tone: 'border-slate-200 bg-slate-50 text-slate-900' },
+                  { label: 'Contract', value: snapshot.contractType ? formatContractType(snapshot.contractType) : 'Needs verification', note: 'Contract terms shape stability and legal conditions.', tone: 'border-slate-200 bg-slate-50 text-slate-900' },
+                  { label: 'Work model', value: snapshot.workModel ? formatWorkModel(snapshot.workModel) : 'Needs verification', note: 'On-site, hybrid, or remote changes day-to-day fit.', tone: 'border-slate-200 bg-slate-50 text-slate-900' },
+                ].map((item) => (
+                  <div key={item.label} className={cn('rounded-[1.3rem] border px-4 py-4', item.tone)}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">{item.label}</p>
+                    <p className="mt-2 text-base font-bold">{item.value}</p>
+                    <p className="mt-2 text-sm leading-6 opacity-80">{item.note}</p>
+                  </div>
+                ))}
               </div>
 
               {primaryAction ? (
@@ -1080,113 +1136,174 @@ export function JobOfferAnalysisResult({
                   </div>
                 </div>
               ) : null}
-            </CardContent>
-          </Card>
 
-          <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-            <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-black tracking-tight">What looks positive vs what needs clarification</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 lg:grid-cols-2">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <BadgeCheck className="h-4 w-4 text-emerald-600" />
-                    Strongest positives
-                  </div>
-                  {(positives.length > 0 ? positives : ['This offer is not empty; there is enough material here to prepare a sharper recruiter conversation.']).map((item) => (
-                    <div key={item} className="rounded-[1.3rem] border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-950">
-                      <div className="mb-2 flex items-center gap-2">
-                        <Badge variant="outline" className="border-emerald-200 bg-white text-emerald-900">Fact</Badge>
-                      </div>
-                      {item}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <AlertTriangle className="h-4 w-4 text-rose-600" />
-                    Strongest concerns
-                  </div>
-                  {(concerns.length > 0 ? concerns : ['No major structural risk is obvious, but you still need to verify role scope and manager fit.']).map((item) => (
-                    <div key={item} className="rounded-[1.3rem] border border-rose-100 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-950">
-                      <div className="mb-2 flex items-center gap-2">
-                        <Badge variant="outline" className="border-rose-200 bg-white text-rose-900">Interpretation</Badge>
-                      </div>
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid gap-4">
-              <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-xl font-black tracking-tight">What the employer did not specify</CardTitle>
+              <Card className="mt-6 rounded-[1.8rem] border-slate-200 shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl font-black tracking-tight">Top recruiter questions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {(strategicGaps.length > 0 ? strategicGaps : [{
-                    title: 'Most basics are visible',
-                    insight: 'This offer is more complete than average, but the full package and reporting line still deserve confirmation.',
-                    action: 'Use the recruiter questions below to pressure-test the details that matter most to you.',
-                  }]).map((gap) => (
-                    <div key={gap.title} className="rounded-[1.3rem] border border-amber-100 bg-amber-50 px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <CircleHelp className="h-4 w-4 text-amber-700" />
-                        <p className="font-semibold text-amber-950">{gap.title}</p>
+                  {topRecruiterQuestions.map((question) => (
+                    <div key={question} className="rounded-[1.2rem] border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-950">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Badge variant="outline" className="border-sky-200 bg-white text-sky-900">Action</Badge>
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-amber-950">{gap.insight}</p>
-                      <p className="mt-3 text-sm font-medium text-amber-900">{gap.action}</p>
+                      {question}
                     </div>
                   ))}
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-xl font-black tracking-tight">Hidden signals</CardTitle>
+              <Card className="mt-6 rounded-[1.8rem] border-slate-200 shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl font-black tracking-tight">Employer context preview</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm leading-6 text-slate-700">
+                <CardContent>
+                  {employerContext ? (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className={getEmployerSignalTone(employerContext.signal_label)}>
+                          {formatEmployerSignal(employerContext.signal_label)}
+                        </Badge>
+                        <Badge variant="outline">{employerContext.review_count} reviews</Badge>
+                        <Badge variant="outline">{employerContext.is_claimed ? 'Claimed' : 'Unclaimed'}</Badge>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {[
+                          { label: 'Rating', value: employerContext.overall_rating != null ? employerContext.overall_rating.toFixed(1) : 'N/A' },
+                          { label: 'Salary signal', value: employerContext.salary_median_monthly != null ? `${formatMoney(employerContext.salary_median_monthly)} MAD` : 'Limited data' },
+                          { label: 'Verification', value: employerContext.verification_badge_level && employerContext.verification_badge_level !== 'none' ? 'Verified' : 'Not verified' },
+                          { label: 'Company size', value: employerContext.company_size || 'Unknown' },
+                        ].map((item) => (
+                          <div key={item.label} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{item.label}</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-900">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <Button type="button" variant="outline" onClick={() => setActiveStep('employer')}>
+                          Open employer step
+                        </Button>
+                        <TrackedActionButton
+                          href={`/businesses/${employerContext.business_slug}`}
+                          ctaId="open_company_page_preview"
+                          placement="job_offer_offer_preview"
+                          context="job_offer_result"
+                          businessId={employerContext.business_id}
+                          variant="outline"
+                        >
+                          <>
+                            Open company page
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                          </>
+                        </TrackedActionButton>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                      Employer context is still limited because company matching is not strong enough yet.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+
+          <Accordion type="multiple" defaultValue={['essentials']} className="space-y-4">
+            <AccordionItem value="essentials" className="rounded-[1.8rem] border border-slate-200 bg-white px-0 shadow-sm">
+              <AccordionTrigger className="px-5 py-4 text-left text-xl font-black tracking-tight hover:no-underline">
+                Decision essentials
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-5">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <BadgeCheck className="h-4 w-4 text-emerald-600" />
+                      Strongest positives
+                    </div>
+                    {(positives.length > 0 ? positives : ['This offer is not empty; there is enough material here to prepare a sharper recruiter conversation.']).map((item) => (
+                      <div key={item} className="rounded-[1.2rem] border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-950">
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <AlertTriangle className="h-4 w-4 text-rose-600" />
+                      Strongest concerns
+                    </div>
+                    {(concerns.length > 0 ? concerns : ['No major structural risk is obvious, but you still need to verify role scope and manager fit.']).map((item) => (
+                      <div key={item} className="rounded-[1.2rem] border border-rose-100 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-950">
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="missing" className="rounded-[1.8rem] border border-slate-200 bg-white px-0 shadow-sm">
+              <AccordionTrigger className="px-5 py-4 text-left text-lg font-bold tracking-tight hover:no-underline">
+                Missing information and hidden signals
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 px-5 pb-5">
+                {(strategicGaps.length > 0 ? strategicGaps : [{
+                  title: 'Most basics are visible',
+                  insight: 'This offer is more complete than average, but the full package and reporting line still deserve confirmation.',
+                  action: 'Use the recruiter questions above to pressure-test the details that matter most to you.',
+                }]).map((gap) => (
+                  <div key={gap.title} className="rounded-[1.3rem] border border-amber-100 bg-amber-50 px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <CircleHelp className="h-4 w-4 text-amber-700" />
+                      <p className="font-semibold text-amber-950">{gap.title}</p>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-amber-950">{gap.insight}</p>
+                    <p className="mt-3 text-sm font-medium text-amber-900">{gap.action}</p>
+                  </div>
+                ))}
+
+                <div className="space-y-3 text-sm leading-6 text-slate-700">
                   {(hiddenSignals.length > 0 ? hiddenSignals : ['Nothing subtle stands out yet; this mainly reads like a standard structured job listing.']).map((signal) => (
                     <div key={signal} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3">
-                      <div className="mb-2 flex items-center gap-2">
-                        <Badge variant="outline" className="border-slate-200 bg-white text-slate-700">Interpretation</Badge>
-                      </div>
                       {signal}
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-xl font-black tracking-tight">Decision dimensions</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {dimensions.map((dimension) => (
-                <div key={dimension.title} className="rounded-[1.4rem] border border-slate-200 bg-slate-50/70 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
+            <AccordionItem value="breakdown" className="rounded-[1.8rem] border border-slate-200 bg-white px-0 shadow-sm">
+              <AccordionTrigger className="px-5 py-4 text-left text-lg font-bold tracking-tight hover:no-underline">
+                Decision breakdown
+              </AccordionTrigger>
+              <AccordionContent className="space-y-5 px-5 pb-5">
+                <div className="grid gap-3 md:grid-cols-3">
+                  {primaryDimensions.map((dimension) => (
+                    <div key={dimension.title} className="rounded-[1.2rem] border border-slate-200 bg-slate-50/70 p-4">
                       <p className="text-sm font-semibold text-slate-900">{dimension.title}</p>
                       <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">{dimension.label}</p>
+                      <p className="mt-2 text-lg font-black tracking-tight text-slate-950">{dimension.value}</p>
                     </div>
-                    <p className="text-2xl font-black tracking-tight text-slate-950">{dimension.value}</p>
-                  </div>
-                  <div className="mt-4 h-2 rounded-full bg-slate-200">
-                    <div
-                      className={cn('h-full rounded-full', getDimensionTone(dimension.kind, dimension.value))}
-                      style={{ width: `${dimension.value}%` }}
-                    />
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{dimension.note}</p>
+                  ))}
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {secondaryDimensions.map((dimension) => (
+                    <div key={dimension.title} className="rounded-[1.2rem] border border-slate-200 bg-slate-50/70 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{dimension.title}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">{dimension.label}</p>
+                        </div>
+                        <p className="text-xl font-black tracking-tight text-slate-950">{dimension.value}</p>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">{dimension.note}</p>
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </>
       ) : null}
 

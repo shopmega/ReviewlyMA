@@ -170,65 +170,94 @@ export function JobOfferAnalysisForm() {
           <form action={formAction} className="space-y-8">
             <input type="hidden" name="sourceType" value={sourceType} />
 
-            <section className="grid gap-4 md:grid-cols-3">
-              {[
-                { step: '01', title: 'Input the offer', body: 'Paste text or add a public link.' },
-                { step: '02', title: 'AI reads and validates it', body: 'Extraction, confidence, employer match, and benchmark checks.' },
-                { step: '03', title: 'Decision workspace appears', body: 'Offer verdict, employer context, similar offers, and next actions.' },
-              ].map((item) => (
-                <div key={item.step} className="rounded-2xl border bg-slate-50 px-4 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Step {item.step}</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">{item.title}</p>
-                  <p className="mt-1 text-sm text-slate-600">{item.body}</p>
+            <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+              <div className="space-y-4 rounded-[1.8rem] border border-slate-200 bg-white p-4 md:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Step 1</p>
+                    <h3 className="mt-2 text-xl font-black tracking-tight text-slate-950">Provide the offer</h3>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Paste the announcement text or switch to a public link. AI will extract the visible facts and build a decision workspace.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={sourceType === 'paste' ? 'default' : 'outline'}
+                      onClick={() => setSourceType('paste')}
+                    >
+                      Paste text
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={sourceType === 'url' ? 'default' : 'outline'}
+                      onClick={() => setSourceType('url')}
+                    >
+                      Use link
+                    </Button>
+                  </div>
                 </div>
-              ))}
-            </section>
 
-            <section className="space-y-2">
-              <Label htmlFor="sourceText">Texte de l&apos;offre</Label>
-              <Textarea
-                id="sourceText"
-                name="sourceText"
-                placeholder="Collez ici le texte d'une annonce LinkedIn, Rekrute, Indeed, Emploi.ma..."
-                className="min-h-72"
-              />
-              <FieldError state={state} name="sourceText" />
-            </section>
+                {sourceType === 'paste' ? (
+                  <section className="space-y-2">
+                    <Label htmlFor="sourceText">Job offer text</Label>
+                    <Textarea
+                      id="sourceText"
+                      name="sourceText"
+                      placeholder="Paste a LinkedIn, Rekrute, Indeed, or Emploi.ma job post here..."
+                      className="min-h-72"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Best for copied job ads, screenshots transcribed to text, or incomplete posts you still want to pressure-test.
+                    </p>
+                    <FieldError state={state} name="sourceText" />
+                  </section>
+                ) : (
+                  <section className="space-y-2">
+                    <Label htmlFor="sourceUrl">Public job offer link</Label>
+                    <Input
+                      id="sourceUrl"
+                      name="sourceUrl"
+                      placeholder="https://www.linkedin.com/jobs/view/..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Works when the source page is public and readable. If extraction is partial, AI still returns useful follow-up questions.
+                    </p>
+                    <FieldError state={state} name="sourceUrl" />
+                  </section>
+                )}
+              </div>
 
-            <section className="space-y-3 rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold">Ou collez un lien d&apos;annonce</p>
-                  <p className="text-xs text-muted-foreground">
-                    Fonctionne pour les liens publics quand la page peut etre lue.
+              <div className="space-y-4">
+                <div className="rounded-[1.8rem] border border-slate-200 bg-slate-50/70 p-4 md:p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">What you get</p>
+                  <div className="mt-3 grid gap-3">
+                    {[
+                      'Instant offer verdict and confidence read',
+                      'Recruiter questions based on what is missing',
+                      'Employer context and similar-offer comparison when available',
+                    ].map((item) => (
+                      <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[1.8rem] border border-slate-200 bg-slate-50/70 p-4 md:p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Trust and privacy</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Badge variant="outline">Private AI analysis</Badge>
+                    <Badge variant="outline">Works with incomplete offers</Badge>
+                    <Badge variant="outline">Save and compare after login</Badge>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    AI helps structure the offer and combine it with market context. Important details should still be confirmed with the recruiter.
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={sourceType === 'paste' ? 'default' : 'outline'}
-                    onClick={() => setSourceType('paste')}
-                  >
-                    Texte
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={sourceType === 'url' ? 'default' : 'outline'}
-                    onClick={() => setSourceType('url')}
-                  >
-                    Lien
-                  </Button>
-                </div>
               </div>
-              <Input
-                id="sourceUrl"
-                name="sourceUrl"
-                placeholder="https://www.linkedin.com/jobs/view/..."
-                disabled={sourceType !== 'url'}
-              />
-              <FieldError state={state} name="sourceUrl" />
             </section>
 
             {state.message ? (
@@ -262,9 +291,9 @@ export function JobOfferAnalysisForm() {
             </div>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-              <span>Works even when the offer is incomplete</span>
-              <span>Private AI analysis</span>
-              <span>Login required to save and compare your results</span>
+              <span>AI-powered decision support</span>
+              <span>Private analysis</span>
+              <span>Login required to save and compare results</span>
             </div>
           </form>
         </CardContent>
