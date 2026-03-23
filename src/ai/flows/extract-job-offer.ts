@@ -33,6 +33,7 @@ function buildExtractJobOfferPrompt(input: ExtractJobOfferInput) {
 Return only structured output based on the provided schema.
 Rules:
 - Never invent salary if it is not present.
+- Never return 0 for salary fields. Use null when salary is absent or unclear.
 - Prefer null or empty strings over guessing.
 - If a range exists, put low value in salaryMin and high value in salaryMax.
 - Normalize work model to onsite, hybrid, or remote.

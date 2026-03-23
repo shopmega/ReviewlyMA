@@ -7,6 +7,7 @@ import type {
 import type { JobOfferBenchmarks } from './benchmarks';
 import type { NormalizedJobOfferInput } from './normalization';
 import { JOB_OFFER_ANALYSIS_VERSION } from './constants';
+import { hasUsableSalary } from './salary';
 
 function clamp(value: number, min = 0, max = 100) {
   return Math.min(Math.max(value, min), max);
@@ -21,7 +22,7 @@ function getConfidenceLevel(
   sampleCount: number,
   hasPrimaryBenchmark: boolean
 ): JobOfferConfidenceLevel {
-  const hasSalary = input.salaryMinMonthly != null || input.salaryMaxMonthly != null;
+  const hasSalary = hasUsableSalary(input.salaryMinMonthly, input.salaryMaxMonthly);
   if (!hasSalary) return 'low';
   if (!hasPrimaryBenchmark || sampleCount < 5) return 'low';
   if (sampleCount < 15) return 'medium';
@@ -148,7 +149,7 @@ export function computeJobOfferAnalysis(
   input: NormalizedJobOfferInput,
   benchmarks: JobOfferBenchmarks
 ): ComputedJobOfferAnalysis {
-  const hasSalary = input.salaryMinMonthly != null || input.salaryMaxMonthly != null;
+  const hasSalary = hasUsableSalary(input.salaryMinMonthly, input.salaryMaxMonthly);
   const confidenceLevel = getConfidenceLevel(input, benchmarks.sampleCount, benchmarks.primaryMedianMonthly != null);
   const compensationScore = getCompensationScore(input.midpointMonthly, benchmarks.primaryMedianMonthly);
   const transparencyScore = getTransparencyScore(input);

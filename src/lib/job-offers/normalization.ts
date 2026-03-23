@@ -1,5 +1,6 @@
 import type { JobOfferRecord, JobOfferSubmissionInput } from '@/lib/types';
 import { slugify } from '@/lib/utils';
+import { normalizeSalaryRange } from './salary';
 
 function cleanText(value: string | undefined | null): string | null {
   const normalized = value?.trim().replace(/\s+/g, ' ');
@@ -45,8 +46,10 @@ export type NormalizedJobOfferInput = {
 };
 
 export function normalizeJobOfferInput(input: JobOfferSubmissionInput): NormalizedJobOfferInput {
-  const salaryMin = typeof input.salaryMin === 'number' ? input.salaryMin : null;
-  const salaryMax = typeof input.salaryMax === 'number' ? input.salaryMax : null;
+  const { salaryMin, salaryMax } = normalizeSalaryRange(
+    typeof input.salaryMin === 'number' ? input.salaryMin : null,
+    typeof input.salaryMax === 'number' ? input.salaryMax : null
+  );
   const payPeriod = input.payPeriod ?? 'monthly';
   const { salaryMinMonthly, salaryMaxMonthly } = normalizePayPeriod(salaryMin, salaryMax, payPeriod);
 

@@ -18,6 +18,7 @@ import type {
   JobOfferExtractionResult,
   JobOfferRecord,
 } from '@/lib/types';
+import { hasUsableSalary, normalizeSalaryRange } from '@/lib/job-offers/salary';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -110,12 +111,17 @@ function formatBenchmarkSource(value: string | null | undefined) {
 }
 
 function buildSnapshot(extractedOffer?: JobOfferExtractionResult, offer?: JobOfferRecord): OfferSnapshot {
+  const normalizedSalary = normalizeSalaryRange(
+    extractedOffer?.salaryMin ?? offer?.salary_min ?? null,
+    extractedOffer?.salaryMax ?? offer?.salary_max ?? null
+  );
+
   return {
     companyName: extractedOffer?.companyName || offer?.company_name || 'Unknown company',
     jobTitle: extractedOffer?.jobTitle || offer?.job_title || 'Unclear role',
     city: extractedOffer?.city || offer?.city || null,
-    salaryMin: extractedOffer?.salaryMin ?? offer?.salary_min ?? null,
-    salaryMax: extractedOffer?.salaryMax ?? offer?.salary_max ?? null,
+    salaryMin: normalizedSalary.salaryMin,
+    salaryMax: normalizedSalary.salaryMax,
     payPeriod: extractedOffer?.payPeriod || offer?.pay_period || 'monthly',
     contractType: extractedOffer?.contractType ?? offer?.contract_type ?? null,
     workModel: extractedOffer?.workModel ?? offer?.work_model ?? null,
@@ -138,7 +144,7 @@ function formatSalary(snapshot: OfferSnapshot) {
 }
 
 function getConfidenceMeta(analysis: AnalysisView, snapshot: OfferSnapshot) {
-  const hasSalary = snapshot.salaryMin != null || snapshot.salaryMax != null;
+  const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
 
   if (analysis.confidence_level === 'high') {
     return {
@@ -166,7 +172,7 @@ function getConfidenceMeta(analysis: AnalysisView, snapshot: OfferSnapshot) {
 }
 
 function getVerdictMeta(analysis: AnalysisView, snapshot: OfferSnapshot) {
-  const hasSalary = snapshot.salaryMin != null || snapshot.salaryMax != null;
+  const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
   const canAssessCompensation = hasSalary && analysis.benchmark_primary_source && analysis.benchmark_primary_source !== 'none';
 
   if (!canAssessCompensation || analysis.market_position_label === 'insufficient_data') {
@@ -223,7 +229,7 @@ function getVerdictMeta(analysis: AnalysisView, snapshot: OfferSnapshot) {
 function getPositiveSignals(analysis: AnalysisView, snapshot: OfferSnapshot) {
   const positives = [...analysis.strengths];
 
-  if (snapshot.salaryMin != null || snapshot.salaryMax != null) {
+  if (hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
     positives.push('Salary is disclosed, which saves you from guessing basic compensation terms.');
   }
   if (snapshot.contractType) {
@@ -276,7 +282,7 @@ function getConcernSignals(
 function getStrategicGaps(snapshot: OfferSnapshot): StrategicGap[] {
   const gaps: StrategicGap[] = [];
 
-  if (snapshot.salaryMin == null && snapshot.salaryMax == null) {
+  if (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
     gaps.push({
       title: 'Salary band missing',
       insight: 'The employer is asking for your time before disclosing the most basic compensation anchor.',
@@ -321,7 +327,7 @@ function getRecruiterQuestions(snapshot: OfferSnapshot, gaps: StrategicGap[]) {
   if (!snapshot.city) {
     questions.push('Where is the role based, and is relocation or regular travel expected?');
   }
-  if (snapshot.salaryMin != null || snapshot.salaryMax != null) {
+  if (hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
     questions.push('How is the package structured between fixed pay, variable pay, bonuses, and benefits?');
   }
 
@@ -337,7 +343,7 @@ function getInterviewTopics(snapshot: OfferSnapshot, analysis: AnalysisView) {
     'Team structure, reporting line, and decision-making cadence',
   ];
 
-  if (snapshot.salaryMin == null && snapshot.salaryMax == null) {
+  if (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
     topics.push('Compensation expectations and how the package is framed');
   } else {
     topics.push('Package details, variable pay, and evaluation criteria');
@@ -367,7 +373,7 @@ function getHiddenSignals(
 ) {
   const signals: string[] = [];
 
-  if (snapshot.salaryMin == null && snapshot.salaryMax == null) {
+  if (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
     signals.push('Omitting salary usually shifts leverage toward later interview stages.');
   }
   if (analysis.risk_flags.includes('wide_salary_range')) {
@@ -400,7 +406,7 @@ function getDimensionTone(kind: Dimension['kind'], value: number) {
 }
 
 function buildDimensions(snapshot: OfferSnapshot, analysis: AnalysisView): Dimension[] {
-  const hasSalary = snapshot.salaryMin != null || snapshot.salaryMax != null;
+  const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
   const compensationVisibility = !hasSalary
     ? 12
     : snapshot.salaryMin != null && snapshot.salaryMax != null
@@ -428,7 +434,7 @@ function buildDimensions(snapshot: OfferSnapshot, analysis: AnalysisView): Dimen
     100,
     (analysis.risk_flags.length * 16)
     + (analysis.missing_information.length * 10)
-    + (snapshot.salaryMin == null && snapshot.salaryMax == null ? 12 : 0)
+    + (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax) ? 12 : 0)
   );
 
   return [
@@ -475,7 +481,7 @@ function buildDimensions(snapshot: OfferSnapshot, analysis: AnalysisView): Dimen
 }
 
 function getPrimaryNextStep(analysis: AnalysisView, snapshot: OfferSnapshot) {
-  const hasSalary = snapshot.salaryMin != null || snapshot.salaryMax != null;
+  const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
 
   if (!hasSalary) {
     return 'Ask for the salary band before investing more time.';
@@ -595,7 +601,7 @@ export function JobOfferAnalysisResult({
 
               <div className="flex flex-wrap gap-2 text-xs">
                 <Badge variant="outline" className="border-white/70 bg-white/70 text-slate-700">
-                  {snapshot.salaryMin != null || snapshot.salaryMax != null ? 'Salary disclosed' : 'Salary missing'}
+                  {hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax) ? 'Salary disclosed' : 'Salary missing'}
                 </Badge>
                 <Badge variant="outline" className="border-white/70 bg-white/70 text-slate-700">
                   {snapshot.workModel ? formatWorkModel(snapshot.workModel) : 'Work model unclear'}

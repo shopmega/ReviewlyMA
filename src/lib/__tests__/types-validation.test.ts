@@ -7,6 +7,7 @@ import {
   resetPasswordRequestSchema,
   updatePasswordSchema,
   businessUpdateSchema,
+  jobOfferSubmissionSchema,
 } from '../types';
 
 describe('Validation Schemas', () => {
@@ -209,5 +210,25 @@ describe('Validation Schemas', () => {
       }
     });
   });
-});
 
+  describe('jobOfferSubmissionSchema', () => {
+    it('should reject zero salary values', () => {
+      const result = jobOfferSubmissionSchema.safeParse({
+        sourceType: 'manual',
+        companyName: 'Groupe VILAVI',
+        jobTitle: 'Gestionnaire de paie',
+        city: 'Tanger',
+        salaryMin: 0,
+        salaryMax: 0,
+        payPeriod: 'monthly',
+        benefits: [],
+        sourceText: '',
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((issue) => issue.path.includes('salaryMin') || issue.path.includes('salaryMax'))).toBe(true);
+      }
+    });
+  });
+});

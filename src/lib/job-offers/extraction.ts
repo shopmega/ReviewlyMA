@@ -13,6 +13,7 @@ import type {
 } from '@/lib/types';
 import { extractJobOfferWithModel } from '@/ai/flows/extract-job-offer';
 import { getConfiguredAiProviderRegistrations, hasConfiguredAiModel } from '@/ai/genkit';
+import { normalizeSalaryRange } from './salary';
 
 const BENEFIT_KEYWORDS = [
   'bonus',
@@ -424,6 +425,17 @@ export async function extractJobOfferInput(input: JobOfferIngestionInput): Promi
       220
     ),
   };
+  const normalizedSalary = normalizeSalaryRange(merged.salaryMin, merged.salaryMax);
+  if (normalizedSalary.salaryMin !== merged.salaryMin) {
+    merged.salaryMin = normalizedSalary.salaryMin;
+    mergedDiagnostics.salaryMin = fieldDiagnostic(null, 'none', 'none');
+    diagnostics.notes.push('Dropped non-positive salaryMin value during validation.');
+  }
+  if (normalizedSalary.salaryMax !== merged.salaryMax) {
+    merged.salaryMax = normalizedSalary.salaryMax;
+    mergedDiagnostics.salaryMax = fieldDiagnostic(null, 'none', 'none');
+    diagnostics.notes.push('Dropped non-positive salaryMax value during validation.');
+  }
   diagnostics.fieldDiagnostics = mergedDiagnostics;
 
   diagnostics.currentStage = 'validate_fields';
