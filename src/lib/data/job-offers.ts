@@ -1,6 +1,17 @@
-import type { JobOfferAnalysisRecord, JobOfferCompanyMetrics, JobOfferRecord, JobOfferRoleCityMetrics } from '@/lib/types';
+import type {
+  JobOfferAnalysisRecord,
+  JobOfferBusinessInsights,
+  JobOfferBusinessMonthlyTrend,
+  JobOfferCompanyMetrics,
+  JobOfferRecord,
+  JobOfferRoleCityMetrics,
+} from '@/lib/types';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getPublicClient } from './client';
+
+export type MyJobOfferAnalysisListItem = JobOfferAnalysisRecord & {
+  job_offers: Pick<JobOfferRecord, 'id' | 'company_name' | 'job_title' | 'city' | 'source_type' | 'submitted_at'>;
+};
 
 async function getAnalyticsClient() {
   try {
@@ -60,7 +71,7 @@ export async function getMyJobOfferAnalyses(limit = 20) {
     .limit(limit);
 
   if (error || !data) return [];
-  return data as Array<JobOfferAnalysisRecord & { job_offers: Pick<JobOfferRecord, 'id' | 'company_name' | 'job_title' | 'city' | 'source_type' | 'submitted_at'> }>;
+  return data as MyJobOfferAnalysisListItem[];
 }
 
 export async function getJobOfferCompanyMetrics(companySlug: string): Promise<JobOfferCompanyMetrics | null> {
@@ -73,6 +84,30 @@ export async function getJobOfferCompanyMetrics(companySlug: string): Promise<Jo
 
   if (error || !data) return null;
   return data as JobOfferCompanyMetrics;
+}
+
+export async function getBusinessJobOfferInsights(businessId: string): Promise<JobOfferBusinessInsights | null> {
+  const supabase = await getAnalyticsClient();
+  const { data, error } = await supabase
+    .from('job_offer_business_insights')
+    .select('*')
+    .eq('business_id', businessId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as JobOfferBusinessInsights;
+}
+
+export async function getBusinessJobOfferMonthlyTrends(businessId: string): Promise<JobOfferBusinessMonthlyTrend[]> {
+  const supabase = await getAnalyticsClient();
+  const { data, error } = await supabase
+    .from('job_offer_business_monthly_trends')
+    .select('*')
+    .eq('business_id', businessId)
+    .order('month_date', { ascending: true });
+
+  if (error || !data) return [];
+  return data as JobOfferBusinessMonthlyTrend[];
 }
 
 export async function getJobOfferRoleCityMetrics(roleSlug: string, citySlug: string): Promise<JobOfferRoleCityMetrics | null> {

@@ -6,6 +6,13 @@ import type { JobOfferBenchmarks } from '../benchmarks';
 
 const baseBenchmarks: JobOfferBenchmarks = {
   businessId: null,
+  companyMatch: {
+    businessId: null,
+    confidence: 'none',
+    method: 'none',
+    normalizedCompanySlug: '',
+    candidates: [],
+  },
   roleCity: null,
   company: null,
   city: null,

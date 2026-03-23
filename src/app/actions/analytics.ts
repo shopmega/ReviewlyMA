@@ -238,6 +238,69 @@ export async function getAdminAnalytics() {
 
         const searchGrowth = searchTimeline ? aggregateByMonth(searchTimeline).map(d => ({ month: d.month, searches: d.users })) : [];
 
+        const [
+            { count: totalJobOffers },
+            { count: approvedJobOffers },
+            { count: mappedApprovedJobOffers },
+            { data: jobOfferAnalyses },
+            { data: businessSignals },
+            { data: mappingQueueRows },
+            { data: moderationEvents },
+        ] = await Promise.all([
+            supabase.from('job_offers').select('*', { count: 'exact', head: true }),
+            supabase.from('job_offers').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+            supabase.from('job_offers').select('*', { count: 'exact', head: true }).eq('status', 'approved').not('business_id', 'is', null),
+            supabase.from('job_offer_analyses').select('confidence_level'),
+            supabase.from('job_offer_business_insights').select('*'),
+            supabase.from('admin_job_offer_mapping_v1').select('job_offer_id, company_name, business_id, company_match_confidence'),
+            supabase.from('job_offer_moderation_events').select('event_type, created_at').gte('created_at', sixMonthsAgo.toISOString()),
+        ]);
+
+        const lowConfidenceOfferCount = jobOfferAnalyses?.filter((row: any) => row.confidence_level === 'low').length || 0;
+        const totalAnalyses = jobOfferAnalyses?.length || 0;
+        const avgSalaryDisclosure = businessSignals && businessSignals.length > 0
+            ? businessSignals.reduce((acc: number, row: any) => acc + Number(row.salary_disclosure_rate || 0), 0) / businessSignals.length
+            : 0;
+        const avgOfferTransparency = businessSignals && businessSignals.length > 0
+            ? businessSignals.reduce((acc: number, row: any) => acc + Number(row.avg_transparency_score || 0), 0) / businessSignals.length
+            : 0;
+        const mappingQueue = (mappingQueueRows || []) as Array<{
+            job_offer_id: string;
+            company_name: string;
+            business_id: string | null;
+            company_match_confidence: 'high' | 'medium' | 'low' | 'none';
+        }>;
+        const moderationTimeline = (moderationEvents || []) as Array<{
+            event_type: string;
+            created_at: string;
+        }>;
+
+        const topSignalBusinesses = ((businessSignals || []) as Array<any>)
+            .sort((a, b) => Number(b.approved_offer_count || 0) - Number(a.approved_offer_count || 0))
+            .slice(0, 5);
+        const topSignalBusinessIds = topSignalBusinesses.map((row) => row.business_id).filter(Boolean);
+        const topBusinessRows = topSignalBusinessIds.length > 0
+            ? (await supabase
+                .from('businesses')
+                .select('id, name')
+                .in('id', topSignalBusinessIds)).data
+            : [];
+        const businessNameMap = new Map((topBusinessRows || []).map((row: any) => [row.id, row.name]));
+        const unresolvedCompanyCounts = mappingQueue
+            .filter((row) => !row.business_id)
+            .reduce((acc: Record<string, number>, row) => {
+                const key = row.company_name?.trim() || 'Unknown company';
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+        const topUnresolvedCompanies = Object.entries(unresolvedCompanyCounts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((left, right) => right.count - left.count)
+            .slice(0, 5);
+        const manualRelinks = moderationTimeline.filter((event) => event.event_type === 'business_relinked').length;
+        const automatedBackfills = moderationTimeline.filter((event) => event.event_type === 'business_match_backfilled').length;
+        const unlinks = moderationTimeline.filter((event) => event.event_type === 'business_unlinked').length;
+
         return {
             overview: {
                 totalUsers: totalUsers || 0,
@@ -260,6 +323,30 @@ export async function getAdminAnalytics() {
             searchMetrics: {
                 searchGrowth,
                 topQueries: sortedQueries
+            },
+            jobOfferMetrics: {
+                totalJobOffers: totalJobOffers || 0,
+                approvedJobOffers: approvedJobOffers || 0,
+                mappedApprovedJobOffers: mappedApprovedJobOffers || 0,
+                companiesWithSignals: businessSignals?.length || 0,
+                avgSalaryDisclosure: Number(avgSalaryDisclosure.toFixed(2)),
+                avgOfferTransparency: Number(avgOfferTransparency.toFixed(2)),
+                lowConfidenceRate: totalAnalyses > 0 ? Number(((lowConfidenceOfferCount / totalAnalyses) * 100).toFixed(2)) : 0,
+                mappingQueueSize: mappingQueue.length,
+                unresolvedMappings: mappingQueue.filter((row) => !row.business_id).length,
+                mediumConfidenceMappings: mappingQueue.filter((row) => row.company_match_confidence === 'medium').length,
+                lowConfidenceMappings: mappingQueue.filter((row) => row.company_match_confidence === 'low' || row.company_match_confidence === 'none').length,
+                manualRelinks,
+                automatedBackfills,
+                unlinks,
+                topUnresolvedCompanies,
+                topEmployers: topSignalBusinesses.map((row) => ({
+                    businessId: row.business_id,
+                    name: businessNameMap.get(row.business_id) || row.business_id,
+                    approvedOfferCount: Number(row.approved_offer_count || 0),
+                    salaryDisclosureRate: Number(row.salary_disclosure_rate || 0),
+                    avgTransparencyScore: Number(row.avg_transparency_score || 0),
+                })),
             }
         };
 

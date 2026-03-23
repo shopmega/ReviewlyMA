@@ -22,7 +22,12 @@ export type AnalyticsEvent =
   | 'share_completed'
   | 'link_opened'
   | 'visitor_to_signup'
-  | 'visitor_to_contribution';
+  | 'visitor_to_contribution'
+  | 'job_offer_analyzed'
+  | 'job_offer_saved'
+  | 'job_offer_compared'
+  | 'job_offer_history_opened'
+  | 'job_offer_business_insight_viewed';
 
 export interface AnalyticsData {
   event: AnalyticsEvent;

@@ -1,12 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, Users, AlertTriangle, Activity, Download, Calendar, PieChart as PieChartIcon, Zap, Search } from 'lucide-react';
+import { TrendingUp, Users, AlertTriangle, Activity, Download, Calendar, PieChart as PieChartIcon, Zap, Search, BriefcaseBusiness, FileBadge2, Link2 } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -47,6 +48,33 @@ interface AnalyticsData {
   searchMetrics?: {
     searchGrowth: Array<{ month: string; searches: number }>;
     topQueries: Array<{ name: string; value: number }>;
+  };
+  jobOfferMetrics?: {
+    totalJobOffers: number;
+    approvedJobOffers: number;
+    mappedApprovedJobOffers: number;
+    companiesWithSignals: number;
+    avgSalaryDisclosure: number;
+    avgOfferTransparency: number;
+    lowConfidenceRate: number;
+    mappingQueueSize: number;
+    unresolvedMappings: number;
+    mediumConfidenceMappings: number;
+    lowConfidenceMappings: number;
+    manualRelinks: number;
+    automatedBackfills: number;
+    unlinks: number;
+    topUnresolvedCompanies: Array<{
+      name: string;
+      count: number;
+    }>;
+    topEmployers: Array<{
+      businessId: string;
+      name: string;
+      approvedOfferCount: number;
+      salaryDisclosureRate: number;
+      avgTransparencyScore: number;
+    }>;
   };
 }
 
@@ -95,6 +123,11 @@ export default function AnalyticsPage() {
       [t('adminAnalyticsPage.stats.estimatedRevenue', 'Estimated revenue (premium)'), formatMad(data.overview.totalRevenue)],
       [t('adminAnalyticsPage.export.totalMessages', 'Total messages'), data.overview.totalMessages],
       [t('adminAnalyticsPage.stats.totalSearches', 'Total searches'), data.overview.totalSearches || 0],
+      ['Total job offers', data.jobOfferMetrics?.totalJobOffers || 0],
+      ['Approved job offers', data.jobOfferMetrics?.approvedJobOffers || 0],
+      ['Mapped approved job offers', data.jobOfferMetrics?.mappedApprovedJobOffers || 0],
+      ['Companies with hiring signals', data.jobOfferMetrics?.companiesWithSignals || 0],
+      ['Mapping queue size', data.jobOfferMetrics?.mappingQueueSize || 0],
     ]
       .map((row) => row.join(','))
       .join('\n');
@@ -232,6 +265,9 @@ export default function AnalyticsPage() {
           </TabsTrigger>
           <TabsTrigger value="businesses" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
             {t('adminAnalyticsPage.tabs.businesses', 'Businesses')}
+          </TabsTrigger>
+          <TabsTrigger value="jobs" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
+            Job offers
           </TabsTrigger>
           <TabsTrigger value="search" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white shadow-sm transition-all">
             {t('adminAnalyticsPage.tabs.search', 'Search')}
@@ -421,6 +457,182 @@ export default function AnalyticsPage() {
                   {(!data.searchMetrics?.topQueries || data.searchMetrics.topQueries.length === 0) && (
                     <div className="text-center py-10 text-muted-foreground font-medium italic">
                       {t('adminAnalyticsPage.search.topQueries.empty', 'Insufficient search data')}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="jobs" className="animate-in fade-in duration-300 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {[
+              {
+                label: 'Offers analyzed',
+                value: data.jobOfferMetrics?.totalJobOffers || 0,
+                icon: BriefcaseBusiness,
+                color: 'text-sky-500',
+                bg: 'bg-sky-500/10',
+              },
+              {
+                label: 'Approved offers',
+                value: data.jobOfferMetrics?.approvedJobOffers || 0,
+                icon: Activity,
+                color: 'text-emerald-500',
+                bg: 'bg-emerald-500/10',
+              },
+              {
+                label: 'Mapped approved offers',
+                value: data.jobOfferMetrics?.mappedApprovedJobOffers || 0,
+                icon: Link2,
+                color: 'text-violet-500',
+                bg: 'bg-violet-500/10',
+              },
+              {
+                label: 'Companies with signals',
+                value: data.jobOfferMetrics?.companiesWithSignals || 0,
+                icon: FileBadge2,
+                color: 'text-amber-500',
+                bg: 'bg-amber-500/10',
+              },
+            ].map((stat) => (
+              <Card key={stat.label} className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{stat.label}</CardTitle>
+                  <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color}`}>
+                    <stat.icon className="h-4 w-4" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-black">{numberFormatter.format(Number(stat.value) || 0)}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
+              <CardHeader className="px-0 pt-0">
+                <CardTitle className="text-lg font-bold">Offer quality snapshot</CardTitle>
+                <CardDescription>Marketplace-level hiring signal quality from approved linked offers.</CardDescription>
+              </CardHeader>
+              <CardContent className="px-0 pb-0 pt-6">
+                <div className="space-y-5">
+                  {[
+                    {
+                      label: 'Average salary disclosure',
+                      value: data.jobOfferMetrics?.avgSalaryDisclosure || 0,
+                    },
+                    {
+                      label: 'Average offer transparency',
+                      value: data.jobOfferMetrics?.avgOfferTransparency || 0,
+                    },
+                    {
+                      label: 'Low-confidence analysis rate',
+                      value: data.jobOfferMetrics?.lowConfidenceRate || 0,
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="space-y-2">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <span className="font-medium text-slate-700 dark:text-slate-200">{item.label}</span>
+                        <span className="font-bold text-slate-900 dark:text-white">{Math.round(item.value)}%</span>
+                      </div>
+                      <div className="h-3 bg-secondary/50 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-500"
+                          style={{ width: `${Math.max(0, Math.min(item.value, 100))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
+              <CardHeader className="px-0 pt-0">
+                <CardTitle className="text-lg font-bold">Top employers with hiring signals</CardTitle>
+                <CardDescription>Employers with the largest approved analyzed-offer footprint.</CardDescription>
+              </CardHeader>
+              <CardContent className="px-0 pt-6">
+                <div className="space-y-4">
+                  {(data.jobOfferMetrics?.topEmployers || []).length > 0 ? data.jobOfferMetrics?.topEmployers.map((employer, index) => (
+                    <div key={employer.businessId} className="flex items-center justify-between gap-4 p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/20">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                          #{index + 1}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{employer.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {employer.approvedOfferCount} approved offers
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{Math.round(employer.salaryDisclosureRate)}% disclosed</p>
+                        <p className="text-xs text-muted-foreground">{Math.round(employer.avgTransparencyScore)} clarity</p>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="text-sm text-muted-foreground">
+                      No job-offer employer signals yet.
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
+              <CardHeader className="px-0 pt-0">
+                <CardTitle className="text-lg font-bold">Mapping queue health</CardTitle>
+                <CardDescription>Operational visibility for unresolved employer links and moderation flow.</CardDescription>
+              </CardHeader>
+              <CardContent className="px-0 pt-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    ['Queue rows', data.jobOfferMetrics?.mappingQueueSize || 0],
+                    ['Unresolved', data.jobOfferMetrics?.unresolvedMappings || 0],
+                    ['Medium confidence', data.jobOfferMetrics?.mediumConfidenceMappings || 0],
+                    ['Low or none', data.jobOfferMetrics?.lowConfidenceMappings || 0],
+                    ['Manual relinks', data.jobOfferMetrics?.manualRelinks || 0],
+                    ['Auto backfills', data.jobOfferMetrics?.automatedBackfills || 0],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-2xl border border-white/20 bg-white/40 dark:bg-slate-800/40 p-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{label}</p>
+                      <p className="mt-2 text-2xl font-black">{numberFormatter.format(Number(value) || 0)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Button asChild variant="outline" className="rounded-xl font-bold">
+                  <Link href="/admin/job-offers">Open mapping queue</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
+              <CardHeader className="px-0 pt-0">
+                <CardTitle className="text-lg font-bold">Recurring unresolved employers</CardTitle>
+                <CardDescription>Company names that most often stay unmapped and should be reviewed or backfilled.</CardDescription>
+              </CardHeader>
+              <CardContent className="px-0 pt-6">
+                <div className="space-y-4">
+                  {(data.jobOfferMetrics?.topUnresolvedCompanies || []).length > 0 ? data.jobOfferMetrics?.topUnresolvedCompanies.map((company, index) => (
+                    <div key={`${company.name}-${index}`} className="flex items-center justify-between gap-4 p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/20">
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 dark:text-white truncate">{company.name}</p>
+                        <p className="text-xs text-muted-foreground">Needs business resolution</p>
+                      </div>
+                      <Badge variant="secondary" className="rounded-lg font-bold">
+                        {company.count}
+                      </Badge>
+                    </div>
+                  )) : (
+                    <div className="text-sm text-muted-foreground">
+                      No unresolved-employer concentration right now.
                     </div>
                   )}
                 </div>

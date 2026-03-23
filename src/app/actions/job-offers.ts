@@ -212,6 +212,9 @@ export async function submitJobOfferAnalysis(
       source_type: normalizedInput.sourceType,
       source_url: normalizedInput.sourceUrl,
       document_name: normalizedInput.documentName,
+      company_match_confidence: benchmarks.companyMatch.confidence,
+      company_match_method: benchmarks.companyMatch.method,
+      company_match_candidates: benchmarks.companyMatch.candidates,
       status: 'pending',
       visibility: 'private',
     };

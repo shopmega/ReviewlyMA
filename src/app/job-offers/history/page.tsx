@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getMyJobOfferAnalyses } from '@/lib/data/job-offers';
+import { JobOfferHistoryClient } from '@/components/job-offers/JobOfferHistoryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -32,7 +33,7 @@ export default async function JobOfferHistoryPage() {
     );
   }
 
-  const analyses = await getMyJobOfferAnalyses();
+  const analyses = await getMyJobOfferAnalyses(50);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 space-y-6">
@@ -46,32 +47,17 @@ export default async function JobOfferHistoryPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4">
-        {analyses.length > 0 ? analyses.map((item) => (
-          <Card key={item.id} className="rounded-3xl">
-            <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{item.job_offers.company_name}</p>
-                <h2 className="text-xl font-bold">{item.job_offers.job_title}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {item.job_offers.city || 'Unknown city'} • {item.market_position_label.replace(/_/g, ' ')} • score {Math.round(item.overall_offer_score)}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
-                  <Link href={`/job-offers/${item.id}`}>Open</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )) : (
+      {analyses.length > 0 ? (
+        <JobOfferHistoryClient analyses={analyses} />
+      ) : (
+        <div className="grid gap-4">
           <Card className="rounded-3xl">
             <CardContent className="p-6 text-sm text-muted-foreground">
               No analyses yet.
             </CardContent>
           </Card>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

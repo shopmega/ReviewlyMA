@@ -541,6 +541,9 @@ export type JobOfferRecord = {
   source_type: JobOfferSourceType;
   source_url?: string | null;
   document_name?: string | null;
+  company_match_confidence?: 'high' | 'medium' | 'low' | 'none';
+  company_match_method?: 'slug' | 'id' | 'name' | 'website' | 'scored' | 'manual' | 'none';
+  company_match_candidates?: Array<{ businessId: string; score: number; reason: string }>;
   status: JobOfferStatus;
   visibility: JobOfferVisibility;
   submitted_at: string;
@@ -572,6 +575,26 @@ export type JobOfferAnalysisRecord = {
   created_at: string;
 };
 
+export type AdminJobOfferMappingRow = {
+  job_offer_id: string;
+  user_id: string | null;
+  business_id: string | null;
+  company_name: string;
+  job_title: string;
+  city: string | null;
+  source_url: string | null;
+  status: JobOfferStatus;
+  visibility: JobOfferVisibility;
+  company_match_confidence: 'high' | 'medium' | 'low' | 'none';
+  company_match_method: 'slug' | 'id' | 'name' | 'website' | 'scored' | 'manual' | 'none';
+  company_match_candidates: Array<{ businessId: string; score: number; reason: string }>;
+  submitted_at: string;
+  overall_offer_score?: number | null;
+  transparency_score?: number | null;
+  market_position_label?: JobOfferRecommendationLabel | null;
+  confidence_level?: JobOfferConfidenceLevel | null;
+};
+
 export type JobOfferCompanyMetrics = {
   business_id: string;
   business_name: string;
@@ -582,6 +605,40 @@ export type JobOfferCompanyMetrics = {
   avg_offer_score: number | null;
   transparency_score_avg: number | null;
   refreshed_at: string;
+};
+
+export type JobOfferBusinessInsights = {
+  business_id: string;
+  approved_offer_count: number;
+  salary_disclosure_rate: number | null;
+  avg_transparency_score: number | null;
+  avg_overall_offer_score: number | null;
+  avg_benchmark_confidence_score: number | null;
+  below_market_rate: number | null;
+  above_market_rate: number | null;
+  missing_salary_rate: number | null;
+  onsite_rate: number | null;
+  hybrid_rate: number | null;
+  remote_rate: number | null;
+  cdi_rate: number | null;
+  dominant_work_model?: JobOfferWorkModel | null;
+  dominant_contract_type?: JobOfferContractType | null;
+  top_hiring_roles?: Array<{
+    role_key: string;
+    role_label: string;
+    offer_count: number;
+  }> | null;
+  last_offer_at?: string | null;
+};
+
+export type JobOfferBusinessMonthlyTrend = {
+  business_id: string;
+  month_date: string;
+  month_key: string;
+  approved_offer_count: number;
+  salary_disclosure_rate: number | null;
+  avg_transparency_score: number | null;
+  avg_overall_offer_score: number | null;
 };
 
 export type JobOfferRoleCityMetrics = {

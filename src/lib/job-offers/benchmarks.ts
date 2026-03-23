@@ -1,8 +1,9 @@
 import type { SalaryCityMetrics, SalaryCompanyMetrics, SalaryRoleCityMetrics } from '@/lib/types';
 import { createServiceClient } from '@/lib/supabase/server';
 import { getPublicClient } from '@/lib/data/client';
-import { slugify } from '@/lib/utils';
 import type { NormalizedJobOfferInput } from './normalization';
+import type { BusinessMatchResult } from './company-match';
+import { resolveBusinessMatchForCompany } from './business-resolution';
 
 type BenchmarksClient = Awaited<ReturnType<typeof getBenchmarksClient>>;
 
@@ -14,24 +15,20 @@ async function getBenchmarksClient() {
   }
 }
 
-async function findBusinessIdByCompanyName(client: BenchmarksClient, companyName: string): Promise<string | null> {
-  if (!companyName) return null;
-
-  const { data, error } = await client
-    .from('businesses')
-    .select('id, name')
-    .ilike('name', `%${companyName}%`)
-    .limit(30);
-
-  if (error || !data) return null;
-
-  const exactSlug = slugify(companyName);
-  const exactMatch = (data as Array<{ id: string; name: string | null }>).find((row) => row.name && slugify(row.name) === exactSlug);
-  return exactMatch?.id ?? (data[0]?.id ?? null);
+async function findBusinessIdByCompanyName(
+  client: BenchmarksClient,
+  companyName: string,
+  options?: {
+    sourceUrl?: string | null;
+    city?: string | null;
+  }
+): Promise<BusinessMatchResult> {
+  return resolveBusinessMatchForCompany(client as any, companyName, options);
 }
 
 export type JobOfferBenchmarks = {
   businessId: string | null;
+  companyMatch: BusinessMatchResult;
   roleCity: SalaryRoleCityMetrics | null;
   company: SalaryCompanyMetrics | null;
   city: SalaryCityMetrics | null;
@@ -42,7 +39,11 @@ export type JobOfferBenchmarks = {
 
 export async function getJobOfferBenchmarks(input: NormalizedJobOfferInput): Promise<JobOfferBenchmarks> {
   const client = await getBenchmarksClient();
-  const businessId = await findBusinessIdByCompanyName(client, input.companyName);
+  const companyMatch = await findBusinessIdByCompanyName(client, input.companyName, {
+    sourceUrl: input.sourceUrl,
+    city: input.city,
+  });
+  const businessId = companyMatch.businessId;
 
   const [roleCityResult, companyResult, cityResult] = await Promise.all([
     input.jobTitle && input.citySlug
@@ -93,6 +94,7 @@ export async function getJobOfferBenchmarks(input: NormalizedJobOfferInput): Pro
 
   return {
     businessId,
+    companyMatch,
     roleCity,
     company,
     city,

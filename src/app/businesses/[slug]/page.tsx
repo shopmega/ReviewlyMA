@@ -4,6 +4,7 @@ import { LazyBusinessHero, LazyPhotoGallery } from '@/components/shared/performa
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker';
 import { BusinessSidebar } from '@/components/business/BusinessSidebar';
 import { BusinessMobileActionBar } from '@/components/business/BusinessMobileActionBar';
+import { BusinessHiringSignals } from '@/components/business/BusinessHiringSignals';
 import { BusinessPageActions } from '@/components/shared/BusinessPageActions';
 import { AboutSection } from '@/components/business/AboutSection';
 import { UpdatesSection } from '@/components/business/UpdatesSection';
@@ -16,6 +17,7 @@ import { Business, SalaryEntry, SalaryStats } from '@/lib/types';
 import { getServerSiteUrl } from '@/lib/site-config';
 import { getPublishedSalariesByBusiness, getSalaryStatsByBusiness } from '@/lib/data/salaries';
 import { getBusinessReferralActivity } from '@/lib/data/referrals';
+import { getBusinessJobOfferInsights } from '@/lib/data/job-offers';
 import { applyBusinessQaPreview, parseQaPreviewState, REAL_QA_PREVIEW_STATE, type QaPreviewState } from '@/lib/qa-preview';
 import { AdminQaPreviewToggle } from '@/components/business/AdminQaPreviewToggle';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
@@ -140,12 +142,13 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
     ])
     : Promise.resolve([emptySalaryStats, emptySalaryEntries] as [SalaryStats, SalaryEntry[]]);
 
-  const [salaryData, referralActivity] = await Promise.all([
+  const [salaryData, referralActivity, hiringSignals] = await Promise.all([
     salaryDataPromise,
     getBusinessReferralActivity({
       businessId: business.id,
       businessName: business.name,
     }),
+    getBusinessJobOfferInsights(business.id),
   ]);
   const [salaryStats, salaryEntries] = salaryData;
 
@@ -318,6 +321,8 @@ export default async function BusinessPage({ params, searchParams }: PageProps) 
               referralOffers={referralActivity.offers}
               referralDemands={referralActivity.demands}
             />
+
+            <BusinessHiringSignals insights={hiringSignals} />
 
             {hasAboutContent && <AboutSection business={displayedBusiness} />}
 

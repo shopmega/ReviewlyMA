@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { submitJobOfferAnalysis, type JobOfferActionState } from '@/app/actions/job-offers';
+import { analytics } from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,10 +26,25 @@ function FieldError({ state, name }: { state: JobOfferActionState; name: string 
 export function JobOfferAnalysisForm() {
   const [sourceType, setSourceType] = useState<'paste' | 'url'>('paste');
   const [state, formAction, isPending] = useActionState(submitJobOfferAnalysis, initialState);
+  const lastTrackedAnalysisId = useRef<string | null>(null);
   const analysis = state.data?.analysis;
   const extractedOffer = state.data?.extractedOffer;
   const extractionDiagnostics = state.data?.extractionDiagnostics as Record<string, unknown> | undefined;
   const debugInfo = state.details?.debug as Record<string, unknown> | undefined;
+
+  useEffect(() => {
+    if (state.status !== 'success' || !state.data?.analysisId || lastTrackedAnalysisId.current === state.data.analysisId) {
+      return;
+    }
+
+    analytics.track('job_offer_analyzed', {
+      analysis_id: state.data.analysisId,
+      source_type: sourceType,
+      market_position_label: analysis?.market_position_label,
+      confidence_level: analysis?.confidence_level,
+    });
+    lastTrackedAnalysisId.current = state.data.analysisId;
+  }, [analysis?.confidence_level, analysis?.market_position_label, sourceType, state.data?.analysisId, state.status]);
 
   return (
     <div className="space-y-6">

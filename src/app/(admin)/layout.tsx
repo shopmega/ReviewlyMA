@@ -43,6 +43,7 @@ const menuGroups = [
     items: [
       { href: '/admin', labelKey: 'adminLayout.nav.dashboard', labelFallback: 'Dashboard', icon: LayoutDashboard },
       { href: '/admin/analytics', labelKey: 'adminLayout.nav.analyticsHub', labelFallback: 'Analytics Hub', icon: BarChart3 },
+      { href: '/admin/job-offers', labelKey: 'adminLayout.nav.jobOffers', labelFallback: 'Job Offers', icon: BriefcaseBusiness },
       { href: '/admin/opportunites', labelKey: 'adminLayout.nav.opportunities', labelFallback: 'Opportunites', icon: Target },
       { href: '/admin/outreach', labelKey: 'adminLayout.nav.outreach', labelFallback: 'Outreach Pipeline', icon: BriefcaseBusiness },
       { href: '/admin/statistiques', labelKey: 'adminLayout.nav.stats', labelFallback: 'Statistiques', icon: BarChart3 },

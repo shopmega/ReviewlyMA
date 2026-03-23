@@ -37,6 +37,7 @@ function createThenableQuery(result: any) {
   const query: any = {
     select: vi.fn(() => query),
     eq: vi.fn(() => query),
+    not: vi.fn(() => query),
     in: vi.fn(() => query),
     gte: vi.fn(() => query),
     order: vi.fn(() => query),
@@ -231,6 +232,34 @@ describe('analytics actions', () => {
             ),
           };
         }
+        if (table === 'admin_job_offer_mapping_v1') {
+          return {
+            select: vi.fn(() =>
+              createThenableQuery({
+                data: [
+                  { job_offer_id: 'j1', company_name: 'ADM Value Maroc', business_id: null, company_match_confidence: 'none' },
+                  { job_offer_id: 'j2', company_name: 'ADM Value Maroc', business_id: null, company_match_confidence: 'medium' },
+                  { job_offer_id: 'j3', company_name: 'Orange', business_id: 'orange-maroc', company_match_confidence: 'low' },
+                ],
+                error: null,
+              })
+            ),
+          };
+        }
+        if (table === 'job_offer_moderation_events') {
+          return {
+            select: vi.fn(() =>
+              createThenableQuery({
+                data: [
+                  { event_type: 'business_relinked', created_at: '2026-02-01T00:00:00Z' },
+                  { event_type: 'business_match_backfilled', created_at: '2026-02-02T00:00:00Z' },
+                  { event_type: 'business_unlinked', created_at: '2026-02-03T00:00:00Z' },
+                ],
+                error: null,
+              })
+            ),
+          };
+        }
 
         return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
       }),
@@ -245,5 +274,10 @@ describe('analytics actions', () => {
     expect(result?.overview.totalRevenue).toBe(50);
     expect(result?.searchMetrics.topQueries[0].name).toBe('ocp');
     expect(result?.searchMetrics.topQueries[0].value).toBe(2);
+    expect(result?.jobOfferMetrics?.mappingQueueSize).toBe(3);
+    expect(result?.jobOfferMetrics?.unresolvedMappings).toBe(2);
+    expect(result?.jobOfferMetrics?.manualRelinks).toBe(1);
+    expect(result?.jobOfferMetrics?.automatedBackfills).toBe(1);
+    expect(result?.jobOfferMetrics?.topUnresolvedCompanies[0]).toEqual({ name: 'ADM Value Maroc', count: 2 });
   });
 });
