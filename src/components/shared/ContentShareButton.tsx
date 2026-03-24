@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { analytics } from '@/lib/analytics';
 import { Check, Copy, Facebook, Linkedin, MessageCircle, Share2, Twitter } from 'lucide-react';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type ShareChannel = 'native' | 'whatsapp' | 'linkedin' | 'facebook' | 'twitter' | 'copy';
 
@@ -41,6 +42,7 @@ export function ContentShareButton({
   className,
 }: Props) {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [showOptions, setShowOptions] = useState(false);
   const [copied, setCopied] = useState(false);
   const shareIdRef = useRef<string | null>(null);
@@ -102,8 +104,8 @@ export function ContentShareButton({
       trackCompleted(channel, trackedUrl, 'copy');
       setCopied(true);
       toast({
-        title: 'Lien copie',
-        description: 'Le lien de partage a ete copie.',
+        title: t('share.copiedTitle', 'Lien copie'),
+        description: t('share.copiedDescription', 'Le lien de partage a ete copie.'),
       });
       setTimeout(() => setCopied(false), 1800);
       return;
@@ -169,10 +171,10 @@ export function ContentShareButton({
             <Button size="icon" variant="ghost" onClick={() => shareViaChannel('facebook')} title="Facebook">
               <Facebook className="h-5 w-5 text-blue-600" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={() => shareViaChannel('twitter')} title="X / Twitter">
+            <Button size="icon" variant="ghost" onClick={() => shareViaChannel('twitter')} title={t('share.xTwitter', 'X / Twitter')}>
               <Twitter className="h-5 w-5 text-sky-500" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={() => shareViaChannel('copy')} title="Copier le lien">
+            <Button size="icon" variant="ghost" onClick={() => shareViaChannel('copy')} title={t('share.copyLink', 'Copier le lien')}>
               {copied ? <Check className="h-5 w-5 text-emerald-600" /> : <Copy className="h-5 w-5" />}
             </Button>
           </div>

@@ -9,6 +9,7 @@ import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { slug: string };
 type MarkdownBlock =
@@ -65,11 +66,12 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t } = await getServerTranslator();
   const { slug } = await params;
   const post = await getMergedBlogPostBySlug(slug);
   if (!post) {
     return {
-      title: 'Article de blog | Reviewly',
+      title: `${t('blogArticlePage.fallbackTitle', 'Blog article')} | Reviewly`,
     };
   }
 
@@ -84,6 +86,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function BlogArticlePage({ params }: { params: Promise<Params> }) {
+  const { locale, t, tf } = await getServerTranslator();
   const { slug } = await params;
   const post = await getMergedBlogPostBySlug(slug);
   if (!post) {
@@ -107,20 +110,20 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
         <Badge variant={isPillar ? 'secondary' : 'outline'} className="w-fit">
-          {categoryLabelMap[post.category] || 'Article'}
+          {categoryLabelMap[post.category] || t('blogArticlePage.article', 'Article')}
         </Badge>
         <h1 className="text-3xl md:text-4xl font-bold font-headline">{post.title}</h1>
         <p className="text-muted-foreground max-w-3xl">{post.description}</p>
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-          <span>Publie le : {new Date(post.publishedAt).toLocaleDateString('fr-MA')}</span>
-          <span>Mis a jour le : {new Date(post.updatedAt).toLocaleDateString('fr-MA')}</span>
-          <span>Temps de lecture : {post.readTimeMinutes} min</span>
+          <span>{tf('blogArticlePage.publishedOn', 'Published on {date}', { date: new Date(post.publishedAt).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US') })}</span>
+          <span>{tf('blogArticlePage.updatedOn', 'Updated on {date}', { date: new Date(post.updatedAt).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US') })}</span>
+          <span>{tf('blogArticlePage.readTime', '{minutes} min read', { minutes: post.readTimeMinutes })}</span>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button asChild variant="outline">
             <Link href="/blog" className="inline-flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Retour au blog
+              {t('blogArticlePage.backToBlog', 'Back to blog')}
             </Link>
           </Button>
 
@@ -131,7 +134,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
             contentType="blog_post"
             contentId={post.slug}
             cardType="blog_detail"
-            label="Partager cet article"
+            label={t('blogArticlePage.shareArticle', 'Share this article')}
           />
         </div>
       </section>
@@ -228,7 +231,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
         <CardHeader>
           <CardTitle className="inline-flex items-center gap-2 text-xl">
             <Link2 className="h-5 w-5" />
-            Liens utiles
+            {t('blogArticlePage.usefulLinks', 'Useful links')}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
@@ -245,13 +248,13 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-xl">Guides similaires</CardTitle>
+          <CardTitle className="text-xl">{t('blogArticlePage.similarGuides', 'Similar guides')}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {related.map((item) => (
             <Link key={item.slug} href={`/blog/${item.slug}`} className="rounded-lg border border-border p-3 hover:bg-muted/30 transition-colors">
               <p className="font-medium">{item.title}</p>
-              <p className="text-xs text-muted-foreground mt-2">{item.readTimeMinutes} min de lecture</p>
+              <p className="text-xs text-muted-foreground mt-2">{tf('blogArticlePage.readTime', '{minutes} min read', { minutes: item.readTimeMinutes })}</p>
             </Link>
           ))}
         </CardContent>

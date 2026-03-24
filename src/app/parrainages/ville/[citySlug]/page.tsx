@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function ReferralCityPage({ params }: { params: Promise<Params> }) {
   const { t, tf, locale } = await getServerTranslator();
-  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
   const { citySlug } = await params;
   const city = getCityFromSlug(citySlug);
   if (!city) notFound();
@@ -82,7 +82,11 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
       <div className="space-y-2">
         <h1 className="text-3xl font-bold font-headline">{tf('referralCityPage.title', 'Referrals in {city}', { city })}</h1>
         <p className="text-sm text-muted-foreground">
-          {marketItems.length} item(s): {offers.length} offre(s), {demands.length} demande(s)
+          {tf('referralCityPage.marketBreakdown', '{total} item(s): {offers} offers, {demands} requests', {
+            total: marketItems.length,
+            offers: offers.length,
+            demands: demands.length,
+          })}
         </p>
       </div>
 
@@ -91,7 +95,7 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
       {marketItems.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
-            Aucune offre ni demande active pour cette ville.
+            {t('referralCityPage.emptyCombined', 'No active offers or requests for this city.')}
           </CardContent>
         </Card>
       ) : (
@@ -118,7 +122,7 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
             ) : (
               <Card key={`demand-${item.demand.id}`} className="rounded-2xl">
                 <CardHeader className="space-y-2">
-                  <Badge variant="secondary">Demande</Badge>
+                  <Badge variant="secondary">{t('referralCityPage.requestBadge', 'Request')}</Badge>
                   <CardTitle className="text-xl">{item.demand.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
@@ -130,7 +134,7 @@ export default async function ReferralCityPage({ params }: { params: Promise<Par
                     })}
                   </p>
                   <Button asChild variant="outline" className="w-full rounded-xl">
-                    <Link href={`/parrainages/demandes/${item.demand.id}`}>Voir la demande</Link>
+                    <Link href={`/parrainages/demandes/${item.demand.id}`}>{t('referralCityPage.viewRequest', 'View request')}</Link>
                   </Button>
                 </CardContent>
               </Card>

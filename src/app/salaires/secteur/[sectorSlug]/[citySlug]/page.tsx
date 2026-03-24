@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function SalarySectorCityPage({ params }: { params: Promise<Params> }) {
   const { t, tf, locale } = await getServerTranslator();
-  const numberLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const numberLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
   const dateLocale = numberLocale;
   const currencyLabel = t('salarySectorCityPage.common.currencyMad', 'MAD');
   const loginToUnlockText = t('salarySectorCityPage.common.loginToUnlock', 'Log in');

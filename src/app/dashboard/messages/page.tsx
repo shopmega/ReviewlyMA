@@ -217,7 +217,7 @@ export default function MessagesPage() {
                           >
                             <p className="text-sm leading-relaxed">{msg.content}</p>
                             <div className={cn('text-[9px] mt-2 opacity-60 font-medium whitespace-nowrap', msg.is_from_business ? 'text-right' : 'text-left')}>
-                              {new Date(msg.created_at).toLocaleTimeString(locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US', {
+                              {new Date(msg.created_at).toLocaleTimeString(locale === 'fr' ? 'fr-FR' : 'en-US', {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })}

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-type Locale = 'fr' | 'en' | 'ar';
+type Locale = 'fr' | 'en';
 
 const messages: Record<Locale, Record<string, string>> = {
   fr: {
@@ -16,13 +16,6 @@ const messages: Record<Locale, Record<string, string>> = {
     home: 'Retour a l accueil',
   },
   en: {
-    title: 'An error occurred',
-    description: 'An unexpected error occurred. Please try again or return to the home page.',
-    technical: 'Technical details (development)',
-    retry: 'Try again',
-    home: 'Back to home',
-  },
-  ar: {
     title: 'An error occurred',
     description: 'An unexpected error occurred. Please try again or return to the home page.',
     technical: 'Technical details (development)',
@@ -45,7 +38,7 @@ export default function Error({
   const locale: Locale = useMemo(() => {
     if (typeof document === 'undefined') return 'fr';
     const lang = document.documentElement.lang?.split('-')[0]?.toLowerCase();
-    if (lang === 'en' || lang === 'ar' || lang === 'fr') return lang;
+    if (lang === 'en' || lang === 'fr') return lang;
     return 'fr';
   }, []);
 

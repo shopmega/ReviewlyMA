@@ -32,7 +32,7 @@ function formatMoney(value: number | null | undefined, locale: string, currencyL
 
 export default async function SalariesIndexPage() {
   const { t, tf, locale } = await getServerTranslator();
-  const numberLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const numberLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
   const currencyLabel = t('salaryIndexPage.common.currencyMad', 'MAD');
   const previewLabel = t('salaryIndexPage.common.preview', 'Preview');
   const insufficientDataLabel = t('salaryIndexPage.common.insufficientData', 'Insufficient data');

@@ -14,6 +14,7 @@ import {
 import { sendEmail, emailTemplates } from '@/lib/email-service';
 import { getSiteSettings } from '@/lib/data';
 import { getServerSiteUrl, getSiteName } from '@/lib/site-config';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 
 
@@ -58,9 +59,24 @@ export async function createSupportTicket(
     category: SupportTicketCategory,
     businessId?: string
 ): Promise<ActionState> {
+    const { t } = await getServerTranslator();
     try {
         const supabase = await createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return createErrorResponse(
+                ErrorCode.AUTHENTICATION_ERROR,
+                t('supportActions.authRequired', 'You must be logged in to create a support ticket.')
+            );
+        }
+
+        if (!subject || !message || !category) {
+            return {
+                status: 'error',
+                message: t('supportActions.requiredFields', 'Please fill in all required fields.')
+            };
+        }
 
         if (authError || !user) {
             return createErrorResponse(
@@ -101,10 +117,18 @@ export async function createSupportTicket(
         revalidatePath('/dashboard/support');
 
         return createSuccessResponse(
+            t('supportActions.created', 'Your support ticket was created successfully. Our team will reply shortly.')
+        );
+
+        return createSuccessResponse(
             'Votre ticket a été créé avec succès. Notre équipe vous répondra dans les plus brefs délais.'
         );
     } catch (error) {
         logError('create_support_ticket_unexpected', error);
+        return createErrorResponse(
+            ErrorCode.SERVER_ERROR,
+            t('supportActions.createError', 'An error occurred while creating the support ticket.')
+        );
         return createErrorResponse(
             ErrorCode.SERVER_ERROR,
             'Une erreur est survenue lors de la création du ticket'

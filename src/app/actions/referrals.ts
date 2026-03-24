@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
 import { RATE_LIMIT_CONFIG, checkRateLimit, recordAttempt } from '@/lib/rate-limiter-enhanced';
 import { notifyAdmins } from '@/lib/notifications';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 const CONTRACT_TYPES = ['cdi', 'cdd', 'stage', 'freelance', 'alternance', 'autre'] as const;
 const WORK_MODES = ['onsite', 'hybrid', 'remote'] as const;
@@ -634,13 +635,14 @@ export async function updateReferralDemandListing(_prev: ActionState, formData: 
 }
 
 export async function requestReferral(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { t, tf } = await getServerTranslator();
   const supabase = await createClient();
   const { data: auth, error: authError } = await supabase.auth.getUser();
   const user = auth.user;
   if (authError || !user) {
     return {
       status: 'error',
-      message: 'Vous devez etre connecte pour demander un parrainage.',
+      message: t('referralRequestActions.authRequired', 'You must be logged in to request a referral.'),
       data: { authRequired: true },
     };
   }
@@ -655,7 +657,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   if (!parsed.success) {
     return {
       status: 'error',
-      message: 'Veuillez verifier votre demande.',
+      message: t('referralRequestActions.validationFailed', 'Please review your request.'),
       errors: parsed.error.flatten().fieldErrors as ActionState['errors'],
     };
   }
@@ -665,7 +667,9 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   if (limitCheck.isLimited) {
     return {
       status: 'error',
-      message: `Vous avez envoye trop de demandes. Reessayez dans ${Math.ceil(limitCheck.retryAfterSeconds / 60)} minute(s).`,
+      message: tf('referralRequestActions.rateLimited', 'You sent too many requests. Try again in {minutes} minute(s).', {
+        minutes: Math.ceil(limitCheck.retryAfterSeconds / 60),
+      }),
     };
   }
 
@@ -688,11 +692,11 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
     .single();
 
   if (offerError || !offer || offer.status !== 'active') {
-    return { status: 'error', message: "Cette offre n'est plus disponible." };
+    return { status: 'error', message: t('referralRequestActions.offerUnavailable', 'This offer is no longer available.') };
   }
 
   if (offer.user_id === user.id) {
-    return { status: 'error', message: 'Vous ne pouvez pas demander votre propre offre.' };
+    return { status: 'error', message: t('referralRequestActions.ownOffer', 'You cannot request your own offer.') };
   }
 
   const { data: blockedByOwner } = await supabase
@@ -703,7 +707,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
     .maybeSingle();
 
   if (blockedByOwner) {
-    return { status: 'error', message: "Vous ne pouvez plus contacter cet auteur d'offre." };
+    return { status: 'error', message: t('referralRequestActions.blockedByOwner', 'You can no longer contact this offer author.') };
   }
 
   const { data: blockedOwner } = await supabase
@@ -714,7 +718,7 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
     .maybeSingle();
 
   if (blockedOwner) {
-    return { status: 'error', message: "Debloquez d'abord cet utilisateur pour envoyer une demande." };
+    return { status: 'error', message: t('referralRequestActions.unblockRequired', 'Unblock this user first before sending a request.') };
   }
 
   const { error } = await supabase.from('job_referral_requests').insert({
@@ -730,16 +734,16 @@ export async function requestReferral(_prev: ActionState, formData: FormData): P
   if (error) {
     await recordAttempt(limitKey, RATE_LIMIT_CONFIG.report);
     if (error.code === '23505') {
-      return { status: 'error', message: 'Vous avez deja postule a cette offre.' };
+      return { status: 'error', message: t('referralRequestActions.duplicate', 'You already applied to this offer.') };
     }
-    return { status: 'error', message: "Impossible d'envoyer votre demande pour le moment." };
+    return { status: 'error', message: t('referralRequestActions.submitError', 'Unable to send your request right now.') };
   }
 
   revalidatePath('/parrainages');
   revalidatePath(`/parrainages/${parsed.data.offerId}`);
   await recomputeOfferMetrics(parsed.data.offerId);
   await notifyUser(offer.user_id, 'Nouvelle demande de parrainage', 'Un candidat a envoye une demande sur votre offre.', `/parrainages/${parsed.data.offerId}`);
-  return { status: 'success', message: 'Votre demande de parrainage a ete envoyee.' };
+  return { status: 'success', message: t('referralRequestActions.success', 'Your referral request has been sent.') };
 }
 
 export async function updateMyReferralOfferStatus(_prev: ActionState, formData: FormData): Promise<ActionState> {

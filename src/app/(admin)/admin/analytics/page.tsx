@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
   const [selectedMetric, setSelectedMetric] = useState('overview');
   const { t, tf, locale } = useI18n();
 
-  const numberLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const numberLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
   const numberFormatter = useMemo(() => new Intl.NumberFormat(numberLocale), [numberLocale]);
   const formatMad = (value: number) => `${numberFormatter.format(value)} MAD`;
 

@@ -53,7 +53,7 @@ export default function SupportPage() {
     businessId: '',
   });
 
-  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 
   const supportCategories: { value: SupportTicketCategory; label: string }[] = useMemo(
     () => [
@@ -124,7 +124,7 @@ export default function SupportPage() {
       if (result.status === 'success') {
         toast({
           title: t('dashboardSupportPage.ticketCreated', 'Ticket created'),
-          description: t('dashboardSupportPage.ticketCreatedDesc', 'Your support request has been submitted.'),
+          description: result.message || t('dashboardSupportPage.ticketCreatedDesc', 'Your support request has been submitted.'),
         });
 
         setNewTicket({
@@ -137,7 +137,7 @@ export default function SupportPage() {
       } else {
         toast({
           title: t('dashboardSupportPage.errorTitle', 'Error'),
-          description: t('dashboardSupportPage.submitError', 'Unable to submit your request.'),
+          description: result.message || t('dashboardSupportPage.submitError', 'Unable to submit your request.'),
           variant: 'destructive',
         });
       }

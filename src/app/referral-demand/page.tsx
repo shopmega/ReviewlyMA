@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
 import { PageIntro } from '@/components/shared/PageIntro';
 import { MetricCard } from '@/components/shared/MetricCard';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type DemandListingSnapshot = {
   id: string;
@@ -69,11 +70,11 @@ function getMonthWindowStats(createdAtValues: string[]) {
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
   const siteUrl = getServerSiteUrl();
   return {
-    title: 'Referral Demand Dashboard | Reviewly',
-    description:
-      'Track live referral demand, top roles, top cities, and hiring momentum across the market.',
+    title: `${t('referralDemandPage.metaTitle', 'Referral demand dashboard')} | Reviewly`,
+    description: t('referralDemandPage.metaDescription', 'Track live referral demand, top roles, top cities, and hiring momentum across the market.'),
     alternates: {
       canonical: `${siteUrl}/referral-demand`,
     },
@@ -81,6 +82,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ReferralDemandDashboardPage() {
+  const { locale, t, tf } = await getServerTranslator();
   const supabase = await createClient();
   const refreshedAt = new Date();
 
@@ -99,23 +101,23 @@ export default async function ReferralDemandDashboardPage() {
     return expiresAt > now;
   });
 
-  const topRoles = topBuckets(activeListings.map((item) => toDisplayValue(item.target_role, 'Role non specifie')), 8);
-  const topCities = topBuckets(activeListings.map((item) => toDisplayValue(item.city, 'Ville non specifiee')), 8);
-  const topWorkModes = topBuckets(activeListings.map((item) => toDisplayValue(item.work_mode, 'Mode non specifie')), 3);
+  const topRoles = topBuckets(activeListings.map((item) => toDisplayValue(item.target_role, t('referralDemandPage.roleUnknown', 'Role not specified'))), 8);
+  const topCities = topBuckets(activeListings.map((item) => toDisplayValue(item.city, t('referralDemandPage.cityUnknown', 'City not specified'))), 8);
+  const topWorkModes = topBuckets(activeListings.map((item) => toDisplayValue(item.work_mode, t('referralDemandPage.modeUnknown', 'Work mode not specified'))), 3);
   const trend = getMonthWindowStats(activeListings.map((item) => item.created_at));
   const latest = activeListings.slice(0, 10);
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <PageIntro
-        badge={<Badge variant="outline" className="w-fit">Referral Demand Intelligence</Badge>}
-        title="Live referral demand dashboard"
-        description="Track where referral demand is growing, which roles are requested most often, and which cities are moving right now. Use these signals alongside salary guides and company reviews to target your next application."
-        meta={<p className="text-xs text-muted-foreground">Last refreshed: {refreshedAt.toLocaleString('fr-MA')}</p>}
+        badge={<Badge variant="outline" className="w-fit">{t('referralDemandPage.badge', 'Referral demand intelligence')}</Badge>}
+        title={t('referralDemandPage.title', 'Live referral demand dashboard')}
+        description={t('referralDemandPage.description', 'Track where referral demand is growing, which roles are requested most often, and which cities are moving right now. Use these signals alongside salary guides and company reviews to target your next application.')}
+        meta={<p className="text-xs text-muted-foreground">{tf('referralDemandPage.lastRefreshed', 'Last refreshed: {date}', { date: refreshedAt.toLocaleString(locale === 'fr' ? 'fr-MA' : 'en-US') })}</p>}
         actions={
           <>
             <Button asChild className="rounded-xl">
-              <Link href="/parrainages/demandes">Voir le demand board</Link>
+              <Link href="/parrainages/demandes">{t('referralDemandPage.viewDemandBoard', 'View the demand board')}</Link>
             </Button>
             <Button asChild variant="secondary" className="rounded-xl">
               <Link href="/referral-demand/roles">Top roles</Link>
@@ -124,10 +126,10 @@ export default async function ReferralDemandDashboardPage() {
               <Link href="/referral-demand/cities">Top cities</Link>
             </Button>
             <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/parrainages/demandes/new">Publier une demande</Link>
+              <Link href="/parrainages/demandes/new">{t('referralDemandPage.publishDemand', 'Publish a demand listing')}</Link>
             </Button>
             <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/parrainages">Voir les offres de parrainage</Link>
+              <Link href="/parrainages">{t('referralDemandPage.viewReferralOffers', 'View referral offers')}</Link>
             </Button>
           </>
         }
@@ -136,7 +138,7 @@ export default async function ReferralDemandDashboardPage() {
       <InternalAdsSlot placement="referrals_top_banner" />
 
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <MetricCard title="Active listings" value={String(activeListings.length)} icon={Users2} />
+        <MetricCard title={t('referralDemandPage.activeListings', 'Active listings')} value={String(activeListings.length)} icon={Users2} />
         <MetricCard title={`Last ${WINDOW_DAYS} days`} value={String(trend.current)} icon={TrendingUp} />
         <MetricCard title="Change vs previous" value={`${trend.pctChange}%`} icon={BarChart3} />
         <MetricCard
@@ -150,11 +152,11 @@ export default async function ReferralDemandDashboardPage() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-lg">Top roles</CardTitle>
+            <CardTitle className="text-lg">{t('referralDemandPage.topRoles', 'Top roles')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {topRoles.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucune donnee disponible.</p>
+              <p className="text-sm text-muted-foreground">{t('referralDemandPage.noData', 'No data available.')}</p>
             ) : (
               topRoles.map((item) => (
                 <div key={item.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
@@ -168,11 +170,11 @@ export default async function ReferralDemandDashboardPage() {
 
         <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-lg">Top cities</CardTitle>
+            <CardTitle className="text-lg">{t('referralDemandPage.topCities', 'Top cities')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {topCities.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucune donnee disponible.</p>
+              <p className="text-sm text-muted-foreground">{t('referralDemandPage.noData', 'No data available.')}</p>
             ) : (
               topCities.map((item) => (
                 <div key={item.label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
@@ -190,24 +192,24 @@ export default async function ReferralDemandDashboardPage() {
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg">Latest demand listings</CardTitle>
+          <CardTitle className="text-lg">{t('referralDemandPage.latestDemandListings', 'Latest demand listings')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {latest.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune demande active actuellement.</p>
+            <p className="text-sm text-muted-foreground">{t('referralDemandPage.noActiveDemand', 'No active demand listings right now.')}</p>
           ) : (
             latest.map((item) => (
               <div key={item.id} className="flex flex-col gap-2 rounded-lg border border-border px-4 py-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="font-medium">{item.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {toDisplayValue(item.target_role, 'Role non specifie')} | {toDisplayValue(item.city, 'Ville non specifiee')} |
-                    {' '}Publiee le {new Date(item.created_at).toLocaleDateString('fr-MA')}
+                    {toDisplayValue(item.target_role, t('referralDemandPage.roleUnknown', 'Role not specified'))} | {toDisplayValue(item.city, t('referralDemandPage.cityUnknown', 'City not specified'))} |
+                    {' '}{tf('referralDemandPage.publishedOn', 'Published on {date}', { date: new Date(item.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US') })}
                   </p>
                 </div>
                 <Button asChild variant="outline" size="sm" className="w-fit rounded-lg">
                   <Link href={`/parrainages/demandes/${item.id}`} className="inline-flex items-center gap-2">
-                    Voir la demande
+                    {t('referralDemandPage.viewDemand', 'View demand listing')}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -219,7 +221,7 @@ export default async function ReferralDemandDashboardPage() {
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg">Related research</CardTitle>
+          <CardTitle className="text-lg">{t('referralDemandPage.relatedResearch', 'Related research')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild variant="outline">

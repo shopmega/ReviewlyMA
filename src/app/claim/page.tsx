@@ -35,7 +35,7 @@ export default function ClaimPage() {
   const [existingClaim, setExistingClaim] = useState<any>(null);
   const router = useRouter();
   const { t, tf, locale } = useI18n();
-  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 
   useEffect(() => {
     const fetchSiteSettings = async () => {

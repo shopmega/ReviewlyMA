@@ -16,6 +16,7 @@ import {
 import { useBusiness } from '@/contexts/BusinessContext';
 import Link from 'next/link';
 import { buildDashboardBusinessHref } from '@/lib/dashboard-business-routing';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 interface BusinessSelectorProps {
   variant?: 'header' | 'card' | 'dropdown';
@@ -39,6 +40,7 @@ export function BusinessSelector({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const requestedBusinessId = searchParams.get('id');
   const activeBusiness =
     (requestedBusinessId
@@ -53,7 +55,7 @@ export function BusinessSelector({
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <Store className="h-4 w-4" />
-        <span>No business</span>
+        <span>{t('businessSelector.none', 'Aucune entreprise')}</span>
       </div>
     );
   }
@@ -87,7 +89,7 @@ export function BusinessSelector({
                   <span className="truncate">{activeBusiness.name}</span>
                   {activeBusiness.isPrimary && (
                     <Badge variant="secondary" className="text-xs">
-                      Primary
+                      {t('businessSelector.primary', 'Principale')}
                     </Badge>
                   )}
                 </div>
@@ -101,7 +103,7 @@ export function BusinessSelector({
                     <span>{business.name}</span>
                     {business.isPrimary && (
                       <Badge variant="secondary" className="text-xs">
-                        Primary
+                        {t('businessSelector.primary', 'Principale')}
                       </Badge>
                     )}
                   </div>
@@ -137,11 +139,11 @@ export function BusinessSelector({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Store className="h-5 w-5" />
-                <h3 className="font-semibold">Business Management</h3>
+                <h3 className="font-semibold">{t('businessSelector.title', 'Gestion des entreprises')}</h3>
               </div>
               {isMultiBusiness && (
                 <Badge variant="outline" className="text-xs">
-                  {allBusinesses.length} Businesses
+                  {t('businessSelector.count', '{count} entreprises').replace('{count}', String(allBusinesses.length))}
                 </Badge>
               )}
             </div>
@@ -162,7 +164,7 @@ export function BusinessSelector({
                       <p className="font-medium">{business.name}</p>
                       {business.isPrimary && (
                         <Badge variant="secondary" className="text-xs mt-1">
-                          Primary
+                          {t('businessSelector.primary', 'Principale')}
                         </Badge>
                       )}
                     </div>
@@ -175,7 +177,7 @@ export function BusinessSelector({
                         variant="outline"
                         onClick={() => handleSwitch(business.id)}
                       >
-                        Switch
+                        {t('businessSelector.switch', 'Basculer')}
                       </Button>
                     )}
                     
@@ -204,7 +206,7 @@ export function BusinessSelector({
                 <Button asChild className="w-full">
                   <Link href="/claim">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Business
+                      {t('businessSelector.add', 'Ajouter une entreprise')}
                   </Link>
                 </Button>
               </div>

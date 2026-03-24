@@ -118,7 +118,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function ReferralDemandDetailPage({ params }: { params: Promise<Params> }) {
   const { t, tf, locale } = await getServerTranslator();
-  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
   const { id } = await params;
   const siteUrl = getServerSiteUrl();
   const item = await getDemandListingById(id);

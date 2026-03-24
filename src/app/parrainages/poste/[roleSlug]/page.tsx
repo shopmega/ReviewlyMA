@@ -45,7 +45,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ReferralRolePage({ params }: { params: Promise<Params> }) {
-  const { t, tf } = await getServerTranslator();
+  const { t, tf, locale } = await getServerTranslator();
+  const dateLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
   const { roleSlug } = await params;
   const supabase = await createClient();
   const { data: offersData } = await supabase
@@ -78,7 +79,11 @@ export default async function ReferralRolePage({ params }: { params: Promise<Par
       <div className="space-y-2">
         <h1 className="text-3xl font-bold font-headline">{tf('referralRolePage.title', 'Referrals for {role}', { role: roleTitle })}</h1>
         <p className="text-sm text-muted-foreground">
-          {marketItems.length} item(s): {offers.length} offre(s), {demands.length} demande(s)
+          {tf('referralRolePage.marketBreakdown', '{total} item(s): {offers} offers, {demands} requests', {
+            total: marketItems.length,
+            offers: offers.length,
+            demands: demands.length,
+          })}
         </p>
       </div>
 
@@ -87,7 +92,7 @@ export default async function ReferralRolePage({ params }: { params: Promise<Par
       {marketItems.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
-            Aucune offre ni demande active pour ce poste.
+            {t('referralRolePage.emptyCombined', 'No active offers or requests for this role.')}
           </CardContent>
         </Card>
       ) : (
@@ -102,6 +107,11 @@ export default async function ReferralRolePage({ params }: { params: Promise<Par
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <p>{item.offer.city || t('referralRolePage.cityUnknown', 'City not specified')}</p>
                   <p>{tf('referralRolePage.slots', 'Slots: {count}', { count: item.offer.slots })}</p>
+                  <p>
+                    {tf('referralRolePage.publishedOn', 'Published on {date}', {
+                      date: new Date(item.offer.created_at).toLocaleDateString(dateLocale),
+                    })}
+                  </p>
                   <Button asChild variant="outline" className="w-full rounded-xl">
                     <Link href={`/parrainages/${item.offer.id}`}>{t('referralRolePage.viewOffer', 'View offer')}</Link>
                   </Button>
@@ -110,15 +120,20 @@ export default async function ReferralRolePage({ params }: { params: Promise<Par
             ) : (
               <Card key={`demand-${item.demand.id}`} className="rounded-2xl">
                 <CardHeader className="space-y-2">
-                  <Badge variant="secondary">Demande</Badge>
+                  <Badge variant="secondary">{t('referralRolePage.requestBadge', 'Request')}</Badge>
                   <CardTitle className="text-xl">{item.demand.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <p>{item.demand.target_role}</p>
                   <p>{item.demand.city || t('referralRolePage.cityUnknown', 'City not specified')}</p>
                   <p className="line-clamp-3">{item.demand.summary}</p>
+                  <p>
+                    {tf('referralRolePage.publishedOn', 'Published on {date}', {
+                      date: new Date(item.demand.created_at).toLocaleDateString(dateLocale),
+                    })}
+                  </p>
                   <Button asChild variant="outline" className="w-full rounded-xl">
-                    <Link href={`/parrainages/demandes/${item.demand.id}`}>Voir la demande</Link>
+                    <Link href={`/parrainages/demandes/${item.demand.id}`}>{t('referralRolePage.viewRequest', 'View request')}</Link>
                   </Button>
                 </CardContent>
               </Card>

@@ -1,9 +1,20 @@
 'use client';
 
+import Link from 'next/link';
+import {
+    Pencil,
+    MessageSquare,
+    Briefcase,
+    MessageCircle,
+    ExternalLink,
+    Flag,
+    ShieldCheck,
+    Wallet,
+    Star,
+    BarChart3,
+} from 'lucide-react';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Pencil, MessageSquare, Briefcase, MessageCircle, ExternalLink, Flag, ShieldCheck, Wallet, Star, BarChart3 } from 'lucide-react';
 import { ContactBusinessDialog } from '@/components/shared/ContactBusinessDialog';
 import { ShareButton } from '@/components/shared/ShareButton';
 import { FollowButton } from '@/components/shared/FollowButton';
@@ -11,6 +22,7 @@ import { BusinessReportDialog } from '@/components/shared/BusinessReportDialog';
 import { Business } from '@/lib/types';
 import { isPaidTier } from '@/lib/tier-utils';
 import { analytics } from '@/lib/analytics';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 interface BusinessPageActionsProps {
     business: Business;
@@ -19,11 +31,12 @@ interface BusinessPageActionsProps {
 
 export function BusinessPageActions({ business, isFollowing }: BusinessPageActionsProps) {
     const { businessId: userBusinessId, loading } = useBusinessProfile();
+    const { t } = useI18n();
     const ctaExperiment = 'business_profile_actions_v1';
 
-    // Strict check: User owns THIS business (IDs match)
     const isOwner = !loading && userBusinessId === business.id;
     const canClaimBusiness = !isOwner && !business.owner_id && !business.is_claimed;
+
     const trackBusinessCta = (ctaId: string, placement: string, extra: Record<string, any> = {}) => {
         analytics.trackCtaClick(
             ctaId,
@@ -37,42 +50,41 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
     };
 
     return (
-        <div className="flex w-full flex-wrap items-center justify-center lg:justify-start gap-2 lg:mt-0">
+        <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:justify-start lg:mt-0">
             {isOwner ? (
                 <Button variant="default" className="h-11 px-6 rounded-full font-bold shadow-sm max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                     <Link href="/dashboard" className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />
-                        Gérer
+                        {t('businessActions.manage', 'Gerer')}
                     </Link>
                 </Button>
             ) : (
                 <>
-                    {/* Primary Action: Review */}
                     <Button className="h-11 px-6 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                         <Link href={`/businesses/${business.id}/review`} className="flex items-center gap-2" onClick={() => trackBusinessCta('write_review', 'action_bar_primary')}>
                             <Pencil className="w-4 h-4" />
-                            <span>Donner mon avis</span>
+                            <span>{t('businessActions.writeReview', 'Donner mon avis')}</span>
                         </Link>
                     </Button>
 
                     <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                         <Link href={`/businesses/${business.id}?tab=salaries&shareSalary=1#salaries`} className="flex items-center gap-2" onClick={() => trackBusinessCta('share_salary', 'action_bar_secondary')}>
                             <Wallet className="w-4 h-4" />
-                            <span>Partager salaire</span>
+                            <span>{t('businessActions.shareSalary', 'Partager salaire')}</span>
                         </Link>
                     </Button>
 
                     <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                         <Link href={`/businesses/${business.id}?tab=reviews#insights`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_reviews', 'action_bar_secondary')}>
                             <Star className="w-4 h-4" />
-                            <span>Voir avis</span>
+                            <span>{t('businessActions.viewReviews', 'Voir avis')}</span>
                         </Link>
                     </Button>
 
                     <Button variant="outline" className="h-11 px-6 rounded-full font-semibold max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                         <Link href={`/businesses/${business.id}?tab=salaries#salaries`} className="flex items-center gap-2" onClick={() => trackBusinessCta('view_salaries', 'action_bar_secondary')}>
                             <BarChart3 className="w-4 h-4" />
-                            <span>Voir salaires</span>
+                            <span>{t('businessActions.viewSalaries', 'Voir salaires')}</span>
                         </Link>
                     </Button>
 
@@ -80,12 +92,11 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                         <Button variant="ghost" className="h-11 px-6 rounded-full border border-primary/30 text-primary hover:bg-primary/5 max-sm:flex-1 max-sm:min-w-[140px]" asChild>
                             <Link href={`/claim/new?businessId=${business.id}`} className="flex items-center gap-2" onClick={() => trackBusinessCta('claim_listing', 'action_bar_secondary')}>
                                 <ShieldCheck className="w-4 h-4" />
-                                <span>Revendiquer cette fiche</span>
+                                <span>{t('businessActions.claim', 'Revendiquer cette fiche')}</span>
                             </Link>
                         </Button>
                     )}
 
-                    {/* PREMIUM Actions: WhatsApp or Affiliate - ALL PAID TIERS (Growth & Gold) */}
                     {isPaidTier(business.tier || 'standard') && (
                         <>
                             {business.whatsapp_number && (
@@ -113,14 +124,13 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                                         onClick={() => trackBusinessCta('affiliate_click', 'action_bar_premium')}
                                     >
                                         <ExternalLink className="w-4 h-4" />
-                                        <span>{business.affiliate_cta || 'Réserver'}</span>
+                                        <span>{business.affiliate_cta || t('businessActions.book', 'Reserver')}</span>
                                     </Link>
                                 </Button>
                             )}
                         </>
                     )}
 
-                    {/* Fallback Contact for Premium (if no WhatsApp/Affiliate took slot) */}
                     {!business.whatsapp_number && !business.affiliate_link && business.is_premium && (
                         <ContactBusinessDialog
                             businessId={business.id}
@@ -128,7 +138,7 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                             trigger={
                                 <Button variant="outline" className="h-11 px-6 rounded-full backdrop-blur-md transition-all max-sm:flex-1 max-sm:min-w-[140px]" onClick={() => trackBusinessCta('direct_message', 'action_bar_premium')}>
                                     <MessageSquare className="w-4 h-4 mr-2" />
-                                    <span>Message</span>
+                                    <span>{t('businessActions.message', 'Message')}</span>
                                 </Button>
                             }
                         />
@@ -136,7 +146,6 @@ export function BusinessPageActions({ business, isFollowing }: BusinessPageActio
                 </>
             )}
 
-            {/* Icon Actions Group */}
             <div className="flex items-center justify-center gap-2 w-full sm:w-auto sm:ml-1">
                 <FollowButton
                     businessId={business.id}

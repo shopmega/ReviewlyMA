@@ -84,7 +84,7 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
         });
         const body = await response.json();
         if (!response.ok) {
-          setSearchError('Recherche indisponible. Continuez en saisie manuelle.');
+          setSearchError(t('referrals.form.searchUnavailable', 'Search is unavailable. Continue with manual entry.'));
           setSuggestions([]);
           return;
         }
@@ -100,7 +100,7 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
         setSuggestions(next);
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
-          setSearchError('Recherche indisponible. Continuez en saisie manuelle.');
+          setSearchError(t('referrals.form.searchUnavailable', 'Search is unavailable. Continue with manual entry.'));
           setSuggestions([]);
         }
       } finally {
@@ -354,7 +354,7 @@ export function OfferCreateForm({ businessOptions }: { businessOptions: Business
               <span>{t('referrals.form.footerHint', "Les candidats vous contacteront depuis la page de l'offre.")}</span>
             </div>
             <p className="mt-2 text-xs text-amber-800">
-              Rappel securite: ne demandez jamais d&apos;argent, ne forcez pas un contact WhatsApp/Telegram externe.
+              {t('referrals.form.securityReminder', "Security reminder: never ask for money and do not force applicants to move to external WhatsApp or Telegram contact.")}
             </p>
           </div>
 

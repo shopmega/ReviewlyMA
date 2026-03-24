@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { company: string };
 
@@ -184,6 +185,7 @@ function calculateCompanySentiment(rows: ReviewSentimentRow[]) {
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t, tf } = await getServerTranslator();
   const { company } = await params;
   const offers = await fetchCompanyOffers(company);
   const companyLabel = offers[0]?.company_name || displayFromSlug(company);
@@ -195,8 +197,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const canonicalTarget = PREFER_NEW_COMPANY_ROUTE_CANONICAL ? canonicalNew : canonicalLegacy;
 
   return {
-    title: `${companyLabel} referrals | Reviewly`,
-    description: `Active referral offers for ${companyLabel}, including role, city, trust, and review sentiment signals.`,
+    title: tf('companyReferralsPage.metaTitle', '{company} referrals | Reviewly', { company: companyLabel }),
+    description: tf(
+      'companyReferralsPage.metaDescription',
+      'Active referral offers for {company}, including role, city, trust, and review sentiment signals.',
+      { company: companyLabel }
+    ),
     alternates: {
       canonical: canonicalTarget,
     },
@@ -208,6 +214,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function CompanyReferralsPage({ params }: { params: Promise<Params> }) {
+  const { locale, t, tf } = await getServerTranslator();
   const { company } = await params;
   const offers = await fetchCompanyOffers(company);
   if (offers.length === 0) {
@@ -228,22 +235,24 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-        <Badge variant="outline" className="w-fit">Company Referral Page</Badge>
-        <h1 className="text-3xl md:text-4xl font-bold font-headline">Referrals at {companyLabel}</h1>
+        <Badge variant="outline" className="w-fit">{t('companyReferralsPage.badge', 'Company referrals')}</Badge>
+        <h1 className="text-3xl md:text-4xl font-bold font-headline">
+          {tf('companyReferralsPage.title', 'Referrals at {company}', { company: companyLabel })}
+        </h1>
         <p className="text-muted-foreground max-w-3xl">
-          {offers.length} active offer(s) currently available for this company.
+          {tf('companyReferralsPage.activeOffersSentence', '{count} active offers currently available for this company.', { count: offers.length })}
         </p>
         {!shouldIndex && (
           <p className="text-xs text-muted-foreground">
-            Transitional SEO mode: indexing is gated until route cutover flags are enabled.
+            {t('companyReferralsPage.noindexNotice', 'This page remains noindex until the route cutover flags are enabled.')}
           </p>
         )}
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href={canonicalPath}>Open canonical company page</Link>
+            <Link href={canonicalPath}>{t('companyReferralsPage.openCanonical', 'Open canonical company page')}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/companies">Back to company hub</Link>
+            <Link href="/companies">{t('companyReferralsPage.backToHub', 'Back to company hub')}</Link>
           </Button>
         </div>
       </section>
@@ -253,7 +262,7 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 className="h-4 w-4" />
-              Active offers
+              {t('companyReferralsPage.activeOffers', 'Active offers')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{offers.length}</CardContent>
@@ -262,7 +271,7 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck className="h-4 w-4" />
-              Avg trust score
+              {t('companyReferralsPage.avgTrustScore', 'Average trust score')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{Number.isFinite(avgTrustScore) ? Math.round(avgTrustScore) : 0}</CardContent>
@@ -271,13 +280,13 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Clock3 className="h-4 w-4" />
-              Threshold status
+              {t('companyReferralsPage.thresholdStatus', 'Threshold status')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
             {hasEnoughData
-              ? `Passes data threshold (${MIN_INDEXABLE_COMPANY_REFERRAL_OFFERS}+ offers).`
-              : `Needs ${MIN_INDEXABLE_COMPANY_REFERRAL_OFFERS - offers.length} more offer(s) to pass threshold.`}
+              ? tf('companyReferralsPage.thresholdPassed', 'Passes data threshold ({count}+ offers).', { count: MIN_INDEXABLE_COMPANY_REFERRAL_OFFERS })
+              : tf('companyReferralsPage.thresholdRemaining', 'Needs {count} more offers to pass threshold.', { count: MIN_INDEXABLE_COMPANY_REFERRAL_OFFERS - offers.length })}
           </CardContent>
         </Card>
       </section>
@@ -287,7 +296,7 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Users2 className="h-4 w-4" />
-              Review sample
+              {t('companyReferralsPage.reviewSample', 'Review sample')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{sentiment.sampleSize}</CardContent>
@@ -296,44 +305,44 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck className="h-4 w-4" />
-              Avg rating
+              {t('companyReferralsPage.avgRating', 'Average rating')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">
-            {sentiment.hasEnoughSample && sentiment.averageRating !== null ? `${sentiment.averageRating}/5` : 'N/A'}
+            {sentiment.hasEnoughSample && sentiment.averageRating !== null ? `${sentiment.averageRating}/5` : t('companyReferralsPage.notAvailable', 'N/A')}
           </CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4" />
-              90-day review momentum
+              {t('companyReferralsPage.reviewMomentum', '90-day review momentum')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">
-            {sentiment.hasEnoughSample && sentiment.momentumPct !== null ? `${sentiment.momentumPct}%` : 'N/A'}
+            {sentiment.hasEnoughSample && sentiment.momentumPct !== null ? `${sentiment.momentumPct}%` : t('companyReferralsPage.notAvailable', 'N/A')}
           </CardContent>
         </Card>
       </section>
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg">Review sentiment summary (aggregated)</CardTitle>
+          <CardTitle className="text-lg">{t('companyReferralsPage.sentimentTitle', 'Review sentiment summary')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           {businessIds.length === 0 ? (
-            <p>No linked business IDs were found on current offers, so review sentiment cannot be aggregated yet.</p>
+            <p>{t('companyReferralsPage.noBusinessIds', 'No linked business IDs were found on current offers, so review sentiment cannot be aggregated yet.')}</p>
           ) : !sentiment.hasEnoughSample ? (
             <p>
-              Sentiment hidden due to low sample size. Minimum {MIN_SENTIMENT_SAMPLE_SIZE} published reviews required.
+              {tf('companyReferralsPage.lowSampleNotice', 'Sentiment hidden due to low sample size. Minimum {count} published reviews required.', { count: MIN_SENTIMENT_SAMPLE_SIZE })}
             </p>
           ) : (
             <>
-              <p>Positive-share (ratings 4-5): {sentiment.positiveSharePct}%</p>
-              <p>Would-recommend rate: {sentiment.recommendRatePct ?? 'N/A'}%</p>
+              <p>{t('companyReferralsPage.positiveShare', 'Positive share (ratings 4-5)')}: {sentiment.positiveSharePct}%</p>
+              <p>{t('companyReferralsPage.recommendRate', 'Would-recommend rate')}: {sentiment.recommendRatePct ?? t('companyReferralsPage.notAvailable', 'N/A')}%</p>
               <p>
-                Published reviews last 90 days: {sentiment.last90Count}
-                {' '}| previous 90 days: {sentiment.previous90Count}
+                {t('companyReferralsPage.last90Days', 'Published reviews last 90 days')}: {sentiment.last90Count}
+                {' '}| {t('companyReferralsPage.previous90Days', 'previous 90 days')}: {sentiment.previous90Count}
               </p>
             </>
           )}
@@ -342,7 +351,7 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg">Latest company offers</CardTitle>
+          <CardTitle className="text-lg">{t('companyReferralsPage.latestOffers', 'Latest company offers')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {offers.map((offer) => (
@@ -353,12 +362,12 @@ export default async function CompanyReferralsPage({ params }: { params: Promise
               <div>
                 <p className="font-medium">{offer.job_title}</p>
                 <p className="text-xs text-muted-foreground">
-                  {offer.city || 'Ville non precisee'} | Slots: {offer.slots} | {new Date(offer.created_at).toLocaleDateString('fr-MA')}
+                  {offer.city || t('companyReferralsPage.cityUnavailable', 'City unavailable')} | {t('companyReferralsPage.slots', 'Slots')}: {offer.slots} | {new Date(offer.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                 </p>
               </div>
               <Button asChild variant="outline" className="w-fit">
                 <Link href={`/parrainages/${offer.id}`} className="inline-flex items-center gap-2">
-                  View offer
+                  {t('companyReferralsPage.viewOffer', 'View offer')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

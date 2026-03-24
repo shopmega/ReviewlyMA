@@ -14,8 +14,10 @@ import {
     sanitizeBusinessMediaPath,
 } from '@/lib/business-media';
 import sanitizer from '@/lib/sanitizer';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 export async function suggestBusiness(formData: FormData): Promise<ActionState> {
+    const { t } = await getServerTranslator();
     const cookieStore = await cookies();
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,11 +45,14 @@ export async function suggestBusiness(formData: FormData): Promise<ActionState> 
     const location = formData.get('address') as string; // Form field is 'address' but DB column is 'location'
 
     if (!name || !category || !city) {
-        return { status: 'error', message: 'Veuillez remplir les champs obligatoires.' };
+        return { status: 'error', message: t('suggestBusinessActions.requiredFields', 'Please fill in the required fields.') };
     }
 
     // Check if user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { status: 'error', message: t('suggestBusinessActions.authRequired', 'You must be logged in to suggest a company.') };
+    }
     if (!user) {
         return { status: 'error', message: 'Vous devez être connecté pour suggérer une entreprise.' };
     }
@@ -72,8 +77,14 @@ export async function suggestBusiness(formData: FormData): Promise<ActionState> 
 
         if (error) {
             console.error('Error creating business suggestion:', error);
+            return { status: 'error', message: t('suggestBusinessActions.submitError', 'An error occurred while submitting the company suggestion.') };
             return { status: 'error', message: 'Erreur lors de la suggestion de l\'établissement.' };
         }
+
+        return {
+            status: 'success',
+            message: t('suggestBusinessActions.success', 'Company suggestion sent successfully. Our team will review it.')
+        };
 
         return {
             status: 'success',
@@ -81,6 +92,7 @@ export async function suggestBusiness(formData: FormData): Promise<ActionState> 
         };
     } catch (error) {
         console.error('Server error proposing business:', error);
+        return { status: 'error', message: t('suggestBusinessActions.unexpectedError', 'An unexpected error occurred.') };
         return { status: 'error', message: 'Une erreur inattendue est survenue.' };
     }
 }

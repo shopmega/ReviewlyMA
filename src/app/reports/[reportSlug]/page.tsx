@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageIntro } from '@/components/shared/PageIntro';
 import { MetricCard } from '@/components/shared/MetricCard';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = { reportSlug: string };
 
@@ -117,23 +118,25 @@ async function fetchMonthlyReportData(reportSlug: string) {
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t, tf } = await getServerTranslator();
   const { reportSlug } = await params;
   const parsed = parseMonthlyReferralReportSlug(reportSlug);
   if (!parsed) {
-    return { title: 'Report | Reviewly' };
+    return { title: t('monthlyReportPage.fallbackTitle', 'Report | Reviewly') };
   }
 
   const monthLabel = formatReportMonthLabel(parsed.reportDateUtc);
   const siteUrl = getServerSiteUrl();
 
   return {
-    title: `Monthly referral report: ${monthLabel} | Reviewly`,
-    description: `Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`,
+    title: tf('monthlyReportPage.metaTitle', 'Monthly referral report: {month} | Reviewly', { month: monthLabel }),
+    description: tf('monthlyReportPage.metaDescription', 'Referral demand, top roles, top cities, and company offer signals for {month}.', { month: monthLabel }),
     alternates: { canonical: `${siteUrl}/reports/${reportSlug}` },
   };
 }
 
 export default async function MonthlyReferralReportPage({ params }: { params: Promise<Params> }) {
+  const { t, tf } = await getServerTranslator();
   const { reportSlug } = await params;
   const data = await fetchMonthlyReportData(reportSlug);
   if (!data) {
@@ -163,30 +166,33 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <PageIntro
-        badge={<Badge variant="outline" className="w-fit">Monthly Referral Report</Badge>}
-        title={`Monthly referral report: ${monthLabel}`}
+        badge={<Badge variant="outline" className="w-fit">{t('monthlyReportPage.badge', 'Monthly referral report')}</Badge>}
+        title={tf('monthlyReportPage.title', 'Monthly referral report: {month}', { month: monthLabel })}
         description={
           <>
-            Snapshot of referral demand and offer-side activity for this month. Data source mode:{' '}
-            {usingServiceRole ? 'full historical (service role)' : 'public active scope'}.
+            {t('monthlyReportPage.descriptionPrefix', 'Snapshot of referral demand and offer-side activity for this month. Data source mode:')}{' '}
+            {usingServiceRole
+              ? t('monthlyReportPage.sourceModeFull', 'full historical (service role)')
+              : t('monthlyReportPage.sourceModePublic', 'public active scope')}
+            .
           </>
         }
         actions={
           <>
             <Button asChild>
-              <Link href="/referral-demand">Open referral-demand dashboard</Link>
+              <Link href="/referral-demand">{t('monthlyReportPage.openDashboard', 'Open referral-demand dashboard')}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/reports">Back to reports hub</Link>
+              <Link href="/reports">{t('monthlyReportPage.backToHub', 'Back to reports hub')}</Link>
             </Button>
             <ContentShareButton
               url={`${getServerSiteUrl()}/reports/${reportSlug}`}
-              title={`Monthly referral report: ${monthLabel} | Reviewly`}
-              text={`Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`}
+              title={tf('monthlyReportPage.metaTitle', 'Monthly referral report: {month} | Reviewly', { month: monthLabel })}
+              text={tf('monthlyReportPage.metaDescription', 'Referral demand, top roles, top cities, and company offer signals for {month}.', { month: monthLabel })}
               contentType="report"
               contentId={reportSlug}
               cardType="report_detail"
-              label="Share report"
+              label={t('monthlyReportPage.shareReport', 'Share report')}
             />
           </>
         }
@@ -195,32 +201,33 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
       {!isIndexable ? (
         <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-lg">Insufficient data for a full monthly report</CardTitle>
+            <CardTitle className="text-lg">{t('monthlyReportPage.insufficientTitle', 'Insufficient data for a full monthly report')}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
-              This period currently has {totalRecords} records. A minimum of{' '}
-              {MIN_INDEXABLE_MONTHLY_REPORT_RECORDS} records is required for a full report publication.
+              {tf('monthlyReportPage.insufficientBodyOne', 'This period currently has {count} records. A minimum of {min} records is required for a full report publication.', {
+                count: totalRecords,
+                min: MIN_INDEXABLE_MONTHLY_REPORT_RECORDS,
+              })}
             </p>
             <p>
-              This page remains accessible for internal navigation and will auto-populate once more demand and offer
-              signals are available.
+              {t('monthlyReportPage.insufficientBodyTwo', 'This page remains accessible for internal navigation and will auto-populate once more demand and offer signals are available.')}
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
           <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <MetricCard title="New demand listings" value={String(demandCurrent.length)} icon={Users2} />
-            <MetricCard title="New referral offers" value={String(offerCurrent.length)} icon={BriefcaseBusiness} />
-            <MetricCard title="Demand momentum" value={`${demandMomentum}%`} icon={LineChart} />
-            <MetricCard title="Total records" value={String(totalRecords)} icon={CalendarDays} />
+            <MetricCard title={t('monthlyReportPage.metrics.newDemandListings', 'New demand listings')} value={String(demandCurrent.length)} icon={Users2} />
+            <MetricCard title={t('monthlyReportPage.metrics.newReferralOffers', 'New referral offers')} value={String(offerCurrent.length)} icon={BriefcaseBusiness} />
+            <MetricCard title={t('monthlyReportPage.metrics.demandMomentum', 'Demand momentum')} value={`${demandMomentum}%`} icon={LineChart} />
+            <MetricCard title={t('monthlyReportPage.metrics.totalRecords', 'Total records')} value={String(totalRecords)} icon={CalendarDays} />
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-lg">Top demand roles</CardTitle>
+                <CardTitle className="text-lg">{t('monthlyReportPage.sections.topDemandRoles', 'Top demand roles')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {topDemandRoles.map((row) => {
@@ -243,7 +250,7 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
 
             <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-lg">Top demand cities</CardTitle>
+                <CardTitle className="text-lg">{t('monthlyReportPage.sections.topDemandCities', 'Top demand cities')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {topDemandCities.map((row) => (
@@ -260,7 +267,7 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
 
             <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-lg">Top companies (offers)</CardTitle>
+                <CardTitle className="text-lg">{t('monthlyReportPage.sections.topCompaniesOffers', 'Top companies (offers)')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {topOfferCompanies.map((row) => {
@@ -284,21 +291,21 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
         <CardHeader>
           <CardTitle className="inline-flex items-center gap-2 text-lg">
             <BarChart3 className="h-5 w-5" />
-            Cluster navigation
+            {t('monthlyReportPage.clusterNavigation', 'Cluster navigation')}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
-            <Link href="/referral-demand">Referral demand intelligence</Link>
+            <Link href="/referral-demand">{t('monthlyReportPage.clusterLinks.referralDemand', 'Referral demand intelligence')}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/salaires">Salary intelligence</Link>
+            <Link href="/salaires">{t('monthlyReportPage.clusterLinks.salary', 'Salary intelligence')}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/companies">Company insights</Link>
+            <Link href="/companies">{t('monthlyReportPage.clusterLinks.companies', 'Company insights')}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/blog">Execution playbooks</Link>
+            <Link href="/blog">{t('monthlyReportPage.clusterLinks.blog', 'Execution playbooks')}</Link>
           </Button>
         </CardContent>
       </Card>

@@ -11,8 +11,10 @@ import { Button } from '@/components/ui/button';
 import { BusinessLogo } from '@/components/shared/BusinessLogo';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 export default function GeneralReviewPageClient() {
+  const { t, tf } = useI18n();
   const [paginatedBusinesses, setPaginatedBusinesses] = useState<PaginatedBusinesses>({
     businesses: [],
     totalCount: 0,
@@ -86,11 +88,11 @@ export default function GeneralReviewPageClient() {
         <div className="mx-auto max-w-2xl">
           <Button variant="ghost" onClick={() => setSelectedBusiness(null)} className="mb-4">
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Retour au choix de l'entreprise
+            {t('reviewPage.backToChooser', 'Back to company selection')}
           </Button>
-          <h1 className="mb-2 font-headline text-3xl font-bold">Ecrire un avis pour {selectedBusiness.name}</h1>
+          <h1 className="mb-2 font-headline text-3xl font-bold">{tf('reviewPage.title', 'Write a review for {name}', { name: selectedBusiness.name })}</h1>
           <p className="mb-8 text-muted-foreground">
-            Votre avis est anonyme et aidera des milliers de personnes a faire des choix eclaires.
+            {t('reviewPage.subtitle', 'Your review is anonymous and will help thousands of people make better decisions.')}
           </p>
           <ReviewForm businessId={selectedBusiness.id} businessName={selectedBusiness.name} />
         </div>
@@ -102,9 +104,9 @@ export default function GeneralReviewPageClient() {
     <div className="container mx-auto px-4 py-12 md:px-6">
       <div className="mx-auto max-w-2xl">
         <div className="mb-8 text-center">
-          <h1 className="font-headline text-4xl font-bold">Laisser un avis</h1>
+          <h1 className="font-headline text-4xl font-bold">{t('reviewPage.listTitle', 'Leave a review')}</h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Recherchez et selectionnez l'entreprise que vous souhaitez noter.
+            {t('reviewPage.listSubtitle', 'Search for and select the company you want to review.')}
           </p>
         </div>
 
@@ -113,7 +115,7 @@ export default function GeneralReviewPageClient() {
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Rechercher une entreprise..."
+              placeholder={t('reviewPage.searchPlaceholder', 'Search for a company...')}
               className="h-12 w-full rounded-lg pl-12 text-base shadow-sm"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
@@ -123,10 +125,10 @@ export default function GeneralReviewPageClient() {
           <div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Toutes les categories" />
+                <SelectValue placeholder={t('reviewPage.allCategories', 'All categories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les categories</SelectItem>
+                <SelectItem value="all">{t('reviewPage.allCategories', 'All categories')}</SelectItem>
                 {categories.map((category: string) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -139,13 +141,13 @@ export default function GeneralReviewPageClient() {
           <div>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger>
-                <SelectValue placeholder="Trier par" />
+                <SelectValue placeholder={t('reviewPage.sortBy', 'Sort by')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="relevance">Pertinence</SelectItem>
-                <SelectItem value="rating">Note</SelectItem>
-                <SelectItem value="reviews">Nombre d'avis</SelectItem>
-                <SelectItem value="newest">Plus recents</SelectItem>
+                <SelectItem value="relevance">{t('reviewPage.sortOptions.relevance', 'Relevance')}</SelectItem>
+                <SelectItem value="rating">{t('reviewPage.sortOptions.rating', 'Rating')}</SelectItem>
+                <SelectItem value="reviews">{t('reviewPage.sortOptions.reviews', 'Review count')}</SelectItem>
+                <SelectItem value="newest">{t('reviewPage.sortOptions.newest', 'Newest')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -194,9 +196,11 @@ export default function GeneralReviewPageClient() {
 
               <div className="flex items-center justify-between py-4">
                 <div className="text-sm text-muted-foreground">
-                  Affichage de <strong>{(currentPage - 1) * paginatedBusinesses.limit + 1}</strong> a{' '}
-                  <strong>{Math.min(currentPage * paginatedBusinesses.limit, paginatedBusinesses.totalCount)}</strong> sur{' '}
-                  <strong>{paginatedBusinesses.totalCount}</strong> resultats
+                  {tf('reviewPage.resultsSummary', 'Showing {from} to {to} of {total} results', {
+                    from: (currentPage - 1) * paginatedBusinesses.limit + 1,
+                    to: Math.min(currentPage * paginatedBusinesses.limit, paginatedBusinesses.totalCount),
+                    total: paginatedBusinesses.totalCount,
+                  })}
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -219,7 +223,7 @@ export default function GeneralReviewPageClient() {
 
                   <div className="flex items-center gap-1">
                     <span className="text-sm font-medium">{currentPage}</span>
-                    <span className="text-sm text-muted-foreground">sur {paginatedBusinesses.totalPages}</span>
+                    <span className="text-sm text-muted-foreground">{tf('reviewPage.pageOf', 'of {total}', { total: paginatedBusinesses.totalPages })}</span>
                   </div>
 
                   <Button
@@ -242,9 +246,9 @@ export default function GeneralReviewPageClient() {
               </div>
             </>
           ) : searchQuery ? (
-            <p className="py-8 text-center text-muted-foreground">Aucune entreprise trouvee pour "{searchQuery}".</p>
+            <p className="py-8 text-center text-muted-foreground">{tf('reviewPage.emptySearch', 'No company found for "{query}".', { query: searchQuery })}</p>
           ) : (
-            <p className="py-8 text-center text-muted-foreground">Aucune entreprise disponible.</p>
+            <p className="py-8 text-center text-muted-foreground">{t('reviewPage.emptyAll', 'No companies available.')}</p>
           )}
         </div>
       </div>

@@ -57,7 +57,7 @@ export default function LoginPage() {
     }
 
     if (state.status === 'error') {
-      const message = t('auth.login.errorDesc', 'Login failed. Please check your credentials.');
+      const message = state.message || t('auth.login.errorDesc', 'Login failed. Please check your credentials.');
       setErrorMessage(message);
       toast({
         variant: 'destructive',

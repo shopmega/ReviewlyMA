@@ -23,6 +23,7 @@ import {
     ErrorCode
 } from '@/lib/errors';
 import { getServerSiteUrl } from '@/lib/site-config';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 /**
  * C3 fix: Build a composite rate-limit key from email + client IP.
@@ -48,12 +49,13 @@ export async function login(
     prevState: AuthFormState,
     formData: FormData
 ): Promise<AuthFormState> {
+    const { t, tf } = await getServerTranslator();
     const entries = Object.fromEntries(formData.entries());
     const validatedFields = loginSchema.safeParse(entries);
 
     if (!validatedFields.success) {
         return handleValidationError(
-            'Veuillez corriger les erreurs dans le formulaire.',
+            t('authActions.validation.form', 'Please correct the errors in the form.'),
             validatedFields.error.flatten().fieldErrors as Record<string, string[]>
         ) as AuthFormState;
     }
@@ -64,6 +66,11 @@ export async function login(
     const rateLimitKey = await getRateLimitKey(email);
     const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.login);
     if (isLimited) {
+        return createErrorResponse(
+            ErrorCode.RATE_LIMIT_ERROR,
+            tf('authActions.rateLimited', 'Too many attempts. Please try again in {minutes} minutes.', { minutes: Math.ceil(retryAfterSeconds / 60) })
+        ) as AuthFormState;
+
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
             `Trop de tentatives. Veuillez réessayer dans ${Math.ceil(retryAfterSeconds / 60)} minutes.`
@@ -78,15 +85,24 @@ export async function login(
             await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.login);
             logError('login_action', error, { email });
             return handleAuthenticationError(
-                error.message || 'Identifiant ou mot de passe incorrect.'
+                error.message || t('auth.login.errorDesc', 'Login failed. Please check your credentials.')
             ) as AuthFormState;
         }
+
+        return createSuccessResponse(
+            t('authActions.login.success', 'Login successful. Redirecting...')
+        ) as AuthFormState;
 
         return createSuccessResponse(
             'Connexion réussie! Redirection en cours...'
         ) as AuthFormState;
     } catch (error) {
         logError('login_action_unexpected', error, { email });
+        return createErrorResponse(
+            ErrorCode.SERVER_ERROR,
+            t('authActions.login.unexpectedError', 'An error occurred while logging in.')
+        ) as AuthFormState;
+
         return createErrorResponse(
             ErrorCode.SERVER_ERROR,
             'Une erreur est survenue lors de la connexion.'
@@ -98,12 +114,13 @@ export async function signup(
     prevState: AuthFormState,
     formData: FormData
 ): Promise<AuthFormState> {
+    const { t, tf } = await getServerTranslator();
     const entries = Object.fromEntries(formData.entries());
     const validatedFields = signupSchema.safeParse(entries);
 
     if (!validatedFields.success) {
         return handleValidationError(
-            'Veuillez corriger les erreurs dans le formulaire.',
+            t('authActions.validation.form', 'Please correct the errors in the form.'),
             validatedFields.error.flatten().fieldErrors as Record<string, string[]>
         ) as AuthFormState;
     }
@@ -114,6 +131,11 @@ export async function signup(
     const rateLimitKey = await getRateLimitKey(email);
     const { isLimited, retryAfterSeconds } = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.signup);
     if (isLimited) {
+        return createErrorResponse(
+            ErrorCode.RATE_LIMIT_ERROR,
+            tf('authActions.rateLimited', 'Too many attempts. Please try again in {minutes} minutes.', { minutes: Math.ceil(retryAfterSeconds / 60) })
+        ) as AuthFormState;
+
         return createErrorResponse(
             ErrorCode.RATE_LIMIT_ERROR,
             `Trop de tentatives. Veuillez réessayer dans ${Math.ceil(retryAfterSeconds / 60)} minutes.`

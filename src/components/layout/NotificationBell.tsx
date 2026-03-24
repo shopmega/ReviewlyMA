@@ -15,13 +15,15 @@ import { getNotifications, markAsRead, markAllAsRead, Notification } from '@/app
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS, fr } from 'date-fns/locale';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 export function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
+    const { locale, t } = useI18n();
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const isFetchingRef = useRef(false);
 
@@ -105,22 +107,22 @@ export function NotificationBell() {
                     {unreadCount > 0 && (
                         <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive ring-2 ring-background animate-pulse" />
                     )}
-                    <span className="sr-only">Notifications</span>
+                    <span className="sr-only">{t('notifications.title', 'Notifications')}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-80" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium leading-none">Notifications</p>
+                            <p className="text-sm font-medium leading-none">{t('notifications.title', 'Notifications')}</p>
                             {unreadCount > 0 && (
                                 <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary" onClick={handleMarkAllRead}>
-                                    Tout marquer comme lu
+                                    {t('notifications.markAllRead', 'Tout marquer comme lu')}
                                 </Button>
                             )}
                         </div>
                         <p className="text-xs leading-none text-muted-foreground">
-                            {unreadCount} non lues
+                            {t('notifications.unreadCount', '{count} non lues').replace('{count}', String(unreadCount))}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -128,7 +130,7 @@ export function NotificationBell() {
                 <div className="max-h-[300px] overflow-y-auto">
                     {notifications.length === 0 ? (
                         <div className="py-8 text-center text-sm text-muted-foreground">
-                            Aucune notification
+                            {t('notifications.empty', 'Aucune notification')}
                         </div>
                     ) : (
                         notifications.map((n) => (
@@ -146,7 +148,10 @@ export function NotificationBell() {
                                         {!n.is_read && n.user_id !== null && <span className="ml-2 inline-block w-1.5 h-1.5 bg-primary rounded-full align-middle" />}
                                     </div>
                                     <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
-                                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
+                                        {formatDistanceToNow(new Date(n.created_at), {
+                                            addSuffix: true,
+                                            locale: locale === 'fr' ? fr : enUS,
+                                        })}
                                     </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">

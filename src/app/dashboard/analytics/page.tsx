@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
   const [hiringTrend, setHiringTrend] = useState<JobOfferBusinessMonthlyTrend[]>([]);
   const [loading, setLoading] = useState(true);
   const { t, tf, locale } = useI18n();
-  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 
   useEffect(() => {
     if (profileLoading || !businessId) return;

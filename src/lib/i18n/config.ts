@@ -1,4 +1,4 @@
-export const APP_LOCALES = ['fr', 'en', 'ar'] as const;
+export const APP_LOCALES = ['fr', 'en'] as const;
 
 export type AppLocale = (typeof APP_LOCALES)[number];
 
@@ -10,6 +10,5 @@ export function isValidLocale(value: string | null | undefined): value is AppLoc
 }
 
 export function isRtlLocale(locale: AppLocale): boolean {
-  return locale === 'ar';
+  return false;
 }
-

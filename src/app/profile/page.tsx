@@ -155,15 +155,15 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const { t, tf, locale } = useI18n();
-  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
   const loginNextPath = buildProfileTabHref(requestedTab);
   const breadcrumbItems = useMemo(() => {
-    const base = [{ label: 'Profil', href: '/profil' }];
-    if (activeTab === 'saved') return [...base, { label: 'Favoris', href: buildProfileTabHref('saved') }];
-    if (activeTab === 'referrals') return [...base, { label: 'Parrainages', href: buildProfileTabHref('referrals') }];
-    if (activeTab === 'account') return [...base, { label: 'Compte', href: buildProfileTabHref('account') }];
+    const base = [{ label: t('profilePage.breadcrumbs.profile', 'Profile'), href: '/profil' }];
+    if (activeTab === 'saved') return [...base, { label: t('profilePage.breadcrumbs.saved', 'Favorites'), href: buildProfileTabHref('saved') }];
+    if (activeTab === 'referrals') return [...base, { label: t('profilePage.breadcrumbs.referrals', 'Referrals'), href: buildProfileTabHref('referrals') }];
+    if (activeTab === 'account') return [...base, { label: t('profilePage.breadcrumbs.account', 'Account'), href: buildProfileTabHref('account') }];
     return base;
-  }, [activeTab]);
+  }, [activeTab, t]);
 
   // Sort reviews based on selected option
   const sortedReviews = useMemo(() => {
@@ -674,7 +674,7 @@ export default function ProfilePage() {
                                 >
                                   {review.business_name}
                                 </Link>
-                                <span className="text-muted-foreground">? {new Date(review.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                <span className="text-muted-foreground">{new Date(review.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                               </div>
                             </div>
                             <div className="bg-secondary/50 p-2 rounded-xl border border-border/50">

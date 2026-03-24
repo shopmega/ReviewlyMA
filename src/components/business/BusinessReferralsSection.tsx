@@ -119,7 +119,7 @@ export function BusinessReferralsSection({
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {offer.city || t('business.referrals.cityUnknown', 'City not specified')} -{' '}
-                      {new Date(offer.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US')}
+                      {new Date(offer.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                     </p>
                     <Button asChild variant="link" className="mt-2 h-auto p-0 text-primary">
                       <Link href={`/parrainages/${offer.id}`}>
@@ -154,7 +154,7 @@ export function BusinessReferralsSection({
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {demand.city || t('business.referrals.cityUnknown', 'City not specified')} -{' '}
-                      {new Date(demand.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US')}
+                      {new Date(demand.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                     </p>
                     <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{demand.summary}</p>
                     <Button asChild variant="link" className="mt-2 h-auto p-0 text-primary">

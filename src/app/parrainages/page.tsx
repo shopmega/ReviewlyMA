@@ -53,10 +53,13 @@ type MarketItem =
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
   return {
-    title: 'Parrainages emploi au Maroc | Reviewly',
-    description:
-      'Marketplace unifiee offres + demandes de parrainage au Maroc. Filtres, signaux de confiance et echanges securises sur Reviewly.',
+    title: t('referrals.list.metaTitle', 'Job referrals in Morocco | Reviewly'),
+    description: t(
+      'referrals.list.metaDescription',
+      'Unified marketplace for referral offers and public requests in Morocco. Filters, trust signals, and secure interactions on Reviewly.'
+    ),
     alternates: {
       canonical: '/parrainages',
     },
@@ -125,24 +128,28 @@ const normalizeKind = (value: string): MarketKind => {
   return 'all';
 };
 
-const getTrustLabel = (offer: ReferralOffer) => {
-  if (offer.identity_level === 'verified_employee' || offer.verification_status === 'verified') return 'Employe verifie';
-  if (offer.identity_level === 'public') return 'Identite publique';
-  return 'Identite masquee';
+const getTrustLabel = (offer: ReferralOffer, t: (key: string, fallback?: string) => string) => {
+  if (offer.identity_level === 'verified_employee' || offer.verification_status === 'verified') {
+    return t('referrals.list.trust.verifiedEmployee', 'Verified employee');
+  }
+  if (offer.identity_level === 'public') {
+    return t('referrals.list.trust.publicIdentity', 'Public identity');
+  }
+  return t('referrals.list.trust.hiddenIdentity', 'Hidden identity');
 };
 
-const getSortLabel = (sort: string) => {
+const getSortLabel = (sort: string, t: (key: string, fallback?: string) => string) => {
   switch (sort) {
     case 'trust':
-      return 'Confiance';
+      return t('referrals.list.sort.trust', 'Trust');
     case 'spots':
-      return 'Places';
+      return t('referrals.list.sort.spots', 'Spots');
     case 'responsive':
-      return 'Reactivite';
+      return t('referrals.list.sort.responsive', 'Responsiveness');
     case 'expiring':
-      return 'Expiration proche';
+      return t('referrals.list.sort.expiring', 'Expiring soon');
     default:
-      return 'Plus recentes';
+      return t('referrals.list.sort.newest', 'Newest');
   }
 };
 
@@ -262,7 +269,7 @@ export default async function ParrainagesPage({
     }
 
     if (offerError) {
-      loadErrors.push('Impossible de charger les offres pour le moment.');
+      loadErrors.push(t('referrals.list.loadOffersError', 'Unable to load offers right now.'));
     } else {
       offers = (offerRows || []) as ReferralOffer[];
       offersCount = count || 0;
@@ -288,7 +295,7 @@ export default async function ParrainagesPage({
     const { data: demandRows, error: demandError, count } = await demandQuery.limit(60);
 
     if (demandError) {
-      loadErrors.push('Impossible de charger les demandes publiques pour le moment.');
+      loadErrors.push(t('referrals.list.loadRequestsError', 'Unable to load public requests right now.'));
     } else {
       demands = (demandRows || []) as DemandListing[];
       demandsCount = count || 0;
@@ -316,35 +323,35 @@ export default async function ParrainagesPage({
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <PageIntro
         badge={<Badge variant="outline" className="w-fit">{t('referrals.list.badge', 'Referral marketplace')}</Badge>}
-        title={t('referrals.list.title', 'Parrainages emploi')}
-        description="Marketplace unifiee: offres internes des employes + demandes publiques de candidats."
+        title={t('referrals.list.title', 'Job referrals')}
+        description={t('referrals.list.marketplaceDescription', 'Unified marketplace: internal employee offers and public candidate requests.')}
         actions={
           <>
             {currentUserId ? (
               <>
                 <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/inbox">Inbox</Link>
+                  <Link href="/parrainages/inbox">{t('referrals.list.inbox', 'Inbox')}</Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-offres">{t('referrals.list.myOffers', 'Mes offres')}</Link>
+                  <Link href="/parrainages/mes-offres">{t('referrals.list.myOffers', 'My offers')}</Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-demandes">{t('referrals.list.myRequests', 'Mes demandes')}</Link>
+                  <Link href="/parrainages/mes-demandes">{t('referrals.list.myRequests', 'My requests')}</Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/parrainages/mes-demandes-publiques">Mes demandes publiques</Link>
+                  <Link href="/parrainages/mes-demandes-publiques">{t('referrals.list.myPublicRequests', 'My public requests')}</Link>
                 </Button>
               </>
             ) : null}
             <Button asChild className="rounded-xl">
-              <Link href={publishOfferHref}>{t('referrals.list.publish', 'Publier une offre')}</Link>
+              <Link href={publishOfferHref}>{t('referrals.list.publish', 'Publish an offer')}</Link>
             </Button>
           </>
         }
       >
         <div className="inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
           <AlertTriangle className="h-4 w-4" />
-          Aucun paiement n&apos;est autorise pour un parrainage. Signalez toute tentative.
+          {t('referrals.list.securityNotice', 'No payment is ever allowed for a referral. Report any attempt.')}
         </div>
       </PageIntro>
 
@@ -358,9 +365,9 @@ export default async function ParrainagesPage({
             inactiveVariant="outline"
             buttonClassName="rounded-xl"
             items={[
-              { key: 'all', label: `Tous (${totalCount || marketItems.length})`, active: kind === 'all', href: allHref },
-              { key: 'offers', label: `Offres (${offersCount})`, active: kind === 'offers', href: offersHref },
-              { key: 'demands', label: `Demandes (${demandsCount})`, active: kind === 'demands', href: demandsHref },
+              { key: 'all', label: t('referrals.list.segmented.all', 'All') + ` (${totalCount || marketItems.length})`, active: kind === 'all', href: allHref },
+              { key: 'offers', label: t('referrals.list.segmented.offers', 'Offers') + ` (${offersCount})`, active: kind === 'offers', href: offersHref },
+              { key: 'demands', label: t('referrals.list.segmented.demands', 'Requests') + ` (${demandsCount})`, active: kind === 'demands', href: demandsHref },
             ]}
           />
 
@@ -370,18 +377,20 @@ export default async function ParrainagesPage({
               type="text"
               name="search"
               defaultValue={search}
-              placeholder={kind === 'demands' ? 'Poste, mots-cles...' : 'Entreprise ou poste'}
+              placeholder={kind === 'demands'
+                ? t('referrals.list.filters.searchRequestsPlaceholder', 'Role, keywords...')
+                : t('referrals.list.filters.searchOffersPlaceholder', 'Company or role')}
               className="h-10 rounded-md border bg-background px-3 text-sm md:col-span-2"
             />
             <input
               type="text"
               name="city"
               defaultValue={city}
-              placeholder="Ville"
+              placeholder={t('referrals.list.filters.cityPlaceholder', 'City')}
               className="h-10 rounded-md border bg-background px-3 text-sm"
             />
             <select name="contract" defaultValue={contract} className="h-10 rounded-md border bg-background px-3 text-sm">
-              <option value="">Contrat</option>
+              <option value="">{t('referrals.list.filters.contract', 'Contract')}</option>
               <option value="cdi">CDI</option>
               <option value="cdd">CDD</option>
               <option value="stage">Stage</option>
@@ -389,20 +398,20 @@ export default async function ParrainagesPage({
               <option value="alternance">Alternance</option>
             </select>
             <select name="mode" defaultValue={mode} className="h-10 rounded-md border bg-background px-3 text-sm">
-              <option value="">Mode</option>
+              <option value="">{t('referrals.list.filters.mode', 'Mode')}</option>
               <option value="onsite">Presentiel</option>
               <option value="hybrid">Hybride</option>
               <option value="remote">Remote</option>
             </select>
             <select name="sort" defaultValue={sort} className="h-10 rounded-md border bg-background px-3 text-sm">
-              <option value="newest">Plus recentes</option>
-              <option value="expiring">Expiration proche</option>
-              <option value="responsive">Plus reactives</option>
-              <option value="spots">Plus de places</option>
-              <option value="trust">Plus fiables</option>
+              <option value="newest">{t('referrals.list.sort.newest', 'Newest')}</option>
+              <option value="expiring">{t('referrals.list.sort.expiring', 'Expiring soon')}</option>
+              <option value="responsive">{t('referrals.list.sort.responsive', 'Most responsive')}</option>
+              <option value="spots">{t('referrals.list.sort.spots', 'Most spots')}</option>
+              <option value="trust">{t('referrals.list.sort.trust', 'Most trusted')}</option>
             </select>
             <select name="seniority" defaultValue={seniority} className="h-10 rounded-md border bg-background px-3 text-sm md:col-span-2">
-              <option value="">Niveau</option>
+              <option value="">{t('referrals.list.filters.level', 'Level')}</option>
               <option value="junior">Junior</option>
               <option value="confirme">Confirme</option>
               <option value="senior">Senior</option>
@@ -410,12 +419,12 @@ export default async function ParrainagesPage({
               <option value="manager">Manager</option>
             </select>
             <div className="md:col-span-4 flex flex-wrap items-center gap-2">
-              <Button type="submit" className="rounded-md">Filtrer</Button>
+              <Button type="submit" className="rounded-md">{t('referrals.list.filters.submit', 'Filter')}</Button>
               <Button asChild variant="outline" className="rounded-md">
-                <Link href="/parrainages">Reinitialiser</Link>
+                <Link href="/parrainages">{t('referrals.list.filters.reset', 'Reset')}</Link>
               </Button>
               <span className="text-xs text-muted-foreground">
-                {totalCount || marketItems.length} resultat(s) - tri: {getSortLabel(sort)}
+                {t('referrals.list.filters.resultsCount', 'Results')}: {totalCount || marketItems.length} - {t('referrals.list.filters.sortedBy', 'sorted by')} {getSortLabel(sort, t)}
               </span>
             </div>
           </form>
@@ -437,17 +446,17 @@ export default async function ParrainagesPage({
           <CardContent className="py-12 text-center space-y-3">
             <p className="text-muted-foreground">
               {kind === 'demands'
-                ? 'Aucune demande active pour le moment.'
+                ? t('referrals.list.emptyDemands', 'No active requests at the moment.')
                 : kind === 'offers'
-                  ? t('referrals.list.empty', 'Aucune offre active pour le moment.')
-                  : 'Aucune offre ou demande active pour le moment.'}
+                  ? t('referrals.list.empty', 'No active offers at the moment.')
+                  : t('referrals.list.emptyCombined', 'No active offers or requests at the moment.')}
             </p>
             <div className="flex justify-center gap-2">
               <Button asChild variant="outline" className="rounded-xl">
-                <Link href={publishOfferHref}>Publier une offre</Link>
+                <Link href={publishOfferHref}>{t('referrals.list.publish', 'Publish an offer')}</Link>
               </Button>
               <Button asChild className="rounded-xl">
-                <Link href={publishDemandHref}>Publier une demande</Link>
+                <Link href={publishDemandHref}>{t('referrals.list.publishDemand', 'Publish a request')}</Link>
               </Button>
             </div>
           </CardContent>
@@ -458,7 +467,9 @@ export default async function ParrainagesPage({
             if (item.itemType === 'offer') {
               const offer = item.data;
               const expiresAt = offer.expires_at ? new Date(offer.expires_at).toLocaleDateString(locale) : null;
-              const responseLabel = offer.response_hours_avg ? `Repond en ~${offer.response_hours_avg}h` : 'Reactivite en cours';
+              const responseLabel = offer.response_hours_avg
+                ? t('referrals.list.responseHours', 'Replies in about') + ` ~${offer.response_hours_avg}h`
+                : t('referrals.list.responsePending', 'Responsiveness pending');
               const companyHref = offer.business_id
                 ? `/businesses/${offer.business_id}?tab=referrals`
                 : `/parrainages/entreprise/${slugify(offer.company_name)}`;
@@ -498,13 +509,13 @@ export default async function ParrainagesPage({
                       </p>
                       <p className="inline-flex items-center gap-1">
                         <ShieldCheck className="h-4 w-4" />
-                        {getTrustLabel(offer)}{offer.trust_score != null ? ` - Score ${offer.trust_score}/100` : ''}
+                        {getTrustLabel(offer, t)}{offer.trust_score != null ? ` - ${t('referrals.list.trust.score', 'Score')} ${offer.trust_score}/100` : ''}
                       </p>
                       <p className="inline-flex items-center gap-1">
                         <TrendingUp className="h-4 w-4" />
-                        {responseLabel}{offer.response_rate != null ? ` - ${Math.round(offer.response_rate)}% de reponses` : ''}
+                        {responseLabel}{offer.response_rate != null ? ` - ${Math.round(offer.response_rate)}% ${t('referrals.list.responseRate', 'response rate')}` : ''}
                       </p>
-                      <p>{expiresAt ? `Expire le ${expiresAt}` : 'Expiration non precisee'}</p>
+                      <p>{expiresAt ? `${t('referrals.list.expiresOn', 'Expires on')} ${expiresAt}` : t('referrals.list.expirationUnknown', 'Expiration not specified')}</p>
                     </div>
 
                     <Button asChild variant="outline" className="w-full rounded-md">
@@ -523,7 +534,7 @@ export default async function ParrainagesPage({
               <Card key={`demand-${demand.id}`} className="rounded-2xl border-border bg-card transition-colors hover:border-primary/30">
                 <CardHeader className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <Badge variant="outline">Demande</Badge>
+                    <Badge variant="outline">{t('referrals.list.requestBadge', 'Request')}</Badge>
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock3 className="h-3.5 w-3.5" />
                       {new Date(demand.created_at).toLocaleDateString(locale)}
@@ -550,7 +561,7 @@ export default async function ParrainagesPage({
                   <div className="grid grid-cols-1 gap-2">
                     <Button asChild variant="outline" className="w-full rounded-md">
                       <Link href={`/parrainages/demandes/${demand.id}`} className="inline-flex items-center justify-center gap-2">
-                        Voir la demande
+                        {t('referrals.list.viewRequest', 'View request')}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -562,7 +573,7 @@ export default async function ParrainagesPage({
                             : `/login?next=${encodeURIComponent(`/parrainages/demandes/${demand.id}#respond-form`)}`
                         }
                       >
-                        Proposer un parrainage
+                        {t('referrals.list.offerReferral', 'Offer a referral')}
                       </Link>
                     </Button>
                   </div>

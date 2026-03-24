@@ -42,7 +42,7 @@ type ReferralMessage = {
 
 export default async function MyReferralOffersPage() {
   const { t, tf, locale } = await getServerTranslator();
-  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
 
   const OFFER_STATUS_LABELS: Record<string, string> = {
     active: t('referralMyOffersPage.offerStatus.active', 'Active'),

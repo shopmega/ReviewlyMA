@@ -123,7 +123,7 @@ function SupportContentInner() {
     if (result.status === 'success') {
       toast({
         title: t('supportPage.successTitle', 'Success'),
-        description: t('supportPage.ticketCreated', 'Support ticket created successfully.'),
+        description: result.message || t('supportPage.ticketCreated', 'Support ticket created successfully.'),
       });
       setNewTicket({
         subject: '',
@@ -135,7 +135,7 @@ function SupportContentInner() {
     } else {
       toast({
         title: t('supportPage.errorTitle', 'Error'),
-        description: t('supportPage.createTicketError', 'Unable to create support ticket.'),
+        description: result.message || t('supportPage.createTicketError', 'Unable to create support ticket.'),
         variant: 'destructive',
       });
     }
@@ -188,7 +188,7 @@ function SupportContentInner() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US', {
+    return new Date(dateString).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

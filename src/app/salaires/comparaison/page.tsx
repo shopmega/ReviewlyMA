@@ -183,7 +183,7 @@ function leaderLabel(
 
 export default async function SalaryComparisonPage({ searchParams }: PageProps) {
   const { t, tf, locale } = await getServerTranslator();
-  const numberLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const numberLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
   const dateLocale = numberLocale;
   const sp = await searchParams;
   const supabase = await createClient();

@@ -30,9 +30,9 @@ type SalarySectionProps = {
   intervals?: Array<{ id: string; label: string; min: number; max: number }>;
 };
 
-function formatMoneyMAD(value: number | null): string {
+function formatMoneyMAD(value: number | null, locale: string): string {
   if (value === null || Number.isNaN(value)) return '-';
-  return `${Math.round(value).toLocaleString('fr-MA')} MAD`;
+  return `${Math.round(value).toLocaleString(locale === 'fr' ? 'fr-MA' : 'en-US')} MAD`;
 }
 
 export function SalarySection({
@@ -44,7 +44,7 @@ export function SalarySection({
   departments = [],
   intervals = [],
 }: SalarySectionProps) {
-  const { t, tf } = useI18n();
+  const { locale, t, tf } = useI18n();
   const [state, formAction] = useActionState(submitSalary, { status: 'idle', message: '' });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
@@ -152,8 +152,8 @@ export function SalarySection({
       return ts > acc ? ts : acc;
     }, 0);
     if (!latest) return t('business.salary.notAvailable', 'Indisponible');
-    return new Date(latest).toLocaleDateString('fr-MA', { day: '2-digit', month: 'short', year: 'numeric' });
-  }, [salaries, t]);
+    return new Date(latest).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+  }, [locale, salaries, t]);
 
   const spread = useMemo(() => {
     if (stats.minMonthly === null || stats.maxMonthly === null) return null;
@@ -214,7 +214,7 @@ export function SalarySection({
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
                 {t('business.salary.rangeSignal', 'Amplitude observee')}
               </p>
-              <p className="mt-1 text-sm font-bold">{spread === null ? '-' : formatMoneyMAD(spread)}</p>
+              <p className="mt-1 text-sm font-bold">{spread === null ? '-' : formatMoneyMAD(spread, locale)}</p>
               <p className="mt-1 text-[11px] text-muted-foreground">
                 {t('business.salary.rangeNote', 'Entre minimum et maximum publies.')}
               </p>
@@ -252,7 +252,7 @@ export function SalarySection({
                             />
                             <YAxis tick={{ fontSize: 11 }} tickFormatter={(value) => `${Math.round(Number(value) / 1000)}k`} />
                             <Tooltip
-                              formatter={(value) => formatMoneyMAD(Number(value))}
+                              formatter={(value) => formatMoneyMAD(Number(value), locale)}
                               contentStyle={{ borderRadius: '0.75rem', borderColor: 'hsl(var(--border))' }}
                             />
                             <Bar dataKey="salary" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
@@ -266,14 +266,14 @@ export function SalarySection({
                     <div className="rounded-lg border p-3">
                       <p className="text-xs text-muted-foreground">{t('business.salary.medianMonthly', 'Mediane mensuelle')}</p>
                       <p className="font-bold">
-                        {hasEnoughData ? formatMoneyMAD(stats.medianMonthly) : t('business.salary.insufficientData', 'Donnees insuffisantes')}
+                        {hasEnoughData ? formatMoneyMAD(stats.medianMonthly, locale) : t('business.salary.insufficientData', 'Donnees insuffisantes')}
                       </p>
                     </div>
                     <div className="rounded-lg border p-3">
                       <p className="text-xs text-muted-foreground">{t('business.salary.minMonthly', 'Minimum mensuel')}</p>
                       <p className="font-bold">
                         {hasEnoughData
-                          ? formatMoneyMAD(stats.minMonthly)
+                          ? formatMoneyMAD(stats.minMonthly, locale)
                           : tf('business.salary.kAnonymityShort', '< {minSample} soumissions', { minSample: MIN_PUBLIC_SAMPLE_SIZE })}
                       </p>
                     </div>
@@ -281,7 +281,7 @@ export function SalarySection({
                       <p className="text-xs text-muted-foreground">{t('business.salary.maxMonthly', 'Maximum mensuel')}</p>
                       <p className="font-bold">
                         {hasEnoughData
-                          ? formatMoneyMAD(stats.maxMonthly)
+                          ? formatMoneyMAD(stats.maxMonthly, locale)
                           : tf('business.salary.kAnonymityShort', '< {minSample} soumissions', { minSample: MIN_PUBLIC_SAMPLE_SIZE })}
                       </p>
                     </div>
@@ -298,7 +298,7 @@ export function SalarySection({
                         {stats.roleBreakdown.map((row) => (
                           <div key={row.jobTitle} className="flex items-center justify-between rounded-lg border p-2 text-sm">
                             <span>{row.jobTitle}</span>
-                            <span className="font-semibold">{`${formatMoneyMAD(row.medianMonthly)} (${row.count})`}</span>
+                            <span className="font-semibold">{`${formatMoneyMAD(row.medianMonthly, locale)} (${row.count})`}</span>
                           </div>
                         ))}
                       </div>
@@ -318,10 +318,10 @@ export function SalarySection({
                               </Badge>
                             </div>
                             <p className="mt-1 text-sm font-semibold">
-                              {hasEnoughData ? formatMoneyMAD(row.salary) : t('business.salary.insufficientData', 'Donnees insuffisantes')}
+                              {hasEnoughData ? formatMoneyMAD(row.salary, locale) : t('business.salary.insufficientData', 'Donnees insuffisantes')}
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              {row.location || t('business.salary.locationUnknown', 'Localisation non precisee')} - {new Date(row.created_at).toLocaleDateString('fr-MA')}
+                              {row.location || t('business.salary.locationUnknown', 'Localisation non precisee')} - {new Date(row.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                             </p>
                           </div>
                         ))}

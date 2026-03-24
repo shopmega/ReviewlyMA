@@ -13,6 +13,7 @@ import { Loader2, Store, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { MAIN_CATEGORIES, ALL_CITIES } from '@/lib/location-discovery';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 const CATEGORIES = MAIN_CATEGORIES.map(c => c.name);
 const CITIES = ALL_CITIES;
@@ -21,6 +22,7 @@ export default function SuggestBusinessPage() {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
+  const { t } = useI18n();
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -28,8 +30,8 @@ export default function SuggestBusinessPage() {
 
       if (result.status === 'success') {
         toast({
-          title: 'Suggestion envoyee !',
-          description: result.message || 'Votre suggestion a ete envoyee avec succes.',
+          title: t('suggestPage.toast.successTitle', 'Suggestion sent'),
+          description: result.message || t('suggestPage.toast.successDesc', 'Your suggestion was sent successfully.'),
         });
         if (result.data?.slug) {
           setTimeout(() => {
@@ -38,7 +40,7 @@ export default function SuggestBusinessPage() {
         }
       } else {
         toast({
-          title: 'Erreur',
+          title: t('common.error', 'Error'),
           description: result.message,
           variant: 'destructive',
         });

@@ -226,7 +226,23 @@
   },
   "reviewPage": {
     "title": "Write a review for {name}",
-    "subtitle": "Your review is anonymous and will help thousands of people make better decisions."
+    "subtitle": "Your review is anonymous and will help thousands of people make better decisions.",
+    "backToChooser": "Back to company selection",
+    "listTitle": "Leave a review",
+    "listSubtitle": "Search for and select the company you want to review.",
+    "searchPlaceholder": "Search for a company...",
+    "allCategories": "All categories",
+    "sortBy": "Sort by",
+    "sortOptions": {
+      "relevance": "Relevance",
+      "rating": "Rating",
+      "reviews": "Review count",
+      "newest": "Newest"
+    },
+    "resultsSummary": "Showing {from} to {to} of {total} results",
+    "pageOf": "of {total}",
+    "emptySearch": "No company found for \"{query}\".",
+    "emptyAll": "No companies available."
   },
   "reviewForm": {
     "submitting": "Submitting...",
@@ -463,12 +479,61 @@
       "badge": "Referral marketplace",
       "title": "Job referrals",
       "subtitle": "Employees share internal referral opportunities. Browse active offers and send a request in minutes.",
+      "metaTitle": "Job referrals in Morocco | Reviewly",
+      "metaDescription": "Unified marketplace for referral offers and public requests in Morocco. Filters, trust signals, and secure interactions on Reviewly.",
+      "marketplaceDescription": "Unified marketplace: internal employee offers and public candidate requests.",
       "publish": "Publish an offer",
+      "publishDemand": "Publish a request",
       "empty": "No active offers at the moment.",
+      "emptyDemands": "No active requests at the moment.",
+      "emptyCombined": "No active offers or requests at the moment.",
       "slots": "Available spots",
       "viewOffer": "View offer",
+      "viewRequest": "View request",
       "myOffers": "My offers",
-      "myRequests": "My requests"
+      "myRequests": "My requests",
+      "myPublicRequests": "My public requests",
+      "inbox": "Inbox",
+      "securityNotice": "No payment is ever allowed for a referral. Report any attempt.",
+      "requestBadge": "Request",
+      "offerReferral": "Offer a referral",
+      "expiresOn": "Expires on",
+      "expirationUnknown": "Expiration not specified",
+      "responseHours": "Replies in about",
+      "responsePending": "Responsiveness pending",
+      "responseRate": "response rate",
+      "trust": {
+        "verifiedEmployee": "Verified employee",
+        "publicIdentity": "Public identity",
+        "hiddenIdentity": "Hidden identity",
+        "score": "Score"
+      },
+      "segmented": {
+        "all": "All",
+        "offers": "Offers",
+        "demands": "Requests"
+      },
+      "sort": {
+        "newest": "Newest",
+        "expiring": "Expiring soon",
+        "responsive": "Most responsive",
+        "spots": "Most spots",
+        "trust": "Most trusted"
+      },
+      "filters": {
+        "searchRequestsPlaceholder": "Role, keywords...",
+        "searchOffersPlaceholder": "Company or role",
+        "cityPlaceholder": "City",
+        "contract": "Contract",
+        "mode": "Mode",
+        "level": "Level",
+        "submit": "Filter",
+        "reset": "Reset",
+        "resultsCount": "Results",
+        "sortedBy": "sorted by"
+      },
+      "loadOffersError": "Unable to load offers right now.",
+      "loadRequestsError": "Unable to load public requests right now."
     },
     "new": {
       "badge": "Publish",
@@ -492,6 +557,7 @@
     "form": {
       "businessRecommended": "Company (recommended)",
       "searchBusiness": "Search your company...",
+      "searchUnavailable": "Search is unavailable. Continue with manual entry.",
       "clearSearch": "Clear company search",
       "countryFallback": "Morocco",
       "searching": "Searching...",
@@ -514,6 +580,7 @@
       "companyVerified": "Verified company",
       "companyManual": "Manual company",
       "footerHint": "Candidates will contact you from the offer page.",
+      "securityReminder": "Security reminder: never ask for money and do not force applicants to move to external WhatsApp or Telegram contact.",
       "submit": "Publish my offer"
     },
     "detail": {
@@ -540,6 +607,8 @@
       "message": "Your message",
       "messagePlaceholder": "Introduce your profile, experience and motivation...",
       "cvUrl": "CV link (optional)",
+      "linkedinUrl": "LinkedIn (optional)",
+      "confirmation": "I confirm that I will never pay for a referral and that I will keep all exchanges on Reviewly.",
       "privacyNote": "Your request is only visible to the offer author.",
       "submit": "Send my request"
     }
@@ -554,6 +623,13 @@
     "removedDesc": "The company was removed from your bookmarks.",
     "saveError": "An error occurred while saving.",
     "writeReview": "Write a review",
+    "manage": "Manage",
+    "shareSalary": "Share salary",
+    "viewReviews": "View reviews",
+    "viewSalaries": "View salaries",
+    "claim": "Claim this profile",
+    "book": "Book now",
+    "message": "Message",
     "call": "Call",
     "website": "Website",
     "share": "Share",
@@ -1134,6 +1210,12 @@
       "referrals": "Referrals",
       "account": "Account"
     },
+    "breadcrumbs": {
+      "profile": "Profile",
+      "saved": "Favorites",
+      "referrals": "Referrals",
+      "account": "Account"
+    },
     "reviews": {
       "title": "My Reviews ({count})",
       "loadedCount": "Showing {count} loaded reviews.",
@@ -1286,6 +1368,36 @@
       "reportsDesc": "Monthly reports and sector snapshots to strengthen your research."
     },
     "shareLabel": "Share"
+  },
+  "userActions": {
+    "authRequired": "Authentication required.",
+    "genericError": "An unexpected error occurred.",
+    "syncProProfile": {
+      "noApprovedClaim": "No approved claim was found.",
+      "updateError": "Unable to sync your profile.",
+      "success": "Profile synced successfully."
+    },
+    "toggleBookmark": {
+      "authRequired": "You must be logged in to save a business.",
+      "removeError": "Unable to remove this business from your favorites.",
+      "removed": "Business removed from favorites.",
+      "saveError": "Unable to save this business.",
+      "saved": "Business saved successfully."
+    },
+    "updateProfile": {
+      "validationError": "Validation failed.",
+      "updateError": "Unable to update your profile.",
+      "success": "Profile updated successfully.",
+      "unexpectedError": "An error occurred while updating your profile."
+    },
+    "export": {
+      "success": "Your data is ready.",
+      "error": "Unable to export your data."
+    },
+    "requestDeletion": {
+      "success": "Your deletion request has been recorded. Your account will be deleted on {date}. You can cancel this request at any time by signing in again.",
+      "error": "Unable to request account deletion."
+    }
   },
   "referralMyRequestsPage": {
     "title": "My referral requests",
@@ -1487,9 +1599,13 @@
     "title": "Referrals in {city}",
     "activeCount": "{count} active offer(s)",
     "empty": "No active offer for this city.",
+    "emptyCombined": "No active offers or requests for this city.",
+    "marketBreakdown": "{total} item(s): {offers} offers, {demands} requests",
+    "requestBadge": "Request",
     "slots": "Slots: {count}",
     "publishedOn": "Published on {date}",
-    "viewOffer": "View offer"
+    "viewOffer": "View offer",
+    "viewRequest": "View request"
   },
   "referralRolePage": {
     "metaTitle": "Referrals role | {role} | Reviewly",
@@ -1497,9 +1613,14 @@
     "title": "Referrals for {role}",
     "activeCount": "{count} active offer(s)",
     "empty": "No active offer for this role.",
+    "emptyCombined": "No active offers or requests for this role.",
+    "marketBreakdown": "{total} item(s): {offers} offers, {demands} requests",
     "cityUnknown": "City not specified",
+    "requestBadge": "Request",
     "slots": "Slots: {count}",
-    "viewOffer": "View offer"
+    "publishedOn": "Published on {date}",
+    "viewOffer": "View offer",
+    "viewRequest": "View request"
   },
   "referralCompanyPage": {
     "metaTitle": "Referrals company | {company} | Reviewly",
@@ -3293,5 +3414,255 @@
       "tie": "Tie",
       "advantage": "Advantage {side}"
     }
+  }
+  ,
+  "theme": {
+    "toggle": "Change theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "unreadCount": "{count} unread",
+    "empty": "No notifications"
+  },
+  "businessSelector": {
+    "none": "No business",
+    "primary": "Primary",
+    "title": "Business management",
+    "count": "{count} businesses",
+    "switch": "Switch",
+    "add": "Add business"
+  },
+  "share": {
+    "copiedTitle": "Link copied",
+    "copiedDescription": "The share link was copied.",
+    "xTwitter": "X / Twitter",
+    "copyLink": "Copy link"
+  },
+  "follow": {
+    "followedTitle": "Following",
+    "unfollowedTitle": "Unfollowed",
+    "followedDescription": "You will receive updates from this company.",
+    "unfollowedDescription": "You will no longer receive updates.",
+    "active": "Following",
+    "cta": "Follow",
+    "promptTitle": "Follow companies that matter to you",
+    "promptDescription": "Log in to save favorite companies and receive their updates."
+  },
+  "notFound": {
+    "title": "404 - Page not found",
+    "description": "The requested page could not be found or has moved.",
+    "home": "Back to home",
+    "directory": "Explore companies"
+  },
+  "breadcrumb": {
+    "label": "Breadcrumb",
+    "home": "Home"
+  },
+  "authActions": {
+    "validation": {
+      "form": "Please correct the errors in the form."
+    },
+    "rateLimited": "Too many attempts. Please try again in {minutes} minutes.",
+    "login": {
+      "success": "Login successful. Redirecting...",
+      "unexpectedError": "An error occurred while logging in."
+    }
+  },
+  "supportActions": {
+    "authRequired": "You must be logged in to create a support ticket.",
+    "requiredFields": "Please fill in all required fields.",
+    "created": "Your support ticket was created successfully. Our team will reply shortly.",
+    "createError": "An error occurred while creating the support ticket."
+  },
+  "suggestBusinessActions": {
+    "requiredFields": "Please fill in the required fields.",
+    "authRequired": "You must be logged in to suggest a company.",
+    "submitError": "An error occurred while submitting the company suggestion.",
+    "success": "Company suggestion sent successfully. Our team will review it.",
+    "unexpectedError": "An unexpected error occurred."
+  },
+  "suggestPage": {
+    "toast": {
+      "successTitle": "Suggestion sent",
+      "successDesc": "Your suggestion was sent successfully."
+    }
+  },
+  "jobOfferActions": {
+    "authRequired": "You must be logged in to analyze and save a job offer.",
+    "rateLimited": "Too many attempts. Try again in {minutes} minutes.",
+    "validationFailed": "Please correct the extraction errors.",
+    "extractUrlFailed": "Unable to read this link right now. Paste the job text directly instead.",
+    "extractTextFailed": "Unable to read this offer correctly. Try again with more complete text.",
+    "notEnoughInfo": "Unable to extract enough information from this offer. Try again with more complete text.",
+    "offerSaveError": "A database error occurred while saving the offer.",
+    "analysisSaveError": "A database error occurred while saving the analysis.",
+    "success": "Analysis saved successfully.",
+    "unexpectedError": "An unexpected error occurred while analyzing the offer."
+  },
+  "referralRequestActions": {
+    "authRequired": "You must be logged in to request a referral.",
+    "validationFailed": "Please review your request.",
+    "rateLimited": "You sent too many requests. Try again in {minutes} minute(s).",
+    "offerUnavailable": "This offer is no longer available.",
+    "ownOffer": "You cannot request your own offer.",
+    "blockedByOwner": "You can no longer contact this offer author.",
+    "unblockRequired": "Unblock this user first before sending a request.",
+    "duplicate": "You already applied to this offer.",
+    "submitError": "Unable to send your request right now.",
+    "success": "Your referral request has been sent."
+  },
+  "ticketConversation": {
+    "empty": "Start of the conversation...",
+    "placeholder": "Your message...",
+    "enterToSend": "Press Enter to send"
+  },
+  "jobOfferWorkspace": {
+    "employerContext": {
+      "title": "Employer context",
+      "reviews": "reviews",
+      "claimed": "Claimed",
+      "unclaimed": "Unclaimed",
+      "verified": "Verified",
+      "limitedConfidence": "Limited mapping confidence",
+      "rating": "Rating",
+      "reviewsCount": "Reviews",
+      "claimedLabel": "Claimed",
+      "yes": "Yes",
+      "no": "No",
+      "companySize": "Company size",
+      "unknown": "Unknown",
+      "salaryReputation": "Salary reputation",
+      "limitedData": "Limited data",
+      "viewReviews": "View company reviews",
+      "openCompanyPage": "Open company page"
+    }
+  },
+  "businessWidget": {
+    "open": "Open",
+    "ratingOn": "Overall rating on",
+    "basedOn": "Based on",
+    "reviews": "reviews",
+    "closedToday": "Closed today",
+    "viewReviews": "View reviews",
+    "poweredBy": "Powered by"
+  },
+  "companyReferralsPage": {
+    "metaTitle": "{company} referrals | Reviewly",
+    "metaDescription": "Active referral offers for {company}, including role, city, trust, and review sentiment signals.",
+    "badge": "Company referrals",
+    "title": "Referrals at {company}",
+    "activeOffersSentence": "{count} active offers currently available for this company.",
+    "noindexNotice": "This page remains noindex until the route cutover flags are enabled.",
+    "openCanonical": "Open canonical company page",
+    "backToHub": "Back to company hub",
+    "activeOffers": "Active offers",
+    "avgTrustScore": "Average trust score",
+    "thresholdStatus": "Threshold status",
+    "thresholdPassed": "Passes data threshold ({count}+ offers).",
+    "thresholdRemaining": "Needs {count} more offers to pass threshold.",
+    "reviewSample": "Review sample",
+    "avgRating": "Average rating",
+    "reviewMomentum": "90-day review momentum",
+    "notAvailable": "N/A",
+    "sentimentTitle": "Review sentiment summary",
+    "noBusinessIds": "No linked business IDs were found on current offers, so review sentiment cannot be aggregated yet.",
+    "lowSampleNotice": "Sentiment hidden due to low sample size. Minimum {count} published reviews required.",
+    "positiveShare": "Positive share (ratings 4-5)",
+    "recommendRate": "Would-recommend rate",
+    "last90Days": "Published reviews last 90 days",
+    "previous90Days": "previous 90 days",
+    "latestOffers": "Latest company offers",
+    "cityUnavailable": "City unavailable",
+    "slots": "Slots",
+    "viewOffer": "View offer"
+  },
+  "monthlyReportPage": {
+    "fallbackTitle": "Report | Reviewly",
+    "metaTitle": "Monthly referral report: {month} | Reviewly",
+    "metaDescription": "Referral demand, top roles, top cities, and company offer signals for {month}.",
+    "badge": "Monthly referral report",
+    "title": "Monthly referral report: {month}",
+    "descriptionPrefix": "Snapshot of referral demand and offer-side activity for this month. Data source mode:",
+    "sourceModeFull": "full historical (service role)",
+    "sourceModePublic": "public active scope",
+    "openDashboard": "Open referral-demand dashboard",
+    "backToHub": "Back to reports hub",
+    "shareReport": "Share report",
+    "insufficientTitle": "Insufficient data for a full monthly report",
+    "insufficientBodyOne": "This period currently has {count} records. A minimum of {min} records is required for a full report publication.",
+    "insufficientBodyTwo": "This page remains accessible for internal navigation and will auto-populate once more demand and offer signals are available.",
+    "metrics": {
+      "newDemandListings": "New demand listings",
+      "newReferralOffers": "New referral offers",
+      "demandMomentum": "Demand momentum",
+      "totalRecords": "Total records"
+    },
+    "sections": {
+      "topDemandRoles": "Top demand roles",
+      "topDemandCities": "Top demand cities",
+      "topCompaniesOffers": "Top companies (offers)"
+    },
+    "clusterNavigation": "Cluster navigation",
+    "clusterLinks": {
+      "referralDemand": "Referral demand intelligence",
+      "salary": "Salary intelligence",
+      "companies": "Company insights",
+      "blog": "Execution playbooks"
+    }
+  },
+  "blogArticlePage": {
+    "fallbackTitle": "Blog article",
+    "article": "Article",
+    "publishedOn": "Published on {date}",
+    "updatedOn": "Updated on {date}",
+    "readTime": "{minutes} min read",
+    "backToBlog": "Back to blog",
+    "shareArticle": "Share this article",
+    "usefulLinks": "Useful links",
+    "similarGuides": "Similar guides"
+  },
+  "referralDemandPage": {
+    "metaTitle": "Referral demand dashboard",
+    "metaDescription": "Track live referral demand, top roles, top cities, and hiring momentum across the market.",
+    "badge": "Referral demand intelligence",
+    "title": "Live referral demand dashboard",
+    "description": "Track where referral demand is growing, which roles are requested most often, and which cities are moving right now. Use these signals alongside salary guides and company reviews to target your next application.",
+    "lastRefreshed": "Last refreshed: {date}",
+    "viewDemandBoard": "View the demand board",
+    "publishDemand": "Publish a demand listing",
+    "viewReferralOffers": "View referral offers",
+    "activeListings": "Active listings",
+    "topRoles": "Top roles",
+    "topCities": "Top cities",
+    "noData": "No data available.",
+    "latestDemandListings": "Latest demand listings",
+    "noActiveDemand": "No active demand listings right now.",
+    "roleUnknown": "Role not specified",
+    "cityUnknown": "City not specified",
+    "modeUnknown": "Work mode not specified",
+    "publishedOn": "Published on {date}",
+    "viewDemand": "View demand listing",
+    "relatedResearch": "Related research"
+  },
+  "referralDemandRoleCityPage": {
+    "titleMiddle": "referral demand in",
+    "metaDescription": "Live referral demand signals for this role and city, including active listings and recent trend.",
+    "badge": "Referral demand page",
+    "activeListingsSentence": "{count} active listing(s) currently match this role/city segment.",
+    "noindexNotice": "This page is currently set to noindex until it reaches {count} active listings.",
+    "backToDashboard": "Back to dashboard",
+    "browseAll": "Browse all demand listings",
+    "activeDemand": "Active demand",
+    "momentum30d": "30-day momentum",
+    "commonProfile": "Common profile",
+    "workMode": "Work mode",
+    "seniority": "Seniority",
+    "notAvailable": "N/A",
+    "latestMatching": "Latest matching demand listings",
+    "viewListing": "View listing"
   }
 }

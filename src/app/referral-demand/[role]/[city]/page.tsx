@@ -9,6 +9,7 @@ import { MIN_INDEXABLE_REFERRAL_DEMAND_ROLE_CITY_LISTINGS } from '@/lib/seo-ia';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 type Params = {
   role: string;
@@ -90,6 +91,7 @@ function getThirtyDayTrend(rows: DemandListing[]) {
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { t } = await getServerTranslator();
   const { role, city } = await params;
   const roleLabel = displayFromSlug(role);
   const cityLabel = displayFromSlug(city);
@@ -99,8 +101,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const canonical = `${siteUrl}/referral-demand/${role}/${city}`;
 
   return {
-    title: `${roleLabel} referral demand in ${cityLabel} | Reviewly`,
-    description: `Live referral demand signals for ${roleLabel} in ${cityLabel}, including active listings and recent trend.`,
+    title: `${roleLabel} ${t('referralDemandRoleCityPage.titleMiddle', 'referral demand in')} ${cityLabel} | Reviewly`,
+    description: t('referralDemandRoleCityPage.metaDescription', `Live referral demand signals for ${roleLabel} in ${cityLabel}, including active listings and recent trend.`),
     alternates: { canonical },
     robots: {
       index: isIndexable,
@@ -110,6 +112,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ReferralDemandRoleCityPage({ params }: { params: Promise<Params> }) {
+  const { locale, t, tf } = await getServerTranslator();
   const { role, city } = await params;
   const roleLabel = displayFromSlug(role);
   const cityLabel = displayFromSlug(city);
@@ -131,25 +134,24 @@ export default async function ReferralDemandRoleCityPage({ params }: { params: P
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
       <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-        <Badge variant="outline" className="w-fit">Referral Demand Page</Badge>
+        <Badge variant="outline" className="w-fit">{t('referralDemandRoleCityPage.badge', 'Referral demand page')}</Badge>
         <h1 className="text-3xl md:text-4xl font-bold font-headline">
-          {roleLabel} referral demand in {cityLabel}
+          {roleLabel} {t('referralDemandRoleCityPage.titleMiddle', 'referral demand in')} {cityLabel}
         </h1>
         <p className="text-muted-foreground max-w-3xl">
-          {listings.length} active listing(s) currently match this role/city segment.
+          {tf('referralDemandRoleCityPage.activeListingsSentence', '{count} active listing(s) currently match this role/city segment.', { count: listings.length })}
         </p>
         {!isIndexable && (
           <p className="text-xs text-muted-foreground">
-            This page is currently set to noindex until it reaches {MIN_INDEXABLE_REFERRAL_DEMAND_ROLE_CITY_LISTINGS} active
-            listings.
+            {tf('referralDemandRoleCityPage.noindexNotice', 'This page is currently set to noindex until it reaches {count} active listings.', { count: MIN_INDEXABLE_REFERRAL_DEMAND_ROLE_CITY_LISTINGS })}
           </p>
         )}
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href="/referral-demand">Back to dashboard</Link>
+            <Link href="/referral-demand">{t('referralDemandRoleCityPage.backToDashboard', 'Back to dashboard')}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/parrainages/demandes">Browse all demand listings</Link>
+            <Link href="/parrainages/demandes">{t('referralDemandRoleCityPage.browseAll', 'Browse all demand listings')}</Link>
           </Button>
         </div>
       </section>
@@ -157,7 +159,7 @@ export default async function ReferralDemandRoleCityPage({ params }: { params: P
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="rounded-2xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Active demand</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('referralDemandRoleCityPage.activeDemand', 'Active demand')}</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{listings.length}</CardContent>
         </Card>
@@ -165,7 +167,7 @@ export default async function ReferralDemandRoleCityPage({ params }: { params: P
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4" />
-              30-day momentum
+              {t('referralDemandRoleCityPage.momentum30d', '30-day momentum')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold">{trend}%</CardContent>
@@ -174,19 +176,19 @@ export default async function ReferralDemandRoleCityPage({ params }: { params: P
           <CardHeader className="pb-2">
             <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Sparkles className="h-4 w-4" />
-              Common profile
+              {t('referralDemandRoleCityPage.commonProfile', 'Common profile')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <p>Work mode: {topWorkMode || 'N/A'}</p>
-            <p>Seniority: {topSeniority || 'N/A'}</p>
+            <p>{t('referralDemandRoleCityPage.workMode', 'Work mode')}: {topWorkMode || t('referralDemandRoleCityPage.notAvailable', 'N/A')}</p>
+            <p>{t('referralDemandRoleCityPage.seniority', 'Seniority')}: {topSeniority || t('referralDemandRoleCityPage.notAvailable', 'N/A')}</p>
           </CardContent>
         </Card>
       </section>
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg">Latest matching demand listings</CardTitle>
+          <CardTitle className="text-lg">{t('referralDemandRoleCityPage.latestMatching', 'Latest matching demand listings')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {listings.slice(0, 20).map((item) => (
@@ -198,13 +200,13 @@ export default async function ReferralDemandRoleCityPage({ params }: { params: P
                 <p className="font-medium">{item.title}</p>
                 <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
-                  {item.city || cityLabel} | {new Date(item.created_at).toLocaleDateString('fr-MA')}
+                  {item.city || cityLabel} | {new Date(item.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.summary}</p>
               </div>
               <Button asChild variant="outline" className="w-fit">
                 <Link href={`/parrainages/demandes/${item.id}`} className="inline-flex items-center gap-2">
-                  View listing
+                  {t('referralDemandRoleCityPage.viewListing', 'View listing')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

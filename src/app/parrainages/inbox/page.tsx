@@ -42,7 +42,7 @@ type DemandResponse = {
 
 export default async function ReferralInboxPage() {
   const { t, locale } = await getServerTranslator();
-  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();

@@ -43,7 +43,7 @@ export default function PendingPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { t, tf, locale } = useI18n();
-    const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+    const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
     const methodLabel = (method: string) => t(`dashboardPendingPage.verification.methods.${method}`, method);
 
     useEffect(() => {

@@ -7,7 +7,7 @@ import { TrendingUp, Award, Zap, Briefcase } from 'lucide-react';
 export async function CareerPathMatrix({ jobTitle }: { jobTitle: string }) {
   const { t, tf, locale } = await getServerTranslator();
   const metrics = await getCareerPathMetrics(jobTitle);
-  const numberLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const numberLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
 
   if (!metrics || metrics.length < 2) return null;
 

@@ -20,6 +20,7 @@ import { normalizeJobOfferInput } from '@/lib/job-offers/normalization';
 import { getJobOfferBenchmarks } from '@/lib/job-offers/benchmarks';
 import { computeJobOfferAnalysis } from '@/lib/job-offers/scoring';
 import { extractJobOfferInput } from '@/lib/job-offers/extraction';
+import { getServerTranslator } from '@/lib/i18n/server';
 
 export type JobOfferActionState = ActionState;
 
@@ -37,6 +38,7 @@ export async function submitJobOfferAnalysis(
   _prevState: JobOfferActionState,
   formData: FormData
 ): Promise<JobOfferActionState> {
+  const { t, tf } = await getServerTranslator();
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -44,7 +46,7 @@ export async function submitJobOfferAnalysis(
     if (authError || !user) {
       return createErrorResponse(
         ErrorCode.AUTHENTICATION_ERROR,
-        'Vous devez etre connecte pour analyser et enregistrer une offre.'
+        t('jobOfferActions.authRequired', 'You must be logged in to analyze and save a job offer.')
       ) as JobOfferActionState;
     }
 
@@ -53,7 +55,9 @@ export async function submitJobOfferAnalysis(
     if (limitStatus.isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
-        `Trop de tentatives. Reessayez dans ${Math.ceil(limitStatus.retryAfterSeconds / 60)} minutes.`
+        tf('jobOfferActions.rateLimited', 'Too many attempts. Try again in {minutes} minutes.', {
+          minutes: Math.ceil(limitStatus.retryAfterSeconds / 60),
+        })
       ) as JobOfferActionState;
     }
     await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
@@ -76,7 +80,7 @@ export async function submitJobOfferAnalysis(
       });
       return createErrorResponse(
         ErrorCode.VALIDATION_ERROR,
-        'Veuillez corriger les erreurs de l extraction.',
+        t('jobOfferActions.validationFailed', 'Please correct the extraction errors.'),
         {
           fieldErrors: parsed.error.flatten().fieldErrors,
           debug: {
@@ -111,8 +115,8 @@ export async function submitJobOfferAnalysis(
       return createErrorResponse(
         ErrorCode.VALIDATION_ERROR,
         effectiveSourceType === 'url'
-          ? 'Impossible de lire ce lien pour le moment. Collez le texte de l annonce directement.'
-          : 'Impossible de lire correctement cette offre. Essayez avec un texte plus complet.',
+          ? t('jobOfferActions.extractUrlFailed', 'Unable to read this link right now. Paste the job text directly instead.')
+          : t('jobOfferActions.extractTextFailed', 'Unable to read this offer correctly. Try again with more complete text.'),
         {
           debug: {
             stage: 'extract_input',
@@ -132,7 +136,7 @@ export async function submitJobOfferAnalysis(
       });
       return createErrorResponse(
         ErrorCode.VALIDATION_ERROR,
-        'Impossible d extraire assez d informations depuis cette offre. Essayez un texte plus complet.',
+        t('jobOfferActions.notEnoughInfo', 'Unable to extract enough information from this offer. Try again with more complete text.'),
         {
           debug: {
             stage: 'extract_incomplete',
@@ -234,7 +238,7 @@ export async function submitJobOfferAnalysis(
       logError('submit_job_offer_offer_insert', offerError, { userId: user.id, ...debugBase });
       return createErrorResponse(
         ErrorCode.DATABASE_ERROR,
-        'Erreur base de donnees lors de l enregistrement de l offre.',
+        t('jobOfferActions.offerSaveError', 'A database error occurred while saving the offer.'),
         {
           debug: {
             stage: 'insert_offer',
@@ -260,7 +264,7 @@ export async function submitJobOfferAnalysis(
       logError('submit_job_offer_analysis_insert', analysisError, { userId: user.id, jobOfferId: offerData.id, ...debugBase });
       return createErrorResponse(
         ErrorCode.DATABASE_ERROR,
-        'Erreur base de donnees lors de l enregistrement de l analyse.',
+        t('jobOfferActions.analysisSaveError', 'A database error occurred while saving the analysis.'),
         {
           debug: {
             stage: 'insert_analysis',
@@ -324,7 +328,7 @@ export async function submitJobOfferAnalysis(
     revalidatePath(`/job-offers/${analysisData.id}`);
 
     return createSuccessResponse(
-      'Analyse enregistree avec succes.',
+      t('jobOfferActions.success', 'Analysis saved successfully.'),
       {
         analysisId: analysisData.id,
         offerId: offerData.id,
@@ -340,7 +344,7 @@ export async function submitJobOfferAnalysis(
     logError('submit_job_offer_analysis_unexpected', error);
     return createErrorResponse(
       ErrorCode.SERVER_ERROR,
-      'Erreur inattendue lors de l analyse de l offre.',
+      t('jobOfferActions.unexpectedError', 'An unexpected error occurred while analyzing the offer.'),
       {
         debug: {
           stage: 'unexpected',

@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BlogHubPage() {
   const { t, tf, locale } = await getServerTranslator();
   const posts = await getMergedBlogPosts();
-  const dateLocale = locale === 'fr' ? 'fr-MA' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-MA' : 'en-US';
 
   if (posts.length === 0) {
     return (

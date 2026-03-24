@@ -73,13 +73,13 @@ export function RequestReferralForm({ offerId }: { offerId: string }) {
             {fieldError('cvUrl') && <p className="text-xs text-destructive">{fieldError('cvUrl')}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="linkedinUrl">LinkedIn (optionnel)</Label>
+            <Label htmlFor="linkedinUrl">{t('referrals.request.linkedinUrl', 'LinkedIn (optional)')}</Label>
             <Input id="linkedinUrl" name="linkedinUrl" placeholder="https://www.linkedin.com/in/..." />
             {fieldError('linkedinUrl') && <p className="text-xs text-destructive">{fieldError('linkedinUrl')}</p>}
           </div>
           <label className="flex items-start gap-2 rounded-md border border-border/70 bg-muted/20 p-3 text-xs text-muted-foreground">
             <input type="checkbox" required className="mt-0.5" />
-            Je confirme que je ne paierai jamais pour un parrainage et que je garde les echanges sur Reviewly.
+            {t('referrals.request.confirmation', 'I confirm that I will never pay for a referral and that I will keep all exchanges on Reviewly.')}
           </label>
           <p className="text-xs text-muted-foreground">
             {t('referrals.request.privacyNote', "Votre demande sera visible uniquement par l'auteur de l'offre.")}

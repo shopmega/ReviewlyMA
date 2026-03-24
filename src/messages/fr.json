@@ -226,7 +226,23 @@
   },
   "reviewPage": {
     "title": "Ecrire un avis pour {name}",
-    "subtitle": "Votre avis est anonyme et aidera des milliers de personnes a faire des choix eclaires."
+    "subtitle": "Votre avis est anonyme et aidera des milliers de personnes a faire des choix eclaires.",
+    "backToChooser": "Retour au choix de l'entreprise",
+    "listTitle": "Laisser un avis",
+    "listSubtitle": "Recherchez et selectionnez l'entreprise que vous souhaitez noter.",
+    "searchPlaceholder": "Rechercher une entreprise...",
+    "allCategories": "Toutes les categories",
+    "sortBy": "Trier par",
+    "sortOptions": {
+      "relevance": "Pertinence",
+      "rating": "Note",
+      "reviews": "Nombre d'avis",
+      "newest": "Plus recents"
+    },
+    "resultsSummary": "Affichage de {from} a {to} sur {total} resultats",
+    "pageOf": "sur {total}",
+    "emptySearch": "Aucune entreprise trouvee pour \"{query}\".",
+    "emptyAll": "Aucune entreprise disponible."
   },
   "reviewForm": {
     "submitting": "Soumission en cours...",
@@ -463,12 +479,61 @@
       "badge": "Referral marketplace",
       "title": "Parrainages emploi",
       "subtitle": "Des employes partagent des opportunites de recommandation interne. Parcourez les offres actives et envoyez une demande en quelques minutes.",
+      "metaTitle": "Parrainages emploi au Maroc | Reviewly",
+      "metaDescription": "Marketplace unifiee pour les offres de parrainage et les demandes publiques au Maroc. Filtres, signaux de confiance et interactions securisees sur Reviewly.",
+      "marketplaceDescription": "Marketplace unifiee : offres internes des employes et demandes publiques de candidats.",
       "publish": "Publier une offre",
+      "publishDemand": "Publier une demande",
       "empty": "Aucune offre active pour le moment.",
+      "emptyDemands": "Aucune demande active pour le moment.",
+      "emptyCombined": "Aucune offre ou demande active pour le moment.",
       "slots": "Places disponibles",
       "viewOffer": "Voir l'offre",
+      "viewRequest": "Voir la demande",
       "myOffers": "Mes offres",
-      "myRequests": "Mes demandes"
+      "myRequests": "Mes demandes",
+      "myPublicRequests": "Mes demandes publiques",
+      "inbox": "Inbox",
+      "securityNotice": "Aucun paiement n'est autorise pour un parrainage. Signalez toute tentative.",
+      "requestBadge": "Demande",
+      "offerReferral": "Proposer un parrainage",
+      "expiresOn": "Expire le",
+      "expirationUnknown": "Expiration non precisee",
+      "responseHours": "Repond en environ",
+      "responsePending": "Reactivite en cours",
+      "responseRate": "de reponses",
+      "trust": {
+        "verifiedEmployee": "Employe verifie",
+        "publicIdentity": "Identite publique",
+        "hiddenIdentity": "Identite masquee",
+        "score": "Score"
+      },
+      "segmented": {
+        "all": "Tous",
+        "offers": "Offres",
+        "demands": "Demandes"
+      },
+      "sort": {
+        "newest": "Plus recentes",
+        "expiring": "Expiration proche",
+        "responsive": "Plus reactives",
+        "spots": "Plus de places",
+        "trust": "Plus fiables"
+      },
+      "filters": {
+        "searchRequestsPlaceholder": "Poste, mots-cles...",
+        "searchOffersPlaceholder": "Entreprise ou poste",
+        "cityPlaceholder": "Ville",
+        "contract": "Contrat",
+        "mode": "Mode",
+        "level": "Niveau",
+        "submit": "Filtrer",
+        "reset": "Reinitialiser",
+        "resultsCount": "Resultats",
+        "sortedBy": "tri"
+      },
+      "loadOffersError": "Impossible de charger les offres pour le moment.",
+      "loadRequestsError": "Impossible de charger les demandes publiques pour le moment."
     },
     "new": {
       "badge": "Publication",
@@ -492,6 +557,7 @@
     "form": {
       "businessRecommended": "Entreprise (recommandee)",
       "searchBusiness": "Rechercher votre entreprise...",
+      "searchUnavailable": "La recherche est indisponible. Continuez en saisie manuelle.",
       "clearSearch": "Effacer la recherche d'entreprise",
       "countryFallback": "Maroc",
       "searching": "Recherche en cours...",
@@ -514,6 +580,7 @@
       "companyVerified": "Entreprise verifiee",
       "companyManual": "Entreprise manuelle",
       "footerHint": "Les candidats vous contacteront depuis la page de l'offre.",
+      "securityReminder": "Rappel securite : ne demandez jamais d'argent et n'imposez pas un contact externe sur WhatsApp ou Telegram.",
       "submit": "Publier mon offre"
     },
     "detail": {
@@ -540,6 +607,8 @@
       "message": "Votre message",
       "messagePlaceholder": "Presentez votre profil, experience et motivation...",
       "cvUrl": "Lien CV (optionnel)",
+      "linkedinUrl": "LinkedIn (optionnel)",
+      "confirmation": "Je confirme que je ne paierai jamais pour un parrainage et que je garderai tous les echanges sur Reviewly.",
       "privacyNote": "Votre demande sera visible uniquement par l'auteur de l'offre.",
       "submit": "Envoyer ma demande"
     }
@@ -554,6 +623,13 @@
     "removedDesc": "L'entreprise a ete retiree de vos favoris.",
     "saveError": "Une erreur est survenue lors de l'enregistrement.",
     "writeReview": "Ecrire un avis",
+    "manage": "Gerer",
+    "shareSalary": "Partager salaire",
+    "viewReviews": "Voir avis",
+    "viewSalaries": "Voir salaires",
+    "claim": "Revendiquer cette fiche",
+    "book": "Reserver",
+    "message": "Message",
     "call": "Appeler",
     "website": "Site web",
     "share": "Partager",
@@ -1134,6 +1210,12 @@
       "referrals": "Parrainage",
       "account": "Compte"
     },
+    "breadcrumbs": {
+      "profile": "Profil",
+      "saved": "Favoris",
+      "referrals": "Parrainages",
+      "account": "Compte"
+    },
     "reviews": {
       "title": "Mes Avis ({count})",
       "loadedCount": "Affichage de {count} avis charges.",
@@ -1286,6 +1368,36 @@
       "reportsDesc": "Rapports mensuels et panoramas sectoriels pour renforcer votre recherche."
     },
     "shareLabel": "Partager"
+  },
+  "userActions": {
+    "authRequired": "Authentification requise.",
+    "genericError": "Une erreur inattendue est survenue.",
+    "syncProProfile": {
+      "noApprovedClaim": "Aucune revendication approuvee n a ete trouvee.",
+      "updateError": "Impossible de synchroniser votre profil.",
+      "success": "Profil synchronise avec succes."
+    },
+    "toggleBookmark": {
+      "authRequired": "Vous devez etre connecte pour enregistrer une entreprise.",
+      "removeError": "Impossible de retirer cette entreprise de vos favoris.",
+      "removed": "Entreprise retiree des favoris.",
+      "saveError": "Impossible d enregistrer cette entreprise.",
+      "saved": "Entreprise enregistree avec succes."
+    },
+    "updateProfile": {
+      "validationError": "Validation echouee.",
+      "updateError": "Impossible de mettre a jour votre profil.",
+      "success": "Profil mis a jour avec succes.",
+      "unexpectedError": "Une erreur est survenue lors de la mise a jour de votre profil."
+    },
+    "export": {
+      "success": "Vos donnees sont pretes.",
+      "error": "Impossible d exporter vos donnees."
+    },
+    "requestDeletion": {
+      "success": "Votre demande de suppression a ete enregistree. Votre compte sera supprime le {date}. Vous pouvez annuler cette demande a tout moment en vous reconnectant.",
+      "error": "Impossible de demander la suppression du compte."
+    }
   },
   "referralMyRequestsPage": {
     "title": "Mes demandes de parrainage",
@@ -1487,9 +1599,13 @@
     "title": "Parrainages a {city}",
     "activeCount": "{count} offre(s) active(s)",
     "empty": "Aucune offre active pour cette ville.",
+    "emptyCombined": "Aucune offre ni demande active pour cette ville.",
+    "marketBreakdown": "{total} element(s) : {offers} offre(s), {demands} demande(s)",
+    "requestBadge": "Demande",
     "slots": "Places: {count}",
     "publishedOn": "Publiee le {date}",
-    "viewOffer": "Voir l offre"
+    "viewOffer": "Voir l offre",
+    "viewRequest": "Voir la demande"
   },
   "referralRolePage": {
     "metaTitle": "Parrainages poste | {role} | Reviewly",
@@ -1497,9 +1613,14 @@
     "title": "Parrainages pour {role}",
     "activeCount": "{count} offre(s) active(s)",
     "empty": "Aucune offre active pour ce poste.",
+    "emptyCombined": "Aucune offre ni demande active pour ce poste.",
+    "marketBreakdown": "{total} element(s) : {offers} offre(s), {demands} demande(s)",
     "cityUnknown": "Ville non precisee",
+    "requestBadge": "Demande",
     "slots": "Places: {count}",
-    "viewOffer": "Voir l offre"
+    "publishedOn": "Publiee le {date}",
+    "viewOffer": "Voir l offre",
+    "viewRequest": "Voir la demande"
   },
   "referralCompanyPage": {
     "metaTitle": "Parrainages entreprise | {company} | Reviewly",
@@ -3293,5 +3414,255 @@
       "tie": "Egalite",
       "advantage": "Avantage {side}"
     }
+  }
+  ,
+  "theme": {
+    "toggle": "Changer le theme",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Systeme"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "unreadCount": "{count} non lues",
+    "empty": "Aucune notification"
+  },
+  "businessSelector": {
+    "none": "Aucune entreprise",
+    "primary": "Principale",
+    "title": "Gestion des entreprises",
+    "count": "{count} entreprises",
+    "switch": "Basculer",
+    "add": "Ajouter une entreprise"
+  },
+  "share": {
+    "copiedTitle": "Lien copie",
+    "copiedDescription": "Le lien de partage a ete copie.",
+    "xTwitter": "X / Twitter",
+    "copyLink": "Copier le lien"
+  },
+  "follow": {
+    "followedTitle": "Abonne",
+    "unfollowedTitle": "Desabonne",
+    "followedDescription": "Vous recevrez les nouveautes de cette entreprise.",
+    "unfollowedDescription": "Vous ne recevrez plus les nouveautes.",
+    "active": "Suivi",
+    "cta": "Suivre",
+    "promptTitle": "Suivez les entreprises qui vous interessent",
+    "promptDescription": "Connectez-vous pour enregistrer vos entreprises preferees et recevoir leurs mises a jour."
+  },
+  "notFound": {
+    "title": "404 - Page non trouvee",
+    "description": "La page demandee est introuvable ou a ete deplacee.",
+    "home": "Retour a l'accueil",
+    "directory": "Explorer les entreprises"
+  },
+  "breadcrumb": {
+    "label": "Fil d ariane",
+    "home": "Accueil"
+  },
+  "authActions": {
+    "validation": {
+      "form": "Veuillez corriger les erreurs dans le formulaire."
+    },
+    "rateLimited": "Trop de tentatives. Veuillez reessayer dans {minutes} minutes.",
+    "login": {
+      "success": "Connexion reussie. Redirection en cours...",
+      "unexpectedError": "Une erreur est survenue lors de la connexion."
+    }
+  },
+  "supportActions": {
+    "authRequired": "Vous devez etre connecte pour creer un ticket de support.",
+    "requiredFields": "Veuillez remplir tous les champs requis.",
+    "created": "Votre ticket de support a ete cree avec succes. Notre equipe vous repondra rapidement.",
+    "createError": "Une erreur est survenue lors de la creation du ticket de support."
+  },
+  "suggestBusinessActions": {
+    "requiredFields": "Veuillez remplir les champs obligatoires.",
+    "authRequired": "Vous devez etre connecte pour suggerer une entreprise.",
+    "submitError": "Une erreur est survenue lors de l'envoi de la suggestion d'entreprise.",
+    "success": "Suggestion d'entreprise envoyee avec succes. Notre equipe va l'examiner.",
+    "unexpectedError": "Une erreur inattendue est survenue."
+  },
+  "suggestPage": {
+    "toast": {
+      "successTitle": "Suggestion envoyee",
+      "successDesc": "Votre suggestion a ete envoyee avec succes."
+    }
+  },
+  "jobOfferActions": {
+    "authRequired": "Vous devez etre connecte pour analyser et enregistrer une offre.",
+    "rateLimited": "Trop de tentatives. Reessayez dans {minutes} minutes.",
+    "validationFailed": "Veuillez corriger les erreurs d'extraction.",
+    "extractUrlFailed": "Impossible de lire ce lien pour le moment. Collez directement le texte de l'annonce.",
+    "extractTextFailed": "Impossible de lire correctement cette offre. Essayez avec un texte plus complet.",
+    "notEnoughInfo": "Impossible d'extraire assez d'informations depuis cette offre. Essayez avec un texte plus complet.",
+    "offerSaveError": "Une erreur base de donnees est survenue lors de l'enregistrement de l'offre.",
+    "analysisSaveError": "Une erreur base de donnees est survenue lors de l'enregistrement de l'analyse.",
+    "success": "Analyse enregistree avec succes.",
+    "unexpectedError": "Une erreur inattendue est survenue lors de l'analyse de l'offre."
+  },
+  "referralRequestActions": {
+    "authRequired": "Vous devez etre connecte pour demander un parrainage.",
+    "validationFailed": "Veuillez verifier votre demande.",
+    "rateLimited": "Vous avez envoye trop de demandes. Reessayez dans {minutes} minute(s).",
+    "offerUnavailable": "Cette offre n'est plus disponible.",
+    "ownOffer": "Vous ne pouvez pas demander votre propre offre.",
+    "blockedByOwner": "Vous ne pouvez plus contacter l'auteur de cette offre.",
+    "unblockRequired": "Debloquez d'abord cet utilisateur avant d'envoyer une demande.",
+    "duplicate": "Vous avez deja postule a cette offre.",
+    "submitError": "Impossible d'envoyer votre demande pour le moment.",
+    "success": "Votre demande de parrainage a ete envoyee."
+  },
+  "ticketConversation": {
+    "empty": "Debut de la conversation...",
+    "placeholder": "Votre message...",
+    "enterToSend": "Appuyez sur Entree pour envoyer"
+  },
+  "jobOfferWorkspace": {
+    "employerContext": {
+      "title": "Contexte employeur",
+      "reviews": "avis",
+      "claimed": "Revendique",
+      "unclaimed": "Non revendique",
+      "verified": "Verifie",
+      "limitedConfidence": "Confiance de mapping limitee",
+      "rating": "Note",
+      "reviewsCount": "Avis",
+      "claimedLabel": "Revendique",
+      "yes": "Oui",
+      "no": "Non",
+      "companySize": "Taille de l'entreprise",
+      "unknown": "Inconnue",
+      "salaryReputation": "Reputation salariale",
+      "limitedData": "Donnees limitees",
+      "viewReviews": "Voir les avis de l'entreprise",
+      "openCompanyPage": "Ouvrir la page entreprise"
+    }
+  },
+  "businessWidget": {
+    "open": "Ouvert",
+    "ratingOn": "Note globale sur",
+    "basedOn": "Base sur",
+    "reviews": "avis",
+    "closedToday": "Ferme aujourd'hui",
+    "viewReviews": "Voir les avis",
+    "poweredBy": "Fourni par"
+  },
+  "companyReferralsPage": {
+    "metaTitle": "Parrainages chez {company} | Reviewly",
+    "metaDescription": "Offres de parrainage actives pour {company}, avec role, ville, score de confiance et signaux d'avis.",
+    "badge": "Parrainages entreprise",
+    "title": "Parrainages chez {company}",
+    "activeOffersSentence": "{count} offres actives sont actuellement disponibles pour cette entreprise.",
+    "noindexNotice": "Cette page reste en noindex tant que les flags de bascule de route ne sont pas actives.",
+    "openCanonical": "Ouvrir la page canonique entreprise",
+    "backToHub": "Retour au hub entreprises",
+    "activeOffers": "Offres actives",
+    "avgTrustScore": "Score de confiance moyen",
+    "thresholdStatus": "Statut du seuil",
+    "thresholdPassed": "Seuil de donnees atteint ({count}+ offres).",
+    "thresholdRemaining": "Il manque {count} offres pour atteindre le seuil.",
+    "reviewSample": "Echantillon d'avis",
+    "avgRating": "Note moyenne",
+    "reviewMomentum": "Dynamique des avis sur 90 jours",
+    "notAvailable": "N/D",
+    "sentimentTitle": "Synthese du sentiment des avis",
+    "noBusinessIds": "Aucun business_id lie n'a ete trouve sur les offres actuelles, le sentiment des avis ne peut donc pas encore etre agrege.",
+    "lowSampleNotice": "Sentiment masque faute d'echantillon suffisant. Minimum {count} avis publies requis.",
+    "positiveShare": "Part positive (notes 4-5)",
+    "recommendRate": "Taux de recommandation",
+    "last90Days": "Avis publies sur les 90 derniers jours",
+    "previous90Days": "90 jours precedents",
+    "latestOffers": "Dernieres offres entreprise",
+    "cityUnavailable": "Ville non precisee",
+    "slots": "Places",
+    "viewOffer": "Voir l'offre"
+  },
+  "monthlyReportPage": {
+    "fallbackTitle": "Rapport | Reviewly",
+    "metaTitle": "Rapport mensuel de parrainage : {month} | Reviewly",
+    "metaDescription": "Demande de parrainage, roles principaux, villes principales et signaux d'offres entreprise pour {month}.",
+    "badge": "Rapport mensuel de parrainage",
+    "title": "Rapport mensuel de parrainage : {month}",
+    "descriptionPrefix": "Vue d'ensemble de la demande de parrainage et de l'activite cote offres pour ce mois. Mode source de donnees :",
+    "sourceModeFull": "historique complet (service role)",
+    "sourceModePublic": "perimetre public actif",
+    "openDashboard": "Ouvrir le dashboard referral-demand",
+    "backToHub": "Retour au hub rapports",
+    "shareReport": "Partager le rapport",
+    "insufficientTitle": "Donnees insuffisantes pour un rapport mensuel complet",
+    "insufficientBodyOne": "Cette periode compte actuellement {count} enregistrements. Un minimum de {min} enregistrements est requis pour publier un rapport complet.",
+    "insufficientBodyTwo": "Cette page reste accessible pour la navigation interne et se remplira automatiquement une fois que davantage de signaux de demande et d'offre seront disponibles.",
+    "metrics": {
+      "newDemandListings": "Nouvelles demandes",
+      "newReferralOffers": "Nouvelles offres de parrainage",
+      "demandMomentum": "Dynamique de la demande",
+      "totalRecords": "Total des enregistrements"
+    },
+    "sections": {
+      "topDemandRoles": "Top roles demandes",
+      "topDemandCities": "Top villes demandees",
+      "topCompaniesOffers": "Top entreprises (offres)"
+    },
+    "clusterNavigation": "Navigation du cluster",
+    "clusterLinks": {
+      "referralDemand": "Intelligence demande de parrainage",
+      "salary": "Intelligence salaire",
+      "companies": "Insights entreprises",
+      "blog": "Playbooks d'execution"
+    }
+  },
+  "blogArticlePage": {
+    "fallbackTitle": "Article de blog",
+    "article": "Article",
+    "publishedOn": "Publie le {date}",
+    "updatedOn": "Mis a jour le {date}",
+    "readTime": "{minutes} min de lecture",
+    "backToBlog": "Retour au blog",
+    "shareArticle": "Partager cet article",
+    "usefulLinks": "Liens utiles",
+    "similarGuides": "Guides similaires"
+  },
+  "referralDemandPage": {
+    "metaTitle": "Dashboard de demande de parrainage",
+    "metaDescription": "Suivez la demande de parrainage en direct, les roles les plus demandes, les villes les plus actives et la dynamique du marche.",
+    "badge": "Intelligence demande de parrainage",
+    "title": "Dashboard live de demande de parrainage",
+    "description": "Suivez ou la demande de parrainage progresse, quels roles sont les plus demandes et quelles villes bougent en ce moment. Croisez ces signaux avec les guides salaires et les avis entreprise pour mieux cibler votre prochaine candidature.",
+    "lastRefreshed": "Derniere mise a jour : {date}",
+    "viewDemandBoard": "Voir le demand board",
+    "publishDemand": "Publier une demande",
+    "viewReferralOffers": "Voir les offres de parrainage",
+    "activeListings": "Demandes actives",
+    "topRoles": "Top roles",
+    "topCities": "Top cities",
+    "noData": "Aucune donnee disponible.",
+    "latestDemandListings": "Dernieres demandes publiees",
+    "noActiveDemand": "Aucune demande active actuellement.",
+    "roleUnknown": "Role non specifie",
+    "cityUnknown": "Ville non specifiee",
+    "modeUnknown": "Mode non specifie",
+    "publishedOn": "Publiee le {date}",
+    "viewDemand": "Voir la demande",
+    "relatedResearch": "Recherche associee"
+  },
+  "referralDemandRoleCityPage": {
+    "titleMiddle": "demande de parrainage a",
+    "metaDescription": "Signaux de demande de parrainage en direct pour ce role et cette ville, avec les demandes actives et la tendance recente.",
+    "badge": "Page de demande de parrainage",
+    "activeListingsSentence": "{count} demande(s) active(s) correspondent actuellement a ce segment role/ville.",
+    "noindexNotice": "Cette page reste en noindex tant qu'elle n'atteint pas {count} demandes actives.",
+    "backToDashboard": "Retour au dashboard",
+    "browseAll": "Voir toutes les demandes",
+    "activeDemand": "Demande active",
+    "momentum30d": "Dynamique 30 jours",
+    "commonProfile": "Profil frequent",
+    "workMode": "Mode de travail",
+    "seniority": "Seniorite",
+    "notAvailable": "N/A",
+    "latestMatching": "Dernieres demandes correspondantes",
+    "viewListing": "Voir la demande"
   }
 }

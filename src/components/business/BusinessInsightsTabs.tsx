@@ -36,7 +36,7 @@ export function BusinessInsightsTabs({
   referralOffers = [],
   referralDemands = [],
 }: BusinessInsightsTabsProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const searchParams = useSearchParams();
   const ctaExperiment = 'business_profile_trust_panel_v1';
   const reviewCount = business.reviews.length;
@@ -70,12 +70,12 @@ export function BusinessInsightsTabs({
       if (!Number.isNaN(ms)) candidateDates.push(ms);
     }
     if (candidateDates.length === 0) return t('business.trust.noDate', 'Date indisponible');
-    return new Date(Math.max(...candidateDates)).toLocaleDateString('fr-MA', {
+    return new Date(Math.max(...candidateDates)).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     });
-  }, [business.created_at, business.reviews, salaryEntries, t]);
+  }, [business.created_at, business.reviews, locale, salaryEntries, t]);
   const isClaimed = Boolean(business.is_claimed || business.owner_id);
 
   return (

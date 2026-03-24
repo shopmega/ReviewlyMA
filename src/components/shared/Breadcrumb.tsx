@@ -1,7 +1,10 @@
+'use client'
+
 import Link from "next/link"
 import { ChevronRight, Home } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 export interface BreadcrumbProps {
     items: {
@@ -12,9 +15,11 @@ export interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
+    const { t } = useI18n()
+
     return (
         <nav
-            aria-label="Breadcrumb"
+            aria-label={t('breadcrumb.label', 'Fil d ariane')}
             className={cn("flex flex-wrap items-center gap-1 text-sm text-muted-foreground", className)}
         >
             <Link
@@ -22,7 +27,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
                 className="flex items-center hover:text-foreground transition-colors"
             >
                 <Home className="h-4 w-4" />
-                <span className="sr-only">Home</span>
+                <span className="sr-only">{t('breadcrumb.home', 'Accueil')}</span>
             </Link>
             {items.map((item, index) => (
                 <div key={item.href} className="flex items-center min-w-0">

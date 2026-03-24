@@ -51,7 +51,7 @@ export default function SignupPage() {
     if (state.status === 'success') {
       toast({
         title: t('auth.signup.successTitle', 'Success'),
-        description: t('auth.signup.successDesc', 'Account created successfully. Please check your email.'),
+        description: state.message || t('auth.signup.successDesc', 'Account created successfully. Please check your email.'),
       });
       setTimeout(() => {
         window.location.href = '/';
@@ -74,7 +74,7 @@ export default function SignupPage() {
       toast({
         variant: 'destructive',
         title: t('auth.signup.errorTitle', 'Error'),
-        description: t('auth.signup.errorDesc', 'An error occurred while creating your account.'),
+        description: state.message || t('auth.signup.errorDesc', 'An error occurred while creating your account.'),
       });
     }
   }, [state, toast, form, t]);
@@ -190,7 +190,7 @@ export default function SignupPage() {
             {state.status === 'error' && !state.errors && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{t('auth.signup.errorDesc', 'An error occurred while creating your account.')}</AlertDescription>
+                <AlertDescription>{state.message || t('auth.signup.errorDesc', 'An error occurred while creating your account.')}</AlertDescription>
               </Alert>
             )}
             <Form {...form}>

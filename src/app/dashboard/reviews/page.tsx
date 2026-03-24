@@ -86,7 +86,7 @@ export default function ReviewsPage() {
   const { toast } = useToast();
   const { t, tf, locale } = useI18n();
 
-  const dateLocale = locale === 'fr' ? 'fr-FR' : locale === 'ar' ? 'ar-MA' : 'en-US';
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 
   const sortedReviews = useMemo(() => {
     if (!reviews.length) return [];
