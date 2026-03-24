@@ -5,15 +5,15 @@ import Link from 'next/link';
 import { getSiteSettings } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import PremiumFeatures from '@/components/shared/PremiumFeatures';
-import { getUserProfile } from '@/lib/session';
+import { getCurrentUserWithProfile } from '@/lib/auth-helpers';
 import { getServerTranslator } from '@/lib/i18n/server';
 import { getSiteName } from '@/lib/site-config';
 
 export default async function ForProsPage() {
   const siteSettings = await getSiteSettings();
   const siteName = getSiteName(siteSettings);
-  const user = await getUserProfile();
-  const userTier = user?.tier || 'standard';
+  const currentUser = await getCurrentUserWithProfile();
+  const userTier = currentUser?.profile?.tier || 'standard';
   const { t, tf } = await getServerTranslator();
 
   const growthMonthly = siteSettings.tier_growth_monthly_price || 99;

@@ -1,13 +1,12 @@
 'use server';
 
-import { claimSchema, ActionState, SubscriptionTier } from '@/lib/types';
+import { ActionState } from '@/lib/types';
 import { checkRateLimit, recordAttempt, resetRateLimit, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import {
     handleValidationError,
     handleDatabaseError,
     handleAuthenticationError,
-    handleFileUploadError,
     createErrorResponse,
     createSuccessResponse,
     logError,
@@ -16,44 +15,25 @@ import {
 import {
     handleMultipleProofFiles,
     buildProofDataUpdates,
-    getFileErrorMessage,
     type ProofFileType
 } from '@/lib/file-handlers';
-import { sendEmail, emailTemplates } from '@/lib/email-service';
-import { getSiteSettings } from '@/lib/data';
-import { getMaxBusinessesForTier } from '@/lib/tier-utils';
-import { getSiteName } from '@/lib/site-config';
+import { createClaimVerificationCodeRecord, sendClaimEmailVerificationCode } from '@/lib/claims/server';
+import {
+    buildClaimProofStatus,
+    buildClaimRecordPayload,
+    buildRequestedBusinessUpdates,
+    getClaimProofPresence,
+    parseClaimFormSubmission,
+} from '@/lib/claims/submission';
+import {
+    getClaimEligibilityError,
+    getClaimUserContext,
+    resolveClaimBusiness,
+    syncClaimUserProfile,
+} from '@/lib/claims/workflow';
 import { notifyAdmins } from '@/lib/notifications';
-import { sanitizeBusinessGalleryUrls, sanitizeBusinessMediaPath } from '@/lib/business-media';
 
 export type ClaimFormState = ActionState & { claimId?: string };
-
-interface ClaimData {
-    // Step 1: Business Details
-    businessName: string;
-    category: string;
-    subcategory: string;
-    address: string;
-    city: string;
-    quartier: string;
-    phone?: string;
-    website?: string;
-    description?: string;
-    amenities: string[];
-
-    // Step 2: Identity & Proof
-    fullName: string;
-    position: string;
-    claimerType: 'owner' | 'co_owner' | 'legal_representative' | 'manager' | 'marketing_manager' | 'agency_representative' | 'employee_delegate' | 'other';
-    claimerTitle?: string;
-    email: string;
-    personalPhone: string;
-    proofMethods: string[];
-    messageToAdmin?: string;
-
-    // Existing Business
-    existingBusinessId?: string;
-}
 
 
 export async function submitClaim(
@@ -71,92 +51,34 @@ export async function submitClaim(
         ) as ClaimFormState;
     }
 
-    // BLOCKER: Prevent multiple business claims per user
-    // Get profile to check for admin status and existing data
-    const { data: currentUserProfile } = await supabaseService
-        .from('profiles')
-        .select('business_id, role, tier, full_name, email, is_premium')
-        .eq('id', user.id)
-        .single();
+    const { currentUserProfile, existingClaims, isAdmin } = await getClaimUserContext({
+        supabaseService,
+        userId: user.id,
+    });
 
-    const isAdmin = currentUserProfile?.role === 'admin';
+    const eligibilityError = await getClaimEligibilityError({
+        supabaseService,
+        userId: user.id,
+        currentUserProfile,
+        existingClaims,
+        isAdmin,
+    });
 
-    // 1. Check for existing claims (approved or pending)
-    const { data: existingClaims } = await supabaseService
-        .from('business_claims')
-        .select('id, status, claim_state, business_id')
-        .eq('user_id', user.id);
-
-    if (!isAdmin) {
-        // Count unique businesses already managed
-        const managedBusinessIds = new Set<string>();
-
-        // From profile
-        if (currentUserProfile?.business_id) {
-            managedBusinessIds.add(currentUserProfile.business_id);
-        }
-
-        // From approved claims
-        existingClaims
-            ?.filter(c => c.status === 'approved' || c.claim_state === 'verified')
-            .forEach(c => managedBusinessIds.add(c.business_id));
-
-        // From user_businesses assignments
-        const { data: assignments } = await supabaseService
-            .from('user_businesses')
-            .select('business_id')
-            .eq('user_id', user.id);
-
-        assignments?.forEach(a => managedBusinessIds.add(a.business_id));
-
-        const maxAllowed = getMaxBusinessesForTier(currentUserProfile?.tier as SubscriptionTier || 'standard');
-
-        if (managedBusinessIds.size >= maxAllowed) {
-            return createErrorResponse(
-                ErrorCode.AUTHORIZATION_ERROR,
-                `Vous gérez déjà le nombre maximum d'établissements autorisé pour votre offre (${maxAllowed}).`
-            ) as ClaimFormState;
-        }
-    }
-
-    // Also check for pending claims - usually we only want 1 pending at a time
-    const hasPending = existingClaims?.some(
-        c => c.status === 'pending' || c.claim_state === 'verification_pending'
-    );
-    if (hasPending) {
+    if (eligibilityError) {
         return createErrorResponse(
             ErrorCode.AUTHORIZATION_ERROR,
-            'Vous avez déjà une demande de revendication en cours. Veuillez attendre sa validation avant d\'en soumettre une autre.'
+            eligibilityError
         ) as ClaimFormState;
     }
 
     try {
-        // Parse form data
-        const entries = Object.fromEntries(formData.entries());
-
-        // Handle array fields
-        const amenities = (formData.get('amenities') as string)?.split(',').filter(Boolean) || [];
-        const proofMethods = (formData.get('proofMethods') as string)?.split(',').filter(Boolean) || [];
-
-        // Extract file objects separately to avoid including them in validation
-        const documentFile = formData.get('documentFile') as File | string | null;
-        const videoFile = formData.get('videoFile') as File | string | null;
-        const logoFile = formData.get('logoFile') as File | null;
-        const coverFile = formData.get('coverFile') as File | null;
-
-        // Prepare data for validation, excluding files
-        const dataForValidation = {
-            ...entries,
-            amenities,
-            proofMethods,
-            documentFile: undefined,
-            videoFile: undefined,
-            logoFile: undefined,
-            coverFile: undefined,
-            galleryFiles: undefined,
-        };
-
-        const validatedFields = claimSchema.safeParse(dataForValidation);
+        const {
+            documentFile,
+            videoFile,
+            logoFile,
+            coverFile,
+            validatedFields,
+        } = parseClaimFormSubmission(formData);
 
         if (!validatedFields.success) {
             return handleValidationError(
@@ -166,8 +88,10 @@ export async function submitClaim(
         }
 
         const claimData = validatedFields.data;
-        const hasDocumentProof = typeof documentFile === 'string' ? documentFile.trim().length > 0 : !!documentFile;
-        const hasVideoProof = typeof videoFile === 'string' ? videoFile.trim().length > 0 : !!videoFile;
+        const { hasDocumentProof, hasVideoProof } = getClaimProofPresence({
+            documentFile,
+            videoFile,
+        });
 
         if (!claimData.existingBusinessId && !claimData.phone && !claimData.website) {
             return handleValidationError(
@@ -192,22 +116,12 @@ export async function submitClaim(
 
         // Step 1: Create or update user profile
         // Sync identity only if profile fields are empty to avoid data corruption/overlapping
-        const profileUpdates: any = {
-            id: user.id,
-            role: currentUserProfile?.role || 'user',
-            business_id: currentUserProfile?.business_id || null,
-        };
-
-        if (!currentUserProfile?.full_name) {
-            profileUpdates.full_name = claimData.fullName;
-        }
-        if (!currentUserProfile?.email) {
-            profileUpdates.email = claimData.email;
-        }
-
-        const { error: profileError } = await supabaseService
-            .from('profiles')
-            .upsert(profileUpdates, { onConflict: 'id' });
+        const { error: profileError } = await syncClaimUserProfile({
+            supabaseService,
+            userId: user.id,
+            currentUserProfile,
+            claimData,
+        });
 
         if (profileError && !profileError.message.includes('duplicate')) {
             logError('claim_profile_error', profileError, { userId: user.id });
@@ -216,88 +130,38 @@ export async function submitClaim(
 
         // Step 2: Get or create business
         let businessId;
-        const requestedBusinessUpdates: Record<string, any> = {
-            amenities: claimData.amenities,
-        };
+        const requestedBusinessUpdates = buildRequestedBusinessUpdates(claimData);
 
-        if (claimData.description) {
-            requestedBusinessUpdates.description = claimData.description;
+        const businessResolution = await resolveClaimBusiness({
+            supabaseService,
+            claimData,
+            requestedBusinessUpdates,
+            isAdmin,
+            isBusinessClaimed,
+        });
+
+        if ('error' in businessResolution && businessResolution.error) {
+            return { status: 'error', message: businessResolution.error };
         }
 
-        if (claimData.website) {
-            requestedBusinessUpdates.website = claimData.website;
+        if ('updateError' in businessResolution) {
+            logError('claim_business_update', businessResolution.updateError, { userId: user.id, businessId: businessResolution.businessId });
+            return handleDatabaseError(businessResolution.updateError) as ClaimFormState;
         }
 
-        if (claimData.phone) {
-            requestedBusinessUpdates.phone = claimData.phone;
+        if ('createError' in businessResolution) {
+            logError('claim_business_creation', businessResolution.createError, { userId: user.id });
+            return handleDatabaseError(businessResolution.createError) as ClaimFormState;
         }
 
-        if (claimData.existingBusinessId) {
-            // Check if the existing business is already claimed
-            const isAlreadyClaimed = await isBusinessClaimed(claimData.existingBusinessId);
-            if (isAlreadyClaimed) {
-                return { status: 'error', message: 'Cet établissement a déjà été revendiqué par un autre utilisateur.' };
-            }
-
-            // Use existing business and update it with claim data
-            businessId = claimData.existingBusinessId;
-
-            // Only admins can update business data immediately.
-            // For non-admins, changes are staged in claim proof_data and applied on approval.
-            if (isAdmin && Object.keys(requestedBusinessUpdates).length > 0) {
-                const { error: updateError } = await supabaseService
-                    .from('businesses')
-                    .update(requestedBusinessUpdates)
-                    .eq('id', businessId);
-
-                if (updateError) {
-                    logError('claim_business_update', updateError, { userId: user.id, businessId });
-                    return handleDatabaseError(updateError) as ClaimFormState;
-                }
-            }
-        } else {
-            // Create new business
-            const businessPayload = {
-                id: `${claimData.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}`,
-                name: claimData.businessName,
-                type: 'commerce',
-                category: claimData.category,
-                subcategory: claimData.subcategory,
-                city: claimData.city,
-                quartier: claimData.quartier,
-                location: `${claimData.address}, ${claimData.quartier}, ${claimData.city}`,
-                description: claimData.description || 'A completer',
-                website: claimData.website || null,
-                amenities: claimData.amenities,
-                overall_rating: 0,
-                is_featured: false,
-                logo_url: null,
-                logo_hint: null,
-                cover_url: null,
-                cover_hint: null,
-                tags: [],
-            };
-
-            const { data: businessData, error: businessError } = await supabaseService
-                .from('businesses')
-                .insert([businessPayload])
-                .select('id')
-                .single();
-
-            if (businessError) {
-                logError('claim_business_creation', businessError, { userId: user.id });
-                return handleDatabaseError(businessError) as ClaimFormState;
-            }
-
-            if (!businessData?.id) {
-                return createErrorResponse(
-                    ErrorCode.SERVER_ERROR,
-                    'Erreur: pas d\'ID établissement retourné.'
-                ) as ClaimFormState;
-            }
-
-            businessId = businessData.id;
+        if ('missingId' in businessResolution) {
+            return createErrorResponse(
+                ErrorCode.SERVER_ERROR,
+                'Erreur: pas d\'ID établissement retourné.'
+            ) as ClaimFormState;
         }
+
+        businessId = businessResolution.businessId;
 
         // PREVENT DOUBLE SUBMISSION: Check if a pending claim already exists
         const { data: existingClaim } = await supabaseService
@@ -315,51 +179,22 @@ export async function submitClaim(
             ) as ClaimFormState;
         }
 
-        // Step 3: Create claim record with proof methods
-        // Never trust client-side verification flags.
-        const emailVerified = false;
-        const phoneVerified = false;
+        const proofStatus = buildClaimProofStatus({
+            proofMethods: claimData.proofMethods,
+            hasDocumentProof,
+            hasVideoProof,
+        });
 
-        // Initialize proof status with verification flags
-        const proofStatus = claimData.proofMethods.reduce((acc, method) => {
-            if (method === 'email') {
-                acc[method] = emailVerified ? 'verified' : 'pending';
-            } else if (method === 'phone') {
-                acc[method] = phoneVerified ? 'verified' : 'pending';
-            } else if (method === 'document') {
-                acc[method] = hasDocumentProof ? 'pending_review' : 'pending';
-            } else if (method === 'video') {
-                acc[method] = hasVideoProof ? 'pending_review' : 'pending';
-            } else {
-                acc[method] = 'pending';
-            }
-            return acc;
-        }, {} as Record<string, string>);
-
-        const claimPayload = {
-            user_id: user.id,
-            business_id: businessId,
-            full_name: claimData.fullName,
-            job_title: claimData.position,
-            claimer_type: claimData.claimerType,
-            claimer_title: claimData.claimerTitle || null,
-            email: claimData.email,
-            phone: claimData.personalPhone,
-            status: 'pending',
-            proof_methods: claimData.proofMethods,
-            proof_status: proofStatus,
-            proof_data: {
-                email_verified: emailVerified,
-                phone_verified: phoneVerified,
-                document_uploaded: hasDocumentProof,
-                video_uploaded: hasVideoProof,
-                verified_at: new Date().toISOString(),
-                ...(claimData.existingBusinessId && !isAdmin && Object.keys(requestedBusinessUpdates).length > 0
-                    ? { requested_updates: requestedBusinessUpdates }
-                    : {}),
-            },
-            message: claimData.messageToAdmin,
-        };
+        const claimPayload = buildClaimRecordPayload({
+            userId: user.id,
+            businessId,
+            claimData,
+            proofStatus,
+            hasDocumentProof,
+            hasVideoProof,
+            isAdmin,
+            requestedBusinessUpdates,
+        });
 
         const { data: claimData_response, error: claimError } = await supabaseService
             .from('business_claims')
@@ -437,33 +272,21 @@ export async function submitClaim(
 async function generateVerificationCode(method: string, claimId: string, email: string): Promise<void> {
     try {
         const supabase = await createClient();
-        const settings = await getSiteSettings();
-        const siteName = getSiteName(settings);
 
         if (method === 'email') {
-            const code = Math.floor(100000 + Math.random() * 900000).toString();
-            await supabase.from('verification_codes').insert([{
-                claim_id: claimId,
+            const { code } = await createClaimVerificationCodeRecord({
+                supabase,
+                claimId,
                 method: 'email',
-                code: code,
-                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            }]);
-
-            // Send actual email
-            await sendEmail({
-                to: email,
-                subject: emailTemplates.verificationCode.subject(code),
-                html: emailTemplates.verificationCode.html({ code, siteName }),
             });
+            await sendClaimEmailVerificationCode({ email, code });
 
         } else if (method === 'phone') {
-            const code = Math.floor(100000 + Math.random() * 900000).toString();
-            await supabase.from('verification_codes').insert([{
-                claim_id: claimId,
+            await createClaimVerificationCodeRecord({
+                supabase,
+                claimId,
                 method: 'phone',
-                code: code,
-                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            }]);
+            });
 
             // For phone, still just log for now as we don't have SMS service integrated
         }
@@ -617,192 +440,6 @@ export async function getUserBusinessClaim(businessId: string) {
     return data;
 }
 
-// Helper to generate unique file names (prevents collision race condition)
-function generateUniqueFilePath(basePath: string, fileExtension: string): string {
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 10);
-    return `${basePath}-${timestamp}-${randomId}.${fileExtension}`;
-}
-
-async function uploadProofFiles(supabaseService: any, claimId: string, documentFile: File | string | null, videoFile: File | string | null, proofStatus: Record<string, string>) {
-    const { data: claim } = await supabaseService
-        .from('business_claims')
-        .select('proof_data')
-        .eq('id', claimId)
-        .maybeSingle();
-
-    if (!claim) {
-        // Handle missing claim
-        return;
-    }
-
-    let currentProofData = claim?.proof_data || {};
-    let updates: any = { ...currentProofData };
-
-    if (documentFile) {
-        try {
-            let docPath = '';
-            if (typeof documentFile === 'string') {
-                docPath = documentFile;
-            } else {
-                const docBuffer = await documentFile.arrayBuffer();
-                const fileExt = documentFile.name.split('.').pop() || 'pdf';
-                // FIXED: Use timestamp + random ID to prevent collision
-                docPath = generateUniqueFilePath(`claims/${claimId}/document`, fileExt);
-                await supabaseService.storage
-                    .from('claim-proofs')
-                    .upload(docPath, docBuffer, {
-                        contentType: documentFile.type,
-                        upsert: false,
-                    });
-            }
-            updates.document_url = docPath;
-            updates.document_uploaded = true;
-        } catch (error) {
-            console.error('Error handling document:', error);
-        }
-    }
-
-    if (videoFile) {
-        try {
-            let vidPath = '';
-            if (typeof videoFile === 'string') {
-                vidPath = videoFile;
-            } else {
-                const vidBuffer = await videoFile.arrayBuffer();
-                const fileExt = videoFile.name.split('.').pop() || 'mp4';
-                // FIXED: Use timestamp + random ID to prevent collision
-                vidPath = generateUniqueFilePath(`claims/${claimId}/video`, fileExt);
-                await supabaseService.storage
-                    .from('claim-proofs')
-                    .upload(vidPath, vidBuffer, {
-                        contentType: videoFile.type,
-                        upsert: false,
-                    });
-            }
-            updates.video_url = vidPath;
-            updates.video_uploaded = true;
-        } catch (error) {
-            console.error('Error handling video:', error);
-        }
-    }
-
-    if (Object.keys(updates).length > 0) {
-        await supabaseService
-            .from('business_claims')
-            .update({
-                proof_data: updates,
-            })
-            .eq('id', claimId);
-    }
-}
-
-async function uploadBusinessImages(supabaseService: any, businessId: string, logoFile: File | string | null, coverFile: File | string | null, galleryFiles: (File | string)[]) {
-    let businessImages: { logo_url?: string; cover_url?: string; gallery_urls?: string[] } = {};
-
-    if (logoFile) {
-        try {
-            if (typeof logoFile === 'string') {
-                const sanitizedLogoPath = sanitizeBusinessMediaPath(logoFile);
-                if (sanitizedLogoPath) {
-                    businessImages.logo_url = sanitizedLogoPath;
-                }
-            } else {
-                const logoBuffer = await logoFile.arrayBuffer();
-                const fileExt = logoFile.name.split('.').pop() || 'png';
-                // FIXED: Use timestamp + random ID to prevent collision
-                const logoPath = generateUniqueFilePath(`businesses/${businessId}/logo`, fileExt);
-                await supabaseService.storage
-                    .from('business-images')
-                    .upload(logoPath, logoBuffer, {
-                        contentType: logoFile.type,
-                        upsert: false,
-                    });
-                businessImages.logo_url = logoPath;
-            }
-        } catch (error) {
-            console.error('Error handling logo:', error);
-        }
-    }
-
-    if (coverFile) {
-        try {
-            if (typeof coverFile === 'string') {
-                const sanitizedCoverPath = sanitizeBusinessMediaPath(coverFile);
-                if (sanitizedCoverPath) {
-                    businessImages.cover_url = sanitizedCoverPath;
-                }
-            } else {
-                const coverBuffer = await coverFile.arrayBuffer();
-                const fileExt = coverFile.name.split('.').pop() || 'png';
-                // FIXED: Use timestamp + random ID to prevent collision
-                const coverPath = generateUniqueFilePath(`businesses/${businessId}/cover`, fileExt);
-                await supabaseService.storage
-                    .from('business-images')
-                    .upload(coverPath, coverBuffer, {
-                        contentType: coverFile.type,
-                        upsert: false,
-                    });
-                businessImages.cover_url = coverPath;
-            }
-        } catch (error) {
-            console.error('Error handling cover:', error);
-        }
-    }
-
-    if (galleryFiles && galleryFiles.length > 0) {
-        const galleryUrls: string[] = [];
-        for (let i = 0; i < galleryFiles.length; i++) {
-            const file = galleryFiles[i];
-            try {
-                if (typeof file === 'string') {
-                    const sanitizedGalleryPath = sanitizeBusinessMediaPath(file);
-                    if (sanitizedGalleryPath) {
-                        galleryUrls.push(sanitizedGalleryPath);
-                    }
-                } else {
-                    const galleryBuffer = await file.arrayBuffer();
-                    const fileExt = file.name.split('.').pop() || 'png';
-                    // FIXED: Use timestamp + random ID to prevent collision (even for galleries)
-                    const galleryPath = generateUniqueFilePath(`businesses/${businessId}/gallery-${i}`, fileExt);
-                    await supabaseService.storage
-                        .from('business-images')
-                        .upload(galleryPath, galleryBuffer, {
-                            contentType: file.type,
-                            upsert: false,
-                        });
-                    galleryUrls.push(galleryPath);
-                }
-            } catch (error) {
-                console.error(`Error handling gallery image ${i}:`, error);
-            }
-        }
-        const sanitizedGalleryUrls = sanitizeBusinessGalleryUrls(galleryUrls);
-        if (sanitizedGalleryUrls.length > 0) {
-            businessImages.gallery_urls = sanitizedGalleryUrls;
-        }
-    }
-
-    // Update business with image URLs if any were uploaded
-    if (Object.keys(businessImages).length > 0) {
-        const updatePayload: any = {};
-        if (businessImages.logo_url) updatePayload.logo_url = businessImages.logo_url;
-        if (businessImages.cover_url) updatePayload.cover_url = businessImages.cover_url;
-        if (businessImages.gallery_urls) updatePayload.gallery_urls = businessImages.gallery_urls;
-
-        if (Object.keys(updatePayload).length > 0) {
-            const { error: updateError } = await supabaseService
-                .from('businesses')
-                .update(updatePayload)
-                .eq('id', businessId);
-
-            if (updateError) {
-                console.error('Error updating business images:', updateError);
-            }
-        }
-    }
-}
-
 /**
  * TIER 3 FEATURE: Resend verification code
  * Allows users to request a new verification code if expired
@@ -814,13 +451,11 @@ export async function resendVerificationCode(
     const supabase = await createClient();
 
     try {
-        // Verify user is authenticated
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            return { status: 'error', message: 'Vous devez être connecté.' };
+            return { status: 'error', message: 'Vous devez ??tre connect??.' };
         }
 
-        // Verify claim exists and belongs to user
         const { data: claim } = await supabase
             .from('business_claims')
             .select('id, user_id, email, proof_methods')
@@ -829,73 +464,43 @@ export async function resendVerificationCode(
             .maybeSingle();
 
         if (!claim) {
-            return { status: 'error', message: 'Revendication non trouvée ou non autorisée.' };
+            return { status: 'error', message: 'Revendication non trouv??e ou non autoris??e.' };
         }
 
-        // Verify method is valid
         if (!['email', 'phone', 'document'].includes(method)) {
-            return { status: 'error', message: 'Méthode de vérification invalide.' };
+            return { status: 'error', message: 'M??thode de v??rification invalide.' };
         }
 
-        // Generate new verification code (6 digits)
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const normalizedMethod = method as 'email' | 'phone';
+        const { code: verificationCode } = await createClaimVerificationCodeRecord({
+            supabase,
+            claimId,
+            method: normalizedMethod,
+            replaceExisting: true,
+        });
 
-        // Set expiration to 24 hours from now
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-        // Delete old codes for this claim and method
-        await supabase
-            .from('verification_codes')
-            .delete()
-            .eq('claim_id', claimId)
-            .eq('method', method);
-
-        // Insert new code
-        const { error: codeError } = await supabase
-            .from('verification_codes')
-            .insert([
-                {
-                    claim_id: claimId,
-                    code: verificationCode,
-                    method: method,
-                    verified: false,
-                    expires_at: expiresAt,
-                },
-            ]);
-
-        if (codeError) {
-            console.error('Error creating verification code:', codeError);
-            return { status: 'error', message: 'Erreur lors de la création du code de vérification.' };
-        }
-
-        // Send code via email if method is email
         if (method === 'email') {
             try {
-                const settings = await getSiteSettings();
-                const siteName = getSiteName(settings);
-
-                await sendEmail({
-                    to: claim.email,
-                    subject: emailTemplates.verificationCode.subject(verificationCode),
-                    html: emailTemplates.verificationCode.html({ code: verificationCode, siteName }),
+                await sendClaimEmailVerificationCode({
+                    email: claim.email,
+                    code: verificationCode,
                 });
 
-                console.log(`📧 Verification email sent for ${claim.email}`);
+                console.log(`Verification email sent for ${claim.email}`);
             } catch (emailError) {
                 console.error('Error sending verification email:', emailError);
-                // Don't fail if email send fails - code is still created
             }
         }
 
         return {
             status: 'success',
-            message: `Un nouveau code de vérification a été envoyé. Valide pendant 24 heures.`,
+            message: 'Un nouveau code de v??rification a ??t?? envoy??. Valide pendant 24 heures.',
         };
     } catch (error) {
         console.error('Error resending verification code:', error);
         return {
             status: 'error',
-            message: 'Une erreur est survenue. Veuillez réessayer.',
+            message: 'Une erreur est survenue. Veuillez r??essayer.',
         };
     }
 }

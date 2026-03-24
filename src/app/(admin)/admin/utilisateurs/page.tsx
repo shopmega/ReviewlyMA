@@ -33,38 +33,26 @@ import {
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { changeUserRole, toggleUserSuspension, toggleUserPremium } from "@/app/actions/admin";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/providers/i18n-provider";
-
-interface Profile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: string;
-  is_premium?: boolean;
-  avatar_url: string | null;
-  created_at: string;
-  suspended?: boolean;
-};
+import { UserAdminConfirmDialog, UserRoleBadge } from "@/components/admin/users/UserAdminComponents";
+import { useAdminPagination } from "@/hooks/use-admin-pagination";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { fetchAdminUsers, fetchAdminUserStats, type AdminUserProfile } from "@/lib/data/admin-users";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<Profile[]>([]);
+  const [users, setUsers] = useState<AdminUserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all'); // all, active, suspended
   const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [stats, setStats] = useState({
     totalUsers: 0,
     premiumUsers: 0,
@@ -91,15 +79,21 @@ export default function UsersPage() {
 
   const { toast } = useToast();
   const { t } = useI18n();
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, filterRole, filterStatus, pageSize]);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    pageStart,
+    pageEnd,
+    rangeFrom,
+    rangeTo,
+  } = useAdminPagination({
+    totalCount,
+    resetDeps: [debouncedSearchQuery, filterRole, filterStatus],
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -111,36 +105,17 @@ export default function UsersPage() {
 
   async function fetchUsers() {
     setLoading(true);
-    const supabase = createClient();
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-
-    let query = supabase
-      .from('profiles')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false });
-
-    const q = debouncedSearchQuery.trim();
-    if (q) {
-      const safeQ = q.replace(/,/g, ' ');
-      query = query.or(`full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%`);
-    }
-
-    if (filterRole !== 'all') {
-      query = query.eq('role', filterRole);
-    }
-
-    if (filterStatus === 'suspended') {
-      query = query.eq('suspended', true);
-    } else if (filterStatus === 'active') {
-      query = query.or('suspended.is.null,suspended.eq.false');
-    }
-
-    const { data, error, count } = await query.range(from, to);
+    const { data, error, count } = await fetchAdminUsers({
+      searchQuery: debouncedSearchQuery,
+      filterRole,
+      filterStatus,
+      rangeFrom,
+      rangeTo,
+    });
 
     if (!error) {
-      setUsers((data || []) as Profile[]);
-      setTotalCount(count || 0);
+      setUsers(data);
+      setTotalCount(count);
     } else {
       toast({ title: t('common.error', 'Erreur'), description: error.message, variant: 'destructive' });
     }
@@ -148,20 +123,7 @@ export default function UsersPage() {
   }
 
   async function fetchStats() {
-    const supabase = createClient();
-    const [allUsers, premiumUsers, proUsers, suspendedUsers] = await Promise.all([
-      supabase.from('profiles').select('id', { head: true, count: 'exact' }),
-      supabase.from('profiles').select('id', { head: true, count: 'exact' }).eq('is_premium', true),
-      supabase.from('profiles').select('id', { head: true, count: 'exact' }).eq('role', 'pro'),
-      supabase.from('profiles').select('id', { head: true, count: 'exact' }).eq('suspended', true),
-    ]);
-
-    setStats({
-      totalUsers: allUsers.count || 0,
-      premiumUsers: premiumUsers.count || 0,
-      proUsers: proUsers.count || 0,
-      suspendedUsers: suspendedUsers.count || 0,
-    });
+    setStats(await fetchAdminUserStats());
   }
 
   const handleRoleChange = async (userId: string, newRole: 'admin' | 'pro' | 'user') => {
@@ -219,55 +181,6 @@ export default function UsersPage() {
 
     setActionLoading(null);
     setConfirmDialog({ open: false, type: null, userId: '', userName: '' });
-  };
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const pageStart = (currentPage - 1) * pageSize;
-  const pageEnd = pageStart + pageSize;
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const getRoleBadge = (role: string, suspended?: boolean, premium?: boolean) => {
-    if (suspended) {
-      return (
-        <Badge className="bg-rose-500/10 text-rose-500 border-none font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-          <XCircle className="mr-1 h-3 w-3" /> {t('adminUsers.status.suspended', 'Suspendu')}
-        </Badge>
-      );
-    }
-
-    if (premium) {
-      return (
-        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest animate-pulse">
-          <Crown className="mr-1 h-3 w-3 fill-white" /> {t('adminUsers.status.premium', 'Premium')}
-        </Badge>
-      );
-    }
-
-    switch (role) {
-      case 'admin':
-        return (
-          <Badge className="bg-indigo-600 text-white border-0 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <Shield className="mr-1 h-3 w-3" /> {t('adminUsers.role.admin', 'Admin')}
-          </Badge>
-        );
-      case 'pro':
-        return (
-          <Badge className="bg-emerald-500 text-white border-0 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <Briefcase className="mr-1 h-3 w-3" /> {t('adminUsers.role.pro', 'Professionnel')}
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-500 border-none font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <UserIcon className="mr-1 h-3 w-3" /> {t('adminUsers.role.user', 'Utilisateur')}
-          </Badge>
-        );
-    }
   };
 
   const getRoleLabel = (role: string) => {
@@ -465,7 +378,12 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getRoleBadge(user.role, user.suspended, user.is_premium)}
+                        <UserRoleBadge
+                          role={user.role}
+                          suspended={user.suspended}
+                          premium={user.is_premium}
+                          t={t}
+                        />
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
@@ -611,119 +529,33 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, type: null, userId: '', userName: '' })}>
-        <DialogContent className="rounded-[2.5rem] border-0 bg-white dark:bg-slate-950 p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-          <DialogHeader className="space-y-4">
-            <div className={cn(
-              "w-20 h-20 rounded-3xl flex items-center justify-center border mb-2 transition-colors",
-              confirmDialog.type === 'suspend' ? "bg-rose-500/10 border-rose-500/20" : "bg-indigo-500/10 border-indigo-500/20"
-            )}>
-              {confirmDialog.type === 'suspend' ? <Ban className="h-10 w-10 text-rose-500" /> : <UserCog className="h-10 w-10 text-indigo-500" />}
-            </div>
-            <DialogTitle className="text-2xl font-black tracking-tight">
-              {confirmDialog.type === 'suspend'
-                  ? (confirmDialog.currentSuspended ? t('adminUsers.dialog.reactivateMember', 'Reactiver le membre') : t('adminUsers.dialog.suspendAccess', "Suspendre l'acces"))
-                : confirmDialog.type === 'premium'
-                  ? (confirmDialog.currentPremium ? t('adminUsers.dialog.removePremium', 'Retirer Premium') : t('adminUsers.dialog.activatePremiumGift', 'Activer Premium Gift'))
-                  : t('adminUsers.dialog.roleChange', 'Changement de role')
-              }
-            </DialogTitle>
-            <DialogDescription asChild>
-              <div className="text-slate-600 dark:text-slate-400 pt-2 font-medium">
-                {confirmDialog.type === 'suspend'
-                  ? (confirmDialog.currentSuspended
-                    ? `Voulez-vous réactiver le compte de "${confirmDialog.userName}" ? Il aura de nouveau accès à toutes ses fonctionnalités.`
-                    : `Voulez-vous suspendre l'accès pour "${confirmDialog.userName}" ? Il ne pourra plus se connecter à la plateforme.`
-                  )
-                  : confirmDialog.type === 'premium'
-                    ? (confirmDialog.currentPremium
-                      ? `Voulez-vous retirer les avantages Premium de "${confirmDialog.userName}" ?`
-                      : `Choisissez le plan et la période Premium pour "${confirmDialog.userName}".`
-                    )
-                    : `Voulez-vous attribuer le rôle "${getRoleLabel(confirmDialog.newRole || 'user')}" à "${confirmDialog.userName}" ?`
-                }
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          {confirmDialog.type === 'premium' && !confirmDialog.currentPremium && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
-              <div className="space-y-2">
-                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('adminUsers.dialog.plan', 'Plan')}</p>
-                <Select
-                  value={premiumConfig.tier}
-                  onValueChange={(value) =>
-                    setPremiumConfig((prev) => ({ ...prev, tier: value as 'growth' | 'gold' }))
-                  }
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder={t('adminUsers.dialog.choosePlan', 'Choisir un plan')} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="growth">{t('adminUsers.dialog.tier.growth', 'Growth')}</SelectItem>
-                    <SelectItem value="gold">{t('adminUsers.dialog.tier.gold', 'Gold')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('adminUsers.dialog.period', 'Periode')}</p>
-                <Select
-                  value={premiumConfig.periodMonths === null ? 'unlimited' : String(premiumConfig.periodMonths)}
-                  onValueChange={(value) =>
-                    setPremiumConfig((prev) => ({
-                      ...prev,
-                      periodMonths: value === 'unlimited' ? null : Number(value),
-                    }))
-                  }
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder={t('adminUsers.dialog.choosePeriod', 'Choisir une periode')} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="1">{t('adminUsers.dialog.periods.1', '1 mois')}</SelectItem>
-                    <SelectItem value="3">{t('adminUsers.dialog.periods.3', '3 mois')}</SelectItem>
-                    <SelectItem value="6">{t('adminUsers.dialog.periods.6', '6 mois')}</SelectItem>
-                    <SelectItem value="12">{t('adminUsers.dialog.periods.12', '12 mois')}</SelectItem>
-                    <SelectItem value="24">{t('adminUsers.dialog.periods.24', '24 mois')}</SelectItem>
-                    <SelectItem value="unlimited">{t('adminUsers.dialog.periods.unlimited', 'Illimite')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter className="mt-8 gap-3">
-            <Button variant="outline" className="rounded-2xl border-border/40 font-bold px-8 h-12" onClick={() => setConfirmDialog({ open: false, type: null, userId: '', userName: '' })}>
-              {t('common.cancel', 'Annuler')}
-            </Button>
-            <Button
-              className={cn(
-                "rounded-2xl font-black px-10 h-12 shadow-xl transition-all",
-                confirmDialog.type === 'suspend' && !confirmDialog.currentSuspended
-                  ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20"
-                  : "bg-primary hover:bg-primary/90 shadow-primary/20 text-white"
-              )}
-              onClick={() => {
-                if (confirmDialog.type === 'suspend') {
-                  handleSuspension(confirmDialog.userId, !confirmDialog.currentSuspended);
-                } else if (confirmDialog.type === 'role' && confirmDialog.newRole) {
-                  handleRoleChange(confirmDialog.userId, confirmDialog.newRole);
-                } else if (confirmDialog.type === 'premium') {
-                  handlePremiumToggle(
-                    confirmDialog.userId,
-                    !confirmDialog.currentPremium,
-                    premiumConfig.tier,
-                    premiumConfig.periodMonths
-                  );
-                }
-              }}
-              disabled={actionLoading === confirmDialog.userId}
-            >
-              {actionLoading === confirmDialog.userId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('adminUsers.dialog.confirmAction', "Confirmer l'Action")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserAdminConfirmDialog
+        confirmDialog={confirmDialog}
+        premiumConfig={premiumConfig}
+        loading={actionLoading === confirmDialog.userId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmDialog({ open: false, type: null, userId: '', userName: '' });
+          }
+        }}
+        onPremiumConfigChange={setPremiumConfig}
+        onConfirm={() => {
+          if (confirmDialog.type === 'suspend') {
+            handleSuspension(confirmDialog.userId, !confirmDialog.currentSuspended);
+          } else if (confirmDialog.type === 'role' && confirmDialog.newRole) {
+            handleRoleChange(confirmDialog.userId, confirmDialog.newRole);
+          } else if (confirmDialog.type === 'premium') {
+            handlePremiumToggle(
+              confirmDialog.userId,
+              !confirmDialog.currentPremium,
+              premiumConfig.tier,
+              premiumConfig.periodMonths
+            );
+          }
+        }}
+        getRoleLabel={getRoleLabel}
+        t={t}
+      />
     </div>
   );
 }

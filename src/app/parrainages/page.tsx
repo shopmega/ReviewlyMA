@@ -8,6 +8,8 @@ import { AlertTriangle, ArrowRight, Clock3, MapPin, ShieldCheck, TrendingUp, Use
 import { getServerTranslator } from '@/lib/i18n/server';
 import { slugify } from '@/lib/utils';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { PageIntro } from '@/components/shared/PageIntro';
+import { SegmentedControl } from '@/components/shared/SegmentedControl';
 
 type ReferralOffer = {
   id: string;
@@ -312,20 +314,12 @@ export default async function ParrainagesPage({
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <section className="rounded-2xl border border-border bg-card p-6 md:p-8">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-3">
-            <Badge variant="outline" className="w-fit">{t('referrals.list.badge', 'Referral marketplace')}</Badge>
-            <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('referrals.list.title', 'Parrainages emploi')}</h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Marketplace unifiee: offres internes des employes + demandes publiques de candidats.
-            </p>
-            <div className="inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
-              <AlertTriangle className="h-4 w-4" />
-              Aucun paiement n&apos;est autorise pour un parrainage. Signalez toute tentative.
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <PageIntro
+        badge={<Badge variant="outline" className="w-fit">{t('referrals.list.badge', 'Referral marketplace')}</Badge>}
+        title={t('referrals.list.title', 'Parrainages emploi')}
+        description="Marketplace unifiee: offres internes des employes + demandes publiques de candidats."
+        actions={
+          <>
             {currentUserId ? (
               <>
                 <Button asChild variant="outline" className="rounded-xl">
@@ -345,25 +339,30 @@ export default async function ParrainagesPage({
             <Button asChild className="rounded-xl">
               <Link href={publishOfferHref}>{t('referrals.list.publish', 'Publier une offre')}</Link>
             </Button>
-          </div>
+          </>
+        }
+      >
+        <div className="inline-flex items-center gap-2 rounded-md border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
+          <AlertTriangle className="h-4 w-4" />
+          Aucun paiement n&apos;est autorise pour un parrainage. Signalez toute tentative.
         </div>
-      </section>
+      </PageIntro>
 
       <InternalAdsSlot placement="referrals_top_banner" />
 
       <Card className="rounded-2xl border-border bg-card">
         <CardContent className="pt-6 space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant={kind === 'all' ? 'default' : 'outline'} className="rounded-xl">
-              <Link href={allHref}>Tous ({totalCount || marketItems.length})</Link>
-            </Button>
-            <Button asChild variant={kind === 'offers' ? 'default' : 'outline'} className="rounded-xl">
-              <Link href={offersHref}>Offres ({offersCount})</Link>
-            </Button>
-            <Button asChild variant={kind === 'demands' ? 'default' : 'outline'} className="rounded-xl">
-              <Link href={demandsHref}>Demandes ({demandsCount})</Link>
-            </Button>
-          </div>
+          <SegmentedControl
+            className="w-fit"
+            activeVariant="default"
+            inactiveVariant="outline"
+            buttonClassName="rounded-xl"
+            items={[
+              { key: 'all', label: `Tous (${totalCount || marketItems.length})`, active: kind === 'all', href: allHref },
+              { key: 'offers', label: `Offres (${offersCount})`, active: kind === 'offers', href: offersHref },
+              { key: 'demands', label: `Demandes (${demandsCount})`, active: kind === 'demands', href: demandsHref },
+            ]}
+          />
 
           <form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-6">
             <input type="hidden" name="kind" value={kind} />

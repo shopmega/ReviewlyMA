@@ -8,3 +8,8 @@ export * from './businesses';
 export * from './salaries';
 export * from './referrals';
 export * from './blog';
+export * from './admin-users';
+export * from './admin-payments';
+export * from './admin-businesses';
+export * from './admin-reviews';
+export * from './admin-salaries';

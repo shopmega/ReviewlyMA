@@ -1,89 +1,49 @@
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Check,
   X,
-  Star,
   MessageSquare,
   Trash2,
   ExternalLink,
   Clock3,
-  ShieldAlert,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Activity,
   AlertTriangle,
-  Loader2,
-  Eye,
+  ShieldAlert,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { StarRating } from "@/components/shared/StarRating";
 import { BulkActions } from "@/components/admin/BulkActions";
-import { createClient } from "@/lib/supabase/client";
 import { bulkDeleteReviews, bulkUpdateReviews } from "@/app/actions/admin-bulk";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/components/providers/i18n-provider";
-
-type Review = {
-  id: number;
-  business_id: string;
-  author_name: string;
-  rating: number;
-  title: string | null;
-  content: string | null;
-  status:
-  | 'draft'
-  | 'submitted'
-  | 'pending'
-  | 'approved'
-  | 'published'
-  | 'rejected'
-  | 'hidden'
-  | 'under_investigation'
-  | 'edited_requires_review'
-  | 'appealed'
-  | 'restored'
-  | 'deleted';
-  date: string;
-  created_at: string;
-  moderation_sla_due_at?: string | null;
-  reviewed_at?: string | null;
-  sub_ratings?: {
-    work_life_balance: number | null;
-    management: number | null;
-    career_growth: number | null;
-    culture: number | null;
-  } | null;
-  businesses?: { name: string };
-};
-
-const ACTIVE_REVIEW_STATUSES: Review['status'][] = [
-  'draft',
-  'submitted',
-  'pending',
-  'edited_requires_review',
-  'appealed',
-  'under_investigation',
-];
+import { AdminReviewFilterBadge, AdminReviewInlineRating, AdminReviewKpiCard, AdminReviewSlaBadge, AdminReviewStatusBadge, AdminReviewSubratings } from "@/components/admin/reviews/AdminReviewComponents";
+import { AppEmptyState } from "@/components/shared/AppEmptyState";
+import { PageIntro } from "@/components/shared/PageIntro";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
+import { useAdminPagination } from "@/hooks/use-admin-pagination";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import {
+  ACTIVE_ADMIN_REVIEW_STATUSES as ACTIVE_REVIEW_STATUSES,
+  fetchAdminReviews,
+  fetchAdminReviewStats,
+  type AdminReview as Review,
+} from "@/lib/data/admin-reviews";
 
 export default function AllReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [queueFilter, setQueueFilter] = useState<'all' | 'active' | 'at_risk' | 'breached'>('all');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [stats, setStats] = useState({
     total: 0,
@@ -95,17 +55,21 @@ export default function AllReviewsPage() {
   const { toast } = useToast();
   const { t } = useI18n();
   const now = Date.now();
-
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
-
-  // Reset page on filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [queueFilter, debouncedSearch, pageSize]);
+  const debouncedSearch = useDebouncedValue(searchQuery);
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    pageStart,
+    pageEnd,
+    rangeFrom,
+    rangeTo,
+  } = useAdminPagination({
+    totalCount,
+    resetDeps: [queueFilter, debouncedSearch],
+  });
 
   // Fetch reviews with pagination
   useEffect(() => {
@@ -118,65 +82,21 @@ export default function AllReviewsPage() {
   }, []);
 
   async function fetchStats() {
-    const supabase = createClient();
-    const { data: allReviews, error } = await supabase
-      .from('reviews')
-      .select('id, status, created_at, moderation_sla_due_at', { count: 'exact' });
-
-    if (!error && allReviews) {
-      const currentTime = Date.now();
-      const active = allReviews.filter((r) => ACTIVE_REVIEW_STATUSES.includes(r.status));
-      const breached = active.filter((r) => {
-        if (!r.moderation_sla_due_at) return false;
-        return new Date(r.moderation_sla_due_at).getTime() - currentTime < 0;
-      });
-      const atRisk = active.filter((r) => {
-        if (!r.moderation_sla_due_at) return false;
-        const msLeft = new Date(r.moderation_sla_due_at).getTime() - currentTime;
-        return msLeft >= 0 && msLeft <= 12 * 60 * 60 * 1000;
-      });
-      const avgAge = active.length
-        ? Math.round(active.reduce((acc, r) => acc + Math.max(0, (currentTime - new Date(r.created_at).getTime()) / (1000 * 60 * 60)), 0) / active.length)
-        : 0;
-
-      setStats({
-        total: allReviews.length,
-        active: active.length,
-        breached: breached.length,
-        atRisk: atRisk.length,
-        avgAgeHours: avgAge,
-      });
-    }
+    setStats(await fetchAdminReviewStats());
   }
 
   async function fetchReviews() {
     setLoading(true);
-    const supabase = createClient();
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-
-    let query = supabase
-      .from('reviews')
-      .select('*, sub_ratings, businesses(name)', { count: 'exact' })
-      .order('created_at', { ascending: false });
-
-    // Apply queue filter at DB level where possible
-    if (queueFilter === 'active') {
-      query = query.in('status', ACTIVE_REVIEW_STATUSES);
-    }
-
-    // Apply search
-    const q = debouncedSearch.trim();
-    if (q) {
-      const safeQ = q.replace(/,/g, ' ');
-      query = query.or(`author_name.ilike.%${safeQ}%,title.ilike.%${safeQ}%`);
-    }
-
-    const { data, error, count } = await query.range(from, to);
+    const { data, error, count } = await fetchAdminReviews({
+      searchQuery: debouncedSearch,
+      queueFilter,
+      rangeFrom,
+      rangeTo,
+    });
 
     if (!error && data) {
       setReviews(data);
-      setTotalCount(count || 0);
+      setTotalCount(count);
     }
     setLoading(false);
   }
@@ -227,32 +147,6 @@ export default function AllReviewsPage() {
     fetchStats();
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Clock3 className="mr-1 h-3 w-3" /> {t('adminReviews.status.pending', 'En attente')}</Badge>;
-      case 'draft':
-      case 'submitted':
-      case 'edited_requires_review':
-      case 'appealed':
-        return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Eye className="mr-1 h-3 w-3" /> {t('adminReviews.status.toReview', 'A revoir')}</Badge>;
-      case 'approved':
-      case 'restored':
-        return <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><Check className="mr-1 h-3 w-3" /> {t('adminReviews.status.validated', 'Valide')}</Badge>;
-      case 'published':
-        return <Badge className="bg-green-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-green-500/20"><Check className="mr-1 h-3 w-3" /> {t('adminReviews.status.published', 'Publie')}</Badge>;
-      case 'hidden':
-      case 'under_investigation':
-        return <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><ShieldAlert className="mr-1 h-3 w-3" /> {t('adminReviews.status.investigation', 'Investigation')}</Badge>;
-      case 'rejected':
-        return <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest"><X className="mr-1 h-3 w-3" /> {t('adminReviews.status.rejected', 'Rejete')}</Badge>;
-      case 'deleted':
-        return <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-widest">{t('adminReviews.status.removed', 'Retire')}</Badge>;
-      default:
-        return <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-widest">{status}</Badge>;
-    }
-  };
-
   const getSlaState = (review: Review): 'no_sla' | 'healthy' | 'at_risk' | 'breached' => {
     if (!ACTIVE_REVIEW_STATUSES.includes(review.status)) return 'no_sla';
     if (!review.moderation_sla_due_at) return 'no_sla';
@@ -269,82 +163,51 @@ export default function AllReviewsPage() {
     return reviews;
   }, [reviews, queueFilter, now]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const pageStart = (currentPage - 1) * pageSize;
-  const pageEnd = pageStart + pageSize;
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-        <div className="space-y-2">
-          <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminReviews.badge', 'Moderation Contenu')}</Badge>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+      <PageIntro
+        badge={t('adminReviews.badge', 'Moderation Contenu')}
+        title={
+          <>
             {t('adminReviews.titlePrefix', 'Gestion des')} <span className="text-primary italic">{t('adminReviews.titleAccent', 'Avis')}</span>
-          </h1>
-          <p className="text-muted-foreground font-medium flex items-center gap-2">
+          </>
+        }
+        description={
+          <span className="inline-flex items-center gap-2">
             <MessageSquare className="h-4 w-4" /> {stats.total} {t('adminReviews.totalSuffix', 'avis au total sur la plateforme')}
-          </p>
-        </div>
-      </div>
+          </span>
+        }
+        className="rounded-3xl border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl"
+      />
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-12 w-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Activity className="h-6 w-6" />
-              </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-blue-500/20 text-blue-600">{t('adminReviews.kpi.queueBadge', 'File')}</Badge>
-            </div>
-            <p className="text-3xl font-black tabular-nums">{stats.active}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.activeQueue', 'File active moderation')}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-12 w-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ShieldAlert className="h-6 w-6" />
-              </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-rose-500/20 text-rose-600">{t('adminReviews.kpi.urgentBadge', 'Urgent')}</Badge>
-            </div>
-            <p className="text-3xl font-black tabular-nums">{stats.breached}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.slaBreached', 'SLA depasses')}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <AlertTriangle className="h-6 w-6" />
-              </div>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-amber-500/20 text-amber-600">{t('adminReviews.kpi.attentionBadge', 'Attention')}</Badge>
-            </div>
-            <p className="text-3xl font-black tabular-nums">{stats.atRisk}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.slaAtRisk', 'SLA a risque (<12h)')}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all group">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Clock3 className="h-6 w-6" />
-              </div>
-            </div>
-            <p className="text-3xl font-black tabular-nums">{stats.avgAgeHours}h</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('adminReviews.kpi.avgQueueAge', 'Age moyen file')}</p>
-          </CardContent>
-        </Card>
+        <AdminReviewKpiCard
+          icon={Activity}
+          value={stats.active}
+          title={t('adminReviews.kpi.activeQueue', 'File active moderation')}
+          iconWrapClassName="bg-blue-500/10 text-blue-500"
+          badge={<AdminReviewFilterBadge tone="queue">{t('adminReviews.kpi.queueBadge', 'File')}</AdminReviewFilterBadge>}
+        />
+        <AdminReviewKpiCard
+          icon={ShieldAlert}
+          value={stats.breached}
+          title={t('adminReviews.kpi.slaBreached', 'SLA depasses')}
+          iconWrapClassName="bg-rose-500/10 text-rose-500"
+          badge={<AdminReviewFilterBadge tone="urgent">{t('adminReviews.kpi.urgentBadge', 'Urgent')}</AdminReviewFilterBadge>}
+        />
+        <AdminReviewKpiCard
+          icon={AlertTriangle}
+          value={stats.atRisk}
+          title={t('adminReviews.kpi.slaAtRisk', 'SLA a risque (<12h)')}
+          iconWrapClassName="bg-amber-500/10 text-amber-500"
+          badge={<AdminReviewFilterBadge tone="attention">{t('adminReviews.kpi.attentionBadge', 'Attention')}</AdminReviewFilterBadge>}
+        />
+        <AdminReviewKpiCard
+          icon={Clock3}
+          value={`${stats.avgAgeHours}h`}
+          title={t('adminReviews.kpi.avgQueueAge', 'Age moyen file')}
+          iconWrapClassName="bg-indigo-500/10 text-indigo-500"
+        />
       </div>
 
       {/* Main Table Card */}
@@ -363,25 +226,16 @@ export default function AllReviewsPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                {([
-                  { value: 'all' as const, label: `${t('adminReviews.filters.all', 'Tous')} (${stats.total})` },
-                  { value: 'active' as const, label: `${t('adminReviews.filters.active', 'Actifs')} (${stats.active})` },
-                  { value: 'at_risk' as const, label: `${t('adminReviews.filters.atRisk', 'A risque')} (${stats.atRisk})` },
-                  { value: 'breached' as const, label: `${t('adminReviews.filters.breached', 'SLA depasses')} (${stats.breached})` },
-                ] as const).map((f) => (
-                  <Button
-                    key={f.value}
-                    variant={queueFilter === f.value ? (f.value === 'breached' ? 'destructive' : 'default') : 'ghost'}
-                    size="sm"
-                    onClick={() => setQueueFilter(f.value)}
-                    className={cn(
-                      "rounded-xl font-bold text-[10px] uppercase tracking-widest px-4 h-9 shadow-sm transition-all",
-                      queueFilter === f.value ? "shadow-primary/20" : "text-muted-foreground hover:bg-white/50"
-                    )}
-                  >
-                    {f.label}
-                  </Button>
-                ))}
+                <SegmentedControl
+                  items={[
+                    { key: 'all', label: `${t('adminReviews.filters.all', 'Tous')} (${stats.total})`, active: queueFilter === 'all', onClick: () => setQueueFilter('all') },
+                    { key: 'active', label: `${t('adminReviews.filters.active', 'Actifs')} (${stats.active})`, active: queueFilter === 'active', onClick: () => setQueueFilter('active') },
+                    { key: 'at_risk', label: `${t('adminReviews.filters.atRisk', 'A risque')} (${stats.atRisk})`, active: queueFilter === 'at_risk', onClick: () => setQueueFilter('at_risk') },
+                    { key: 'breached', label: `${t('adminReviews.filters.breached', 'SLA depasses')} (${stats.breached})`, active: queueFilter === 'breached', onClick: () => setQueueFilter('breached') },
+                  ]}
+                  className="rounded-xl border-border/20 bg-white/30 dark:bg-slate-950/20"
+                  buttonClassName="rounded-lg font-bold text-[10px] uppercase tracking-widest px-4 h-9 shadow-none"
+                />
 
                 {searchQuery !== '' && (
                   <Button variant="link" size="sm" onClick={() => setSearchQuery('')} className="text-[10px] font-bold text-muted-foreground uppercase px-2">{t('adminReviews.clear', 'Effacer')}</Button>
@@ -405,12 +259,13 @@ export default function AllReviewsPage() {
               <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminReviews.loading', 'Chargement des avis...')}</p>
             </div>
           ) : displayReviews.length === 0 ? (
-            <div className="text-center py-40 space-y-6">
-              <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
-                <MessageSquare className="h-12 w-12 text-muted-foreground/30" />
-              </div>
-              <p className="text-2xl font-black">{t('adminReviews.emptyTitle', 'Aucun avis trouve')}</p>
-              <p className="text-muted-foreground font-medium">{t('adminReviews.emptyDesc', 'Modifiez vos filtres ou attendez de nouveaux avis.')}</p>
+            <div className="p-8">
+              <AppEmptyState
+                className="border-0 bg-transparent shadow-none"
+                icon={<MessageSquare className="h-8 w-8 text-muted-foreground/50" />}
+                title={t('adminReviews.emptyTitle', 'Aucun avis trouve')}
+                description={t('adminReviews.emptyDesc', 'Modifiez vos filtres ou attendez de nouveaux avis.')}
+              />
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -450,70 +305,48 @@ export default function AllReviewsPage() {
                           <span className="font-bold text-sm">{review.author_name}</span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-black text-lg tabular-nums">{review.rating}</span>
-                            <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                          </div>
+                          <AdminReviewInlineRating rating={review.rating} />
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          {review.sub_ratings && (
-                            <div className="text-[10px] space-y-0.5">
-                              {review.sub_ratings.work_life_balance != null && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.workLife', 'Equilibre')}</span>
-                                  <StarRating rating={review.sub_ratings.work_life_balance} size={10} readOnly />
-                                </div>
-                              )}
-                              {review.sub_ratings.management != null && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.management', 'Mgmt')}</span>
-                                  <StarRating rating={review.sub_ratings.management} size={10} readOnly />
-                                </div>
-                              )}
-                              {review.sub_ratings.career_growth != null && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.career', 'Carriere')}</span>
-                                  <StarRating rating={review.sub_ratings.career_growth} size={10} readOnly />
-                                </div>
-                              )}
-                              {review.sub_ratings.culture != null && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-muted-foreground w-16 truncate">{t('adminReviews.subrating.culture', 'Culture')}</span>
-                                  <StarRating rating={review.sub_ratings.culture} size={10} readOnly />
-                                </div>
-                              )}
-                            </div>
-                          )}
+                          <AdminReviewSubratings
+                            subRatings={review.sub_ratings}
+                            labels={{
+                              workLife: t('adminReviews.subrating.workLife', 'Equilibre'),
+                              management: t('adminReviews.subrating.management', 'Mgmt'),
+                              career: t('adminReviews.subrating.career', 'Carriere'),
+                              culture: t('adminReviews.subrating.culture', 'Culture'),
+                            }}
+                          />
                         </TableCell>
                         <TableCell className="hidden md:table-cell max-w-xs">
                           <div className="text-xs font-bold truncate">{review.title}</div>
                           <div className="text-[10px] text-muted-foreground line-clamp-1">{review.content}</div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(review.status)}</TableCell>
+                        <TableCell>
+                          <AdminReviewStatusBadge
+                            status={review.status}
+                            labels={{
+                              pending: t('adminReviews.status.pending', 'En attente'),
+                              toReview: t('adminReviews.status.toReview', 'A revoir'),
+                              validated: t('adminReviews.status.validated', 'Valide'),
+                              published: t('adminReviews.status.published', 'Publie'),
+                              investigation: t('adminReviews.status.investigation', 'Investigation'),
+                              rejected: t('adminReviews.status.rejected', 'Rejete'),
+                              removed: t('adminReviews.status.removed', 'Retire'),
+                            }}
+                          />
+                        </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          {(() => {
-                            if (sla === 'no_sla') return <span className="text-xs text-muted-foreground">—</span>;
-                            if (sla === 'healthy') return (
-                              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                <Check className="h-3 w-3 mr-1" /> OK
-                              </Badge>
-                            );
-                            if (sla === 'at_risk') return (
-                              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse">
-                                <Clock3 className="h-3 w-3 mr-1" /> {t('adminReviews.sla.atRisk', 'A risque')}
-                              </Badge>
-                            );
-                            return (
-                              <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                <ShieldAlert className="h-3 w-3 mr-1" /> {t('adminReviews.sla.breached', 'Depasse')}
-                              </Badge>
-                            );
-                          })()}
-                          {review.moderation_sla_due_at && (
-                            <div className="text-[9px] text-muted-foreground mt-1 font-bold tabular-nums">
-                              {t('adminReviews.sla.due', 'Ech')}: {new Date(review.moderation_sla_due_at).toLocaleDateString('fr-FR')}
-                            </div>
-                          )}
+                          <AdminReviewSlaBadge
+                            state={sla}
+                            dueAt={review.moderation_sla_due_at}
+                            labels={{
+                              atRisk: t('adminReviews.sla.atRisk', 'A risque'),
+                              breached: t('adminReviews.sla.breached', 'Depasse'),
+                              due: t('adminReviews.sla.due', 'Ech'),
+                              none: '—',
+                            }}
+                          />
                         </TableCell>
                         <TableCell className="text-right pr-8">
                           <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">

@@ -1,13 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, Users, AlertTriangle, Activity, Download, Calendar, PieChart as PieChartIcon, Zap, Search, BriefcaseBusiness, FileBadge2, Link2 } from 'lucide-react';
+import { Users, AlertTriangle, Activity, Download, Calendar, Zap, Search, BriefcaseBusiness, FileBadge2, Link2 } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -24,7 +21,20 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { getAdminAnalytics } from '@/app/actions/analytics';
+import {
+  AnalyticsProgressMetricsCard,
+  AnalyticsQueueHealthCard,
+  AnalyticsRankedQueryList,
+  AnalyticsSectionCard,
+  analyticsTooltipStyle,
+  AnalyticsSpotlightCard,
+  AnalyticsTopEmployersCard,
+  AnalyticsUnresolvedCompaniesCard,
+} from '@/components/admin/analytics/AdminAnalyticsPanels';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { AppEmptyState } from '@/components/shared/AppEmptyState';
+import { MetricCard } from '@/components/shared/MetricCard';
+import { PageIntro } from '@/components/shared/PageIntro';
 
 interface AnalyticsData {
   overview: {
@@ -154,18 +164,17 @@ export default function AnalyticsPage() {
 
   if (!data) {
     return (
-      <Card className="max-w-md mx-auto mt-20 p-8 text-center border-0 shadow-2xl rounded-3xl">
-        <AlertTriangle className="mx-auto h-16 w-16 text-amber-500 mb-6" />
-        <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">
-          {t('adminAnalyticsPage.unavailable.title', 'Data unavailable')}
-        </h3>
-        <p className="text-muted-foreground mb-6">
-          {t('adminAnalyticsPage.unavailable.description', 'Unable to load analytics right now.')}
-        </p>
-        <Button onClick={fetchAnalyticsData} className="rounded-xl px-10 h-12 shadow-lg shadow-primary/20">
-          {t('adminAnalyticsPage.unavailable.retry', 'Retry')}
-        </Button>
-      </Card>
+      <AppEmptyState
+        className="max-w-md mx-auto mt-20"
+        icon={<AlertTriangle className="h-8 w-8 text-amber-500" />}
+        title={t('adminAnalyticsPage.unavailable.title', 'Data unavailable')}
+        description={t('adminAnalyticsPage.unavailable.description', 'Unable to load analytics right now.')}
+        action={
+          <Button onClick={fetchAnalyticsData} className="rounded-xl px-10 h-12 shadow-lg shadow-primary/20">
+            {t('adminAnalyticsPage.unavailable.retry', 'Retry')}
+          </Button>
+        }
+      />
     );
   }
 
@@ -174,37 +183,32 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <Badge className="mb-4 bg-primary/10 text-primary border-none font-bold px-3 py-1">
-            {t('adminAnalyticsPage.header.badge', 'Insights hub')}
-          </Badge>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            {t('adminAnalyticsPage.header.title', 'Performance analytics')}
-          </h1>
-          <p className="text-muted-foreground mt-2 font-medium">
-            {t('adminAnalyticsPage.header.subtitle', 'Track growth and engagement across the platform')}
-          </p>
-        </div>
-        <div className="flex bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-1.5 rounded-2xl border border-border/50 shadow-sm gap-2">
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-44 h-10 border-none bg-transparent hover:bg-muted font-bold rounded-xl transition-colors">
-              <Calendar className="mr-2 h-4 w-4 text-primary" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="7d">{t('adminAnalyticsPage.timeRange.last7Days', 'Last 7 days')}</SelectItem>
-              <SelectItem value="30d">{t('adminAnalyticsPage.timeRange.last30Days', 'Last 30 days')}</SelectItem>
-              <SelectItem value="90d">{t('adminAnalyticsPage.timeRange.last90Days', 'Last 90 days')}</SelectItem>
-              <SelectItem value="1y">{t('adminAnalyticsPage.timeRange.lastYear', 'Last year')}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={exportData} variant="ghost" className="h-10 rounded-xl font-bold hover:bg-primary/10 hover:text-primary transition-all">
-            <Download className="h-4 w-4 mr-2" />
-            {t('adminAnalyticsPage.actions.exportCsv', 'Export CSV')}
-          </Button>
-        </div>
-      </div>
+      <PageIntro
+        badge={t('adminAnalyticsPage.header.badge', 'Insights hub')}
+        title={t('adminAnalyticsPage.header.title', 'Performance analytics')}
+        description={t('adminAnalyticsPage.header.subtitle', 'Track growth and engagement across the platform')}
+        actions={
+          <div className="flex bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-1.5 rounded-2xl border border-border/50 shadow-sm gap-2">
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-44 h-10 border-none bg-transparent hover:bg-muted font-bold rounded-xl transition-colors">
+                <Calendar className="mr-2 h-4 w-4 text-primary" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="7d">{t('adminAnalyticsPage.timeRange.last7Days', 'Last 7 days')}</SelectItem>
+                <SelectItem value="30d">{t('adminAnalyticsPage.timeRange.last30Days', 'Last 30 days')}</SelectItem>
+                <SelectItem value="90d">{t('adminAnalyticsPage.timeRange.last90Days', 'Last 90 days')}</SelectItem>
+                <SelectItem value="1y">{t('adminAnalyticsPage.timeRange.lastYear', 'Last year')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={exportData} variant="ghost" className="h-10 rounded-xl font-bold hover:bg-primary/10 hover:text-primary transition-all">
+              <Download className="h-4 w-4 mr-2" />
+              {t('adminAnalyticsPage.actions.exportCsv', 'Export CSV')}
+            </Button>
+          </div>
+        }
+        className="rounded-3xl border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm"
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
@@ -237,21 +241,17 @@ export default function AnalyticsPage() {
             bg: 'bg-purple-500/10',
           },
         ].map((stat, i) => (
-          <Card key={i} className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl overflow-hidden group">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{stat.label}</CardTitle>
-              <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
-                <stat.icon className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-black">{stat.value}</div>
-              <div className="mt-2 flex items-center text-[10px] text-muted-foreground font-bold">
-                <TrendingUp className="h-3 w-3 mr-1 text-emerald-500" />
-                {t('adminAnalyticsPage.stats.growthPositiveThisMonth', 'Positive growth this month')}
-              </div>
-            </CardContent>
-          </Card>
+          <MetricCard
+            key={i}
+            title={stat.label}
+            value={String(stat.value)}
+            icon={stat.icon}
+            className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl group"
+            headerClassName="pb-2"
+            titleClassName="text-xs font-black uppercase tracking-widest text-muted-foreground"
+            valueClassName="text-3xl font-black"
+            iconWrapClassName={`${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}
+          />
         ))}
       </div>
 
@@ -276,12 +276,10 @@ export default function AnalyticsPage() {
 
         <TabsContent value="overview" className="animate-in fade-in duration-300">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.overview.growthTrend.title', 'Growth trend')}</CardTitle>
-                <CardDescription>{t('adminAnalyticsPage.overview.growthTrend.description', 'Monthly new-user growth')}</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pb-0 pt-6">
+            <AnalyticsSectionCard
+              title={t('adminAnalyticsPage.overview.growthTrend.title', 'Growth trend')}
+              description={t('adminAnalyticsPage.overview.growthTrend.description', 'Monthly new-user growth')}
+            >
                 <ResponsiveContainer width="100%" height={320}>
                   <AreaChart data={data.userMetrics.userGrowth}>
                     <defs>
@@ -293,26 +291,17 @@ export default function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                     <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 600 }} dy={10} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 600 }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
-                      cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                    />
+                    <Tooltip contentStyle={analyticsTooltipStyle} cursor={{ stroke: '#6366f1', strokeWidth: 2 }} />
                     <Area type="monotone" dataKey="users" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorUsers)" />
                   </AreaChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            </AnalyticsSectionCard>
 
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">
-                  {t('adminAnalyticsPage.overview.cityDistribution.title', 'City distribution')}
-                </CardTitle>
-                <CardDescription>
-                  {t('adminAnalyticsPage.overview.cityDistribution.description', 'Geographic concentration of businesses')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pb-0 flex flex-col items-center">
+            <AnalyticsSectionCard
+              title={t('adminAnalyticsPage.overview.cityDistribution.title', 'City distribution')}
+              description={t('adminAnalyticsPage.overview.cityDistribution.description', 'Geographic concentration of businesses')}
+              contentClassName="px-0 pb-0 flex flex-col items-center"
+            >
                 <ResponsiveContainer width="100%" height={280}>
                   <RechartsPieChartComponent>
                     <Pie
@@ -328,43 +317,40 @@ export default function AnalyticsPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="stroke-background stroke-[4px]" />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none' }} />
+                    <Tooltip contentStyle={analyticsTooltipStyle} />
                     <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontWeight: 600, fontSize: '12px' }} />
                   </RechartsPieChartComponent>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            </AnalyticsSectionCard>
           </div>
         </TabsContent>
 
         <TabsContent value="users" className="animate-in fade-in duration-300">
-          <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-8">
-            <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-2xl font-black">{t('adminAnalyticsPage.users.title', 'User engagement')}</CardTitle>
-              <CardDescription>{t('adminAnalyticsPage.users.description', 'Acquisition flow over the last 6 months')}</CardDescription>
-            </CardHeader>
-            <CardContent className="px-0 pb-0 pt-10">
+          <AnalyticsSectionCard
+            title={t('adminAnalyticsPage.users.title', 'User engagement')}
+            description={t('adminAnalyticsPage.users.description', 'Acquisition flow over the last 6 months')}
+            className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-8"
+            contentClassName="px-0 pb-0 pt-10"
+          >
               <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={data.userMetrics.userGrowth}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                   <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
-                  <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={{ borderRadius: '16px', border: 'none' }} />
+                  <Tooltip cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }} contentStyle={analyticsTooltipStyle} />
                   <Bar dataKey="users" fill="#6366f1" radius={[10, 10, 4, 4]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </AnalyticsSectionCard>
         </TabsContent>
 
         <TabsContent value="businesses" className="animate-in fade-in duration-300 space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.businesses.growth.title', 'Business growth')}</CardTitle>
-                <CardDescription>{t('adminAnalyticsPage.businesses.growth.description', 'New businesses per month')}</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pb-0 pt-6">
+            <AnalyticsSectionCard
+              title={t('adminAnalyticsPage.businesses.growth.title', 'Business growth')}
+              description={t('adminAnalyticsPage.businesses.growth.description', 'New businesses per month')}
+              className="lg:col-span-2 border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6"
+            >
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={data.businessMetrics.businessGrowth}>
                     <defs>
@@ -376,46 +362,26 @@ export default function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                     <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none' }} />
+                    <Tooltip contentStyle={analyticsTooltipStyle} />
                     <Area type="monotone" dataKey="businesses" stroke="#a855f7" strokeWidth={4} fillOpacity={1} fill="url(#colorBiz)" />
                   </AreaChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            </AnalyticsSectionCard>
 
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150">
-                <PieChartIcon className="h-40 w-40" />
-              </div>
-              <div className="relative z-10 text-center space-y-4">
-                <p className="text-indigo-100 font-bold uppercase tracking-widest text-xs">
-                  {t('adminAnalyticsPage.businesses.ownerEngagement.title', 'Owner engagement')}
-                </p>
-                <div className="text-6xl font-black">{ownerClaimRate}%</div>
-                <p className="text-indigo-100 font-medium text-sm">
-                  {t('adminAnalyticsPage.businesses.ownerEngagement.claimRate', 'Estimated claim rate')}
-                </p>
-                <div className="pt-4">
-                  <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-white rounded-full shadow-[0_0_10px_white]"
-                      style={{ width: `${Math.min(100, ownerClaimRate)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
+            <AnalyticsSpotlightCard
+              eyebrow={t('adminAnalyticsPage.businesses.ownerEngagement.title', 'Owner engagement')}
+              value={`${ownerClaimRate}%`}
+              description={t('adminAnalyticsPage.businesses.ownerEngagement.claimRate', 'Estimated claim rate')}
+            />
           </div>
         </TabsContent>
 
         <TabsContent value="search" className="animate-in fade-in duration-300 space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.search.volume.title', 'Search volumes')}</CardTitle>
-                <CardDescription>{t('adminAnalyticsPage.search.volume.description', 'Search trend over 6 months')}</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pb-0 pt-6">
+            <AnalyticsSectionCard
+              title={t('adminAnalyticsPage.search.volume.title', 'Search volumes')}
+              description={t('adminAnalyticsPage.search.volume.description', 'Search trend over 6 months')}
+            >
                 <ResponsiveContainer width="100%" height={320}>
                   <AreaChart data={data.searchMetrics?.searchGrowth}>
                     <defs>
@@ -427,41 +393,19 @@ export default function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                     <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontWeight: 600 }} />
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none' }} />
+                    <Tooltip contentStyle={analyticsTooltipStyle} />
                     <Area type="monotone" dataKey="searches" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#colorSearch)" />
                   </AreaChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            </AnalyticsSectionCard>
 
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">{t('adminAnalyticsPage.search.topQueries.title', 'Top queries')}</CardTitle>
-                <CardDescription>{t('adminAnalyticsPage.search.topQueries.description', 'Most frequent search terms')}</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pt-6">
-                <div className="space-y-4">
-                  {data.searchMetrics?.topQueries.map((query, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/20">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
-                          #{i + 1}
-                        </div>
-                        <span className="font-bold text-slate-700 dark:text-slate-200">{query.name}</span>
-                      </div>
-                      <Badge variant="secondary" className="rounded-lg font-bold">
-                        {tf('adminAnalyticsPage.search.topQueries.countLabel', '{count} searches', { count: query.value })}
-                      </Badge>
-                    </div>
-                  ))}
-                  {(!data.searchMetrics?.topQueries || data.searchMetrics.topQueries.length === 0) && (
-                    <div className="text-center py-10 text-muted-foreground font-medium italic">
-                      {t('adminAnalyticsPage.search.topQueries.empty', 'Insufficient search data')}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <AnalyticsRankedQueryList
+              title={t('adminAnalyticsPage.search.topQueries.title', 'Top queries')}
+              description={t('adminAnalyticsPage.search.topQueries.description', 'Most frequent search terms')}
+              queries={data.searchMetrics?.topQueries || []}
+              countLabel={(count) => tf('adminAnalyticsPage.search.topQueries.countLabel', '{count} searches', { count })}
+              emptyMessage={t('adminAnalyticsPage.search.topQueries.empty', 'Insufficient search data')}
+            />
           </div>
         </TabsContent>
 
@@ -497,147 +441,69 @@ export default function AnalyticsPage() {
                 bg: 'bg-amber-500/10',
               },
             ].map((stat) => (
-              <Card key={stat.label} className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{stat.label}</CardTitle>
-                  <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color}`}>
-                    <stat.icon className="h-4 w-4" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-black">{numberFormatter.format(Number(stat.value) || 0)}</div>
-                </CardContent>
-              </Card>
+              <MetricCard
+                key={stat.label}
+                title={stat.label}
+                value={numberFormatter.format(Number(stat.value) || 0)}
+                icon={stat.icon}
+                className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl"
+                titleClassName="text-xs font-black uppercase tracking-widest text-muted-foreground"
+                valueClassName="text-3xl font-black"
+                iconWrapClassName={`${stat.bg} ${stat.color}`}
+              />
             ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Offer quality snapshot</CardTitle>
-                <CardDescription>Marketplace-level hiring signal quality from approved linked offers.</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pb-0 pt-6">
-                <div className="space-y-5">
-                  {[
-                    {
-                      label: 'Average salary disclosure',
-                      value: data.jobOfferMetrics?.avgSalaryDisclosure || 0,
-                    },
-                    {
-                      label: 'Average offer transparency',
-                      value: data.jobOfferMetrics?.avgOfferTransparency || 0,
-                    },
-                    {
-                      label: 'Low-confidence analysis rate',
-                      value: data.jobOfferMetrics?.lowConfidenceRate || 0,
-                    },
-                  ].map((item) => (
-                    <div key={item.label} className="space-y-2">
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="font-medium text-slate-700 dark:text-slate-200">{item.label}</span>
-                        <span className="font-bold text-slate-900 dark:text-white">{Math.round(item.value)}%</span>
-                      </div>
-                      <div className="h-3 bg-secondary/50 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all duration-500"
-                          style={{ width: `${Math.max(0, Math.min(item.value, 100))}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <AnalyticsProgressMetricsCard
+              title="Offer quality snapshot"
+              description="Marketplace-level hiring signal quality from approved linked offers."
+              items={[
+                {
+                  label: 'Average salary disclosure',
+                  value: data.jobOfferMetrics?.avgSalaryDisclosure || 0,
+                },
+                {
+                  label: 'Average offer transparency',
+                  value: data.jobOfferMetrics?.avgOfferTransparency || 0,
+                },
+                {
+                  label: 'Low-confidence analysis rate',
+                  value: data.jobOfferMetrics?.lowConfidenceRate || 0,
+                },
+              ]}
+            />
 
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Top employers with hiring signals</CardTitle>
-                <CardDescription>Employers with the largest approved analyzed-offer footprint.</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pt-6">
-                <div className="space-y-4">
-                  {(data.jobOfferMetrics?.topEmployers || []).length > 0 ? data.jobOfferMetrics?.topEmployers.map((employer, index) => (
-                    <div key={employer.businessId} className="flex items-center justify-between gap-4 p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/20">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                          #{index + 1}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{employer.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {employer.approvedOfferCount} approved offers
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">{Math.round(employer.salaryDisclosureRate)}% disclosed</p>
-                        <p className="text-xs text-muted-foreground">{Math.round(employer.avgTransparencyScore)} clarity</p>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="text-sm text-muted-foreground">
-                      No job-offer employer signals yet.
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <AnalyticsTopEmployersCard
+              title="Top employers with hiring signals"
+              description="Employers with the largest approved analyzed-offer footprint."
+              employers={data.jobOfferMetrics?.topEmployers || []}
+              emptyMessage="No job-offer employer signals yet."
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Mapping queue health</CardTitle>
-                <CardDescription>Operational visibility for unresolved employer links and moderation flow.</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pt-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    ['Queue rows', data.jobOfferMetrics?.mappingQueueSize || 0],
-                    ['Unresolved', data.jobOfferMetrics?.unresolvedMappings || 0],
-                    ['Medium confidence', data.jobOfferMetrics?.mediumConfidenceMappings || 0],
-                    ['Low or none', data.jobOfferMetrics?.lowConfidenceMappings || 0],
-                    ['Manual relinks', data.jobOfferMetrics?.manualRelinks || 0],
-                    ['Auto backfills', data.jobOfferMetrics?.automatedBackfills || 0],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-2xl border border-white/20 bg-white/40 dark:bg-slate-800/40 p-4">
-                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{label}</p>
-                      <p className="mt-2 text-2xl font-black">{numberFormatter.format(Number(value) || 0)}</p>
-                    </div>
-                  ))}
-                </div>
-                <Button asChild variant="outline" className="rounded-xl font-bold">
-                  <Link href="/admin/job-offers">Open mapping queue</Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <AnalyticsQueueHealthCard
+              title="Mapping queue health"
+              description="Operational visibility for unresolved employer links and moderation flow."
+              stats={[
+                { label: 'Queue rows', value: data.jobOfferMetrics?.mappingQueueSize || 0 },
+                { label: 'Unresolved', value: data.jobOfferMetrics?.unresolvedMappings || 0 },
+                { label: 'Medium confidence', value: data.jobOfferMetrics?.mediumConfidenceMappings || 0 },
+                { label: 'Low or none', value: data.jobOfferMetrics?.lowConfidenceMappings || 0 },
+                { label: 'Manual relinks', value: data.jobOfferMetrics?.manualRelinks || 0 },
+                { label: 'Auto backfills', value: data.jobOfferMetrics?.automatedBackfills || 0 },
+              ]}
+              buttonLabel="Open mapping queue"
+            />
 
-            <Card className="border-0 shadow-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl p-6">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-lg font-bold">Recurring unresolved employers</CardTitle>
-                <CardDescription>Company names that most often stay unmapped and should be reviewed or backfilled.</CardDescription>
-              </CardHeader>
-              <CardContent className="px-0 pt-6">
-                <div className="space-y-4">
-                  {(data.jobOfferMetrics?.topUnresolvedCompanies || []).length > 0 ? data.jobOfferMetrics?.topUnresolvedCompanies.map((company, index) => (
-                    <div key={`${company.name}-${index}`} className="flex items-center justify-between gap-4 p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/20">
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-900 dark:text-white truncate">{company.name}</p>
-                        <p className="text-xs text-muted-foreground">Needs business resolution</p>
-                      </div>
-                      <Badge variant="secondary" className="rounded-lg font-bold">
-                        {company.count}
-                      </Badge>
-                    </div>
-                  )) : (
-                    <div className="text-sm text-muted-foreground">
-                      No unresolved-employer concentration right now.
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <AnalyticsUnresolvedCompaniesCard
+              title="Recurring unresolved employers"
+              description="Company names that most often stay unmapped and should be reviewed or backfilled."
+              companies={data.jobOfferMetrics?.topUnresolvedCompanies || []}
+              itemDescription="Needs business resolution"
+              emptyMessage="No unresolved-employer concentration right now."
+            />
           </div>
         </TabsContent>
       </Tabs>

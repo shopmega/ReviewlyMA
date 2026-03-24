@@ -1,5 +1,6 @@
 import type {
   JobOfferAnalysisRecord,
+  JobOfferDecisionWorkspace,
   JobOfferEmployerContext,
   JobOfferBusinessInsights,
   JobOfferBusinessMonthlyTrend,
@@ -10,56 +11,17 @@ import type {
 } from '@/lib/types';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getPublicClient } from './client';
+import {
+  buildEmployerSignalContext,
+  buildRoleCitySalaryHref,
+  buildSimilarOfferLabel,
+  calculateSimilarOfferSimilarityScore,
+  createJobOfferDecisionWorkspace,
+} from '@/lib/job-offers/workspace';
 
 export type MyJobOfferAnalysisListItem = JobOfferAnalysisRecord & {
   job_offers: Pick<JobOfferRecord, 'id' | 'company_name' | 'job_title' | 'city' | 'source_type' | 'submitted_at'>;
 };
-
-function buildEmployerSignalContext(options: {
-  overallRating: number | null;
-  reviewCount: number;
-  verificationBadgeLevel?: string | null;
-  salarySubmissionCount: number;
-}): Pick<JobOfferEmployerContext, 'signal_label' | 'signal_summary'> {
-  const { overallRating, reviewCount, verificationBadgeLevel, salarySubmissionCount } = options;
-  const isVerified = Boolean(verificationBadgeLevel && verificationBadgeLevel !== 'none');
-
-  if (reviewCount >= 25 && overallRating != null && overallRating >= 4 && (isVerified || salarySubmissionCount >= 5)) {
-    return {
-      signal_label: 'strong',
-      signal_summary: 'This employer has a relatively strong public signal based on reviews, verification, and salary context.',
-    };
-  }
-
-  if (reviewCount >= 8 || salarySubmissionCount >= 3 || isVerified) {
-    return {
-      signal_label: 'mixed',
-      signal_summary: 'This employer has some usable public context, but the signal is not strong enough to treat as definitive.',
-    };
-  }
-
-  return {
-    signal_label: 'limited',
-    signal_summary: 'Public employer context is still thin, so this should be treated as additional context rather than evidence.',
-  };
-}
-
-function buildSimilarOfferLabel(options: {
-  overallOfferScore: number;
-  salaryMin?: number | null;
-  salaryMax?: number | null;
-}): string {
-  if (options.salaryMin == null && options.salaryMax == null) {
-    return 'Limited salary visibility';
-  }
-  if (options.overallOfferScore >= 80) {
-    return 'Stronger market signal';
-  }
-  if (options.overallOfferScore >= 65) {
-    return 'Clearer than average';
-  }
-  return 'Comparable nearby option';
-}
 
 async function getAnalyticsClient() {
   try {
@@ -95,10 +57,71 @@ export async function getJobOfferAnalysisById(id: string) {
   };
 }
 
+export async function getJobOfferDecisionWorkspace(id: string): Promise<JobOfferDecisionWorkspace | null> {
+  const record = await getJobOfferAnalysisById(id);
+  if (!record) return null;
+
+  const [employerContext, similarOffers] = await Promise.all([
+    getJobOfferEmployerContext(record.offer),
+    getSimilarJobOfferAnalyses({
+      currentOfferId: record.offer.id,
+      jobTitleNormalized: record.offer.job_title_normalized,
+      jobTitle: record.offer.job_title,
+      citySlug: record.offer.city_slug,
+      seniorityLevel: record.offer.seniority_level,
+      workModel: record.offer.work_model,
+      contractType: record.offer.contract_type,
+      limit: 4,
+    }),
+  ]);
+
+  return createJobOfferDecisionWorkspace({
+    analysis: {
+      analysis_version: record.analysis.analysis_version,
+      overall_offer_score: record.analysis.overall_offer_score,
+      compensation_score: record.analysis.compensation_score,
+      market_alignment_score: record.analysis.market_alignment_score,
+      transparency_score: record.analysis.transparency_score,
+      quality_score: record.analysis.quality_score,
+      market_position_label: record.analysis.market_position_label,
+      confidence_level: record.analysis.confidence_level,
+      benchmark_role_city_median: record.analysis.benchmark_role_city_median,
+      benchmark_company_median: record.analysis.benchmark_company_median,
+      benchmark_city_median: record.analysis.benchmark_city_median,
+      benchmark_primary_source: record.analysis.benchmark_primary_source,
+      risk_flags: record.analysis.risk_flags,
+      missing_information: record.analysis.missing_information,
+      strengths: record.analysis.strengths,
+      analysis_summary: record.analysis.analysis_summary,
+    },
+    offer: record.offer,
+    employerContext,
+    similarOffers,
+  });
+}
+
 export async function getJobOfferEmployerContext(
-  offer: Pick<JobOfferRecord, 'business_id' | 'company_match_confidence'>
+  offer: Pick<JobOfferRecord, 'business_id' | 'company_match_confidence' | 'company_name'>
 ): Promise<JobOfferEmployerContext | null> {
-  if (!offer.business_id || offer.company_match_confidence !== 'high') return null;
+  const mappingConfidence = offer.company_match_confidence || 'none';
+  if (!offer.business_id || mappingConfidence === 'low' || mappingConfidence === 'none') {
+    return {
+      business_id: offer.business_id || null,
+      business_name: offer.company_name || 'Unknown company',
+      business_slug: null,
+      overall_rating: null,
+      review_count: 0,
+      is_claimed: false,
+      verification_badge_level: null,
+      company_size: null,
+      salary_median_monthly: null,
+      salary_submission_count: 0,
+      mapping_confidence: mappingConfidence,
+      availability: 'unavailable',
+      signal_label: 'limited',
+      signal_summary: 'Employer context is unavailable because company matching is not reliable enough to support public interpretation.',
+    };
+  }
 
   const supabase = await getAnalyticsClient();
   const [{ data: business }, { data: salaryMetrics }] = await Promise.all([
@@ -114,7 +137,24 @@ export async function getJobOfferEmployerContext(
       .maybeSingle(),
   ]);
 
-  if (!business) return null;
+  if (!business) {
+    return {
+      business_id: offer.business_id || null,
+      business_name: offer.company_name || 'Unknown company',
+      business_slug: null,
+      overall_rating: null,
+      review_count: 0,
+      is_claimed: false,
+      verification_badge_level: null,
+      company_size: null,
+      salary_median_monthly: null,
+      salary_submission_count: 0,
+      mapping_confidence: mappingConfidence,
+      availability: 'unavailable',
+      signal_label: 'limited',
+      signal_summary: 'Employer context is unavailable because the mapped business could not be resolved cleanly.',
+    };
+  }
 
   const signal = buildEmployerSignalContext({
     overallRating: business.overall_rating ?? null,
@@ -134,8 +174,12 @@ export async function getJobOfferEmployerContext(
     company_size: business.company_size ?? null,
     salary_median_monthly: (salaryMetrics as any)?.median_monthly_salary ?? null,
     salary_submission_count: Number((salaryMetrics as any)?.submission_count || 0),
+    mapping_confidence: mappingConfidence,
+    availability: mappingConfidence === 'high' ? 'full' : 'limited',
     signal_label: signal.signal_label,
-    signal_summary: signal.signal_summary,
+    signal_summary: mappingConfidence === 'high'
+      ? signal.signal_summary
+      : 'This employer match is plausible, but the mapping is not strong enough to support strong public claims or outbound links yet.',
   };
 }
 
@@ -143,13 +187,15 @@ export async function getSimilarJobOfferAnalyses(options: {
   currentOfferId?: string | null;
   jobTitleNormalized?: string | null;
   citySlug?: string | null;
+  jobTitle?: string | null;
+  seniorityLevel?: string | null;
   workModel?: string | null;
   contractType?: string | null;
   limit?: number;
 }): Promise<JobOfferSimilarOffer[]> {
   if (!options.jobTitleNormalized) return [];
 
-  const limit = Math.max(1, Math.min(options.limit || 4, 8));
+  const limit = Math.max(3, Math.min(options.limit || 4, 5));
   const supabase = await getAnalyticsClient();
 
   const buildQuery = (matchCity: boolean) => {
@@ -172,13 +218,16 @@ export async function getSimilarJobOfferAnalyses(options: {
           pay_period,
           work_model,
           contract_type,
+          seniority_level,
+          visibility,
           job_title_normalized,
           status
         )
       `)
       .eq('job_offers.status', 'approved')
+      .in('job_offers.visibility', ['aggregate_only', 'public'])
       .eq('job_offers.job_title_normalized', options.jobTitleNormalized)
-      .limit(limit + 2);
+      .limit(limit + 6);
 
     if (matchCity && options.citySlug) {
       query = query.eq('job_offers.city_slug', options.citySlug);
@@ -192,57 +241,87 @@ export async function getSimilarJobOfferAnalyses(options: {
   };
 
   const primary = await buildQuery(true);
-  const fallback = (!primary.error && (primary.data?.length || 0) >= limit) || !options.citySlug
+  const fallback = (!primary.error && (primary.data?.length || 0) >= 3) || !options.citySlug
     ? { data: [], error: null }
     : await buildQuery(false);
 
-  const rows = ((primary.data?.length || 0) > 0 ? primary.data : fallback.data || []) as Array<any>;
+  const combinedRows = [...(primary.data || []), ...(fallback.data || [])] as Array<any>;
+  const dedupedRows = combinedRows.filter((row, index, array) => array.findIndex((item) => item.id === row.id) === index);
+  const rows = dedupedRows;
   if (!rows.length) return [];
+
+  const businessIds = Array.from(new Set(rows.map((row) => row.job_offers?.business_id).filter(Boolean))) as string[];
+  const { data: businesses } = businessIds.length === 0
+    ? { data: [] as Array<{ id: string; slug: string | null }> }
+    : await supabase
+      .from('businesses')
+      .select('id, slug')
+      .in('id', businessIds);
+  const businessSlugMap = new Map<string, string | null>((businesses || []).map((business: { id: string; slug: string | null }) => [business.id, business.slug || null]));
 
   const scored = rows
     .map((row) => {
       const offer = row.job_offers;
-      let similarityScore = 0;
-      if (offer.city_slug && options.citySlug && offer.city_slug === options.citySlug) similarityScore += 30;
-      if (offer.work_model && options.workModel && offer.work_model === options.workModel) similarityScore += 20;
-      if (offer.contract_type && options.contractType && offer.contract_type === options.contractType) similarityScore += 15;
+      const similarityScore = calculateSimilarOfferSimilarityScore({
+        citySlug: offer.city_slug,
+        targetCitySlug: options.citySlug,
+        seniorityLevel: offer.seniority_level,
+        targetSeniorityLevel: options.seniorityLevel,
+        workModel: offer.work_model,
+        targetWorkModel: options.workModel,
+        contractType: offer.contract_type,
+        targetContractType: options.contractType,
+      });
+      const businessSlug = offer.business_id ? businessSlugMap.get(offer.business_id) || null : null;
+      const salaryHref = buildRoleCitySalaryHref(offer.job_title || options.jobTitle || null, offer.city_slug || null);
+      const publicHref = businessSlug ? `/businesses/${businessSlug}` : salaryHref;
 
       return {
         analysis_id: row.id,
         job_offer_id: offer.id,
         business_id: offer.business_id,
+        business_slug: businessSlug,
         company_name: offer.company_name,
         job_title: offer.job_title,
         city: offer.city,
+        city_slug: offer.city_slug,
         salary_min: offer.salary_min,
         salary_max: offer.salary_max,
         pay_period: offer.pay_period,
         work_model: offer.work_model,
         contract_type: offer.contract_type,
+        seniority_level: offer.seniority_level,
         overall_offer_score: Number(row.overall_offer_score || 0),
         market_position_label: row.market_position_label,
         confidence_level: row.confidence_level,
-        similarityScore,
+        public_href: publicHref,
+        similarity_score: similarityScore,
       };
     })
-    .sort((left, right) => right.similarityScore - left.similarityScore || right.overall_offer_score - left.overall_offer_score)
+    .filter((row) => row.similarity_score >= 30)
+    .sort((left, right) => right.similarity_score - left.similarity_score || right.overall_offer_score - left.overall_offer_score)
     .slice(0, limit);
 
   return scored.map((row) => ({
     analysis_id: row.analysis_id,
     job_offer_id: row.job_offer_id,
     business_id: row.business_id,
+    business_slug: row.business_slug,
     company_name: row.company_name,
     job_title: row.job_title,
     city: row.city,
+    city_slug: row.city_slug,
     salary_min: row.salary_min,
     salary_max: row.salary_max,
     pay_period: row.pay_period,
     work_model: row.work_model,
     contract_type: row.contract_type,
+    seniority_level: row.seniority_level,
     overall_offer_score: row.overall_offer_score,
     market_position_label: row.market_position_label,
     confidence_level: row.confidence_level,
+    public_href: row.public_href,
+    similarity_score: row.similarity_score,
     similarity_label: buildSimilarOfferLabel({
       overallOfferScore: row.overall_offer_score,
       salaryMin: row.salary_min,

@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getMyJobOfferAnalyses } from '@/lib/data/job-offers';
 import { JobOfferHistoryClient } from '@/components/job-offers/JobOfferHistoryClient';
+import { AppEmptyState } from '@/components/shared/AppEmptyState';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileSearch, LogIn } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'My Job Offer Analyses',
@@ -18,17 +19,17 @@ export default async function JobOfferHistoryPage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <Card className="rounded-3xl">
-          <CardHeader>
-            <CardTitle>Login required</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-muted-foreground">
-            <p>You need an account to access saved analyses.</p>
+        <AppEmptyState
+          className="rounded-3xl"
+          icon={<LogIn className="h-8 w-8 text-muted-foreground" />}
+          title="Login required"
+          description="You need an account to access saved analyses."
+          action={
             <Button asChild>
               <Link href="/login">Log in</Link>
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       </div>
     );
   }
@@ -50,13 +51,17 @@ export default async function JobOfferHistoryPage() {
       {analyses.length > 0 ? (
         <JobOfferHistoryClient analyses={analyses} />
       ) : (
-        <div className="grid gap-4">
-          <Card className="rounded-3xl">
-            <CardContent className="p-6 text-sm text-muted-foreground">
-              No analyses yet.
-            </CardContent>
-          </Card>
-        </div>
+        <AppEmptyState
+          className="rounded-3xl"
+          icon={<FileSearch className="h-8 w-8 text-muted-foreground" />}
+          title="No analyses yet"
+          description="Run your first offer analysis to start building a private history."
+          action={
+            <Button asChild>
+              <Link href="/job-offers/analyze">Start an analysis</Link>
+            </Button>
+          }
+        />
       )}
     </div>
   );

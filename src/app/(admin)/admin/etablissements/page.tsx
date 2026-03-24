@@ -35,7 +35,6 @@ import {
   Zap
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
@@ -51,42 +50,25 @@ import {
   bulkDeleteBusinesses,
   bulkUpdateBusinesses
 } from '@/app/actions/admin';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { getStoragePublicUrl } from "@/lib/data";
-import { isValidImageUrl } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/components/providers/i18n-provider";
-
-type Business = {
-  id: string;
-  name: string;
-  category: string;
-  subcategory?: string;
-  location: string;
-  city?: string;
-  quartier?: string;
-  type: string;
-  overall_rating: number;
-  is_featured: boolean;
-  is_sponsored?: boolean; // Added this type definition
-  logo_url: string | null;
-  logo_requested?: boolean;
-  user_id?: string | null;
-  created_at: string;
-  review_count?: number;
-};
+import {
+  BusinessLogoAvatar,
+  BusinessVisibilityBadges,
+  CreateBusinessDialog,
+  DeleteBusinessDialog,
+} from "@/components/admin/businesses/BusinessesAdminComponents";
+import { useAdminPagination } from "@/hooks/use-admin-pagination";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { fetchAdminBusinesses, fetchAdminBusinessCities, type AdminBusiness as Business } from "@/lib/data/admin-businesses";
 
 export default function BusinessesAdminPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [cities, setCities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -94,8 +76,6 @@ export default function BusinessesAdminPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all'); // all, claimed, unclaimed
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [isProcessingBulk, setIsProcessingBulk] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(24);
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -115,46 +95,37 @@ export default function BusinessesAdminPage() {
 
   const { toast } = useToast();
   const { t } = useI18n();
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    pageStart,
+    pageEnd,
+    rangeFrom,
+    rangeTo,
+  } = useAdminPagination({
+    totalCount,
+    initialPageSize: 24,
+    resetDeps: [debouncedSearchQuery, filterCity, filterStatus, viewMode],
+  });
 
   useEffect(() => {
     fetchCities();
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, filterCity, filterStatus, pageSize, viewMode]);
-
-  useEffect(() => {
     fetchBusinesses();
   }, [currentPage, pageSize, debouncedSearchQuery, filterCity, filterStatus]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const pageStart = (currentPage - 1) * pageSize;
-  const pageEnd = pageStart + pageSize;
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
   async function fetchCities() {
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('city')
-        .not('city', 'is', null)
-        .order('city');
+      const { data, error } = await fetchAdminBusinessCities();
 
-      if (!error && data) {
-        const unique = Array.from(new Set(data.map((r: any) => r.city).filter(Boolean)));
-        setCities(unique as string[]);
+      if (!error) {
+        setCities(data);
       }
     } catch (err) {
       console.error('Error fetching cities:', err);
@@ -164,33 +135,13 @@ export default function BusinessesAdminPage() {
   async function fetchBusinesses() {
     setLoading(true);
     try {
-      const supabase = createClient();
-      const from = (currentPage - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      let query = supabase
-        .from('businesses')
-        .select('*', { count: 'exact' });
-
-      const q = debouncedSearchQuery.trim();
-      if (q) {
-        const safeQ = q.replace(/,/g, ' ');
-        query = query.or(`name.ilike.%${safeQ}%,category.ilike.%${safeQ}%,address.ilike.%${safeQ}%`);
-      }
-
-      if (filterCity !== 'all') {
-        query = query.eq('city', filterCity);
-      }
-
-      if (filterStatus === 'claimed') {
-        query = query.not('user_id', 'is', null);
-      } else if (filterStatus === 'unclaimed') {
-        query = query.is('user_id', null);
-      }
-
-      const { data, error, count } = await query
-        .order('name')
-        .range(from, to);
+      const { data, error, count } = await fetchAdminBusinesses({
+        searchQuery: debouncedSearchQuery,
+        filterCity,
+        filterStatus,
+        rangeFrom,
+        rangeTo,
+      });
 
       if (error) {
         console.error('Error fetching businesses:', error);
@@ -200,8 +151,8 @@ export default function BusinessesAdminPage() {
           variant: 'destructive',
         });
       } else {
-        setBusinesses((data || []) as Business[]);
-        setTotalCount(count || 0);
+        setBusinesses(data);
+        setTotalCount(count);
       }
     } catch (err) {
       console.error(err);
@@ -536,22 +487,14 @@ export default function BusinessesAdminPage() {
                       </TableCell>
                       <TableCell className="py-6">
                         <div className="flex items-center gap-4">
-                          <div className="relative h-12 w-12 rounded-2xl overflow-hidden bg-white shadow-xl ring-1 ring-border/10 group-hover:scale-110 transition-transform duration-500">
-                            {(() => {
-                              const logoUrl = getStoragePublicUrl(business.logo_url);
-                              if (logoUrl && isValidImageUrl(logoUrl)) {
-                                return <Image src={logoUrl} alt={business.name} fill className="object-cover" />;
-                              }
-                              return (
-                                <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-indigo-500/10 to-primary/10 text-primary font-black text-sm">
-                                  {business.name?.[0].toUpperCase()}
-                                </div>
-                              );
-                            })()}
-                          </div>
+                          <BusinessLogoAvatar
+                            name={business.name}
+                            logoUrl={business.logo_url}
+                            className="h-12 w-12 rounded-2xl bg-white shadow-xl ring-1 ring-border/10 transition-transform duration-500 group-hover:scale-110"
+                          />
                           <div>
-                            <p className="font-black text-slate-800 dark:text-white truncate max-w-[200px] leading-tight group-hover:text-primary transition-colors">{business.name}</p>
-                            <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-1 uppercase tracking-tight">
+                            <p className="max-w-[200px] truncate leading-tight text-slate-800 transition-colors group-hover:text-primary dark:text-white font-black">{business.name}</p>
+                            <p className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-tight text-muted-foreground">
                               <MapPin className="h-3 w-3" /> {business.city}, {business.quartier || business.location}
                             </p>
                           </div>
@@ -559,25 +502,25 @@ export default function BusinessesAdminPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 border-none font-bold text-[10px] px-2 py-0.5 rounded-lg w-fit">
+                          <Badge variant="secondary" className="w-fit rounded-lg border-none bg-slate-100 px-2 py-0.5 text-[10px] font-bold dark:bg-slate-800">
                             {business.category}
                           </Badge>
                           {business.logo_url ? (
-                            <span className="text-[9px] font-black text-emerald-500 flex items-center gap-1 ml-1"><Check className="h-2 w-2" /> {t('adminBusinesses.identity.logoOk', 'LOGO OK')}</span>
+                            <span className="ml-1 flex items-center gap-1 text-[9px] font-black text-emerald-500"><Check className="h-2 w-2" /> {t('adminBusinesses.identity.logoOk', 'LOGO OK')}</span>
                           ) : business.logo_requested ? (
-                            <span className="text-[9px] font-black text-amber-500 flex items-center gap-1 ml-1"><Clock className="h-2 w-2" /> {t('adminBusinesses.identity.pending', 'EN ATTENTE')}</span>
+                            <span className="ml-1 flex items-center gap-1 text-[9px] font-black text-amber-500"><Clock className="h-2 w-2" /> {t('adminBusinesses.identity.pending', 'EN ATTENTE')}</span>
                           ) : (
-                            <span className="text-[9px] font-black text-rose-500 flex items-center gap-1 ml-1"><X className="h-2 w-2" /> {t('adminBusinesses.identity.noLogo', 'PAS DE LOGO')}</span>
+                            <span className="ml-1 flex items-center gap-1 text-[9px] font-black text-rose-500"><X className="h-2 w-2" /> {t('adminBusinesses.identity.noLogo', 'PAS DE LOGO')}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         {business.user_id ? (
-                          <div className="flex items-center gap-2 text-indigo-500 animate-in fade-in zoom-in duration-500">
+                          <div className="animate-in zoom-in flex items-center gap-2 text-indigo-500 duration-500">
                             <ShieldCheck className="h-5 w-5" />
                             <div>
                               <p className="text-[10px] font-black uppercase tracking-tight">{t('adminBusinesses.ownership.claimed', 'Revendique')}</p>
-                              <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter line-clamp-1 max-w-[80px]">#{business.user_id.substring(0, 8)}</p>
+                              <p className="line-clamp-1 max-w-[80px] text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/60">#{business.user_id.substring(0, 8)}</p>
                             </div>
                           </div>
                         ) : (
@@ -601,25 +544,16 @@ export default function BusinessesAdminPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1.5">
-                          {business.is_sponsored && (
-                            <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-[9px] border-0 px-2.5 py-1 rounded-full shadow-lg shadow-indigo-500/20 uppercase tracking-widest">
-                              Sponsorisé
-                            </Badge>
-                          )}
-                          {business.is_featured ? (
-                            <Badge className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black text-[9px] border-0 px-2.5 py-1 rounded-full shadow-lg shadow-orange-500/20 uppercase tracking-widest animate-pulse">
-                              À la une
-                            </Badge>
-                          ) : !business.is_sponsored && (
-                            <Badge variant="outline" className="text-muted-foreground font-bold text-[9px] px-2.5 py-1 rounded-full border-border/30 uppercase tracking-widest">
-                              Standard
-                            </Badge>
-                          )}
+                          <BusinessVisibilityBadges
+                            isSponsored={business.is_sponsored}
+                            isFeatured={business.is_featured}
+                            showStandardWhenEmpty
+                          />
                         </div>
                       </TableCell>
                       <TableCell className="text-right pr-8">
-                        <div className="flex items-center justify-end gap-1 translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                          <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl hover:bg-primary/10 text-primary transition-all shadow-sm" asChild>
+                        <div className="flex items-center justify-end gap-1 translate-x-4 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                          <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-primary shadow-sm transition-all hover:bg-primary/10" asChild>
                             <Link href={`/businesses/${business.id}`} target="_blank">
                               <ExternalLink className="h-4 w-4" />
                             </Link>
@@ -630,45 +564,29 @@ export default function BusinessesAdminPage() {
                           ) : (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-muted font-bold transition-all shadow-sm">
+                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl font-bold shadow-sm transition-all hover:bg-muted">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="rounded-2xl border-border/10 backdrop-blur-3xl shadow-2xl p-2 w-56">
-                                <DropdownMenuItem
-                                  className="rounded-xl py-3 font-bold hover:bg-amber-500/10 transition-colors"
-                                  onClick={() => toggleSponsored(business.id, business.is_sponsored || false)}
-                                >
-                                  <Zap className={cn("mr-2 h-4 w-4", business.is_sponsored ? "fill-amber-400 text-amber-400" : "")} />
-                                  {business.is_sponsored ? 'Retirer du sponsoring' : 'Marquer comme Sponsorisé'}
+                              <DropdownMenuContent align="end" className="w-56 rounded-2xl border-border/10 p-2 shadow-2xl backdrop-blur-3xl">
+                                <DropdownMenuItem className="rounded-xl py-3 font-bold transition-colors hover:bg-amber-500/10" onClick={() => toggleSponsored(business.id, business.is_sponsored || false)}>
+                                  <Zap className={cn('mr-2 h-4 w-4', business.is_sponsored ? 'fill-amber-400 text-amber-400' : '')} />
+                                  {business.is_sponsored ? 'Retirer du sponsoring' : 'Marquer comme sponsorise'}
                                 </DropdownMenuItem>
-
-                                <DropdownMenuItem
-                                  className="rounded-xl py-3 font-bold hover:bg-primary/10 transition-colors"
-                                  onClick={() => toggleFeatured(business.id, business.is_featured)}
-                                >
-                                  <Star className={cn("mr-2 h-4 w-4", business.is_featured ? "fill-amber-400 text-amber-400" : "")} />
-                                  {business.is_featured ? 'Retirer de la une' : 'Promouvoir à la une'}
+                                <DropdownMenuItem className="rounded-xl py-3 font-bold transition-colors hover:bg-primary/10" onClick={() => toggleFeatured(business.id, business.is_featured)}>
+                                  <Star className={cn('mr-2 h-4 w-4', business.is_featured ? 'fill-amber-400 text-amber-400' : '')} />
+                                  {business.is_featured ? 'Retirer de la une' : 'Promouvoir a la une'}
                                 </DropdownMenuItem>
-
-                                {!business.logo_url && !business.logo_requested && (
-                                  <DropdownMenuItem
-                                    className="rounded-xl py-3 font-bold hover:bg-indigo-500/10 transition-colors"
-                                    onClick={() => handleRequestLogo(business.id)}
-                                  >
+                                {!business.logo_url && !business.logo_requested ? (
+                                  <DropdownMenuItem className="rounded-xl py-3 font-bold transition-colors hover:bg-indigo-500/10" onClick={() => handleRequestLogo(business.id)}>
                                     <Building className="mr-2 h-4 w-4" />
                                     Demander un logo
                                   </DropdownMenuItem>
-                                )}
-
-                                <DropdownMenuSeparator className="bg-border/10 my-1" />
+                                ) : null}
+                                <DropdownMenuSeparator className="my-1 bg-border/10" />
                                 <DropdownMenuItem
-                                  className="rounded-xl py-3 font-bold text-rose-500 hover:bg-rose-500/10 transition-colors"
-                                  onClick={() => setDeleteDialog({
-                                    open: true,
-                                    businessId: business.id,
-                                    businessName: business.name
-                                  })}
+                                  className="rounded-xl py-3 font-bold text-rose-500 transition-colors hover:bg-rose-500/10"
+                                  onClick={() => setDeleteDialog({ open: true, businessId: business.id, businessName: business.name })}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Bannir l'entreprise
@@ -681,136 +599,125 @@ export default function BusinessesAdminPage() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table >
-            </div >
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-8">
-              {businesses.map((business) => (
-                <Card key={business.id} className={cn(
-                  "group border-border/30 shadow-xl rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2",
-                  selectedIds.includes(business.id) ? "ring-2 ring-primary ring-offset-4" : ""
-                )}>
-                  <CardHeader className="p-0 relative h-48 bg-muted">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-                    <div className="absolute top-4 right-4 z-20 flex gap-2">
-                      <Checkbox
-                        checked={selectedIds.includes(business.id)}
-                        onCheckedChange={() => toggleSelect(business.id)}
-                        className="bg-white/20 backdrop-blur-md border-white/40 data-[state=checked]:bg-primary h-6 w-6 rounded-lg"
-                      />
-                    </div>
-                    <div className="absolute bottom-4 left-6 z-20">
-                      <p className="text-white font-black text-xl line-clamp-1">{business.name}</p>
-                      <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 mt-1">
-                        <MapPin className="h-3 w-3" /> {business.city}
-                      </p>
-                    </div>
-                    <div className="h-full w-full">
-                      {(() => {
-                        const logoUrl = getStoragePublicUrl(business.logo_url);
-                        if (logoUrl && isValidImageUrl(logoUrl)) {
-                          return <Image src={logoUrl} alt={business.name} fill className="object-cover transition-transform group-hover:scale-110 duration-1000" />;
-                        }
-                        return (
-                          <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300">
+                </Table>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 p-8 md:grid-cols-2 xl:grid-cols-3">
+                {businesses.map((business) => (
+                  <Card key={business.id} className={cn(
+                    'group overflow-hidden rounded-3xl border-border/30 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl',
+                    selectedIds.includes(business.id) ? 'ring-2 ring-primary ring-offset-4' : ''
+                  )}>
+                    <CardHeader className="relative h-48 bg-muted p-0">
+                      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute right-4 top-4 z-20 flex gap-2">
+                        <Checkbox
+                          checked={selectedIds.includes(business.id)}
+                          onCheckedChange={() => toggleSelect(business.id)}
+                          className="h-6 w-6 rounded-lg border-white/40 bg-white/20 backdrop-blur-md data-[state=checked]:bg-primary"
+                        />
+                      </div>
+                      <div className="absolute bottom-4 left-6 z-20">
+                        <p className="line-clamp-1 text-xl font-black text-white">{business.name}</p>
+                        <p className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/60">
+                          <MapPin className="h-3 w-3" /> {business.city}
+                        </p>
+                      </div>
+                      <BusinessLogoAvatar
+                        name={business.name}
+                        logoUrl={business.logo_url}
+                        className="h-full w-full"
+                        imageClassName="transition-transform duration-1000 group-hover:scale-110"
+                        fallback={
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300">
                             <Building className="h-12 w-12 text-slate-400 opacity-30" />
                           </div>
-                        );
-                      })()}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <Badge className="bg-slate-100 dark:bg-slate-800 text-muted-foreground border-none font-black text-[10px] uppercase">{business.category}</Badge>
-                        <div className="flex flex-wrap gap-1.5">
-                          {business.is_sponsored && (
-                            <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-[8px] border-0 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                              Sponsorisé
-                            </Badge>
-                          )}
-                          {business.is_featured && (
-                            <Badge className="bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black text-[8px] border-0 px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse">
-                              À la une
-                            </Badge>
-                          )}
+                        }
+                      />
+                    </CardHeader>
+                    <CardContent className="space-y-4 p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <Badge className="border-none bg-slate-100 text-[10px] font-black uppercase text-muted-foreground dark:bg-slate-800">{business.category}</Badge>
+                          <div className="flex flex-wrap gap-1.5">
+                            <BusinessVisibilityBadges
+                              isSponsored={business.is_sponsored}
+                              isFeatured={business.is_featured}
+                              compact
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 rounded-lg bg-amber-400/10 px-2 py-1">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span className="text-xs font-black tabular-nums text-amber-600">{business.overall_rating.toFixed(1)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 bg-amber-400/10 px-2 py-1 rounded-lg">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span className="font-black text-xs tabular-nums text-amber-600">{business.overall_rating.toFixed(1)}</span>
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          {business.user_id ? <ShieldCheck className="h-4 w-4 text-indigo-500" /> : <ShieldAlert className="h-4 w-4" />}
+                          {business.user_id ? t('adminBusinesses.ownership.claimed', 'Revendique') : t('adminBusinesses.ownership.unclaimed', 'Non reclame')}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-primary" />
+                          {business.review_count || 0} {t('adminBusinesses.metrics.reviews', 'avis')}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                      <div className="flex items-center gap-2">
-                        {business.user_id ? <ShieldCheck className="h-4 w-4 text-indigo-500" /> : <ShieldAlert className="h-4 w-4" />}
-                        {business.user_id ? t('adminBusinesses.ownership.claimed', 'Revendique') : t('adminBusinesses.ownership.unclaimed', 'Non reclame')}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-primary" />
-                        {business.review_count || 0} {t('adminBusinesses.metrics.reviews', 'avis')}
-                      </div>
-                    </div>
-                    <Button asChild variant="outline" className="w-full rounded-2xl h-10 border-border/40 font-bold hover:bg-primary/10 transition-all">
-                      <Link href={`/businesses/${business.id}`} target="_blank">
-                        {t('adminBusinesses.actions.businessDetails', 'Details entreprise')} <ChevronRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )
-          }
-
-          {
-            !loading && totalCount > 0 && (
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-border/10 p-4 md:p-6">
-                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {t('adminBusinesses.pagination.showing', 'Affichage')} {pageStart + 1}-{Math.min(pageEnd, totalCount)} {t('adminBusinesses.pagination.of', 'sur')} {totalCount}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-                    <SelectTrigger className="w-[110px] h-9 rounded-xl bg-white/50 border-border/20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-border/10">
-                      <SelectItem value="12">12 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
-                      <SelectItem value="24">24 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
-                      <SelectItem value="48">48 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
-                      <SelectItem value="96">96 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <div className="text-xs font-black tabular-nums px-2">
-                    {t('adminBusinesses.pagination.page', 'Page')} {currentPage} / {totalPages}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage <= 1}
-                  >
-                    {t('adminBusinesses.pagination.previous', 'Precedent')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl"
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage >= totalPages}
-                  >
-                    {t('adminBusinesses.pagination.next', 'Suivant')}
-                  </Button>
-                </div>
+                      <Button asChild variant="outline" className="h-10 w-full rounded-2xl border-border/40 font-bold transition-all hover:bg-primary/10">
+                        <Link href={`/businesses/${business.id}`} target="_blank">
+                          {t('adminBusinesses.actions.businessDetails', 'Details entreprise')} <ChevronRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            )
-          }
-        </CardContent >
-      </Card >
+            )}
+          {!loading && totalCount > 0 && (
+            <div className="flex flex-col items-start justify-between gap-4 border-t border-border/10 p-4 md:flex-row md:items-center md:p-6">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {t('adminBusinesses.pagination.showing', 'Affichage')} {pageStart + 1}-{Math.min(pageEnd, totalCount)} {t('adminBusinesses.pagination.of', 'sur')} {totalCount}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                  <SelectTrigger className="h-9 w-[110px] rounded-xl border-border/20 bg-white/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border/10">
+                    <SelectItem value="12">12 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="24">24 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="48">48 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                    <SelectItem value="96">96 / {t('adminBusinesses.pagination.perPage', 'page')}</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="px-2 text-xs font-black tabular-nums">
+                  {t('adminBusinesses.pagination.page', 'Page')} {currentPage} / {totalPages}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  {t('adminBusinesses.pagination.previous', 'Precedent')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  {t('adminBusinesses.pagination.next', 'Suivant')}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
 
 
@@ -855,97 +762,28 @@ export default function BusinessesAdminPage() {
         )
       }
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialog.open} onOpenChange={(open) => !open && setDeleteDialog({ open: false, businessId: '', businessName: '' })}>
-        <DialogContent className="rounded-[2.5rem] border-0 bg-white dark:bg-slate-950 p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-          <DialogHeader className="space-y-4">
-            <div className="w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center border border-rose-500/20 mb-2">
-              <AlertTriangle className="h-10 w-10 text-rose-500" />
-            </div>
-            <DialogTitle className="text-2xl font-black tracking-tight">
-              Confirmation de bannissement
-            </DialogTitle>
-            <DialogDescription asChild>
-              <div className="text-slate-600 dark:text-slate-400 pt-2 space-y-4 font-medium">
-                <p>{t('adminBusinesses.deleteDialog.confirmText', 'Etes-vous sur de vouloir bannir')} <strong>"{deleteDialog.businessName}"</strong> ? {t('adminBusinesses.deleteDialog.irreversible', 'Cette action est definitive.')}</p>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 space-y-2 border border-border/10">
-                  <p className="text-rose-500 font-black text-xs uppercase tracking-widest flex items-center gap-1">{t('adminBusinesses.deleteDialog.deletedData', 'Donnees supprimees :')}</p>
-                  <ul className="text-sm space-y-1">
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.reviewsHistory', 'Historique des avis')}</li>
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.updatesPhotos', 'Mises a jour & Photos')}</li>
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.relatedClaims', 'Revendications liees')}</li>
-                    <li className="flex items-center gap-2 text-muted-foreground"><X className="h-3 w-3 text-rose-500" /> {t('adminBusinesses.deleteDialog.deletedItems.ownerAccess', 'Acces proprietaire')}</li>
-                  </ul>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-8 gap-3">
-            <Button variant="outline" className="rounded-2xl border-border/40 font-bold px-8 h-12" onClick={() => setDeleteDialog({ open: false, businessId: '', businessName: '' })}>
-              {t('common.cancel', 'Annuler')}
-            </Button>
-            <Button
-              className="bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black px-10 h-12 shadow-xl shadow-rose-500/20"
-              onClick={handleDelete}
-              disabled={actionLoading === deleteDialog.businessId}
-            >
-              {actionLoading === deleteDialog.businessId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Bannir définitivement
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteBusinessDialog
+        open={deleteDialog.open}
+        businessName={deleteDialog.businessName}
+        loading={actionLoading === deleteDialog.businessId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialog({ open: false, businessId: '', businessName: '' });
+          }
+        }}
+        onConfirm={handleDelete}
+        t={t}
+      />
 
-      {/* Create Business Dialog */}
-      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-        <DialogContent className="rounded-[2.5rem] border-0 bg-white dark:bg-slate-950 p-8 shadow-2xl max-w-2xl overflow-y-auto max-h-[90vh]">
-          <DialogHeader className="space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
-              <Plus className="h-8 w-8" />
-            </div>
-            <DialogTitle className="text-2xl font-black tracking-tight">{t('adminBusinesses.createDialog.titlePrefix', 'Ajouter un')} <span className="text-primary italic">{t('adminBusinesses.createDialog.titleAccent', 'Etablissement')}</span></DialogTitle>
-            <DialogDescription className="font-medium">{t('adminBusinesses.createDialog.desc', 'Saisissez les informations de base pour creer une nouvelle fiche.')}</DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.name', "Nom de l'entreprise")} *</Label>
-              <Input id="name" placeholder={t('adminBusinesses.createDialog.placeholders.name', 'Ex: Cafe de Paris')} className="rounded-xl" value={newBusiness.name} onChange={e => setNewBusiness({ ...newBusiness, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.category', 'Categorie')} *</Label>
-              <Input id="category" placeholder={t('adminBusinesses.createDialog.placeholders.category', 'Ex: Restaurant')} className="rounded-xl" value={newBusiness.category} onChange={e => setNewBusiness({ ...newBusiness, category: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.city', 'Ville')} *</Label>
-              <Input id="city" placeholder={t('adminBusinesses.createDialog.placeholders.city', 'Ex: Casablanca')} className="rounded-xl" value={newBusiness.city} onChange={e => setNewBusiness({ ...newBusiness, city: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.address', 'Adresse')} *</Label>
-              <Input id="address" placeholder={t('adminBusinesses.createDialog.placeholders.address', 'Ex: 123 Rue de la Liberte')} className="rounded-xl" value={newBusiness.address} onChange={e => setNewBusiness({ ...newBusiness, address: e.target.value })} />
-            </div>
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="desc" className="text-[10px] font-black uppercase tracking-widest ml-1">{t('adminBusinesses.createDialog.fields.description', 'Description')}</Label>
-              <Textarea id="desc" placeholder={t('adminBusinesses.createDialog.placeholders.description', 'Courte description...')} className="rounded-xl min-h-[100px]" value={newBusiness.description} onChange={e => setNewBusiness({ ...newBusiness, description: e.target.value })} />
-            </div>
-            <div className="md:col-span-2 flex items-center justify-between p-4 bg-muted/30 rounded-2xl border border-border/50">
-              <div>
-              <Label className="font-black text-sm block">{t('adminBusinesses.createDialog.premiumLabel', 'Statut Premium')}</Label>
-              <p className="text-xs text-muted-foreground font-medium">{t('adminBusinesses.createDialog.premiumDesc', 'Activer directement les avantages Premium.')}</p>
-              </div>
-              <Switch checked={newBusiness.isPremium} onCheckedChange={checked => setNewBusiness({ ...newBusiness, isPremium: checked })} />
-            </div>
-          </div>
-
-          <DialogFooter className="gap-3">
-            <Button variant="ghost" className="rounded-xl font-bold px-6 h-12" onClick={() => setCreateDialog(false)}>{t('common.cancel', 'Annuler')}</Button>
-            <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black px-10 h-12 shadow-lg shadow-primary/20" onClick={handleCreateBusiness} disabled={isProcessingBulk}>
-              {isProcessingBulk ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-              Créer la fiche
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateBusinessDialog
+        open={createDialog}
+        draft={newBusiness}
+        loading={isProcessingBulk}
+        onOpenChange={setCreateDialog}
+        onDraftChange={setNewBusiness}
+        onSubmit={handleCreateBusiness}
+        t={t}
+      />
     </div >
   );
 }

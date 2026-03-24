@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InternalAdsSlot } from '@/components/shared/InternalAdsSlot';
+import { PageIntro } from '@/components/shared/PageIntro';
+import { MetricCard } from '@/components/shared/MetricCard';
 
 type DemandListingSnapshot = {
   id: string;
@@ -105,76 +107,44 @@ export default async function ReferralDemandDashboardPage() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-        <Badge variant="outline" className="w-fit">Referral Demand Intelligence</Badge>
-        <h1 className="text-3xl md:text-4xl font-bold font-headline">Live referral demand dashboard</h1>
-        <p className="text-muted-foreground max-w-3xl">
-          Track where referral demand is growing, which roles are requested most often, and which cities are moving right now.
-          Use these signals alongside salary guides and company reviews to target your next application.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Last refreshed: {refreshedAt.toLocaleString('fr-MA')}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild className="rounded-xl">
-            <Link href="/parrainages/demandes">Voir le demand board</Link>
-          </Button>
-          <Button asChild variant="secondary" className="rounded-xl">
-            <Link href="/referral-demand/roles">Top roles</Link>
-          </Button>
-          <Button asChild variant="secondary" className="rounded-xl">
-            <Link href="/referral-demand/cities">Top cities</Link>
-          </Button>
-          <Button asChild variant="outline" className="rounded-xl">
-            <Link href="/parrainages/demandes/new">Publier une demande</Link>
-          </Button>
-          <Button asChild variant="outline" className="rounded-xl">
-            <Link href="/parrainages">Voir les offres de parrainage</Link>
-          </Button>
-        </div>
-      </section>
+      <PageIntro
+        badge={<Badge variant="outline" className="w-fit">Referral Demand Intelligence</Badge>}
+        title="Live referral demand dashboard"
+        description="Track where referral demand is growing, which roles are requested most often, and which cities are moving right now. Use these signals alongside salary guides and company reviews to target your next application."
+        meta={<p className="text-xs text-muted-foreground">Last refreshed: {refreshedAt.toLocaleString('fr-MA')}</p>}
+        actions={
+          <>
+            <Button asChild className="rounded-xl">
+              <Link href="/parrainages/demandes">Voir le demand board</Link>
+            </Button>
+            <Button asChild variant="secondary" className="rounded-xl">
+              <Link href="/referral-demand/roles">Top roles</Link>
+            </Button>
+            <Button asChild variant="secondary" className="rounded-xl">
+              <Link href="/referral-demand/cities">Top cities</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/parrainages/demandes/new">Publier une demande</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/parrainages">Voir les offres de parrainage</Link>
+            </Button>
+          </>
+        }
+      />
 
       <InternalAdsSlot placement="referrals_top_banner" />
 
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              <Users2 className="h-4 w-4" />
-              Active listings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{activeListings.length}</CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Last {WINDOW_DAYS} days
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{trend.current}</CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Change vs previous
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-bold">{trend.pctChange}%</CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Top work mode
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xl font-semibold">
-            {topWorkModes[0] ? `${topWorkModes[0].label} (${topWorkModes[0].count})` : 'N/A'}
-          </CardContent>
-        </Card>
+        <MetricCard title="Active listings" value={String(activeListings.length)} icon={Users2} />
+        <MetricCard title={`Last ${WINDOW_DAYS} days`} value={String(trend.current)} icon={TrendingUp} />
+        <MetricCard title="Change vs previous" value={`${trend.pctChange}%`} icon={BarChart3} />
+        <MetricCard
+          title="Top work mode"
+          value={topWorkModes[0] ? `${topWorkModes[0].label} (${topWorkModes[0].count})` : 'N/A'}
+          icon={Building2}
+          valueClassName="text-xl font-semibold"
+        />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">

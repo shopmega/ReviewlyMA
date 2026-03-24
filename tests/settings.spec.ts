@@ -31,4 +31,20 @@ test.describe('Settings Tests', () => {
       await expect(page.locator('h1, main, [role="main"]').first()).toBeVisible();
     }
   });
+
+  test('admin settings routes should be protected for unauthenticated users', async ({ page }) => {
+    await page.goto('/admin/parametres', { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await expect(page).toHaveURL(/\/login\?next=/);
+
+    await page.goto('/admin', { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await expect(page).toHaveURL(/\/login\?next=/);
+  });
+
+  test('homepage should survive hard reload with the main shell visible', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await expect(page.locator('h1, main, [role="main"]').first()).toBeVisible();
+
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 120000 });
+    await expect(page.locator('h1, main, [role="main"]').first()).toBeVisible();
+  });
 });

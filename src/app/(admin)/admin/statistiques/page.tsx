@@ -14,6 +14,13 @@ import {
   type SalaryReportBuilderData,
 } from '@/app/actions/admin';
 import { useToast } from '@/hooks/use-toast';
+import {
+  chartTooltipStyle,
+  SalaryReportBuilderPanel,
+  StatisticsChartCard,
+  StatisticsEmptyChartState,
+  StatisticsOverviewCard,
+} from '@/components/admin/statistics/StatisticsPanels';
 
 type MonthlyData = {
   name: string;
@@ -314,354 +321,130 @@ export default function StatisticsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Report Builder salaires</CardTitle>
-          <CardDescription>
-            Configurez vos filtres (ville, categorie, poste, contrat), la metrique et le seuil d echantillon pour generer un classement.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <input
-              value={reportFilters.city}
-              onChange={(e) => setReportFilters((prev) => ({ ...prev, city: e.target.value }))}
-              placeholder="Ville (ex: Casablanca)"
-              className="h-10 rounded-md border bg-background px-3 text-sm"
-            />
-            <input
-              value={reportFilters.category}
-              onChange={(e) => setReportFilters((prev) => ({ ...prev, category: e.target.value }))}
-              placeholder="Categorie (ex: call center, it...)"
-              className="h-10 rounded-md border bg-background px-3 text-sm"
-            />
-            <input
-              value={reportFilters.jobTitleKeyword}
-              onChange={(e) => setReportFilters((prev) => ({ ...prev, jobTitleKeyword: e.target.value }))}
-              placeholder="Mot-cle poste (ex: stagiaire, dev...)"
-              className="h-10 rounded-md border bg-background px-3 text-sm"
-            />
-            <select
-              value={reportFilters.employmentType}
-              onChange={(e) => setReportFilters((prev) => ({ ...prev, employmentType: e.target.value as Required<SalaryReportBuilderInput>['employmentType'] }))}
-              className="h-10 rounded-md border bg-background px-3 text-sm"
-            >
-              <option value="all">Contrat: Tous</option>
-              <option value="full_time">Temps plein</option>
-              <option value="part_time">Temps partiel</option>
-              <option value="contract">Contrat</option>
-              <option value="intern">Stage</option>
-            </select>
-            <select
-              value={reportFilters.metric}
-              onChange={(e) => setReportFilters((prev) => ({ ...prev, metric: e.target.value as Required<SalaryReportBuilderInput>['metric'] }))}
-              className="h-10 rounded-md border bg-background px-3 text-sm"
-            >
-              <option value="avg">Metrique: Moyenne</option>
-              <option value="median">Metrique: Mediane</option>
-              <option value="p90">Metrique: P90</option>
-            </select>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={reportFilters.minSamples}
-                onChange={(e) => setReportFilters((prev) => ({ ...prev, minSamples: Number(e.target.value || 5) }))}
-                placeholder="Min samples"
-                className="h-10 rounded-md border bg-background px-3 text-sm"
-              />
-              <input
-                type="number"
-                min={1}
-                max={50}
-                value={reportFilters.limit}
-                onChange={(e) => setReportFilters((prev) => ({ ...prev, limit: Number(e.target.value || 10) }))}
-                placeholder="Limite"
-                className="h-10 rounded-md border bg-background px-3 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" disabled={customReportsLoading || isPending} onClick={() => fetchCustomSalaryReports()}>
-              {(customReportsLoading || isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Generer rapport
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={customReportsLoading || isPending}
-              onClick={() => fetchCustomSalaryReports({ city: 'Casablanca', category: 'call center', jobTitleKeyword: '', employmentType: 'all', metric: 'avg', minSamples: 5, limit: 10 })}
-            >
-              Preset: Call Center Casablanca
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={customReportsLoading || isPending}
-              onClick={() => fetchCustomSalaryReports({ city: '', category: '', jobTitleKeyword: '', employmentType: 'intern', metric: 'avg', minSamples: 5, limit: 10 })}
-            >
-              Preset: Stagiaires
-            </Button>
-          </div>
-
-          {customReports && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2">Classement entreprises</h3>
-                {customReports.rows.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Aucune donnee suffisante pour ces filtres.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {customReports.rows.map((row, idx) => (
-                      <div key={row.businessId} className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                        <div>
-                          <p className="font-medium">{idx + 1}. {row.businessName}</p>
-                          <p className="text-xs text-muted-foreground">{row.city} | {row.category} | {row.submissionCount} soumissions</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">{row.metricValue.toLocaleString('fr-MA')} MAD</p>
-                          <p className="text-[11px] text-muted-foreground">avg {row.avgMonthlySalary.toLocaleString('fr-MA')} | med {row.medianMonthlySalary.toLocaleString('fr-MA')} | p90 {row.p90MonthlySalary.toLocaleString('fr-MA')}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                Genere le {new Date(customReports.generatedAt).toLocaleString('fr-MA')}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <SalaryReportBuilderPanel
+        reportFilters={reportFilters}
+        customReports={customReports}
+        loading={customReportsLoading}
+        isPending={isPending}
+        onReportFiltersChange={setReportFilters}
+        onGenerate={() => fetchCustomSalaryReports()}
+        onPreset={fetchCustomSalaryReports}
+      />
 
       {/* Stat Cards */}
       <div className="grid gap-6 md:grid-cols-3">
         {statCards.map((stat) => (
-          <Card key={stat.name} className="relative overflow-hidden">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full -mr-10 -mt-10`} />
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.name}
-              </CardTitle>
-              <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.gradient} text-white`}>
-                {stat.icon}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stat.value.toLocaleString('fr-MA')}</div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-sm text-muted-foreground">
-                  +{stat.newThisMonth} ce mois
-                </span>
-                {stat.growth !== 0 && (
-                  <span className={`flex items-center gap-0.5 text-xs font-medium ${stat.growth > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                    {stat.growth > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {stat.growth > 0 ? '+' : ''}{stat.growth}%
-                  </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <StatisticsOverviewCard key={stat.name} {...stat} />
         ))}
       </div>
 
       {/* Charts Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* User Growth Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Croissance des utilisateurs</CardTitle>
-            <CardDescription>Évolution sur les 6 derniers mois</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <StatisticsChartCard title="Croissance des utilisateurs" description="Evolution sur les 6 derniers mois">
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={stats.monthlyData}>
+              <defs>
+                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="name" className="text-muted-foreground" />
+              <YAxis className="text-muted-foreground" />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Area type="monotone" dataKey="utilisateurs" stroke="hsl(var(--chart-4))" strokeWidth={2} fill="url(#colorUsers)" name="Utilisateurs" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </StatisticsChartCard>
+
+        <StatisticsChartCard title="Volume des avis" description="Nombre d'avis soumis par mois">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={stats.monthlyData}>
+              <defs>
+                <linearGradient id="colorReviews" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.9} />
+                  <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0.9} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="name" className="text-muted-foreground" />
+              <YAxis className="text-muted-foreground" />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Bar dataKey="avis" fill="url(#colorReviews)" radius={[4, 4, 0, 0]} name="Avis" />
+            </BarChart>
+          </ResponsiveContainer>
+        </StatisticsChartCard>
+
+        <StatisticsChartCard title="Nouvelles entreprises" description="Entreprises ajoutees par mois">
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={stats.monthlyData}>
+              <defs>
+                <linearGradient id="colorBusinesses" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="name" className="text-muted-foreground" />
+              <YAxis className="text-muted-foreground" />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Area type="monotone" dataKey="etablissements" stroke="#6366f1" strokeWidth={2} fill="url(#colorBusinesses)" name="Entreprises" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </StatisticsChartCard>
+
+        <StatisticsChartCard title="Repartition par categorie" description="Distribution des entreprises">
+          {stats.categoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={stats.monthlyData}>
-                <defs>
-                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-muted-foreground" />
-                <YAxis className="text-muted-foreground" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="utilisateurs"
-                  stroke="hsl(var(--chart-4))"
-                  strokeWidth={2}
-                  fill="url(#colorUsers)"
-                  name="Utilisateurs"
-                />
-              </AreaChart>
+              <PieChart>
+                <Pie
+                  data={stats.categoryData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {stats.categoryData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={chartTooltipStyle} />
+              </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          ) : (
+            <StatisticsEmptyChartState label="Aucune donnee de categorie disponible." />
+          )}
+        </StatisticsChartCard>
 
-        {/* Reviews Volume Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Volume des avis</CardTitle>
-            <CardDescription>Nombre d'avis soumis par mois</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <StatisticsChartCard title="Repartition par ville" description="Distribution des entreprises par ville">
+          {stats.cityData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.monthlyData}>
-                <defs>
-                  <linearGradient id="colorReviews" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.9} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0.9} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-muted-foreground" />
-                <YAxis className="text-muted-foreground" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar
-                  dataKey="avis"
-                  fill="url(#colorReviews)"
-                  radius={[4, 4, 0, 0]}
-                  name="Avis"
-                />
-              </BarChart>
+              <PieChart>
+                <Pie
+                  data={stats.cityData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {stats.cityData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={chartTooltipStyle} />
+              </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Businesses Growth Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Nouvelles entreprises</CardTitle>
-            <CardDescription>Entreprises ajoutées par mois</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={stats.monthlyData}>
-                <defs>
-                  <linearGradient id="colorBusinesses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-muted-foreground" />
-                <YAxis className="text-muted-foreground" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="etablissements"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                  fill="url(#colorBusinesses)"
-                  name="Entreprises"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Category Distribution - Pie Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Répartition par catégorie</CardTitle>
-            <CardDescription>Distribution des entreprises</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats.categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.categoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {stats.categoryData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                Aucune donnée de catégorie disponible.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* City Distribution - Pie Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Répartition par ville</CardTitle>
-            <CardDescription>Distribution des entreprises par ville</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats.cityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.cityData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {stats.cityData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                Aucune donnée de ville disponible.
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          ) : (
+            <StatisticsEmptyChartState label="Aucune donnee de ville disponible." />
+          )}
+        </StatisticsChartCard>
       </div>
     </div>
   );

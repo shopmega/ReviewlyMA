@@ -32,43 +32,28 @@ import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { verifyOfflinePayment, rejectOfflinePayment, addManualPayment } from "@/app/actions/admin";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { useI18n } from "@/components/providers/i18n-provider";
-
-type Payment = {
-  id: string;
-  user_id: string;
-  business_id: string | null;
-  payment_reference: string;
-  payment_method: string;
-  amount_usd: number | null;
-  currency: string;
-  status: 'pending' | 'verified' | 'rejected' | 'refunded';
-  notes: string | null;
-  target_tier: 'growth' | 'gold' | null;
-  created_at: string;
-  expires_at: string | null;
-  profiles: { email: string; full_name: string | null };
-  businesses: { name: string } | null;
-};
+import {
+  ManualPaymentDialog,
+  PaymentStatusBadge,
+  RejectPaymentDialog,
+} from "@/components/admin/payments/PaymentAdminComponents";
+import { useAdminPagination } from "@/hooks/use-admin-pagination";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { fetchAdminPayments, fetchAdminPaymentStats, type AdminPayment as Payment } from "@/lib/data/admin-payments";
 
 export default function PaiementsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [pendingCount, setPendingCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
 
@@ -86,15 +71,21 @@ export default function PaiementsPage() {
 
   const { toast } = useToast();
   const { t } = useI18n();
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
-    return () => clearTimeout(t);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, debouncedSearchTerm, pageSize]);
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    pageStart,
+    pageEnd,
+    rangeFrom,
+    rangeTo,
+  } = useAdminPagination({
+    totalCount,
+    resetDeps: [statusFilter, debouncedSearchTerm],
+  });
 
   useEffect(() => {
     loadPayments();
@@ -106,33 +97,15 @@ export default function PaiementsPage() {
 
   async function loadPayments() {
     setLoading(true);
-    const supabase = createClient();
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-
-    let query = supabase
-      .from('premium_payments')
-      .select(`
-        *,
-        profiles:user_id(email, full_name),
-        businesses:business_id(name)
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false });
-
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
-
-    const q = debouncedSearchTerm.trim();
-    if (q) {
-      const safeQ = q.replace(/,/g, ' ');
-      query = query.or(`payment_reference.ilike.%${safeQ}%`);
-    }
-
-    const { data, error, count } = await query.range(from, to);
+    const { data, error, count } = await fetchAdminPayments({
+      searchQuery: debouncedSearchTerm,
+      statusFilter,
+      rangeFrom,
+      rangeTo,
+    });
     if (!error) {
-      setPayments((data || []) as unknown as Payment[]);
-      setTotalCount(count || 0);
+      setPayments(data);
+      setTotalCount(count);
     } else {
       toast({ title: t('common.error', 'Erreur'), description: error.message, variant: 'destructive' });
     }
@@ -140,22 +113,9 @@ export default function PaiementsPage() {
   }
 
   async function loadStats() {
-    const supabase = createClient();
-
-    const [pending, verified] = await Promise.all([
-      supabase
-        .from('premium_payments')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending'),
-      supabase
-        .from('premium_payments')
-        .select('amount_usd')
-        .eq('status', 'verified'),
-    ]);
-
-    const revenue = (verified.data || []).reduce((acc, curr: any) => acc + (curr.amount_usd || 0), 0);
-    setPendingCount(pending.count || 0);
-    setTotalRevenue(revenue);
+    const stats = await fetchAdminPaymentStats();
+    setPendingCount(stats.pendingCount);
+    setTotalRevenue(stats.totalRevenue);
   }
 
   const handleVerify = async (id: string) => {
@@ -229,31 +189,6 @@ export default function PaiementsPage() {
     setIsSubmitting(false);
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest animate-pulse">
-            <Clock className="mr-1 h-3 w-3" /> {t('adminPayments.status.pending', 'En attente')}
-          </Badge>
-        );
-      case 'verified':
-        return (
-          <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">
-            <Check className="mr-1 h-3 w-3" /> {t('adminPayments.status.verified', 'Verifie')}
-          </Badge>
-        );
-      case 'rejected':
-        return (
-          <Badge className="bg-rose-500 text-white border-0 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <X className="mr-1 h-3 w-3" /> {t('adminPayments.status.rejected', 'Rejete')}
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-widest">{status}</Badge>;
-    }
-  };
-
   const formatPaymentMethod = (method?: string | null) => {
     if (!method) return t('adminPayments.method.notProvided', 'Methode non renseignee');
     return method
@@ -293,16 +228,6 @@ export default function PaiementsPage() {
     };
   };
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const pageStart = (currentPage - 1) * pageSize;
-  const pageEnd = pageStart + pageSize;
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
@@ -328,96 +253,12 @@ export default function PaiementsPage() {
           >
             <RefreshCw className={cn("h-5 w-5", loading ? "animate-spin" : "")} />
           </Button>
-          <Dialog open={showManualModal} onOpenChange={setShowManualModal}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-                <Plus size={18} className="mr-2" /> {t('adminPayments.manual.activateButton', 'Activer un Premium')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="rounded-[2.5rem] border-0 bg-white dark:bg-slate-950 p-8 shadow-2xl overflow-y-auto max-w-lg max-h-[90vh]">
-              <DialogHeader className="space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 mb-2">
-                  <CreditCard className="h-8 w-8 text-primary" />
-                </div>
-                <DialogTitle className="text-2xl font-black tracking-tight">{t('adminPayments.manual.title', 'Activation Manuelle')}</DialogTitle>
-                <DialogDescription className="text-slate-600 dark:text-slate-400 font-medium">
-                  {t('adminPayments.manual.desc', 'Enregistrez un paiement recu hors-ligne pour activer un compte gold.')}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="grid gap-6 py-4">
-                <div className="grid gap-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.ownerEmail', 'Email du Proprietaire')}</Label>
-                  <Input
-                    placeholder={t('adminPayments.manual.ownerEmailPlaceholder', 'exemple@entreprise.com')}
-                    className="h-12 rounded-xl bg-slate-50 border-border/10 focus:ring-primary/20 font-bold"
-                    value={manualData.userEmail}
-                    onChange={(e) => setManualData({ ...manualData, userEmail: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.amountLabel', 'Montant (MAD)')}</Label>
-                    <Input
-                      type="number"
-                      className="h-12 rounded-xl bg-slate-50 border-border/10 focus:ring-primary/20 font-black tabular-nums"
-                      value={manualData.amount}
-                      onChange={(e) => setManualData({ ...manualData, amount: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.durationLabel', 'Duree Pack')}</Label>
-                    <Select
-                      value={manualData.duration}
-                      onValueChange={(val) => setManualData({ ...manualData, duration: val })}
-                    >
-                      <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-border/10">
-                        <SelectValue placeholder={t('adminPayments.manual.choose', 'Choisir')} />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="1">{t('adminPayments.manual.duration.1', '1 Mois')}</SelectItem>
-                        <SelectItem value="6">{t('adminPayments.manual.duration.6', '6 Mois')}</SelectItem>
-                        <SelectItem value="12">{t('adminPayments.manual.duration.12', '12 Mois (1 an)')}</SelectItem>
-                        <SelectItem value="24">{t('adminPayments.manual.duration.24', '24 Mois (2 ans)')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.planTypeLabel', "Type d'abonnement")}</Label>
-                  <Select
-                    value={manualData.tier}
-                    onValueChange={(val: any) => setManualData({ ...manualData, tier: val })}
-                  >
-                    <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-border/10">
-                      <SelectValue placeholder={t('adminPayments.manual.choosePlan', 'Choisir un plan')} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="growth">{t('adminPayments.manual.planGrowth', 'Business GROWTH (99/mo)')}</SelectItem>
-                      <SelectItem value="gold">{t('adminPayments.manual.planGold', 'Business GOLD (299/mo)')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminPayments.manual.referenceLabel', 'Reference Transaction')}</Label>
-                  <Input
-                    placeholder={t('adminPayments.manual.referencePlaceholder', 'Ex: VIR-55421-MAROC')}
-                    className="h-12 rounded-xl bg-slate-50 border-border/10 focus:ring-primary/20 font-mono"
-                    value={manualData.reference}
-                    onChange={(e) => setManualData({ ...manualData, reference: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <DialogFooter className="mt-8 gap-3">
-                <Button variant="ghost" className="rounded-2xl font-bold px-8 h-12" onClick={() => setShowManualModal(false)}>{t('common.cancel', 'Annuler')}</Button>
-                <Button className="bg-primary hover:bg-primary/90 text-white rounded-2xl font-black px-10 h-12 shadow-xl shadow-primary/20" onClick={handleAddManual} disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />} {t('adminPayments.manual.confirmActivation', "Activer l'abonnement")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button
+            className="rounded-2xl bg-primary px-8 text-white font-black shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:bg-primary/90 active:scale-95 h-12"
+            onClick={() => setShowManualModal(true)}
+          >
+            <Plus size={18} className="mr-2" /> {t('adminPayments.manual.activateButton', 'Activer un Premium')}
+          </Button>
         </div>
       </div>
 
@@ -483,20 +324,16 @@ export default function PaiementsPage() {
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {(['all', 'pending', 'verified', 'rejected'] as const).map((s) => (
-                  <Button
-                    key={s}
-                    variant={statusFilter === s ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setStatusFilter(s)}
-                    className={cn(
-                      "rounded-xl font-bold text-[10px] uppercase tracking-widest px-4 h-9 shadow-sm transition-all",
-                      statusFilter === s ? "shadow-primary/20" : "text-muted-foreground hover:bg-white/50"
-                    )}
-                  >
-                    {s === 'all' ? t('adminPayments.filters.all', 'Tous les flux') : s === 'pending' ? t('adminPayments.filters.pending', 'Attente') : s === 'verified' ? t('adminPayments.filters.verified', 'Verifies') : t('adminPayments.filters.rejected', 'Refuses')}
-                  </Button>
-                ))}
+                <SegmentedControl
+                  className="border-0 bg-transparent p-0"
+                  buttonClassName="rounded-xl font-bold text-[10px] uppercase tracking-widest px-4 h-9 shadow-sm transition-all"
+                  items={[
+                    { key: 'all', label: t('adminPayments.filters.all', 'Tous les flux'), active: statusFilter === 'all', onClick: () => setStatusFilter('all') },
+                    { key: 'pending', label: t('adminPayments.filters.pending', 'Attente'), active: statusFilter === 'pending', onClick: () => setStatusFilter('pending') },
+                    { key: 'verified', label: t('adminPayments.filters.verified', 'Verifies'), active: statusFilter === 'verified', onClick: () => setStatusFilter('verified') },
+                    { key: 'rejected', label: t('adminPayments.filters.rejected', 'Refuses'), active: statusFilter === 'rejected', onClick: () => setStatusFilter('rejected') },
+                  ]}
+                />
 
                 {searchTerm !== '' && (
                   <Button variant="link" size="sm" onClick={() => setSearchTerm('')} className="text-[10px] font-bold text-muted-foreground uppercase px-2">{t('adminPayments.clear', 'Effacer')}</Button>
@@ -585,7 +422,7 @@ export default function PaiementsPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getStatusBadge(payment.status)}
+                        <PaymentStatusBadge status={payment.status} t={t} />
                       </TableCell>
                       <TableCell className="text-right pr-8">
                         {payment.status === 'pending' ? (
@@ -599,47 +436,32 @@ export default function PaiementsPage() {
                               <Check className="mr-1 h-3 w-3" /> {t('adminPayments.actions.validate', 'Valider')}
                             </Button>
 
-                            <Dialog open={rejectingId === payment.id} onOpenChange={(open) => {
-                              if (!open) setRejectingId(null);
-                              else setRejectingId(payment.id);
-                            }}>
-                              <DialogTrigger asChild>
+                            <RejectPaymentDialog
+                              open={rejectingId === payment.id}
+                              reason={rejectionReason}
+                              loading={isSubmitting}
+                              onOpenChange={(open) => {
+                                if (!open) {
+                                  setRejectingId(null);
+                                  setRejectionReason('');
+                                } else {
+                                  setRejectingId(payment.id);
+                                }
+                              }}
+                              onReasonChange={setRejectionReason}
+                              onConfirm={() => handleReject(payment.id)}
+                              t={t}
+                              trigger={
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-10 w-10 p-0 text-rose-500 hover:bg-rose-500/10 rounded-xl"
+                                  className="h-10 w-10 rounded-xl p-0 text-rose-500 hover:bg-rose-500/10"
                                   disabled={isSubmitting}
                                 >
                                   <X className="h-4 w-4" />
                                 </Button>
-                              </DialogTrigger>
-                              <DialogContent className="rounded-[2rem] p-8 overflow-y-auto max-h-[90vh]">
-                                <DialogHeader>
-                                  <DialogTitle className="text-2xl font-black">{t('adminPayments.rejectDialog.title', 'Refus de transaction')}</DialogTitle>
-                                  <DialogDescription className="text-slate-600 font-medium">
-                                    {t('adminPayments.rejectDialog.desc', "Pourquoi ce virement n'est-il pas valide ?")}
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="py-6">
-                                  <Textarea
-                                    placeholder={t('adminPayments.rejectDialog.placeholder', 'Ex: Reference introuvable, montant inferieur...')}
-                                    className="min-h-32 rounded-2xl bg-slate-50 border-border/10 p-4 font-bold"
-                                    value={rejectionReason}
-                                    onChange={(e) => setRejectionReason(e.target.value)}
-                                  />
-                                </div>
-                                <DialogFooter className="gap-2">
-                                  <Button variant="ghost" className="rounded-xl h-12" onClick={() => setRejectingId(null)}>{t('common.cancel', 'Annuler')}</Button>
-                                  <Button
-                                    className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl h-12 px-8 font-black shadow-xl shadow-rose-500/20"
-                                    onClick={() => handleReject(payment.id)}
-                                    disabled={isSubmitting || !rejectionReason}
-                                  >
-                                    {t('adminPayments.rejectDialog.confirm', 'Confirmer le Refus')}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                              }
+                            />
                           </div>
                         ) : (
                           <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
@@ -700,6 +522,16 @@ export default function PaiementsPage() {
           )}
         </CardContent>
       </Card>
+
+      <ManualPaymentDialog
+        open={showManualModal}
+        draft={manualData}
+        loading={isSubmitting}
+        onOpenChange={setShowManualModal}
+        onDraftChange={setManualData}
+        onSubmit={handleAddManual}
+        t={t}
+      />
     </div>
   );
 }

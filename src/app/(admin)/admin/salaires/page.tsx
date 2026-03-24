@@ -1,7 +1,6 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { moderateSalary } from '@/app/actions/salary';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,20 +29,9 @@ import {
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-
-type SalaryRow = {
-  id: number;
-  business_id: string;
-  job_title: string;
-  salary: number;
-  pay_period: 'monthly' | 'yearly';
-  employment_type: string;
-  department: string | null;
-  status: 'pending' | 'published' | 'rejected';
-  moderation_notes: string | null;
-  created_at: string;
-  businesses: { name: string }[] | null;
-};
+import { useAdminPagination } from '@/hooks/use-admin-pagination';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { fetchAdminSalaries, fetchAdminSalaryStats, type AdminSalaryRow as SalaryRow } from '@/lib/data/admin-salaries';
 
 type StatusFilter = 'all' | 'pending' | 'published' | 'rejected';
 
@@ -51,13 +39,10 @@ export default function AdminSalariesPage() {
   const [rows, setRows] = useState<SalaryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
   const [rejectRow, setRejectRow] = useState<SalaryRow | null>(null);
   const [rejectionNote, setRejectionNote] = useState('');
   const [isPending, startTransition] = useTransition();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [stats, setStats] = useState({
     total: 0,
@@ -67,17 +52,21 @@ export default function AdminSalariesPage() {
     avgSalary: 0,
   });
   const { toast } = useToast();
-
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
-
-  // Reset page on filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, debouncedSearch, pageSize]);
+  const debouncedSearch = useDebouncedValue(searchQuery);
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    pageStart,
+    pageEnd,
+    rangeFrom,
+    rangeTo,
+  } = useAdminPagination({
+    totalCount,
+    resetDeps: [statusFilter, debouncedSearch],
+  });
 
   // Fetch with pagination
   useEffect(() => {
@@ -90,57 +79,23 @@ export default function AdminSalariesPage() {
   }, []);
 
   async function loadStats() {
-    const supabase = createClient();
-    const [all, pending, published, rejected, salaryData] = await Promise.all([
-      supabase.from('salaries').select('id', { count: 'exact', head: true }),
-      supabase.from('salaries').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('salaries').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-      supabase.from('salaries').select('id', { count: 'exact', head: true }).eq('status', 'rejected'),
-      supabase.from('salaries').select('salary').eq('status', 'published'),
-    ]);
-
-    const salaries = (salaryData.data || []) as { salary: number }[];
-    const avg = salaries.length
-      ? Math.round(salaries.reduce((a, b) => a + Number(b.salary), 0) / salaries.length)
-      : 0;
-
-    setStats({
-      total: all.count || 0,
-      pending: pending.count || 0,
-      published: published.count || 0,
-      rejected: rejected.count || 0,
-      avgSalary: avg,
-    });
+    setStats(await fetchAdminSalaryStats());
   }
 
   async function loadRows() {
     setLoading(true);
-    const supabase = createClient();
-    const from = (currentPage - 1) * pageSize;
-    const to = from + pageSize - 1;
-
-    let query = supabase
-      .from('salaries')
-      .select('id,business_id,job_title,salary,pay_period,employment_type,department,status,moderation_notes,created_at,businesses(name)', { count: 'exact' })
-      .order('created_at', { ascending: false });
-
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
-
-    const q = debouncedSearch.trim();
-    if (q) {
-      const safeQ = q.replace(/,/g, ' ');
-      query = query.or(`job_title.ilike.%${safeQ}%,department.ilike.%${safeQ}%`);
-    }
-
-    const { data, error, count } = await query.range(from, to);
+    const { data, error, count } = await fetchAdminSalaries({
+      searchQuery: debouncedSearch,
+      statusFilter,
+      rangeFrom,
+      rangeTo,
+    });
 
     if (error) {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     } else {
-      setRows((data || []) as SalaryRow[]);
-      setTotalCount(count || 0);
+      setRows(data);
+      setTotalCount(count);
     }
     setLoading(false);
   }
@@ -185,23 +140,13 @@ export default function AdminSalariesPage() {
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const pageStart = (currentPage - 1) * pageSize;
-  const pageEnd = pageStart + pageSize;
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div className="space-y-2">
           <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">Transparence Salariale</Badge>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            Modération des <span className="text-primary italic">Salaires</span>
+            Moderation des <span className="text-primary italic">Salaires</span>
           </h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2">
             <Banknote className="h-4 w-4" /> {stats.total} soumissions au total
@@ -242,7 +187,7 @@ export default function AdminSalariesPage() {
               <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/20 text-emerald-600">Actif</Badge>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.published}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Publiés</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Publies</p>
           </CardContent>
         </Card>
 
@@ -254,7 +199,7 @@ export default function AdminSalariesPage() {
               </div>
             </div>
             <p className="text-3xl font-black tabular-nums">{stats.rejected}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Rejetés</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Rejetes</p>
           </CardContent>
         </Card>
 
@@ -298,7 +243,7 @@ export default function AdminSalariesPage() {
                       statusFilter === s ? "shadow-primary/20" : "text-muted-foreground hover:bg-white/50"
                     )}
                   >
-                    {s === 'all' ? 'Tous' : s === 'pending' ? 'En attente' : s === 'published' ? 'Publiés' : 'Rejetés'}
+                    {s === 'all' ? 'Tous' : s === 'pending' ? 'En attente' : s === 'published' ? 'Publies' : 'Rejetes'}
                   </Button>
                 ))}
 
@@ -314,15 +259,15 @@ export default function AdminSalariesPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
               <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Chargement des données...</p>
+              <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">Chargement des donnees...</p>
             </div>
           ) : rows.length === 0 ? (
             <div className="text-center py-40 space-y-6">
               <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto border border-dashed border-border/60">
                 <DollarSign className="h-12 w-12 text-muted-foreground/30" />
               </div>
-              <p className="text-2xl font-black">Aucune soumission trouvée</p>
-              <p className="text-muted-foreground font-medium">Modifiez vos filtres pour voir plus de résultats.</p>
+              <p className="text-2xl font-black">Aucune soumission trouvee</p>
+              <p className="text-muted-foreground font-medium">Modifiez vos filtres pour voir plus de resultats.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -332,7 +277,7 @@ export default function AdminSalariesPage() {
                     <TableHead className="py-6 pl-8 font-bold uppercase tracking-widest text-[10px]">Entreprise</TableHead>
                     <TableHead className="font-bold uppercase tracking-widest text-[10px]">Poste</TableHead>
                     <TableHead className="font-bold uppercase tracking-widest text-[10px]">Salaire</TableHead>
-                    <TableHead className="hidden lg:table-cell font-bold uppercase tracking-widest text-[10px]">Contrat / Dép.</TableHead>
+                    <TableHead className="hidden lg:table-cell font-bold uppercase tracking-widest text-[10px]">Contrat / Dep.</TableHead>
                     <TableHead className="font-bold uppercase tracking-widest text-[10px]">Date</TableHead>
                     <TableHead className="font-bold uppercase tracking-widest text-[10px]">Statut</TableHead>
                     <TableHead className="text-right pr-8 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
@@ -364,7 +309,7 @@ export default function AdminSalariesPage() {
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="text-sm font-bold">{row.employment_type}</div>
-                        <div className="text-[10px] text-muted-foreground font-medium">{row.department || 'Non défini'}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">{row.department || 'Non defini'}</div>
                       </TableCell>
                       <TableCell>
                         <span className="text-xs font-black tabular-nums">{format(new Date(row.created_at), 'dd/MM/yyyy', { locale: fr })}</span>

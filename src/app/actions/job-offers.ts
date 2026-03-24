@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { checkRateLimit, RATE_LIMIT_CONFIG, recordAttempt } from '@/lib/rate-limiter-enhanced';
 import { createClient } from '@/lib/supabase/server';
-import type { ActionState } from '@/lib/types';
+import type { ActionState, JobOfferRecord } from '@/lib/types';
 import { jobOfferIngestionSchema } from '@/lib/types';
 import {
   createErrorResponse,
@@ -15,6 +15,7 @@ import {
   getJobOfferEmployerContext,
   getSimilarJobOfferAnalyses,
 } from '@/lib/data/job-offers';
+import { createJobOfferDecisionWorkspace } from '@/lib/job-offers/workspace';
 import { normalizeJobOfferInput } from '@/lib/job-offers/normalization';
 import { getJobOfferBenchmarks } from '@/lib/job-offers/benchmarks';
 import { computeJobOfferAnalysis } from '@/lib/job-offers/scoring';
@@ -219,8 +220,8 @@ export async function submitJobOfferAnalysis(
       company_match_confidence: benchmarks.companyMatch.confidence,
       company_match_method: benchmarks.companyMatch.method,
       company_match_candidates: benchmarks.companyMatch.candidates,
-      status: 'pending',
-      visibility: 'private',
+      status: 'pending' as const,
+      visibility: 'private' as const,
     };
 
     const { data: offerData, error: offerError } = await supabase
@@ -275,16 +276,48 @@ export async function submitJobOfferAnalysis(
       getJobOfferEmployerContext({
         business_id: benchmarks.businessId,
         company_match_confidence: benchmarks.companyMatch.confidence,
+        company_name: normalizedInput.companyName,
       }),
       getSimilarJobOfferAnalyses({
         currentOfferId: offerData.id,
         jobTitleNormalized: normalizedInput.jobTitleNormalized,
+        jobTitle: normalizedInput.jobTitle,
         citySlug: normalizedInput.citySlug,
+        seniorityLevel: normalizedInput.seniorityLevel,
         workModel: normalizedInput.workModel,
         contractType: normalizedInput.contractType,
         limit: 4,
       }),
     ]);
+
+    const savedOffer: JobOfferRecord = {
+      id: offerData.id,
+      ...offerRow,
+      submitted_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const workspace = createJobOfferDecisionWorkspace({
+      analysis: computedAnalysis,
+      offer: savedOffer,
+      extractedOffer: {
+        companyName: extracted.companyName,
+        jobTitle: extracted.jobTitle,
+        city: extracted.city,
+        salaryMin: extracted.salaryMin,
+        salaryMax: extracted.salaryMax,
+        payPeriod: extracted.payPeriod,
+        contractType: extracted.contractType,
+        workModel: extracted.workModel,
+        seniorityLevel: extracted.seniorityLevel,
+        yearsExperienceRequired: extracted.yearsExperienceRequired,
+        benefits: extracted.benefits,
+        sourceSummary: extracted.sourceSummary,
+      },
+      extractionDiagnostics: diagnostics,
+      employerContext,
+      similarOffers,
+    });
 
     revalidatePath('/job-offers');
     revalidatePath('/job-offers/history');
@@ -300,6 +333,7 @@ export async function submitJobOfferAnalysis(
         analysis: computedAnalysis,
         employerContext,
         similarOffers,
+        workspace,
       }
     ) as JobOfferActionState;
   } catch (error) {

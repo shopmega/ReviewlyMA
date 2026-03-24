@@ -642,9 +642,9 @@ export type JobOfferBusinessMonthlyTrend = {
 };
 
 export type JobOfferEmployerContext = {
-  business_id: string;
+  business_id?: string | null;
   business_name: string;
-  business_slug: string;
+  business_slug?: string | null;
   overall_rating: number | null;
   review_count: number;
   is_claimed: boolean;
@@ -652,6 +652,8 @@ export type JobOfferEmployerContext = {
   company_size?: string | null;
   salary_median_monthly?: number | null;
   salary_submission_count: number;
+  mapping_confidence: 'high' | 'medium' | 'low' | 'none';
+  availability: 'full' | 'limited' | 'unavailable';
   signal_label: 'strong' | 'mixed' | 'limited';
   signal_summary: string;
 };
@@ -663,15 +665,110 @@ export type JobOfferSimilarOffer = {
   company_name: string;
   job_title: string;
   city?: string | null;
+  city_slug?: string | null;
   salary_min?: number | null;
   salary_max?: number | null;
   pay_period: JobOfferPayPeriod;
   work_model?: JobOfferWorkModel | null;
   contract_type?: JobOfferContractType | null;
+  seniority_level?: JobOfferSeniorityLevel | null;
   overall_offer_score: number;
   market_position_label: JobOfferRecommendationLabel;
   confidence_level: JobOfferConfidenceLevel;
+  business_slug?: string | null;
+  public_href?: string | null;
+  similarity_score: number;
   similarity_label: string;
+};
+
+export type JobOfferDynamicAction = {
+  id: string;
+  title: string;
+  body: string;
+  href: string;
+  kind: 'primary' | 'secondary';
+  placement: 'hero' | 'rail';
+  cta_id: string;
+};
+
+export type JobOfferReviewAwareSignal = {
+  title: string;
+  body: string;
+  tone: 'positive' | 'caution' | 'warning' | 'neutral';
+};
+
+export type JobOfferWorkspaceSnapshot = {
+  companyName: string;
+  jobTitle: string;
+  roleSlug: string | null;
+  city: string | null;
+  citySlug: string | null;
+  salaryMin: number | null;
+  salaryMax: number | null;
+  payPeriod: JobOfferPayPeriod;
+  contractType: JobOfferContractType | null;
+  workModel: JobOfferWorkModel | null;
+  seniorityLevel: JobOfferSeniorityLevel | null;
+  benefits: string[];
+  sourceSummary: string;
+  sourceType: JobOfferSourceType | null;
+  sourceUrl: string | null;
+  documentName: string | null;
+};
+
+export type JobOfferDecisionWorkspaceStep = {
+  key: 'offer' | 'employer' | 'compare' | 'actions' | 'details';
+  label: string;
+  title: string;
+  body: string;
+};
+
+export type JobOfferDecisionWorkspace = {
+  analysis: Omit<JobOfferAnalysisRecord, 'id' | 'job_offer_id' | 'created_at'>;
+  offer?: JobOfferRecord;
+  extractedOffer?: JobOfferExtractionResult;
+  extractionDiagnostics?: JobOfferExtractionDiagnostics;
+  snapshot: JobOfferWorkspaceSnapshot;
+  employerContext: JobOfferEmployerContext;
+  similarOffers: JobOfferSimilarOffer[];
+  dynamicActions: JobOfferDynamicAction[];
+  primaryAction: JobOfferDynamicAction | null;
+  reviewAwareSignal: JobOfferReviewAwareSignal | null;
+  positives: string[];
+  concerns: string[];
+  recruiterQuestions: string[];
+  interviewTopics: string[];
+  missingInformation: Array<{
+    title: string;
+    insight: string;
+    action: string;
+  }>;
+  hiddenSignals: string[];
+  dimensions: Array<{
+    title: string;
+    value: number;
+    label: string;
+    note: string;
+    kind?: 'default' | 'risk';
+  }>;
+  nextStep: string;
+  confidence: {
+    score: number;
+    label: string;
+    note: string;
+  };
+  verdict: {
+    eyebrow: string;
+    title: string;
+    summary: string;
+    tone: 'positive' | 'neutral' | 'warning' | 'caution';
+  };
+  resultSteps: JobOfferDecisionWorkspaceStep[];
+  journey: {
+    currentStep: 4;
+    totalSteps: 5;
+    finalStepTitle: string;
+  };
 };
 
 export type JobOfferRoleCityMetrics = {
@@ -855,23 +952,6 @@ export type Profile = {
   business_id?: string;
   created_at: string;
   updated_at?: string;
-};
-
-// Ad type for advertising system
-export type Ad = {
-  id: string;
-  advertiser_id: string;
-  title: string;
-  content: string;
-  target_business_ids?: string[];
-  targeting_criteria?: Record<string, any>;
-  budget_cents: number;
-  spent_cents: number;
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  start_date?: string;
-  end_date?: string;
-  created_at: string;
-  updated_at: string;
 };
 
 // Support ticket type

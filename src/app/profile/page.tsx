@@ -50,6 +50,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useI18n } from '@/components/providers/i18n-provider';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
+import { AppEmptyState } from '@/components/shared/AppEmptyState';
+import { ReviewAppealStatusBadge } from '@/components/reviews/ReviewStatusBadges';
+import { ReviewSortSelect } from '@/components/reviews/ReviewSortSelect';
+import { isReviewAppealActive, mapLatestAppealsByReview, sortReviews, type ReviewSortOption } from '@/lib/reviews/review-helpers';
 
 type UserProfile = {
   id: string;
@@ -139,7 +143,7 @@ export default function ProfilePage() {
   const [reviewsPage, setReviewsPage] = useState(0);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
-  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'helpful' | 'rating'>('newest');
+  const [sortOption, setSortOption] = useState<ReviewSortOption>('newest');
   const [activeTab, setActiveTab] = useState<ProfileTab>(requestedTab);
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([]);
   const [savedVisibleCount, setSavedVisibleCount] = useState(SAVED_BUSINESSES_PAGE_SIZE);
@@ -165,20 +169,7 @@ export default function ProfilePage() {
   const sortedReviews = useMemo(() => {
     if (!reviews.length) return [];
 
-    const sorted = [...reviews];
-
-    switch (sortOption) {
-      case 'newest':
-        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      case 'oldest':
-        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      case 'helpful':
-        return sorted.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
-      case 'rating':
-        return sorted.sort((a, b) => b.rating - a.rating);
-      default:
-        return sorted;
-    }
+    return sortReviews(reviews, sortOption);
   }, [reviews, sortOption]);
 
   const visibleSavedBusinesses = useMemo(
@@ -249,13 +240,7 @@ export default function ProfilePage() {
 
     if (error || !data) return;
 
-    const byReview: Record<number, ReviewAppeal> = {};
-    for (const appeal of data as ReviewAppeal[]) {
-      if (!byReview[appeal.review_id]) {
-        byReview[appeal.review_id] = appeal;
-      }
-    }
-    setAppealsByReview(byReview);
+    setAppealsByReview(mapLatestAppealsByReview(data as ReviewAppeal[]));
   };
 
   const initialState: ActionState = { status: 'idle', message: '' };
@@ -438,7 +423,7 @@ export default function ProfilePage() {
 
   const handleReviewAppeal = async (reviewId: number) => {
     const existing = appealsByReview[reviewId];
-    if (existing && (existing.status === 'open' || existing.status === 'in_review')) {
+    if (existing && isReviewAppealActive(existing.status)) {
       toast({
         title: t('profilePage.toasts.errorTitle', 'Error'),
         description: t('profilePage.reviews.appealAlreadyActive', 'An appeal is already active for this review.'),
@@ -468,15 +453,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getAppealBadge = (reviewId: number) => {
-    const appeal = appealsByReview[reviewId];
-    if (!appeal) return null;
-    if (appeal.status === 'open') return <Badge variant="outline">{t('profilePage.reviews.appealStatusOpen', 'Appeal open')}</Badge>;
-    if (appeal.status === 'in_review') return <Badge variant="outline" className="border-orange-500 text-orange-600">{t('profilePage.reviews.appealStatusInReview', 'Appeal in review')}</Badge>;
-    if (appeal.status === 'accepted') return <Badge className="bg-emerald-600 text-white">{t('profilePage.reviews.appealStatusAccepted', 'Appeal accepted')}</Badge>;
-    return <Badge variant="secondary">{t('profilePage.reviews.appealStatusRejected', 'Appeal rejected')}</Badge>;
-  };
-
   const handleLoadMoreSaved = () => {
     setSavedVisibleCount((prev) => Math.min(prev + SAVED_BUSINESSES_PAGE_SIZE, savedBusinesses.length));
   };
@@ -492,18 +468,17 @@ export default function ProfilePage() {
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 text-center shadow-2xl border-none bg-card/50 backdrop-blur-sm">
-          <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <LogIn className="h-10 w-10 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold mb-4">{t('profilePage.authRequired.title', 'Login required')}</h1>
-          <p className="text-muted-foreground mb-8">
-            {t('profilePage.authRequired.description', 'Join the community to manage your profile, reviews and favorites.')}
-          </p>
-          <Button asChild size="lg" className="w-full rounded-full shadow-lg">
-            <Link href={`/login?next=${encodeURIComponent(loginNextPath)}`}>{t('profilePage.authRequired.cta', 'Log in')}</Link>
-          </Button>
-        </Card>
+        <AppEmptyState
+          className="max-w-md w-full border-none bg-card/50 p-8 shadow-2xl backdrop-blur-sm"
+          icon={<LogIn className="h-10 w-10 text-primary" />}
+          title={t('profilePage.authRequired.title', 'Login required')}
+          description={t('profilePage.authRequired.description', 'Join the community to manage your profile, reviews and favorites.')}
+          action={
+            <Button asChild size="lg" className="w-full rounded-full shadow-lg">
+              <Link href={`/login?next=${encodeURIComponent(loginNextPath)}`}>{t('profilePage.authRequired.cta', 'Log in')}</Link>
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -656,32 +631,30 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <span className="text-sm text-muted-foreground">{t('profilePage.reviews.sortBy', 'Sort by:')}</span>
-                  <Select value={sortOption} onValueChange={(value: any) => setSortOption(value)}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">{t('profilePage.reviews.sortNewest', 'Newest')}</SelectItem>
-                      <SelectItem value="oldest">{t('profilePage.reviews.sortOldest', 'Oldest')}</SelectItem>
-                      <SelectItem value="helpful">{t('profilePage.reviews.sortHelpful', 'Most helpful')}</SelectItem>
-                      <SelectItem value="rating">{t('profilePage.reviews.sortRating', 'Best rating')}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <ReviewSortSelect
+                    value={sortOption}
+                    onChange={setSortOption}
+                    labels={{
+                      newest: t('profilePage.reviews.sortNewest', 'Newest'),
+                      oldest: t('profilePage.reviews.sortOldest', 'Oldest'),
+                      helpful: t('profilePage.reviews.sortHelpful', 'Most helpful'),
+                      rating: t('profilePage.reviews.sortRating', 'Best rating'),
+                    }}
+                  />
                 </div>
               </div>
               {sortedReviews.length === 0 ? (
-                <Card className="border-2 border-dashed border-muted bg-transparent p-12 text-center">
-                  <div className="bg-muted p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                    <Star className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">{t('profilePage.reviews.emptyTitle', 'No reviews yet')}</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto mb-8 text-lg">
-                    {t('profilePage.reviews.emptyDescription', 'Share your experience and help others find the best places in Morocco!')}
-                  </p>
-                  <Button asChild size="lg" className="rounded-full shadow-lg">
-                    <Link href="/">{t('profilePage.reviews.emptyCta', 'Start my first search')}</Link>
-                  </Button>
-                </Card>
+                <AppEmptyState
+                  className="border-2 border-dashed border-muted bg-transparent p-8"
+                  icon={<Star className="h-8 w-8 text-muted-foreground" />}
+                  title={t('profilePage.reviews.emptyTitle', 'No reviews yet')}
+                  description={t('profilePage.reviews.emptyDescription', 'Share your experience and help others find the best places in Morocco!')}
+                  action={
+                    <Button asChild size="lg" className="rounded-full shadow-lg">
+                      <Link href="/">{t('profilePage.reviews.emptyCta', 'Start my first search')}</Link>
+                    </Button>
+                  }
+                />
               ) : (
                 <>
                 <div className="grid gap-6">
@@ -742,16 +715,24 @@ export default function ProfilePage() {
                                   variant="outline"
                                   size="sm"
                                   className="rounded-full"
-                                  disabled={appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'}
+                                  disabled={isReviewAppealActive(appealsByReview[review.id]?.status)}
                                   onClick={() => handleReviewAppeal(review.id)}
                                 >
                                   <Undo className="mr-2 h-4 w-4" />
-                                  {appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'
+                                  {isReviewAppealActive(appealsByReview[review.id]?.status)
                                     ? t('profilePage.reviews.appealInProgress', 'Appeal in progress')
                                     : t('profilePage.reviews.appeal', 'Appeal')}
                                 </Button>
                               )}
-                              {getAppealBadge(review.id)}
+                              <ReviewAppealStatusBadge
+                                status={appealsByReview[review.id]?.status}
+                                labels={{
+                                  open: t('profilePage.reviews.appealStatusOpen', 'Appeal open'),
+                                  in_review: t('profilePage.reviews.appealStatusInReview', 'Appeal in review'),
+                                  accepted: t('profilePage.reviews.appealStatusAccepted', 'Appeal accepted'),
+                                  rejected: t('profilePage.reviews.appealStatusRejected', 'Appeal rejected'),
+                                }}
+                              />
                               <VoteButtons
                                 reviewId={review.id}
                                 initialLikes={review.likes}
@@ -803,18 +784,17 @@ export default function ProfilePage() {
                 </div>
               )}
               {savedBusinesses.length === 0 ? (
-                <Card className="border-2 border-dashed border-muted bg-transparent p-12 text-center">
-                  <div className="bg-muted p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                    <Heart className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">{t('profilePage.saved.emptyTitle', 'Your favorites are empty')}</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto mb-8 text-lg">
-                    {t('profilePage.saved.emptyDescription', 'Keep track of places you love or plan to visit in Morocco.')}
-                  </p>
-                  <Button asChild size="lg" className="rounded-full shadow-lg">
-                    <Link href="/">{t('profilePage.saved.emptyCta', 'Explore places')}</Link>
-                  </Button>
-                </Card>
+                <AppEmptyState
+                  className="border-2 border-dashed border-muted bg-transparent p-8"
+                  icon={<Heart className="h-8 w-8 text-muted-foreground" />}
+                  title={t('profilePage.saved.emptyTitle', 'Your favorites are empty')}
+                  description={t('profilePage.saved.emptyDescription', 'Keep track of places you love or plan to visit in Morocco.')}
+                  action={
+                    <Button asChild size="lg" className="rounded-full shadow-lg">
+                      <Link href="/">{t('profilePage.saved.emptyCta', 'Explore places')}</Link>
+                    </Button>
+                  }
+                />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {visibleSavedBusinesses.map((business) => (

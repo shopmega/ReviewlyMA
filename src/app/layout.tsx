@@ -6,7 +6,6 @@ import { Footer } from '@/components/layout/Footer';
 import { ConditionalFooter } from '@/components/layout/ConditionalFooter';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-import { BusinessProvider } from '@/contexts/BusinessContext';
 import { getCachedSiteSettings } from '@/lib/cache';
 import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import { AnalyticsConfig } from '@/components/shared/AnalyticsConfig';
@@ -46,7 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSiteSettings();
   const siteUrl = getServerSiteUrl();
   const title = getSiteName(settings);
-  const description = settings.site_description || 'Évaluez les meilleurs employeurs du Maroc et découvrez les salaires par secteur';
+  const description =
+    settings.site_description || 'Evaluate leading employers in Morocco and explore salary benchmarks by sector.';
   const ogImage = '/opengraph-image';
 
   return {
@@ -98,7 +98,12 @@ export default async function RootLayout({
   const cspNonce = headerStore.get('x-csp-nonce') || cookieStore.get('__csp_nonce')?.value;
 
   return (
-    <html lang={locale} dir={isRtlLocale(locale) ? 'rtl' : 'ltr'} className={cn("h-full", plexSans.variable, plexHeadline.variable, plexMono.variable)} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={isRtlLocale(locale) ? 'rtl' : 'ltr'}
+      className={cn('h-full', plexSans.variable, plexHeadline.variable, plexMono.variable)}
+      suppressHydrationWarning
+    >
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col')}>
         <ThemeProvider
           attribute="class"
@@ -108,28 +113,26 @@ export default async function RootLayout({
           nonce={cspNonce}
         >
           <I18nProvider locale={locale} messages={messages}>
-            <BusinessProvider>
-              <Header settings={settings} />
-              <main className="flex-grow">{children}</main>
-              <ConditionalFooter>
-                <Footer settings={settings} />
-              </ConditionalFooter>
-              <Toaster />
-              <AnalyticsConfig
-                gaId={settings.google_analytics_id || undefined}
-                metaPixelId={settings.facebook_pixel_id || undefined}
-                nonce={cspNonce}
-              />
-              <TrackingConsentBridge />
-              <AnalyticsPageTracker />
-              <SoftAuthPromptController />
-              <ServiceWorkerRegistration />
-              <AdSense
-                enabled={settings.adsense_enabled ?? false}
-                pubId={settings.adsense_client_id || undefined}
-                autoAdsEnabled={settings.adsense_auto_ads_enabled ?? false}
-              />
-            </BusinessProvider>
+            <Header settings={settings} />
+            <main className="flex-grow">{children}</main>
+            <ConditionalFooter>
+              <Footer settings={settings} />
+            </ConditionalFooter>
+            <Toaster />
+            <AnalyticsConfig
+              gaId={settings.google_analytics_id || undefined}
+              metaPixelId={settings.facebook_pixel_id || undefined}
+              nonce={cspNonce}
+            />
+            <TrackingConsentBridge />
+            <AnalyticsPageTracker />
+            <SoftAuthPromptController />
+            <ServiceWorkerRegistration />
+            <AdSense
+              enabled={settings.adsense_enabled ?? false}
+              pubId={settings.adsense_client_id || undefined}
+              autoAdsEnabled={settings.adsense_auto_ads_enabled ?? false}
+            />
           </I18nProvider>
         </ThemeProvider>
       </body>

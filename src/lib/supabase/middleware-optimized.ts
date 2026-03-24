@@ -1,41 +1,57 @@
-/**
- * Optimized Middleware with Caching
- * Reduces database queries by caching user profile and settings
- */
-
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Simple in-memory cache (consider Redis for production with multiple instances)
-const cache = new Map<string, { data: any; expires: number }>();
-const CACHE_TTL = 60 * 1000; // 1 minute cache
+type RouteProfile = {
+  role: string;
+  business_id: string | null;
+};
 
-function getCached<T>(key: string): T | null {
-  const cached = cache.get(key);
-  if (cached && cached.expires > Date.now()) {
-    return cached.data as T;
+async function getAuthenticatedUser(supabase: ReturnType<typeof createServerClient>) {
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (!error && user) {
+      return user;
+    }
+  } catch {
+    // Fall back to session lookup below.
   }
-  cache.delete(key);
+
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (!error && session?.user) {
+      return session.user;
+    }
+  } catch {
+    // Leave unauthenticated.
+  }
+
   return null;
 }
 
-function setCache<T>(key: string, data: T, ttl: number = CACHE_TTL) {
-  cache.set(key, {
-    data,
-    expires: Date.now() + ttl,
-  });
-}
+async function getProfile(supabase: ReturnType<typeof createServerClient>, userId: string): Promise<RouteProfile | null> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role, business_id')
+      .eq('id', userId)
+      .single();
 
-// Clean up expired cache entries periodically
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, value] of cache.entries()) {
-      if (value.expires <= now) {
-        cache.delete(key);
-      }
+    if (error || !data) {
+      return null;
     }
-  }, 5 * 60 * 1000); // Clean every 5 minutes
+
+    return data as RouteProfile;
+  } catch {
+    return null;
+  }
 }
 
 export async function updateSession(request: NextRequest, requestHeaders?: Headers) {
@@ -64,16 +80,6 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
     return response;
   };
 
-  // Fast path skip: avoid Supabase setup for static/API paths.
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.includes('.') ||
-    pathname.startsWith('/api')
-  ) {
-    return withAdminDebug(supabaseResponse, 'skip_static_or_api');
-  }
-
-  // Skip middleware for maintenance page itself
   if (pathname === '/maintenance') {
     return withAdminDebug(supabaseResponse, 'skip_maintenance_page');
   }
@@ -87,226 +93,114 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = makeNextResponse();
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
         },
       },
     }
   );
 
-  // 1. Check maintenance mode with caching.
-  const maintenanceCacheKey = 'maintenance_mode';
-  let maintenanceMode = getCached<boolean>(maintenanceCacheKey);
+  let maintenanceMode = false;
+  try {
+    const { data: settings } = await supabase
+      .from('site_settings')
+      .select('maintenance_mode')
+      .eq('id', 'main')
+      .single();
 
-  if (maintenanceMode === null) {
-    try {
-      const { data: settings } = await supabase
-        .from('site_settings')
-        .select('maintenance_mode')
-        .eq('id', 'main')
-        .single();
-      maintenanceMode = settings?.maintenance_mode || false;
-      setCache(maintenanceCacheKey, maintenanceMode, 5 * 60 * 1000); // Cache for 5 minutes
-    } catch (e) {
-      maintenanceMode = false; // Default to false on error
-    }
+    maintenanceMode = Boolean(settings?.maintenance_mode);
+  } catch {
+    maintenanceMode = false;
   }
 
-  // Public pages do not need auth checks when maintenance mode is off.
   if (!maintenanceMode && !routeRequiresAuth) {
     return withAdminDebug(supabaseResponse, 'public_passthrough_no_auth');
   }
 
-  // 2. Refresh session only when route policy requires auth or maintenance gate is active.
-  let user = null;
-  try {
-    const { data, error: userError } = await supabase.auth.getUser();
-    if (!userError && data?.user) {
-      user = data.user;
-    }
-  } catch {
-    // ignore and continue with session fallback below
-  }
-
-  // Fallback for occasional getUser() false negatives in middleware.
-  if (!user) {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (!error && data?.session?.user) {
-        user = data.session.user;
-      }
-    } catch {
-      // ignore and handle via route-specific logic below
-    }
-  }
+  const user = await getAuthenticatedUser(supabase);
 
   if (maintenanceMode) {
-    // Check if user is admin (with caching)
-    let isAdmin = false;
-
-    if (user) {
-      const adminCacheKey = `admin_${user.id}`;
-      let cachedAdmin = getCached<boolean>(adminCacheKey);
-
-      if (cachedAdmin === null) {
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-          isAdmin = profile?.role === 'admin';
-          setCache(adminCacheKey, isAdmin, 2 * 60 * 1000); // Cache for 2 minutes
-        } catch (e) {
-          isAdmin = false;
-        }
-      } else {
-        isAdmin = cachedAdmin;
-      }
+    if (!user) {
+      return withAdminDebug(NextResponse.redirect(new URL('/maintenance', request.url)), 'maintenance_redirect_no_user');
     }
 
-    // If not admin, redirect to maintenance page
-    if (!isAdmin) {
+    const adminProfile = await getProfile(supabase, user.id);
+    if (adminProfile?.role !== 'admin') {
       return withAdminDebug(NextResponse.redirect(new URL('/maintenance', request.url)), 'maintenance_redirect');
     }
   }
 
-  // Protect review creation routes (user must be logged in to write a review)
-  if (!user && (isGeneralReviewRoute || isBusinessReviewRoute)) {
-    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+  if (!user && (isGeneralReviewRoute || isBusinessReviewRoute || isAdminRoute || isDashboardRoute)) {
+    const next = encodeURIComponent(`${request.nextUrl.pathname}${request.nextUrl.search}`);
+    return isAdminRoute
+      ? withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login')
+      : NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }
 
-  // Protect /admin route (must be authenticated before role checks).
-  if (!user && isAdminRoute) {
-    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-    return withAdminDebug(NextResponse.redirect(new URL(`/login?next=${next}`, request.url)), 'admin_no_user_redirect_login');
-  }
-
-  if (!user && isDashboardRoute) {
-    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
-    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
-  }
-
-  // If unauthenticated and not in maintenance mode, stop here and allow public access
   if (!user) {
     return withAdminDebug(supabaseResponse, 'public_no_user_passthrough');
   }
 
-  // PROTECTED ROUTES LOGIC
-  // Check role-based access for /admin and /dashboard
-  if (isAdminRoute || isDashboardRoute) {
-    // Fetch user role, business_id with caching
-    const profileCacheKey = `profile_${user.id}`;
-    let roleData = getCached<{ role: string; business_id: string | null }>(profileCacheKey);
+  if (!isAdminRoute && !isDashboardRoute) {
+    return withAdminDebug(supabaseResponse, 'authenticated_public_passthrough');
+  }
 
-    if (!roleData) {
-      try {
-        const { data, error: roleError } = await supabase
-          .from('profiles')
-          .select('role, business_id')
-          .eq('id', user.id)
-          .single();
+  const profile = await getProfile(supabase, user.id);
 
-        if (!roleError && data) {
-          roleData = data;
-          setCache(profileCacheKey, roleData, 2 * 60 * 1000); // Cache for 2 minutes
-        }
-      } catch (e) {
-        // Let server-side admin verification decide for admin routes.
-        if (isAdminRoute) {
-          return withAdminDebug(supabaseResponse, 'admin_profile_query_exception_passthrough');
-        }
-        return supabaseResponse;
-      }
+  if (!profile) {
+    if (isAdminRoute) {
+      return withAdminDebug(supabaseResponse, 'admin_roledata_missing_passthrough');
     }
+    return supabaseResponse;
+  }
 
-    if (!roleData) {
-      // Let server-side admin verification decide for admin routes.
-      if (isAdminRoute) {
-        return withAdminDebug(supabaseResponse, 'admin_roledata_missing_passthrough');
-      }
+  if (isAdminRoute) {
+    if (profile.role !== 'admin') {
+      return withAdminDebug(NextResponse.redirect(new URL('/dashboard', request.url)), 'admin_role_not_admin_redirect_dashboard');
+    }
+    return withAdminDebug(supabaseResponse, 'admin_role_admin_allow');
+  }
+
+  if (pathname === '/dashboard/pending' || pathname === '/dashboard/premium') {
+    return supabaseResponse;
+  }
+
+  if (profile.role === 'pro' && profile.business_id) {
+    return supabaseResponse;
+  }
+
+  try {
+    const { data: approvedClaim } = await supabase
+      .from('business_claims')
+      .select('business_id')
+      .eq('user_id', user.id)
+      .or('claim_state.eq.verified,status.eq.approved')
+      .maybeSingle();
+
+    if (approvedClaim?.business_id) {
       return supabaseResponse;
     }
+  } catch {
+    return supabaseResponse;
+  }
 
-    // Admin route protection
-    if (isAdminRoute) {
-      if (roleData?.role !== 'admin') {
-        return withAdminDebug(NextResponse.redirect(new URL('/dashboard', request.url)), 'admin_role_not_admin_redirect_dashboard');
+  if (profile.role === 'user') {
+    try {
+      const { data: pendingClaim } = await supabase
+        .from('business_claims')
+        .select('id')
+        .eq('user_id', user.id)
+        .or('claim_state.eq.verification_pending,status.eq.pending')
+        .maybeSingle();
+
+      if (pendingClaim?.id) {
+        return NextResponse.redirect(new URL('/dashboard/pending', request.url));
       }
-      return withAdminDebug(supabaseResponse, 'admin_role_admin_allow');
-    }
-
-    // Dashboard route protection (pro user)
-    if (isDashboardRoute) {
-      // Skip pro check for status and subscription pages
-      if (pathname === '/dashboard/pending' ||
-        pathname === '/dashboard/premium') {
-        return supabaseResponse;
-      }
-
-      // If profile check fails or is missing pro info, check claims as fallback
-      if (!roleData || !roleData.business_id || roleData.role !== 'pro') {
-        // Check for approved claim (with caching)
-        const claimCacheKey = `claim_approved_${user.id}`;
-        let approvedClaim = getCached<{ business_id: string }>(claimCacheKey);
-
-        if (!approvedClaim) {
-          const { data } = await supabase
-            .from('business_claims')
-            .select('business_id, status')
-            .eq('user_id', user.id)
-            .or('claim_state.eq.verified,status.eq.approved')
-            .maybeSingle();
-
-          if (data) {
-            approvedClaim = data;
-            setCache(claimCacheKey, approvedClaim, 5 * 60 * 1000); // Cache for 5 minutes
-          }
-        }
-
-        if (approvedClaim) {
-          // User has approved claim → allow access
-          return supabaseResponse;
-        }
-
-        // If user role is 'user', check if they have a pending claim
-        if (roleData?.role === 'user') {
-          const pendingClaimCacheKey = `claim_pending_${user.id}`;
-          let pendingClaim = getCached<{ id: string }>(pendingClaimCacheKey);
-
-          if (!pendingClaim) {
-            const { data } = await supabase
-              .from('business_claims')
-              .select('id')
-              .eq('user_id', user.id)
-              .or('claim_state.eq.verification_pending,status.eq.pending')
-              .maybeSingle();
-
-            if (data) {
-              pendingClaim = data;
-              setCache(pendingClaimCacheKey, pendingClaim, 2 * 60 * 1000);
-            }
-          }
-
-          if (pendingClaim) {
-            return NextResponse.redirect(new URL('/dashboard/pending', request.url));
-          }
-        }
-
-        // No valid pro access or pending claim
-        return NextResponse.redirect(new URL('/pro', request.url));
-      }
+    } catch {
+      return supabaseResponse;
     }
   }
 
-  return withAdminDebug(supabaseResponse, 'default_passthrough');
+  return NextResponse.redirect(new URL('/pro', request.url));
 }
-
-
-

@@ -8,18 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from '@/components/shared/StarRating';
 import { VoteButtons } from '@/components/shared/VoteButtons';
 import { ReviewReportDialog } from '@/components/shared/ReviewReportDialog';
+import { AppEmptyState } from '@/components/shared/AppEmptyState';
+import { SegmentedControl } from '@/components/shared/SegmentedControl';
+import { ReviewAppealStatusBadge, ReviewModerationStatusBadge } from '@/components/reviews/ReviewStatusBadges';
+import { ReviewSortSelect } from '@/components/reviews/ReviewSortSelect';
 import { useToast } from '@/hooks/use-toast';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { createClient } from '@/lib/supabase/client';
 import { getAuthorDisplayName } from '@/lib/utils/anonymous-reviews';
 import { useI18n } from '@/components/providers/i18n-provider';
 import { submitReviewAppeal } from '@/app/actions/review';
+import { isModeratedReviewStatus, isReviewAppealActive, mapLatestAppealsByReview, sortReviews, type ReviewSortOption } from '@/lib/reviews/review-helpers';
 
 type Review = {
   id: number;
@@ -73,7 +77,7 @@ export default function ReviewsPage() {
   const { businessId, loading: profileLoading, error: profileError } = useBusinessProfile();
   const [business, setBusiness] = useState<Business | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'rating' | 'helpful'>('newest');
+  const [sortOption, setSortOption] = useState<ReviewSortOption>('newest');
   const [replyFilter, setReplyFilter] = useState<'all' | 'pending' | 'replied'>('all');
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
@@ -86,19 +90,7 @@ export default function ReviewsPage() {
 
   const sortedReviews = useMemo(() => {
     if (!reviews.length) return [];
-    const sorted = [...reviews];
-    switch (sortOption) {
-      case 'newest':
-        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      case 'oldest':
-        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      case 'rating':
-        return sorted.sort((a, b) => b.rating - a.rating);
-      case 'helpful':
-        return sorted.sort((a, b) => b.likes - b.dislikes - (a.likes - a.dislikes));
-      default:
-        return sorted;
-    }
+    return sortReviews(reviews, sortOption);
   }, [reviews, sortOption]);
 
   const filteredReviews = useMemo(() => {
@@ -122,13 +114,7 @@ export default function ReviewsPage() {
 
     if (error || !data) return;
 
-    const byReview: Record<number, ReviewAppeal> = {};
-    for (const appeal of data as ReviewAppeal[]) {
-      if (!byReview[appeal.review_id]) {
-        byReview[appeal.review_id] = appeal;
-      }
-    }
-    setAppealsByReview(byReview);
+    setAppealsByReview(mapLatestAppealsByReview(data as ReviewAppeal[]));
   };
 
   useEffect(() => {
@@ -197,7 +183,7 @@ export default function ReviewsPage() {
 
   const handleReviewAppeal = async (reviewId: number) => {
     const existing = appealsByReview[reviewId];
-    if (existing && (existing.status === 'open' || existing.status === 'in_review')) {
+    if (existing && isReviewAppealActive(existing.status)) {
       toast({
         title: t('dashboardReviewsPage.errorTitle', 'Error'),
         description: t('dashboardReviewsPage.appealAlreadyActive', 'An appeal is already active for this review.'),
@@ -232,23 +218,6 @@ export default function ReviewsPage() {
         variant: 'destructive',
       });
     }
-  };
-
-  const getAppealBadge = (reviewId: number) => {
-    const appeal = appealsByReview[reviewId];
-    if (!appeal) return null;
-    if (appeal.status === 'open') return <Badge variant="outline">{t('dashboardReviewsPage.appealStatusOpen', 'Appeal open')}</Badge>;
-    if (appeal.status === 'in_review') return <Badge variant="outline" className="border-orange-500 text-orange-600">{t('dashboardReviewsPage.appealStatusInReview', 'Appeal in review')}</Badge>;
-    if (appeal.status === 'accepted') return <Badge className="bg-emerald-600 text-white">{t('dashboardReviewsPage.appealStatusAccepted', 'Appeal accepted')}</Badge>;
-    return <Badge variant="secondary">{t('dashboardReviewsPage.appealStatusRejected', 'Appeal rejected')}</Badge>;
-  };
-
-  const isModeratedStatus = (status?: string | null) => status === 'rejected' || status === 'hidden' || status === 'deleted';
-  const getModerationBadge = (status?: string | null) => {
-    if (!isModeratedStatus(status)) return null;
-    if (status === 'rejected') return <Badge variant="secondary">{t('dashboardReviewsPage.reviewStatusRejected', 'Rejected')}</Badge>;
-    if (status === 'hidden') return <Badge variant="secondary">{t('dashboardReviewsPage.reviewStatusHidden', 'Hidden')}</Badge>;
-    return <Badge variant="secondary">{t('dashboardReviewsPage.reviewStatusDeleted', 'Deleted')}</Badge>;
   };
 
   const totalReviews = reviews.length;
@@ -322,49 +291,46 @@ export default function ReviewsPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <h3 className="text-xl font-bold">{tf('dashboardReviewsPage.reviewsCount', 'Reviews ({count})', { count: filteredReviews.length })}</h3>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="flex rounded-lg border border-border/60 p-1">
-                <Button type="button" size="sm" variant={replyFilter === 'all' ? 'default' : 'ghost'} className="h-8" onClick={() => setReplyFilter('all')}>
-                  {t('dashboardReviewsPage.filter.all', 'All')}
-                </Button>
-                <Button type="button" size="sm" variant={replyFilter === 'pending' ? 'default' : 'ghost'} className="h-8" onClick={() => setReplyFilter('pending')}>
-                  {t('dashboardReviewsPage.filter.pending', 'Pending')}
-                </Button>
-                <Button type="button" size="sm" variant={replyFilter === 'replied' ? 'default' : 'ghost'} className="h-8" onClick={() => setReplyFilter('replied')}>
-                  {t('dashboardReviewsPage.filter.replied', 'Replied')}
-                </Button>
-              </div>
+              <SegmentedControl
+                items={[
+                  { key: 'all', label: t('dashboardReviewsPage.filter.all', 'All'), active: replyFilter === 'all', onClick: () => setReplyFilter('all') },
+                  { key: 'pending', label: t('dashboardReviewsPage.filter.pending', 'Pending'), active: replyFilter === 'pending', onClick: () => setReplyFilter('pending') },
+                  { key: 'replied', label: t('dashboardReviewsPage.filter.replied', 'Replied'), active: replyFilter === 'replied', onClick: () => setReplyFilter('replied') },
+                ]}
+              />
 
-              <Select value={sortOption} onValueChange={(value: any) => setSortOption(value)}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">{t('dashboardReviewsPage.sort.newest', 'Newest')}</SelectItem>
-                  <SelectItem value="oldest">{t('dashboardReviewsPage.sort.oldest', 'Oldest')}</SelectItem>
-                  <SelectItem value="rating">{t('dashboardReviewsPage.sort.rating', 'Best rating')}</SelectItem>
-                  <SelectItem value="helpful">{t('dashboardReviewsPage.sort.helpful', 'Most helpful')}</SelectItem>
-                </SelectContent>
-              </Select>
+              <ReviewSortSelect
+                value={sortOption}
+                onChange={setSortOption}
+                labels={{
+                  newest: t('dashboardReviewsPage.sort.newest', 'Newest'),
+                  oldest: t('dashboardReviewsPage.sort.oldest', 'Oldest'),
+                  rating: t('dashboardReviewsPage.sort.rating', 'Best rating'),
+                  helpful: t('dashboardReviewsPage.sort.helpful', 'Most helpful'),
+                }}
+              />
             </div>
           </div>
         )}
 
         {totalReviews === 0 ? (
-          <Card className="border-dashed bg-card/40 p-12 text-center">
-            <div className="mb-4 inline-flex rounded-full bg-muted p-4">
-              <MessageSquare className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <CardTitle className="mb-2 font-headline text-xl">{t('dashboardReviewsPage.emptyTitle', 'No reviews yet')}</CardTitle>
-            <CardDescription>{t('dashboardReviewsPage.emptyDesc', 'Your customer reviews will appear here.')}</CardDescription>
-          </Card>
+          <AppEmptyState
+            icon={<MessageSquare className="h-8 w-8 text-muted-foreground" />}
+            title={t('dashboardReviewsPage.emptyTitle', 'No reviews yet')}
+            description={t('dashboardReviewsPage.emptyDesc', 'Your customer reviews will appear here.')}
+            className="p-6"
+          />
         ) : filteredReviews.length === 0 ? (
-          <Card className="border-dashed bg-card/40 p-10 text-center">
-            <CardTitle className="mb-2 font-headline text-lg">{t('dashboardReviewsPage.noFilterResult', 'No result for this filter')}</CardTitle>
-            <CardDescription className="mb-4">{t('dashboardReviewsPage.noFilterResultDesc', 'Change filter to display other reviews.')}</CardDescription>
-            <Button variant="outline" onClick={() => setReplyFilter('all')}>
-              {t('dashboardReviewsPage.backAll', 'Back to all reviews')}
-            </Button>
-          </Card>
+          <AppEmptyState
+            title={t('dashboardReviewsPage.noFilterResult', 'No result for this filter')}
+            description={t('dashboardReviewsPage.noFilterResultDesc', 'Change filter to display other reviews.')}
+            className="p-4"
+            action={
+              <Button variant="outline" onClick={() => setReplyFilter('all')}>
+                {t('dashboardReviewsPage.backAll', 'Back to all reviews')}
+              </Button>
+            }
+          />
         ) : (
           filteredReviews.map((review) => (
             <Card key={review.id} className="border-border/60 bg-card/70 backdrop-blur-sm shadow-sm">
@@ -376,7 +342,14 @@ export default function ReviewsPage() {
                       <span className="font-medium text-foreground">{getAuthorDisplayName(review, 'pro', null, null)}</span>
                       <span>•</span>
                       <span>{new Date(review.date).toLocaleDateString(dateLocale)}</span>
-                      {getModerationBadge(review.status)}
+                      <ReviewModerationStatusBadge
+                        status={isModeratedReviewStatus(review.status) ? (review.status as 'rejected' | 'hidden' | 'deleted') : null}
+                        labels={{
+                          rejected: t('dashboardReviewsPage.reviewStatusRejected', 'Rejected'),
+                          hidden: t('dashboardReviewsPage.reviewStatusHidden', 'Hidden'),
+                          deleted: t('dashboardReviewsPage.reviewStatusDeleted', 'Deleted'),
+                        }}
+                      />
                     </div>
                   </div>
                   <StarRating rating={review.rating} readOnly />
@@ -402,19 +375,27 @@ export default function ReviewsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <VoteButtons reviewId={review.id} initialLikes={review.likes} initialDislikes={review.dislikes} />
-                    {getAppealBadge(review.id)}
+                    <ReviewAppealStatusBadge
+                      status={appealsByReview[review.id]?.status}
+                      labels={{
+                        open: t('dashboardReviewsPage.appealStatusOpen', 'Appeal open'),
+                        in_review: t('dashboardReviewsPage.appealStatusInReview', 'Appeal in review'),
+                        accepted: t('dashboardReviewsPage.appealStatusAccepted', 'Appeal accepted'),
+                        rejected: t('dashboardReviewsPage.appealStatusRejected', 'Appeal rejected'),
+                      }}
+                    />
                   </div>
                   <div className="flex items-center gap-2">
-                    {isModeratedStatus(review.status) && (
+                    {isModeratedReviewStatus(review.status) && (
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        disabled={appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'}
+                        disabled={isReviewAppealActive(appealsByReview[review.id]?.status)}
                         onClick={() => handleReviewAppeal(review.id)}
                       >
                         <Undo className="mr-2 h-4 w-4" />
-                        {appealsByReview[review.id]?.status === 'open' || appealsByReview[review.id]?.status === 'in_review'
+                        {isReviewAppealActive(appealsByReview[review.id]?.status)
                           ? t('dashboardReviewsPage.appealInProgress', 'Appeal in progress')
                           : t('dashboardReviewsPage.appeal', 'Appeal')}
                       </Button>

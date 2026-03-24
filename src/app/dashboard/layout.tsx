@@ -19,7 +19,7 @@ import { createClient } from '@/lib/supabase/client';
 import { syncProProfile } from '@/app/actions/user';
 import { LucideIcon } from 'lucide-react';
 import { BusinessSelector } from '@/components/shared/BusinessSelector';
-import { useBusiness } from '@/contexts/BusinessContext';
+import { BusinessProvider, useBusiness } from '@/contexts/BusinessContext';
 import { DashboardAuthGuard } from '@/components/auth/DashboardAuthGuard';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { appendBusinessIdToHref } from '@/lib/dashboard-business-routing';
@@ -34,6 +34,14 @@ interface MenuItem {
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <BusinessProvider>
+      <DashboardLayoutShell>{children}</DashboardLayoutShell>
+    </BusinessProvider>
+  );
+}
+
+function DashboardLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isMultiBusiness, currentBusiness } = useBusiness();

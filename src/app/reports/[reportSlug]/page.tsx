@@ -11,6 +11,8 @@ import { formatReportMonthLabel, parseMonthlyReferralReportSlug } from '@/lib/re
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageIntro } from '@/components/shared/PageIntro';
+import { MetricCard } from '@/components/shared/MetricCard';
 
 type Params = { reportSlug: string };
 
@@ -160,31 +162,35 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-4">
-        <Badge variant="outline" className="w-fit">Monthly Referral Report</Badge>
-        <h1 className="text-3xl md:text-4xl font-bold font-headline">Monthly referral report: {monthLabel}</h1>
-        <p className="text-muted-foreground max-w-3xl">
-          Snapshot of referral demand and offer-side activity for this month. Data source mode:{' '}
-          {usingServiceRole ? 'full historical (service role)' : 'public active scope'}.
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild>
-            <Link href="/referral-demand">Open referral-demand dashboard</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/reports">Back to reports hub</Link>
-          </Button>
-          <ContentShareButton
-            url={`${getServerSiteUrl()}/reports/${reportSlug}`}
-            title={`Monthly referral report: ${monthLabel} | Reviewly`}
-            text={`Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`}
-            contentType="report"
-            contentId={reportSlug}
-            cardType="report_detail"
-            label="Share report"
-          />
-        </div>
-      </section>
+      <PageIntro
+        badge={<Badge variant="outline" className="w-fit">Monthly Referral Report</Badge>}
+        title={`Monthly referral report: ${monthLabel}`}
+        description={
+          <>
+            Snapshot of referral demand and offer-side activity for this month. Data source mode:{' '}
+            {usingServiceRole ? 'full historical (service role)' : 'public active scope'}.
+          </>
+        }
+        actions={
+          <>
+            <Button asChild>
+              <Link href="/referral-demand">Open referral-demand dashboard</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/reports">Back to reports hub</Link>
+            </Button>
+            <ContentShareButton
+              url={`${getServerSiteUrl()}/reports/${reportSlug}`}
+              title={`Monthly referral report: ${monthLabel} | Reviewly`}
+              text={`Referral demand, top roles, top cities, and company offer signals for ${monthLabel}.`}
+              contentType="report"
+              contentId={reportSlug}
+              cardType="report_detail"
+              label="Share report"
+            />
+          </>
+        }
+      />
 
       {!isIndexable ? (
         <Card className="rounded-2xl">
@@ -205,42 +211,10 @@ export default async function MonthlyReferralReportPage({ params }: { params: Pr
       ) : (
         <>
           <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <Card className="rounded-2xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users2 className="h-4 w-4" />
-                  New demand listings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-3xl font-bold">{demandCurrent.length}</CardContent>
-            </Card>
-            <Card className="rounded-2xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <BriefcaseBusiness className="h-4 w-4" />
-                  New referral offers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-3xl font-bold">{offerCurrent.length}</CardContent>
-            </Card>
-            <Card className="rounded-2xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <LineChart className="h-4 w-4" />
-                  Demand momentum
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-3xl font-bold">{demandMomentum}%</CardContent>
-            </Card>
-            <Card className="rounded-2xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  Total records
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-3xl font-bold">{totalRecords}</CardContent>
-            </Card>
+            <MetricCard title="New demand listings" value={String(demandCurrent.length)} icon={Users2} />
+            <MetricCard title="New referral offers" value={String(offerCurrent.length)} icon={BriefcaseBusiness} />
+            <MetricCard title="Demand momentum" value={`${demandMomentum}%`} icon={LineChart} />
+            <MetricCard title="Total records" value={String(totalRecords)} icon={CalendarDays} />
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">

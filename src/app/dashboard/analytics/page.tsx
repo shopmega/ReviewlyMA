@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { MetricCard } from '@/components/shared/MetricCard';
 import { Eye, Star, TrendingUp, Users, AlertCircle, BriefcaseBusiness, FileBadge2, BadgePercent } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -290,22 +291,15 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
-          <Card
+          <MetricCard
             key={stat.name}
+            title={stat.name}
+            value={stat.value}
+            icon={stat.icon}
             className="rounded-xl border border-border bg-card shadow-none transition-colors hover:bg-secondary/20"
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground font-body uppercase tracking-in-wider">
-                {stat.name}
-              </CardTitle>
-              <div className={cn('p-2 rounded-lg', stat.bg, stat.color)}>
-                <stat.icon className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold font-headline">{stat.value}</div>
-            </CardContent>
-          </Card>
+            titleClassName="font-body uppercase tracking-in-wider font-medium"
+            iconWrapClassName={cn(stat.bg, stat.color)}
+          />
         ))}
       </div>
 
@@ -328,20 +322,17 @@ export default function AnalyticsPage() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {hiringStatCards.map((stat) => (
-                  <div
+                  <MetricCard
                     key={stat.name}
-                    className="rounded-xl border border-border bg-background/60 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                        {stat.name}
-                      </p>
-                      <div className={cn('rounded-lg p-2', stat.bg, stat.color)}>
-                        <stat.icon className="h-4 w-4" />
-                      </div>
-                    </div>
-                    <div className="mt-3 text-2xl font-black font-headline">{stat.value}</div>
-                  </div>
+                    title={stat.name}
+                    value={stat.value}
+                    icon={stat.icon}
+                    className="rounded-xl border border-border bg-background/60 shadow-none"
+                    headerClassName="pb-0"
+                    titleClassName="text-xs font-medium uppercase tracking-[0.16em]"
+                    valueClassName="text-2xl font-black"
+                    iconWrapClassName={cn(stat.bg, stat.color)}
+                  />
                 ))}
               </div>
 

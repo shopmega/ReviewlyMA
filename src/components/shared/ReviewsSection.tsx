@@ -19,6 +19,7 @@ import { Business, Review } from '@/lib/types';
 import { useI18n } from '@/components/providers/i18n-provider';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
 import { getClientSiteUrl } from '@/lib/site-config';
+import { sortReviews, type ReviewSortOption } from '@/lib/reviews/review-helpers';
 
 interface ReviewsSectionProps {
   business: Business;
@@ -29,7 +30,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [reviews, setReviews] = useState(business.reviews || []);
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'rating' | 'helpful'>('newest');
+  const [sortBy, setSortBy] = useState<ReviewSortOption>('newest');
   const [isOwner, setIsOwner] = useState(false);
   const [isReviewOwner, setIsReviewOwner] = useState<Record<number, boolean>>({});
   const [editingReview, setEditingReview] = useState<Review | null>(null);
@@ -169,18 +170,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
       );
     }
 
-    switch (sortBy) {
-      case 'newest':
-        return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      case 'oldest':
-        return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      case 'rating':
-        return filtered.sort((a, b) => b.rating - a.rating);
-      case 'helpful':
-        return filtered.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
-      default:
-        return filtered;
-    }
+    return sortReviews(filtered, sortBy);
   }, [reviews, sortBy, searchTerm]);
 
   const hasReviews = sortedReviews && sortedReviews.length > 0;
@@ -251,7 +241,7 @@ export default function ReviewsSection({ business, searchTerm = '' }: ReviewsSec
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('business.reviews.sortBy', 'Trier par:')}</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'rating' | 'helpful')}
+              onChange={(e) => setSortBy(e.target.value as ReviewSortOption)}
               className="text-sm border border-input rounded-lg px-3 py-1.5 bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="newest">{t('business.reviews.sortNewest', 'Plus recents')}</option>

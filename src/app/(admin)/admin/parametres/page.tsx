@@ -1,222 +1,41 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState, type ReactNode } from "react";
+import { Activity, AlertTriangle, CheckCircle2, Cpu, CreditCard, DollarSign, Globe, Layout, Link as LinkIcon, Loader2, Lock, Mail, Save, Settings, Share2, Zap } from "lucide-react";
+
 import { updateSiteSettings } from "@/app/actions/admin";
-import {
-    Loader2,
-    Save,
-    Globe,
-    Mail,
-    Link as LinkIcon,
-    Shield,
-    Bell,
-    Zap,
-    Settings,
-    Palette,
-    Database,
-    Lock,
-    Share2,
-    Activity,
-    Cpu,
-    Layers,
-    ChevronRight,
-    DollarSign,
-    Users as UsersIcon,
-    ShieldCheck,
-    Crown,
-    AlertTriangle,
-    ChevronUp,
-    ChevronDown,
-    Layout,
-    CreditCard,
-    CheckCircle2
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { ContactSettingsTab, EmailSettingsTab, FeaturesSettingsTab, GeneralSettingsTab, HomeSettingsTab, PaymentsSettingsTab, PartnerSettingsTab, PremiumSettingsTab, SalaryValidationSettingsTab, SecuritySettingsTab, SocialSettingsTab } from "@/components/admin/settings/AdminSettingsTabPanels";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { getDefaultSettings, normalizeSiteSettings, type SiteSettings } from "@/lib/data/settings";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
-type SiteSettings = {
-    id: string;
-    site_name: string;
-    site_description: string | null;
-    contact_email: string | null;
-    support_phone: string | null;
-    facebook_url: string | null;
-    twitter_url: string | null;
-    instagram_url: string | null;
-    linkedin_url: string | null;
-    maintenance_mode: boolean;
-    allow_new_registrations: boolean;
-    require_email_verification: boolean;
-    default_language: string;
-    enable_reviews: boolean;
-    enable_salaries: boolean;
-    enable_interviews: boolean;
-    enable_messaging: boolean;
-    enable_claims: boolean;
-    tier_growth_monthly_price?: number;
-    tier_growth_annual_price?: number;
-    tier_gold_monthly_price?: number;
-    tier_gold_annual_price?: number;
-    premium_enabled: boolean;
-    premium_description: string;
-    site_logo_url: string | null;
-    google_analytics_id: string | null;
-    facebook_pixel_id: string | null;
-    adsense_enabled: boolean;
-    adsense_client_id: string | null;
-    adsense_auto_ads_enabled: boolean;
-    office_address: string | null;
-    office_phone: string | null;
-    copyright_text: string | null;
-    home_sections_config: { id: string; visible: boolean }[];
-    popular_searches_config: { label: string; href: string }[];
-    email_provider: string | null;
-    resend_api_key: string | null;
-    sendgrid_api_key: string | null;
-    mailjet_api_key: string | null;
-    mailjet_api_secret: string | null;
-    email_from: string | null;
+const defaultSettings = getDefaultSettings();
 
-    // Payment settings
-    payment_bank_name: string | null;
-    payment_rib_number: string | null;
-    payment_beneficiary: string | null;
-    payment_chari_url: string | null;
-    payment_methods_enabled: string[] | null;
-    partner_app_name: string | null;
-    partner_app_url: string | null;
-    salary_roles: string[] | null;
-    salary_departments: string[] | null;
-    salary_intervals: Array<{
-        id: string;
-        label: string;
-        min: number;
-        max: number;
-    }> | null;
-};
-
-const defaultSettings: SiteSettings = {
-    id: 'main',
-    site_name: 'Reviewly',
-    site_description: '',
-    contact_email: '',
-    support_phone: '',
-    facebook_url: '',
-    twitter_url: '',
-    instagram_url: '',
-    linkedin_url: '',
-    maintenance_mode: false,
-    allow_new_registrations: true,
-    require_email_verification: true,
-    default_language: 'fr',
-    enable_reviews: true,
-    enable_salaries: true,
-    enable_interviews: true,
-    enable_messaging: false,
-    enable_claims: true,
-    tier_growth_monthly_price: 99.00,
-    tier_growth_annual_price: 990.00,
-    tier_gold_monthly_price: 299.00,
-    tier_gold_annual_price: 2900.00,
-    premium_enabled: true,
-    premium_description: 'Devenez membre Premium et beneficiez de fonctionnalites exclusives pour propulser votre entreprise.',
-    site_logo_url: '',
-    google_analytics_id: '',
-    facebook_pixel_id: '',
-    adsense_enabled: false,
-    adsense_client_id: '',
-    adsense_auto_ads_enabled: false,
-    office_address: '',
-    office_phone: '',
-    copyright_text: '',
-    home_sections_config: [
-        { id: 'hero', visible: true },
-        { id: 'stats', visible: true },
-        { id: 'collections', visible: true },
-        { id: 'categories', visible: true },
-        { id: 'cities', visible: true },
-        { id: 'featured', visible: true },
-    ],
-    popular_searches_config: [
-        { label: 'Entreprises à Casablanca', href: '/businesses?search=Entreprise&city=Casablanca' },
-        { label: 'Sociétés de services', href: '/businesses?search=Services' },
-        { label: 'Entreprises à Rabat', href: '/businesses?category=Entreprises&city=Rabat' },
-    ],
-    email_provider: 'console',
-    resend_api_key: '',
-    sendgrid_api_key: '',
-    mailjet_api_key: '',
-    mailjet_api_secret: '',
-    email_from: 'noreply@example.com',
-
-    // Default payment settings
-    payment_bank_name: 'BMCE Bank',
-    payment_rib_number: '011 780 0000 1234567890 12 34',
-    payment_beneficiary: 'Reviewly SARL',
-    payment_chari_url: 'https://chari.ma/avis',
-    payment_methods_enabled: ['bank_transfer'],
-    partner_app_name: 'MOR RH',
-    partner_app_url: 'https://monrh.vercel.app/',
-    salary_roles: [
-        'Ingenieur logiciel',
-        'Ingenieur logiciel senior',
-        'Lead technique',
-        'Manager ingenierie',
-        'Chef de produit',
-        'Analyste data',
-        'Data scientist',
-        'Designer UX',
-        'Designer UI',
-        'Ingenieur QA',
-        'Ingenieur DevOps',
-        'Specialiste RH',
-        'Specialiste marketing',
-        'Representant commercial',
-        'Support client',
-    ],
-    salary_departments: [
-        'Ingenierie',
-        'Produit',
-        'Design',
-        'Data',
-        'Operations',
-        'Ressources humaines',
-        'Marketing',
-        'Commercial',
-        'Finance',
-        'Juridique',
-        'Support client',
-    ],
-    salary_intervals: [
-        { id: 'lt_3000', label: 'Moins de 3 000 MAD', min: 500, max: 2999 },
-        { id: '3000_4999', label: '3 000 - 4 999 MAD', min: 3000, max: 4999 },
-        { id: '5000_7999', label: '5 000 - 7 999 MAD', min: 5000, max: 7999 },
-        { id: '8000_11999', label: '8 000 - 11 999 MAD', min: 8000, max: 11999 },
-        { id: '12000_19999', label: '12 000 - 19 999 MAD', min: 12000, max: 19999 },
-        { id: '20000_29999', label: '20 000 - 29 999 MAD', min: 20000, max: 29999 },
-        { id: '30000_plus', label: '30 000+ MAD', min: 30000, max: 10000000 },
-    ],
-};
+function SidebarNav({ items }: { items: Array<{ value: string; label: ReactNode; icon: ReactNode; activeClassName?: string }> }) {
+    return (
+        <TabsList className="flex h-auto w-full flex-col rounded-[2rem] border border-border/10 bg-white/40 p-2 shadow-xl backdrop-blur-xl dark:bg-slate-900/40">
+            {items.map((item, index) => (
+                <TabsTrigger key={item.value} value={item.value} className={cn("justify-start px-6 py-4 h-auto w-full rounded-2xl font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-white", index === items.length - 1 ? "" : "mb-1", item.activeClassName)}>
+                    {item.icon}
+                    {item.label}
+                </TabsTrigger>
+            ))}
+        </TabsList>
+    );
+}
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
     const [loading, setLoading] = useState(true);
     const [loadFailed, setLoadFailed] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [salaryRolesText, setSalaryRolesText] = useState((defaultSettings.salary_roles || []).join('\n'));
-    const [salaryDepartmentsText, setSalaryDepartmentsText] = useState((defaultSettings.salary_departments || []).join('\n'));
+    const [salaryRolesText, setSalaryRolesText] = useState((defaultSettings.salary_roles || []).join("\n"));
+    const [salaryDepartmentsText, setSalaryDepartmentsText] = useState((defaultSettings.salary_departments || []).join("\n"));
     const [salaryIntervalsText, setSalaryIntervalsText] = useState(JSON.stringify(defaultSettings.salary_intervals || [], null, 2));
     const { toast } = useToast();
     const { t } = useI18n();
@@ -224,1077 +43,122 @@ export default function SettingsPage() {
     useEffect(() => {
         async function fetchSettings() {
             const supabase = createClient();
-            const { data, error } = await supabase
-                .from('site_settings')
-                .select('*')
-                .eq('id', 'main')
-                .maybeSingle();
-
+            const { data, error } = await supabase.from("site_settings").select("*").eq("id", "main").maybeSingle();
             if (error) {
                 setLoadFailed(true);
-                toast({
-                    title: t('common.error', 'Erreur'),
-                    description: t('adminSettings.toast.loadError', 'Impossible de charger les parametres actuels. Le formulaire affiche des valeurs par defaut.'),
-                    variant: 'destructive'
-                });
+                toast({ title: t("common.error", "Erreur"), description: t("adminSettings.toast.loadError", "Impossible de charger les parametres actuels."), variant: "destructive" });
             } else if (data) {
-                setSettings({ ...defaultSettings, ...data });
-                setSalaryRolesText((data.salary_roles || []).join('\n'));
-                setSalaryDepartmentsText((data.salary_departments || []).join('\n'));
-                setSalaryIntervalsText(JSON.stringify(data.salary_intervals || [], null, 2));
+                const normalized = normalizeSiteSettings(data) as SiteSettings;
+                setSettings(normalized);
+                setSalaryRolesText((normalized.salary_roles || []).join("\n"));
+                setSalaryDepartmentsText((normalized.salary_departments || []).join("\n"));
+                setSalaryIntervalsText(JSON.stringify(normalized.salary_intervals || [], null, 2));
                 setLoadFailed(false);
             } else {
                 setLoadFailed(true);
-                toast({
-                    title: t('common.error', 'Erreur'),
-                    description: t('adminSettings.toast.notFound', 'Aucun enregistrement site_settings (id=main) n a ete trouve.'),
-                    variant: 'destructive'
-                });
             }
             setLoading(false);
         }
         fetchSettings();
-    }, [toast]);
+    }, [t, toast]);
+
+    const updateSetting = <K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) => {
+        setSettings((current) => ({ ...current, [key]: value }));
+    };
 
     const handleSave = async () => {
         if (loadFailed) {
-            toast({
-                title: t('adminSettings.toast.saveBlockedTitle', 'Sauvegarde bloquee'),
-                description: t('adminSettings.toast.saveBlockedDesc', 'Rechargez la page apres avoir resolu le chargement des parametres pour eviter ecrasement des donnees existantes.'),
-                variant: 'destructive'
-            });
+            toast({ title: t("adminSettings.toast.saveBlockedTitle", "Sauvegarde bloquee"), description: t("adminSettings.toast.saveBlockedDesc", "Rechargez la page avant de sauvegarder."), variant: "destructive" });
             return;
         }
-
         setSaving(true);
-
         try {
-            const salaryRoles = salaryRolesText
-                .split('\n')
-                .map((value) => value.trim())
-                .filter(Boolean);
-            const salaryDepartments = salaryDepartmentsText
-                .split('\n')
-                .map((value) => value.trim())
-                .filter(Boolean);
+            const parsed = JSON.parse(salaryIntervalsText);
+            if (!Array.isArray(parsed)) throw new Error("invalid");
+            const salaryIntervals = parsed.filter((item: any) => item && typeof item.id === "string" && typeof item.label === "string" && Number.isFinite(Number(item.min)) && Number.isFinite(Number(item.max)) && Number(item.max) >= Number(item.min)).map((item: any) => ({ id: item.id, label: item.label, min: Number(item.min), max: Number(item.max) }));
+            if (salaryIntervals.length === 0) throw new Error("invalid");
 
-            let salaryIntervals: SiteSettings['salary_intervals'] = [];
-            try {
-                const parsed = JSON.parse(salaryIntervalsText);
-                if (!Array.isArray(parsed)) {
-                    throw new Error('Format invalide');
-                }
-                salaryIntervals = parsed.filter((item: any) =>
-                    item
-                    && typeof item.id === 'string'
-                    && typeof item.label === 'string'
-                    && Number.isFinite(Number(item.min))
-                    && Number.isFinite(Number(item.max))
-                    && Number(item.max) >= Number(item.min)
-                ).map((item: any) => ({
-                    id: item.id,
-                    label: item.label,
-                    min: Number(item.min),
-                    max: Number(item.max),
-                }));
-
-                if (salaryIntervals.length === 0) {
-                    throw new Error('Aucun intervalle valide');
-                }
-            } catch {
-                toast({
-                    title: t('common.error', 'Erreur'),
-                    description: t('adminSettings.toast.invalidSalaryIntervals', 'Intervalles salariaux invalides. Utilisez un JSON valide.'),
-                    variant: 'destructive'
-                });
-                setSaving(false);
+            const nextSettings: SiteSettings = {
+                ...settings,
+                salary_roles: salaryRolesText.split("\n").map((value) => value.trim()).filter(Boolean),
+                salary_departments: salaryDepartmentsText.split("\n").map((value) => value.trim()).filter(Boolean),
+                salary_intervals: salaryIntervals,
+            };
+            const result = await updateSiteSettings(nextSettings);
+            if (result.status !== "success") {
+                toast({ title: t("common.error", "Erreur"), description: result.message || t("adminSettings.toast.saveError", "Impossible de sauvegarder les parametres."), variant: "destructive" });
                 return;
             }
-
-            const result = await updateSiteSettings({
-                ...settings,
-                salary_roles: salaryRoles,
-                salary_departments: salaryDepartments,
-                salary_intervals: salaryIntervals,
-            });
-
-            if (result.status === 'error') {
-                toast({ title: t('common.error', 'Erreur'), description: result.message, variant: 'destructive' });
-            } else {
-                toast({
-                    title: t('adminSettings.toast.savedTitle', 'Configuration sauvegardee'),
-                    description: result.message,
-                    className: "bg-emerald-500 text-white border-0 font-bold"
-                });
-            }
-        } catch (err: any) {
-            toast({ title: t('common.error', 'Erreur'), description: t('adminSettings.toast.unexpectedError', 'Une erreur imprevue est survenue.'), variant: 'destructive' });
+            setSettings(nextSettings);
+            toast({ title: t("common.success", "Succes"), description: result.message || t("adminSettings.toast.saveSuccess", "Les parametres ont ete sauvegardes.") });
+        } catch {
+            toast({ title: t("common.error", "Erreur"), description: t("adminSettings.toast.salaryIntervalsError", "Le JSON des intervalles de salaire est invalide."), variant: "destructive" });
         } finally {
             setSaving(false);
         }
     };
 
-    const updateSetting = <K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) => {
-        setSettings(prev => ({ ...prev, [key]: value }));
-    };
-
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-40 space-y-4">
-                <div className="h-12 w-12 border-b-2 border-primary border-t-2 border-t-transparent rounded-full animate-spin" />
-                <p className="text-muted-foreground font-black animate-pulse uppercase tracking-widest text-[10px]">{t('adminSettings.loading', 'Loading System...')}</p>
-            </div>
-        );
+        return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="mr-3 h-5 w-5 animate-spin text-primary" />{t("adminSettings.loading.title", "Chargement des parametres")}</div>;
     }
 
+    const sidebarItems = [
+        { value: "general", label: t("adminSettings.tabs.general", "General & SEO"), icon: <Globe className="mr-3 h-4 w-4" /> },
+        { value: "features", label: t("adminSettings.tabs.features", "Modules Applicatifs"), icon: <Cpu className="mr-3 h-4 w-4" /> },
+        { value: "premium", label: t("adminSettings.tabs.subscriptions", "Abonnements"), icon: <Zap className="mr-3 h-4 w-4 text-amber-500 fill-amber-500" /> },
+        { value: "payments", label: t("adminSettings.tabs.payments", "Paiements"), icon: <CreditCard className="mr-3 h-4 w-4 text-green-500" /> },
+        { value: "salary-config", label: t("adminSettings.tabs.salaries", "Salaires"), icon: <DollarSign className="mr-3 h-4 w-4 text-primary" /> },
+        { value: "home", label: t("adminSettings.tabs.home", "Accueil"), icon: <Layout className="mr-3 h-4 w-4" /> },
+        { value: "contact", label: t("adminSettings.tabs.communication", "Communication"), icon: <Mail className="mr-3 h-4 w-4" /> },
+        { value: "email", label: t("adminSettings.tabs.email", "Configuration Email"), icon: <Mail className="mr-3 h-4 w-4" /> },
+        { value: "social", label: t("adminSettings.tabs.social", "Reseaux Sociaux"), icon: <Share2 className="mr-3 h-4 w-4" /> },
+        { value: "partner", label: t("adminSettings.tabs.partner", "Partenaire RH"), icon: <LinkIcon className="mr-3 h-4 w-4" />, activeClassName: "data-[state=active]:bg-indigo-600" },
+        { value: "security", label: t("adminSettings.tabs.security", "Acces & Securite"), icon: <Lock className="mr-3 h-4 w-4" /> },
+    ];
+
     return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
-                <div className="space-y-2">
-                    <Badge className="bg-primary/10 text-primary border-none font-bold px-3 py-1 uppercase tracking-wider text-[10px]">{t('adminSettings.badge', 'Configuration Noyau')}</Badge>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                        {t('adminSettings.titlePrefix', 'Parametres')} <span className="text-primary italic">{t('adminSettings.titleAccent', 'Systeme')}</span>
-                    </h1>
-                    <p className="text-muted-foreground font-medium flex items-center gap-2">
-                        <Settings className="h-4 w-4" /> {t('adminSettings.subtitle', 'Controle global des modules et de aspect de la plateforme')}</p>
-                </div>
-
-                <Button
-                    onClick={handleSave}
-                    disabled={saving || loadFailed}
-                    className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
-                >
-                    {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                    {t('adminSettings.saveButton', 'Enregistrer les modifications')}
-                </Button>
-            </div>
-
-            <Tabs defaultValue="general" className="flex flex-col lg:flex-row gap-10">
-                <aside className="lg:w-72 flex-shrink-0">
-                    <TabsList className="flex flex-col h-auto bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-border/10 p-2 w-full rounded-[2rem] shadow-xl">
-                        <TabsTrigger value="general" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Globe className="h-4 w-4 mr-3" />
-                            Général & SEO
-                        </TabsTrigger>
-                        <TabsTrigger value="features" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Cpu className="h-4 w-4 mr-3" />
-                            {t('adminSettings.tabs.features', 'Modules Applicatifs')}
-                        </TabsTrigger>
-                        <TabsTrigger value="premium" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Zap className="h-4 w-4 mr-3 text-amber-500 fill-amber-500" />
-                            {t('adminSettings.tabs.subscriptions', 'Abonnements')}
-                        </TabsTrigger>
-                        <TabsTrigger value="payments" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <CreditCard className="h-4 w-4 mr-3 text-green-500" />
-                            {t('adminSettings.tabs.payments', 'Paiements')}
-                        </TabsTrigger>
-                        <TabsTrigger value="salary-config" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <DollarSign className="h-4 w-4 mr-3 text-primary" />
-                            {t('adminSettings.tabs.salaries', 'Salaires')}
-                        </TabsTrigger>
-
-                        <TabsTrigger value="home" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Layout className="h-4 w-4 mr-3" />
-                            {t('adminSettings.tabs.home', 'Accueil')}
-                        </TabsTrigger>
-                        <TabsTrigger value="contact" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Mail className="h-4 w-4 mr-3" />
-                            {t('adminSettings.tabs.communication', 'Communication')}
-                        </TabsTrigger>
-                        <TabsTrigger value="email" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Mail className="h-4 w-4 mr-3" />
-                            {t('adminSettings.tabs.email', 'Configuration Email')}
-                        </TabsTrigger>
-                        <TabsTrigger value="social" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <Share2 className="h-4 w-4 mr-3" />
-                            Réseaux Sociaux
-                        </TabsTrigger>
-                        <TabsTrigger value="partner" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] mb-1">
-                            <LinkIcon className="h-4 w-4 mr-3" />
-                            {t('adminSettings.tabs.partner', 'Partenaire RH')}
-                        </TabsTrigger>
-                        <TabsTrigger value="security" className="justify-start px-6 py-4 h-auto w-full data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px]">
-                            <Lock className="h-4 w-4 mr-3" />
-                            Accès & Sécurité
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <div className="mt-8 p-6 bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 space-y-4">
-                        <div className="flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-indigo-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">{t('adminSettings.systemStatus', 'Statut Systeme')}</span>
-                        </div>
+        <div className="space-y-10">
+            <section className="rounded-[2.5rem] border border-border/10 bg-white/50 p-8 shadow-2xl backdrop-blur-xl dark:bg-slate-900/40">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="space-y-4">
+                        <Badge className="rounded-full bg-primary/10 px-4 py-1 text-[10px] font-black uppercase tracking-[0.3em] text-primary shadow-none"><Settings className="mr-2 h-3.5 w-3.5" />{t("adminSettings.badge", "Configuration plateforme")}</Badge>
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">{t('adminSettings.status.maintenance', 'Maintenance')}</span>
-                                <span className={settings.maintenance_mode ? 'text-rose-500' : 'text-emerald-500'}>
-                                    {settings.maintenance_mode ? t('adminSettings.status.activeMaintenance', 'ACTIVE') : t('adminSettings.status.off', 'OFF')}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">{t('adminSettings.status.registrations', 'Inscriptions')}</span>
-                                <span className={settings.allow_new_registrations ? 'text-emerald-500' : 'text-amber-500'}>
-                                    {settings.allow_new_registrations ? t('adminSettings.status.open', 'OUVERTES') : t('adminSettings.status.closed', 'FERMEES')}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-muted-foreground uppercase opacity-60">{t('adminSettings.status.premium', 'Premium')}</span>
-                                <span className={settings.premium_enabled ? 'text-amber-500' : 'text-slate-400'}>
-                                    {settings.premium_enabled ? t('adminSettings.status.active', 'ACTIF') : t('adminSettings.status.off', 'OFF')}
-                                </span>
-                            </div>
+                            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white lg:text-4xl">{t("adminSettings.title", "Parametres de la plateforme")}</h1>
+                            <p className="max-w-3xl text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">{t("adminSettings.description", "Centralisez les reglages produit, paiements, communication et securite depuis une seule console admin.")}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        {loadFailed ? <Badge variant="destructive" className="rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest"><AlertTriangle className="mr-2 h-3.5 w-3.5" />{t("adminSettings.status.loadFailed", "Chargement incomplet")}</Badge> : <Badge className="rounded-full bg-emerald-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 shadow-none"><CheckCircle2 className="mr-2 h-3.5 w-3.5" />{t("adminSettings.status.ready", "Pret a modifier")}</Badge>}
+                        <Button onClick={handleSave} disabled={saving} size="lg" className="h-14 rounded-2xl px-6 font-black uppercase tracking-widest">{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}{saving ? t("common.saving", "Sauvegarde...") : t("common.save", "Enregistrer")}</Button>
+                    </div>
+                </div>
+            </section>
+
+            <Tabs defaultValue="general" className="flex flex-col gap-10 lg:flex-row">
+                <aside className="shrink-0 lg:w-72">
+                    <SidebarNav items={sidebarItems} />
+                    <div className="mt-8 rounded-[2rem] border border-indigo-500/10 bg-indigo-500/5 p-6">
+                        <div className="mb-4 flex items-center gap-2"><Activity className="h-4 w-4 text-indigo-500" /><span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">{t("adminSettings.systemStatus", "Statut Systeme")}</span></div>
+                        <div className="space-y-2 text-[10px] font-bold">
+                            <div className="flex justify-between"><span className="text-muted-foreground uppercase opacity-60">{t("adminSettings.status.maintenance", "Maintenance")}</span><span className={settings.maintenance_mode ? "text-rose-500" : "text-emerald-500"}>{settings.maintenance_mode ? t("adminSettings.status.activeMaintenance", "ACTIVE") : t("adminSettings.status.off", "OFF")}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground uppercase opacity-60">{t("adminSettings.status.registrations", "Inscriptions")}</span><span className={settings.allow_new_registrations ? "text-emerald-500" : "text-amber-500"}>{settings.allow_new_registrations ? t("adminSettings.status.open", "OUVERTES") : t("adminSettings.status.closed", "FERMEES")}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground uppercase opacity-60">{t("adminSettings.status.premium", "Premium")}</span><span className={settings.premium_enabled ? "text-amber-500" : "text-slate-400"}>{settings.premium_enabled ? t("adminSettings.status.active", "ACTIF") : t("adminSettings.status.off", "OFF")}</span></div>
                         </div>
                     </div>
                 </aside>
 
-                <div className="flex-grow animate-in slide-in-from-right-4 duration-700">
-                    <TabsContent value="home" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.homeLayout.title', 'Agencement de Accueil')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium text-lg">{t('adminSettings.sections.homeLayout.desc', 'Gerez la visibilite et ordre des sections de votre page accueil.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-10 space-y-8">
-                                <div className="space-y-4">
-                                    {settings.home_sections_config?.map((section, index) => (
-                                        <div key={section.id} className="flex items-center justify-between p-6 bg-white/50 dark:bg-slate-800/50 border border-border/10 rounded-[2rem] shadow-sm transform transition-all hover:scale-[1.01]">
-                                            <div className="flex items-center gap-6">
-                                                <div className="flex flex-col gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 rounded-full hover:bg-primary/10 text-primary"
-                                                        disabled={index === 0}
-                                                        onClick={() => {
-                                                            const newConfig = [...settings.home_sections_config];
-                                                            [newConfig[index], newConfig[index - 1]] = [newConfig[index - 1], newConfig[index]];
-                                                            setSettings({ ...settings, home_sections_config: newConfig });
-                                                        }}
-                                                    >
-                                                        <ChevronUp className="h-5 w-5" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 rounded-full hover:bg-primary/10 text-primary"
-                                                        disabled={index === settings.home_sections_config.length - 1}
-                                                        onClick={() => {
-                                                            const newConfig = [...settings.home_sections_config];
-                                                            [newConfig[index], newConfig[index + 1]] = [newConfig[index + 1], newConfig[index]];
-                                                            setSettings({ ...settings, home_sections_config: newConfig });
-                                                        }}
-                                                    >
-                                                        <ChevronDown className="h-5 w-5" />
-                                                    </Button>
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-black text-lg capitalize">{section.id.replace('_', ' ')}</h4>
-                                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter opacity-70">{t('adminSettings.homeLayout.sectionBlock', 'Bloc Section')} #{index + 1}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-2 mr-4">
-                                                    <span className={cn("text-[10px] font-black uppercase", section.visible ? "text-emerald-500" : "text-slate-400")}>
-                                                        {section.visible ? t('adminSettings.homeLayout.state.active', 'Actif') : t('adminSettings.homeLayout.state.hidden', 'Masque')}
-                                                    </span>
-                                                    <Switch
-                                                        checked={section.visible}
-                                                        onCheckedChange={(checked) => {
-                                                            const newConfig = [...settings.home_sections_config];
-                                                            newConfig[index] = { ...newConfig[index], visible: checked };
-                                                            setSettings({ ...settings, home_sections_config: newConfig });
-                                                        }}
-                                                        className="data-[state=checked]:bg-emerald-500"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="p-6 bg-primary/5 border border-primary/10 rounded-3xl flex items-start gap-4">
-                                    <div className="p-2 bg-primary/10 rounded-xl">
-                                        <AlertTriangle className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.homeLayout.note.title', 'Note importante')}</p>
-                                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            {t('adminSettings.homeLayout.note.desc', 'Ordre applique instantanement apres enregistrement. Certains blocs comme Hero sont recommandes en premiere position.')}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3">
-                                    <Zap className="h-6 w-6 text-primary" />
-                                    {t('adminSettings.popularSearches.title', 'Recherches Populaires')}
-                                </CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.popularSearches.desc', 'Gerez les raccourcis affiches sous la barre de recherche principale.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-10 space-y-6">
-                                <div className="space-y-4">
-                                    {settings.popular_searches_config?.map((search, index) => (
-                                        <div key={index} className="flex flex-col md:flex-row gap-4 p-6 bg-white/50 dark:bg-slate-800/50 border border-border/10 rounded-[2rem] shadow-sm transform transition-all group">
-                                            <div className="flex-1 space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1 text-primary">{t('adminSettings.popularSearches.tagLabel', 'Libelle du tag')}</Label>
-                                                <Input
-                                                    value={search.label}
-                                                    onChange={(e) => {
-                                                        const newConfig = [...settings.popular_searches_config];
-                                                        newConfig[index].label = e.target.value;
-                                                        setSettings({ ...settings, popular_searches_config: newConfig });
-                                                    }}
-                                                    placeholder={t('adminSettings.popularSearches.tagPlaceholder', 'Ex: Restaurants a Casablanca')}
-                                                    className="h-12 rounded-xl bg-white/50 dark:bg-slate-950/50 border-border/10 font-bold"
-                                                />
-                                            </div>
-                                            <div className="flex-[2] space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">{t('adminSettings.popularSearches.hrefLabel', 'Lien vers les resultats (Href)')}</Label>
-                                                <Input
-                                                    value={search.href}
-                                                    onChange={(e) => {
-                                                        const newConfig = [...settings.popular_searches_config];
-                                                        newConfig[index].href = e.target.value;
-                                                        setSettings({ ...settings, popular_searches_config: newConfig });
-                                                    }}
-                                                    placeholder="/businesses?category=Restaurants&city=Casablanca"
-                                                    className="h-12 rounded-xl bg-white/50 dark:bg-slate-950/50 border-border/10 font-medium"
-                                                />
-                                            </div>
-                                            <div className="flex items-end pb-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-10 w-10 text-rose-500 hover:bg-rose-500/10 rounded-full"
-                                                    onClick={() => {
-                                                        const newConfig = settings.popular_searches_config.filter((_, i) => i !== index);
-                                                        setSettings({ ...settings, popular_searches_config: newConfig });
-                                                    }}
-                                                >
-                                                    <Zap className="h-4 w-4 fill-rose-500" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-14 rounded-2xl border-dashed border-2 border-primary/20 text-primary font-black hover:bg-primary/5 transition-all text-[10px] uppercase tracking-widest"
-                                    onClick={() => {
-                                        const newConfig = [...(settings.popular_searches_config || []), { label: '', href: '' }];
-                                        setSettings({ ...settings, popular_searches_config: newConfig });
-                                    }}
-                                >
-                                    + {t('adminSettings.popularSearches.add', 'Ajouter un tag de recherche')}
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="general" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.platformIdentity.title', 'Identite de Plateforme')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.platformIdentity.desc', 'Definissez le nom et les metadonnees SEO globales du service.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                <div className="space-y-3">
-                                    <Label htmlFor="site_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.siteNameLabel', 'Nom public du service')}</Label>
-                                    <Input
-                                        id="site_name"
-                                        value={settings.site_name}
-                                        onChange={(e) => updateSetting('site_name', e.target.value)}
-                                        placeholder={t('adminSettings.platformIdentity.siteNamePlaceholder', 'Nom du site')}
-                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 font-black text-lg"
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <Label htmlFor="site_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.metaDescriptionLabel', 'Balise Meta Description (SEO)')}</Label>
-                                    <Textarea
-                                        id="site_description"
-                                        value={settings.site_description || ''}
-                                        onChange={(e) => updateSetting('site_description', e.target.value)}
-                                        placeholder={t('adminSettings.platformIdentity.metaDescriptionPlaceholder', 'Decrivez votre plateforme en 160 caracteres...')}
-                                        rows={4}
-                                        className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 focus:ring-primary/20 p-6 font-medium leading-relaxed"
-                                    />
-                                    <div className="flex items-center gap-2 p-3 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
-                                        <Globe className="h-4 w-4 text-indigo-500" />
-                                        <p className="text-[10px] font-bold text-muted-foreground italic">{t('adminSettings.platformIdentity.metaDescriptionHint', 'Cette description sera utilisee par Google et Bing pour indexation de votre page accueil.')}</p>
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-border/10" />
-
-                                <div className="space-y-6">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Palette className="h-4 w-4" /> {t('adminSettings.platformIdentity.brandingMedia', 'Branding & Media')}
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="site_logo_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.logoUrlLabel', 'URL du Logo (SVG ou PNG)')}</Label>
-                                            <Input
-                                                id="site_logo_url"
-                                                value={settings.site_logo_url || ''}
-                                                onChange={(e) => updateSetting('site_logo_url', e.target.value)}
-                                                placeholder="/logo.svg"
-                                                className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-border/10" />
-
-                                <div className="space-y-6">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Activity className="h-4 w-4" /> Analytics & Tracking
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="google_analytics_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.gaLabel', 'Google Analytics (G-XXXXXXX)')}</Label>
-                                            <Input
-                                                id="google_analytics_id"
-                                                value={settings.google_analytics_id || ''}
-                                                onChange={(e) => updateSetting('google_analytics_id', e.target.value)}
-                                                placeholder={t('adminSettings.platformIdentity.gaPlaceholder', 'G-XXXXXXXXXX')}
-                                                className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label htmlFor="facebook_pixel_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.pixelLabel', 'Meta Pixel ID')}</Label>
-                                            <Input
-                                                id="facebook_pixel_id"
-                                                value={settings.facebook_pixel_id || ''}
-                                                onChange={(e) => updateSetting('facebook_pixel_id', e.target.value)}
-                                                placeholder={t('adminSettings.platformIdentity.pixelPlaceholder', 'ID de votre pixel...')}
-                                                className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="adsense_client_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.platformIdentity.adsenseClientLabel', 'Google AdSense Client ID')}</Label>
-                                            <Input
-                                                id="adsense_client_id"
-                                                value={settings.adsense_client_id || ''}
-                                                onChange={(e) => updateSetting('adsense_client_id', e.target.value)}
-                                                placeholder={t('adminSettings.platformIdentity.adsenseClientPlaceholder', 'ca-pub-XXXXXXXXXXXXXXXX')}
-                                                className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                            />
-                                        </div>
-                                        <div className="space-y-6">
-                                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-950/50 border border-border/20">
-                                                <div>
-                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('adminSettings.platformIdentity.enableAdsenseLabel', 'Activer AdSense')}</Label>
-                                                </div>
-                                                <Switch
-                                                    checked={settings.adsense_enabled}
-                                                    onCheckedChange={(checked) => updateSetting('adsense_enabled', checked)}
-                                                    className="data-[state=checked]:bg-emerald-500"
-                                                />
-                                            </div>
-                                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 dark:bg-slate-950/50 border border-border/20">
-                                                <div>
-                                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('adminSettings.platformIdentity.autoAdsLabel', 'Auto Ads')}</Label>
-                                                </div>
-                                                <Switch
-                                                    checked={settings.adsense_auto_ads_enabled}
-                                                    onCheckedChange={(checked) => updateSetting('adsense_auto_ads_enabled', checked)}
-                                                    className="data-[state=checked]:bg-emerald-500"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="features" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.modules.title', 'Gestion des Modules')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.modules.desc', 'Activez ou desactivez les fonctionnalites applicatives majeures en un clic.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {[
-                                    { id: 'enable_reviews', label: t('adminSettings.modules.reviews.label', 'Moteur avis'), desc: t('adminSettings.modules.reviews.desc', 'Gestion des notes et commentaires utilisateurs'), icon: <Layers className="h-5 w-5" /> },
-                                    { id: 'enable_salaries', label: t('adminSettings.modules.salaries.label', 'Section Salaires'), desc: t('adminSettings.modules.salaries.desc', 'Base anonyme des remunerations'), icon: <DollarSign className="h-5 w-5" /> },
-                                    { id: 'enable_claims', label: t('adminSettings.modules.claims.label', 'Claims Engine'), desc: t('adminSettings.modules.claims.desc', 'Systeme de revendication entreprises'), icon: <ShieldCheck className="h-5 w-5" /> },
-                                ].map((item) => (
-                                    <div key={item.id} className="flex items-center justify-between p-6 rounded-[2rem] border border-border/10 bg-white/40 dark:bg-slate-950/20 hover:bg-white/70 dark:hover:bg-slate-950/40 transition-all group">
-                                        <div className="flex gap-4 items-center">
-                                            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                {item.icon}
-                                            </div>
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <Label className="text-sm font-black cursor-pointer group-hover:text-primary transition-colors uppercase tracking-tight">{item.label}</Label>
-                                                </div>
-                                                <p className="text-[10px] text-muted-foreground font-medium">{item.desc}</p>
-                                            </div>
-                                        </div>
-                                        <Switch
-                                            checked={settings[item.id as keyof SiteSettings] as boolean}
-                                            onCheckedChange={(checked) => updateSetting(item.id as keyof SiteSettings, checked)}
-                                            className="data-[state=checked]:bg-emerald-500"
-                                        />
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="premium" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.commercial.title', 'Configuration Commerciale')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.commercial.desc', 'Gerez les prix des abonnements et le contenu du pack Premium.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-10">
-                                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-amber-500/10 to-transparent rounded-[2rem] border border-amber-500/20">
-                                    <div className="flex gap-4 items-center">
-                                        <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
-                                            <Crown className="h-6 w-6" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <h4 className="font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest text-[10px]">{t('adminSettings.commercial.subscriptionsTitle', 'Abonnements Premium')}</h4>
-                                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('adminSettings.commercial.subscriptionsDesc', 'Permettre aux entreprises de passer au forfait superieur')}</p>
-                                        </div>
-                                    </div>
-                                    <Switch
-                                        checked={settings.premium_enabled}
-                                        onCheckedChange={(checked) => updateSetting('premium_enabled', checked)}
-                                        className="data-[state=checked]:bg-amber-500"
-                                    />
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="tier_growth_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.growthMonthlyLabel', 'Growth Mensuel (MAD)')}</Label>
-                                            <div className="relative">
-                                                <Input
-                                                    id="tier_growth_monthly_price"
-                                                    type="number"
-                                                    value={settings.tier_growth_monthly_price ?? 99}
-                                                    onChange={(e) => updateSetting('tier_growth_monthly_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
-                                                />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label htmlFor="tier_growth_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.growthAnnualLabel', 'Growth Annuel (MAD)')}</Label>
-                                            <div className="relative">
-                                                <Input
-                                                    id="tier_growth_annual_price"
-                                                    type="number"
-                                                    value={settings.tier_growth_annual_price ?? 990}
-                                                    onChange={(e) => updateSetting('tier_growth_annual_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
-                                                />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <Separator className="bg-border/10" />
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="tier_gold_monthly_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.goldMonthlyLabel', 'Gold Mensuel (MAD)')}</Label>
-                                            <div className="relative">
-                                                <Input
-                                                    id="tier_gold_monthly_price"
-                                                    type="number"
-                                                    value={settings.tier_gold_monthly_price ?? 299}
-                                                    onChange={(e) => updateSetting('tier_gold_monthly_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
-                                                />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label htmlFor="tier_gold_annual_price" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.goldAnnualLabel', 'Gold Annuel (MAD)')}</Label>
-                                            <div className="relative">
-                                                <Input
-                                                    id="tier_gold_annual_price"
-                                                    type="number"
-                                                    value={settings.tier_gold_annual_price ?? 2900}
-                                                    onChange={(e) => updateSetting('tier_gold_annual_price', parseFloat(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-16 font-black tabular-nums text-lg"
-                                                />
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">{t('adminSettings.commercial.currency', 'MAD')}</span>
-                                            </div>
-                                            <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest text-right px-2">{t('adminSettings.commercial.suggestedSavings', 'Economie suggeree: 20%')}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label htmlFor="premium_description" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.commercial.salesPitchLabel', 'Argumentaire de Vente')}</Label>
-                                    <Textarea
-                                        id="premium_description"
-                                        value={settings.premium_description}
-                                        onChange={(e) => updateSetting('premium_description', e.target.value)}
-                                        placeholder={t('adminSettings.commercial.salesPitchPlaceholder', 'Pourquoi passer a Premium ?...')}
-                                        rows={4}
-                                        className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-6 font-medium leading-relaxed"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="payments" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.payments.title', 'Configuration des Paiements')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.payments.desc', 'Details bancaires affiches aux utilisateurs pour paiements hors-ligne.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="payment_bank_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.bankNameLabel', 'Nom de la Banque')}</Label>
-                                        <Input
-                                            id="payment_bank_name"
-                                            value={settings.payment_bank_name || ''}
-                                            onChange={(e) => updateSetting('payment_bank_name', e.target.value)}
-                                            placeholder={t('adminSettings.payments.bankNamePlaceholder', 'Ex: BMCE Bank')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label htmlFor="payment_rib_number" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.ribLabel', 'Numero de Compte (RIB)')}</Label>
-                                        <Input
-                                            id="payment_rib_number"
-                                            value={settings.payment_rib_number || ''}
-                                            onChange={(e) => updateSetting('payment_rib_number', e.target.value)}
-                                            placeholder={t('adminSettings.payments.ribPlaceholder', 'Ex: 011 780 0000 1234567890 12 34')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold font-mono"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label htmlFor="payment_beneficiary" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.beneficiaryLabel', 'Beneficiaire')}</Label>
-                                    <Input
-                                        id="payment_beneficiary"
-                                        value={settings.payment_beneficiary || ''}
-                                        onChange={(e) => updateSetting('payment_beneficiary', e.target.value)}
-                                        placeholder={t('adminSettings.payments.beneficiaryPlaceholder', 'Ex: Reviewly SARL')}
-                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                    />
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label htmlFor="payment_chari_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.chariUrlLabel', 'Lien Chari.ma')}</Label>
-                                    <Input
-                                        id="payment_chari_url"
-                                        value={settings.payment_chari_url || ''}
-                                        onChange={(e) => updateSetting('payment_chari_url', e.target.value)}
-                                        placeholder={t('adminSettings.payments.chariUrlPlaceholder', 'Ex: https://chari.ma/avis')}
-                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                    />
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.payments.methodsEnabledLabel', 'Methodes de Paiement Activees')}</Label>
-                                    <div className="flex flex-wrap gap-3 pt-2">
-                                        {['bank_transfer', 'chari_ma', 'paypal', 'stripe'].map((method) => (
-                                            <div key={method} className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`payment_method_${method}`}
-                                                    checked={(settings.payment_methods_enabled || []).includes(method)}
-                                                    onChange={(e) => {
-                                                        const currentMethods = settings.payment_methods_enabled || [];
-                                                        let newMethods;
-                                                        if (e.target.checked) {
-                                                            newMethods = [...currentMethods, method];
-                                                        } else {
-                                                            newMethods = currentMethods.filter(m => m !== method);
-                                                        }
-                                                        updateSetting('payment_methods_enabled', newMethods);
-                                                    }}
-                                                    className="h-4 w-4 rounded border-border/30 text-primary focus:ring-primary"
-                                                />
-                                                <Label htmlFor={`payment_method_${method}`} className="text-sm font-medium">
-                                                    {method === 'bank_transfer' && 'Virement Bancaire'}
-                                                    {method === 'chari_ma' && 'Chari.ma'}
-                                                    {method === 'paypal' && 'PayPal'}
-                                                    {method === 'stripe' && 'Stripe'}
-                                                </Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="p-6 bg-green-500/5 border border-green-500/10 rounded-3xl flex items-start gap-4">
-                                    <div className="p-2 bg-green-500/10 rounded-xl">
-                                        <AlertTriangle className="h-5 w-5 text-green-500" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.salaryValidation.infoTitle', 'Information')}</p>
-                                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            Ces coordonnées seront affichées aux utilisateurs sur la page d'abonnement {t('adminSettings.status.premium', 'Premium')}.
-                                            Elles leur permettront d'effectuer les virements bancaires pour activer leurs abonnements.
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="salary-config" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.salaryValidation.title', 'Validation des salaires')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">
-                                    Gerez les postes, departements et intervalles autorises dans le formulaire public.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                    <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.salaryValidation.rolesLabel', 'Postes autorises (1 par ligne)')}</Label>
-                                        <Textarea
-                                            value={salaryRolesText}
-                                            onChange={(e) => setSalaryRolesText(e.target.value)}
-                                            rows={14}
-                                            className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-medium"
-                                        placeholder={t('adminSettings.salaryValidation.rolesPlaceholder', 'Ingenieur logiciel')}
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.salaryValidation.departmentsLabel', 'Departements autorises (1 par ligne)')}</Label>
-                                        <Textarea
-                                            value={salaryDepartmentsText}
-                                            onChange={(e) => setSalaryDepartmentsText(e.target.value)}
-                                            rows={14}
-                                            className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-medium"
-                                        placeholder={t('adminSettings.salaryValidation.departmentsPlaceholder', 'Ingenierie')}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.salaryValidation.intervalsLabel', 'Intervalles salariaux (JSON)')}</Label>
-                                    <Textarea
-                                        value={salaryIntervalsText}
-                                        onChange={(e) => setSalaryIntervalsText(e.target.value)}
-                                        rows={12}
-                                        className="resize-none rounded-3xl bg-white/50 dark:bg-slate-950/50 border-border/20 p-4 font-mono text-sm"
-                                    />
-                                    <p className="text-xs text-muted-foreground font-medium">
-                                        Format attendu: [{"{"}"id":"id","label":"Libelle","min":1000,"max":5000{"}"}]
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="contact" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.support.title', 'Support Technique')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.support.desc', 'Coordonnees utilisees pour les emails automatiques et le footer.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="contact_email" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.contactEmailLabel', 'Email de relation client')}</Label>
-                                        <Input
-                                            id="contact_email"
-                                            type="email"
-                                            value={settings.contact_email || ''}
-                                            onChange={(e) => updateSetting('contact_email', e.target.value)}
-                                            placeholder={t('adminSettings.support.contactEmailPlaceholder', 'hello@platform.com')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label htmlFor="support_phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.supportPhoneLabel', 'Ligne Directe Support')}</Label>
-                                        <Input
-                                            id="support_phone"
-                                            value={settings.support_phone || ''}
-                                            onChange={(e) => updateSetting('support_phone', e.target.value)}
-                                            placeholder={t('adminSettings.support.supportPhonePlaceholder', '+212 5XX XX XX XX')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label htmlFor="office_address" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.officeAddressLabel', 'Adresse des bureaux (Footer)')}</Label>
-                                    <Input
-                                        id="office_address"
-                                        value={settings.office_address || ''}
-                                        onChange={(e) => updateSetting('office_address', e.target.value)}
-                                        placeholder={t('adminSettings.support.officeAddressPlaceholder', "Ex: 123 Boulevard d'Anfa, Casablanca")}
-                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                    />
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label htmlFor="copyright_text" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.support.copyrightLabel', 'Texte de Copyright')}</Label>
-                                    <Input
-                                        id="copyright_text"
-                                        value={settings.copyright_text || ''}
-                                        onChange={(e) => updateSetting('copyright_text', e.target.value)}
-                                        placeholder={t('adminSettings.support.copyrightPlaceholder', '&copy; 2024 Reviewly. Tous droits reserves.')}
-                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="email" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.email.title', 'Configuration Email')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.email.desc', 'Parametres de configuration pour envoi emails transactionnels.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                <div className="space-y-3">
-                                    <Label htmlFor="email_provider" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.providerLabel', 'Fournisseur Email')}</Label>
-                                    <Select value={settings.email_provider || 'console'} onValueChange={(value) => updateSetting('email_provider', value)}>
-                                        <SelectTrigger className="w-full h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold">
-                                            <SelectValue placeholder={t('adminSettings.email.providerPlaceholder', 'Choisir un fournisseur')} />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl border-border/10 backdrop-blur-xl">
-                                            <SelectItem value="console">{t('adminSettings.email.providers.console', 'Console (Developpement)')}</SelectItem>
-                                            <SelectItem value="resend">{t('adminSettings.email.providers.resend', 'Resend')}</SelectItem>
-                                            <SelectItem value="sendgrid">{t('adminSettings.email.providers.sendgrid', 'SendGrid')}</SelectItem>
-                                            <SelectItem value="mailjet">{t('adminSettings.email.providers.mailjet', 'Mailjet')}</SelectItem>
-                                            <SelectItem value="ses">{t('adminSettings.email.providers.ses', 'Amazon SES')}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label htmlFor="email_from" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.fromLabel', 'Adresse Expediteur')}</Label>
-                                    <Input
-                                        id="email_from"
-                                        type="email"
-                                        value={settings.email_from || ''}
-                                        onChange={(e) => updateSetting('email_from', e.target.value)}
-                                        placeholder={t('adminSettings.email.fromPlaceholder', 'noreply@example.com')}
-                                        className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                    />
-                                </div>
-
-                                {(settings.email_provider === 'resend') && (
-                                    <div className="space-y-3">
-                                        <Label htmlFor="resend_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.resendKeyLabel', 'Cle API Resend')}</Label>
-                                        <Input
-                                            id="resend_api_key"
-                                            type="password"
-                                            value={settings.resend_api_key || ''}
-                                            onChange={(e) => updateSetting('resend_api_key', e.target.value)}
-                                            placeholder={t('adminSettings.email.resendPlaceholder', 'red_...')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                        <p className="text-xs text-muted-foreground font-medium">
-                                            Vous pouvez obtenir cette clé dans votre tableau de bord Resend.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {(settings.email_provider === 'sendgrid') && (
-                                    <div className="space-y-3">
-                                        <Label htmlFor="sendgrid_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.sendgridKeyLabel', 'Cle API SendGrid')}</Label>
-                                        <Input
-                                            id="sendgrid_api_key"
-                                            type="password"
-                                            value={settings.sendgrid_api_key || ''}
-                                            onChange={(e) => updateSetting('sendgrid_api_key', e.target.value)}
-                                            placeholder={t('adminSettings.email.sendgridPlaceholder', 'SG.')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                        <p className="text-xs text-muted-foreground font-medium">
-                                            Vous pouvez obtenir cette clé dans votre tableau de bord SendGrid.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {(settings.email_provider === 'mailjet') && (
-                                    <div className="space-y-3">
-                                        <Label htmlFor="mailjet_api_key" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.mailjetKeyLabel', 'Cle API Mailjet')}</Label>
-                                        <Input
-                                            id="mailjet_api_key"
-                                            type="password"
-                                            value={settings.mailjet_api_key || ''}
-                                            onChange={(e) => updateSetting('mailjet_api_key', e.target.value)}
-                                            placeholder={t('adminSettings.email.mailjetKeyPlaceholder', 'API Key...')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                        <p className="text-xs text-muted-foreground font-medium">
-                                            Vous pouvez obtenir cette clé dans votre tableau de bord Mailjet.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {(settings.email_provider === 'mailjet') && (
-                                    <div className="space-y-3">
-                                        <Label htmlFor="mailjet_api_secret" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.email.mailjetSecretLabel', 'Cle Secrete Mailjet')}</Label>
-                                        <Input
-                                            id="mailjet_api_secret"
-                                            type="password"
-                                            value={settings.mailjet_api_secret || ''}
-                                            onChange={(e) => updateSetting('mailjet_api_secret', e.target.value)}
-                                            placeholder={t('adminSettings.email.mailjetSecretPlaceholder', 'API Secret...')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                        <p className="text-xs text-muted-foreground font-medium">
-                                            Vous pouvez obtenir cette clé dans votre tableau de bord Mailjet.
-                                        </p>
-                                    </div>
-                                )}
-
-                                <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-3xl flex items-start gap-4">
-                                    <div className="p-2 bg-blue-500/10 rounded-xl">
-                                        <AlertTriangle className="h-5 w-5 text-blue-500" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.email.importantTitle', 'Important')}</p>
-                                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            Les clés API sont stockées dans la base de données. Assurez-vous que votre environnement est sécurisé.
-                                            En production, il est préférable d'utiliser les variables d'environnement.
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="social" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.social.title', 'Ecosysteme Social')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.social.desc', 'Connectez vos profils officiels pour reassurance utilisateur.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {[
-                                    { id: 'facebook_url', label: 'Lien Facebook', placeholder: 'facebook.com/platform' },
-                                    { id: 'instagram_url', label: 'Lien Instagram', placeholder: 'instagram.com/platform' },
-                                    { id: 'twitter_url', label: 'Lien X (Twitter)', placeholder: 'x.com/platform' },
-                                    { id: 'linkedin_url', label: 'Lien LinkedIn', placeholder: 'linkedin.com/company/platform' },
-                                ].map((field) => (
-                                    <div key={field.id} className="space-y-3">
-                                        <Label htmlFor={field.id} className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{field.label}</Label>
-                                        <div className="relative group">
-                                            <Input
-                                                id={field.id}
-                                                value={settings[field.id as keyof SiteSettings] as string || ''}
-                                                onChange={(e) => updateSetting(field.id as keyof SiteSettings, e.target.value)}
-                                                placeholder={field.placeholder}
-                                                className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 pl-14 font-medium transition-all group-focus-within:border-primary/50"
-                                            />
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-                                                <LinkIcon className="h-5 w-5" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="partner" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3 text-indigo-600">
-                                    <LinkIcon className="h-7 w-7" />
-                                    {t('adminSettings.sections.partner.title', 'Gestion du Partenaire RH')}
-                                </CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.partner.desc', 'Configurez application partenaire affichee sur la plateforme.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="partner_app_name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.partner.nameLabel', 'Nom du Partenaire')}</Label>
-                                        <Input
-                                            id="partner_app_name"
-                                            value={settings.partner_app_name || ''}
-                                            onChange={(e) => updateSetting('partner_app_name', e.target.value)}
-                                            placeholder={t('adminSettings.partner.namePlaceholder', 'Ex: MOR RH')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-black text-lg"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label htmlFor="partner_app_url" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">{t('adminSettings.partner.urlLabel', "URL de l'Application")}</Label>
-                                        <Input
-                                            id="partner_app_url"
-                                            value={settings.partner_app_url || ''}
-                                            onChange={(e) => updateSetting('partner_app_url', e.target.value)}
-                                            placeholder={t('adminSettings.partner.urlPlaceholder', 'https://...')}
-                                            className="h-14 rounded-2xl bg-white/50 dark:bg-slate-950/50 border-border/20 font-bold"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="p-6 bg-indigo-500/5 border border-indigo-500/10 rounded-3xl flex items-start gap-4">
-                                    <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-600">
-                                        <Globe className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 dark:text-white mb-1">{t('adminSettings.partner.toolsTitle', 'Configuration des outils')}</p>
-                                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            Ces paramètres contrôlent le branding et les liens dans la section "Employee Toolkit" de la page d'accueil et le widget dans la barre latérale des entreprises.
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="security" className="mt-0 space-y-8">
-                        <Card className="border-0 shadow-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                            <CardHeader className="p-8 border-b border-border/10">
-                                <CardTitle className="text-2xl font-black tracking-tight">{t('adminSettings.sections.security.title', 'Politiques de Securite')}</CardTitle>
-                                <CardDescription className="text-slate-600 dark:text-slate-400 font-medium">{t('adminSettings.sections.security.desc', 'Controlez exposition publique et flux inscription.')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-6">
-                                {[
-                                    {
-                                        id: 'maintenance_mode',
-                                        label: t('adminSettings.security.maintenanceLabel', 'Mode Maintenance Actif'),
-                                        desc: t('adminSettings.security.maintenanceDesc', 'Le site sera inaccessible pour les visiteurs. Utile pour les mises a jour critiques.'),
-                                        warning: true
-                                    },
-                                    {
-                                        id: 'allow_new_registrations',
-                                        label: t('adminSettings.security.registrationsLabel', 'Ouverture des Inscriptions'),
-                                        desc: t('adminSettings.security.registrationsDesc', 'Permettre a de nouveaux utilisateurs de rejoindre la plateforme.'),
-                                    },
-                                ].map((item) => (
-                                    <div key={item.id} className={cn(
-                                        "flex items-center justify-between p-8 rounded-[2rem] border transition-all cursor-pointer",
-                                        item.warning ? "bg-rose-500/5 border-rose-500/10 hover:bg-rose-500/10" : "bg-white/40 dark:bg-slate-950/20 border-border/10 hover:bg-white/70 dark:hover:bg-slate-950/40"
-                                    )}>
-                                        <div className="space-y-1 pr-10">
-                                            <div className="flex items-center gap-2">
-                                                <Label className={cn("text-base font-black uppercase tracking-tight", item.warning ? "text-rose-600" : "text-slate-900 dark:text-white")}>{item.label}</Label>
-                                                {item.warning && <AlertTriangle className="h-4 w-4 text-rose-500 animate-pulse" />}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
-                                        </div>
-                                        <Switch
-                                            checked={settings[item.id as keyof SiteSettings] as boolean}
-                                            onCheckedChange={(checked) => updateSetting(item.id as keyof SiteSettings, checked)}
-                                            className={cn("data-[state=checked]:bg-primary", item.warning ? "data-[state=checked]:bg-rose-500" : "")}
-                                        />
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
+                <div className="flex-grow space-y-8">
+                    <GeneralSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <FeaturesSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <PremiumSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <PaymentsSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <SalaryValidationSettingsTab salaryRolesText={salaryRolesText} salaryDepartmentsText={salaryDepartmentsText} salaryIntervalsText={salaryIntervalsText} onSalaryRolesChange={setSalaryRolesText} onSalaryDepartmentsChange={setSalaryDepartmentsText} onSalaryIntervalsChange={setSalaryIntervalsText} t={t} />
+                    <HomeSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <ContactSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <EmailSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <SocialSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <PartnerSettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
+                    <SecuritySettingsTab settings={settings} onSettingChange={(key, value) => updateSetting(key as never, value as never)} t={t} />
                 </div>
             </Tabs>
         </div>

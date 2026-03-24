@@ -16,21 +16,29 @@ import { Badge } from '@/components/ui/badge';
 const initialState: JobOfferActionState = { status: 'idle', message: '' };
 const loadingStates = [
   {
-    title: 'AI is reading the source',
+    title: 'Step 2 of 5: AI is reading the source',
     body: 'We are extracting the visible role, company, salary, and work conditions from the offer.',
   },
   {
-    title: 'Structuring what is clear',
+    title: 'Step 2 of 5: Structuring what is clear',
     body: 'AI is identifying missing fields, confidence levels, and what still needs verification.',
   },
   {
-    title: 'Comparing with market and employer signals',
+    title: 'Step 3 of 5: Comparing with market and employer signals',
     body: 'We are checking benchmarks, employer mapping, and any similar offer context available.',
   },
   {
-    title: 'Building your decision workspace',
+    title: 'Step 3 of 5: Building your decision workspace',
     body: 'Your verdict, next actions, recruiter questions, and context blocks are being prepared.',
   },
+] as const;
+
+const journeySteps = [
+  'Source input',
+  'AI extraction',
+  'Analysis generation',
+  'Decision workspace',
+  'Save and follow up',
 ] as const;
 
 function FieldError({ state, name }: { state: JobOfferActionState; name: string }) {
@@ -48,6 +56,7 @@ export function JobOfferAnalysisForm() {
   const [state, formAction, isPending] = useActionState(submitJobOfferAnalysis, initialState);
   const [loadingIndex, setLoadingIndex] = useState(0);
   const lastTrackedAnalysisId = useRef<string | null>(null);
+  const activeJourneyStep = isPending ? (loadingIndex >= 2 ? 3 : 2) : 1;
 
   useEffect(() => {
     if (state.status !== 'success' || !state.data?.analysisId || lastTrackedAnalysisId.current === state.data.analysisId) {
@@ -79,6 +88,29 @@ export function JobOfferAnalysisForm() {
 
   return (
     <div className="space-y-6">
+      <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
+        <CardContent className="p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Journey step 1 of 5</p>
+          <div className="mt-3 grid gap-2 md:grid-cols-5">
+            {journeySteps.map((step, index) => (
+              <div
+                key={step}
+                className={`rounded-2xl border px-3 py-3 text-sm ${
+                  index + 1 < activeJourneyStep
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                    : index + 1 === activeJourneyStep
+                      ? 'border-slate-900 bg-slate-950 text-white'
+                      : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">Step {index + 1}</p>
+                <p className="mt-1 font-medium">{step}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="rounded-[2rem] border-slate-200 shadow-sm">
         <CardHeader className="space-y-3">
           <Badge variant="outline" className="w-fit uppercase tracking-[0.18em] text-[10px]">

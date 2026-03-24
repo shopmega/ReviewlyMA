@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getServerTranslator } from '@/lib/i18n/server';
 import { ContentShareButton } from '@/components/shared/ContentShareButton';
+import { PageIntro } from '@/components/shared/PageIntro';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getServerTranslator();
@@ -33,11 +34,11 @@ export default async function BlogHubPage() {
   if (posts.length === 0) {
     return (
       <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-        <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-3">
-          <Badge variant="outline" className="w-fit">{t('blogPage.badge', 'Editorial Hub')}</Badge>
-          <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('blogPage.title', 'Blog and playbooks')}</h1>
-          <p className="text-muted-foreground max-w-3xl">{t('blogPage.empty', 'No article has been published yet.')}</p>
-        </section>
+        <PageIntro
+          badge={<Badge variant="outline" className="w-fit">{t('blogPage.badge', 'Editorial Hub')}</Badge>}
+          title={t('blogPage.title', 'Blog and playbooks')}
+          description={t('blogPage.empty', 'No article has been published yet.')}
+        />
       </div>
     );
   }
@@ -47,13 +48,11 @@ export default async function BlogHubPage() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 space-y-8">
-      <section className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-3">
-        <Badge variant="outline" className="w-fit">{t('blogPage.badge', 'Editorial Hub')}</Badge>
-        <h1 className="text-3xl md:text-4xl font-bold font-headline">{t('blogPage.title', 'Blog and playbooks')}</h1>
-        <p className="text-muted-foreground max-w-3xl">
-          {t('blogPage.subtitle', 'Guides and analysis connecting reviews, salaries, referral signals, and monthly reports.')}
-        </p>
-      </section>
+      <PageIntro
+        badge={<Badge variant="outline" className="w-fit">{t('blogPage.badge', 'Editorial Hub')}</Badge>}
+        title={t('blogPage.title', 'Blog and playbooks')}
+        description={t('blogPage.subtitle', 'Guides and analysis connecting reviews, salaries, referral signals, and monthly reports.')}
+      />
 
       <Card className="rounded-2xl border-border">
         <CardHeader className="space-y-3">
