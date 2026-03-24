@@ -1,5 +1,5 @@
 import { getBusinessById } from '@/lib/data';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentAuthUser } from '@/lib/auth-helpers';
 import { redirect } from 'next/navigation';
 import { ReviewForm } from '@/components/forms/ReviewForm';
 import { getServerTranslator } from '@/lib/i18n/server';
@@ -12,11 +12,10 @@ type ReviewPageProps = {
 
 export default async function ReviewPage({ params }: ReviewPageProps) {
   const resolvedParams = await params;
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
+  const user = await getCurrentAuthUser();
   const nextPath = `/businesses/${resolvedParams.slug}/review`;
 
-  if (!auth.user) {
+  if (!user) {
     redirect(`/login?next=${encodeURIComponent(nextPath)}`);
   }
 

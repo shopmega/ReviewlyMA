@@ -8,6 +8,7 @@ import { reviewSchema, reviewReportSchema, reviewAppealSchema } from '@/lib/type
 export type ReviewFormState = ActionState;
 import { checkRateLimit, recordAttempt, RATE_LIMIT_CONFIG } from '@/lib/rate-limiter-enhanced';
 import { createClient } from '@/lib/supabase/server';
+import { getCurrentAuthUser } from '@/lib/auth-helpers';
 import {
   handleValidationError,
   handleDatabaseError,
@@ -35,7 +36,7 @@ export async function submitReview(
 ): Promise<ReviewFormState> {
   // Check authentication FIRST before any validation
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentAuthUser();
 
   if (!user) {
     return createErrorResponse(

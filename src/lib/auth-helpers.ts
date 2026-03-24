@@ -13,11 +13,41 @@ export interface AuthCheckResult {
   reason?: string;
 }
 
+export async function getCurrentAuthUser() {
+  const supabase = await createClient();
+
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (!error && user) {
+      return user;
+    }
+  } catch {
+    // Fall through to session lookup.
+  }
+
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (!error && session?.user) {
+      return session.user;
+    }
+  } catch {
+    // Leave unauthenticated.
+  }
+
+  return null;
+}
+
 export async function getCurrentUserWithProfile() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentAuthUser();
 
   if (!user) {
     return null;

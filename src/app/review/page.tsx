@@ -1,12 +1,11 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentAuthUser } from '@/lib/auth-helpers';
 import GeneralReviewPageClient from './GeneralReviewPageClient';
 
 export default async function GeneralReviewPage() {
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
+  const user = await getCurrentAuthUser();
 
-  if (!auth.user) {
+  if (!user) {
     redirect(`/login?next=${encodeURIComponent('/review')}`);
   }
 
