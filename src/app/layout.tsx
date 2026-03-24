@@ -18,6 +18,7 @@ import { getI18nState } from '@/lib/i18n/server';
 import { isRtlLocale } from '@/lib/i18n/config';
 import { cookies, headers } from 'next/headers';
 import { SoftAuthPromptController } from '@/components/auth/SoftAuthPromptController';
+import { AuthSessionBridge } from '@/components/auth/AuthSessionBridge';
 import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
 
 const plexSans = IBM_Plex_Sans({
@@ -126,6 +127,7 @@ export default async function RootLayout({
             />
             <TrackingConsentBridge />
             <AnalyticsPageTracker />
+            <AuthSessionBridge />
             <SoftAuthPromptController />
             <ServiceWorkerRegistration />
             <AdSense
