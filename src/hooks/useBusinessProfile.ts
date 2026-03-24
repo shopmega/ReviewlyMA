@@ -3,7 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { type Profile, type SubscriptionTier } from '@/lib/types';
 import { syncProProfile } from '@/app/actions/user';
-import { useBusiness } from '@/contexts/BusinessContext';
+import { useOptionalBusiness } from '@/contexts/BusinessContext';
 import { getEffectiveTier, hasEffectivePaidAccess, hasEffectiveTierAccess } from '@/lib/tier-utils';
 
 export function useBusinessProfile() {
@@ -13,7 +13,10 @@ export function useBusinessProfile() {
     const [businessTier, setBusinessTier] = useState<SubscriptionTier | null>(null);
     const [businessTierLoading, setBusinessTierLoading] = useState(false);
     const searchParams = useSearchParams();
-    const { currentBusiness, allBusinesses, isLoading: businessLoading } = useBusiness();
+    const businessContext = useOptionalBusiness();
+    const currentBusiness = businessContext?.currentBusiness ?? null;
+    const allBusinesses = businessContext?.allBusinesses ?? [];
+    const businessLoading = businessContext?.isLoading ?? false;
 
     const sanitizeBusinessId = (rawId: string | null | undefined): string | null => {
         if (!rawId || typeof rawId !== 'string') return null;

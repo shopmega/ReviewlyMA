@@ -35,6 +35,10 @@ export function useBusiness() {
   return context;
 }
 
+export function useOptionalBusiness() {
+  return useContext(BusinessContext);
+}
+
 interface BusinessProviderProps {
   children: ReactNode;
 }
