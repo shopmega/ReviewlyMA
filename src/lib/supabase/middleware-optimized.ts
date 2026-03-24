@@ -6,6 +6,10 @@ type RouteProfile = {
   business_id: string | null;
 };
 
+function hasSupabaseAuthCookies(request: NextRequest): boolean {
+  return request.cookies.getAll().some(({ name }) => name.startsWith('sb-'));
+}
+
 async function getAuthenticatedUser(supabase: ReturnType<typeof createServerClient>) {
   try {
     const {
@@ -114,7 +118,7 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
     maintenanceMode = false;
   }
 
-  if (!maintenanceMode && !routeRequiresAuth) {
+  if (!maintenanceMode && !routeRequiresAuth && !hasSupabaseAuthCookies(request)) {
     return withAdminDebug(supabaseResponse, 'public_passthrough_no_auth');
   }
 
@@ -138,7 +142,7 @@ export async function updateSession(request: NextRequest, requestHeaders?: Heade
       : NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
   }
 
-  if (!user) {
+  if (!user && !routeRequiresAuth) {
     return withAdminDebug(supabaseResponse, 'public_no_user_passthrough');
   }
 
