@@ -723,6 +723,15 @@ export type JobOfferDecisionWorkspaceStep = {
   body: string;
 };
 
+export type JobOfferDecisionTier = 'accept' | 'negotiate' | 'avoid';
+
+export type JobOfferNegotiationScript = {
+  suggestedMonthlyAsk: number | null;
+  suggestedAskLabel: string; // e.g. "+900 MAD / month"
+  emailTemplate: string;
+  whatsappTemplate: string;
+};
+
 export type JobOfferDecisionWorkspace = {
   analysis: Omit<JobOfferAnalysisRecord, 'id' | 'job_offer_id' | 'created_at'>;
   offer?: JobOfferRecord;
@@ -763,6 +772,12 @@ export type JobOfferDecisionWorkspace = {
     summary: string;
     tone: 'positive' | 'neutral' | 'warning' | 'caution';
   };
+  /** 3-tier decision engine output */
+  decisionTier: JobOfferDecisionTier;
+  /** e.g. -22 for "22% below market", +8 for "8% above". null if no benchmark. */
+  salaryGapPercent: number | null;
+  /** Negotiation script populated when tier is 'negotiate' or 'avoid' */
+  negotiationScript: JobOfferNegotiationScript | null;
   resultSteps: JobOfferDecisionWorkspaceStep[];
   journey: {
     currentStep: 4;
@@ -770,6 +785,7 @@ export type JobOfferDecisionWorkspace = {
     finalStepTitle: string;
   };
 };
+
 
 export type JobOfferRoleCityMetrics = {
   job_title_normalized: string;

@@ -143,7 +143,14 @@ function buildSummary(label: JobOfferRecommendationLabel, confidence: JobOfferCo
   return `Offer classified as ${labelText} using ${benchmarkText} with ${confidenceText} confidence.`;
 }
 
-export type ComputedJobOfferAnalysis = Omit<JobOfferAnalysisRecord, 'id' | 'job_offer_id' | 'created_at'>;
+export type ComputedJobOfferAnalysis = Omit<JobOfferAnalysisRecord, 'id' | 'job_offer_id' | 'created_at'> & {
+  market_delta_percent: number | null;
+};
+
+function getMarketDeltaPercent(midpointMonthly: number | null, benchmarkMedian: number | null): number | null {
+  if (midpointMonthly == null || benchmarkMedian == null || benchmarkMedian <= 0) return null;
+  return round(((midpointMonthly - benchmarkMedian) / benchmarkMedian) * 100);
+}
 
 export function computeJobOfferAnalysis(
   input: NormalizedJobOfferInput,
@@ -171,6 +178,7 @@ export function computeJobOfferAnalysis(
   const riskFlags = getRiskFlags(input, confidenceLevel);
   const missingInformation = getMissingInformation(input);
   const strengths = getStrengths(input, compensationScore, transparencyScore);
+  const marketDeltaPercent = getMarketDeltaPercent(input.midpointMonthly, benchmarks.primaryMedianMonthly);
 
   return {
     analysis_version: JOB_OFFER_ANALYSIS_VERSION,
@@ -189,5 +197,6 @@ export function computeJobOfferAnalysis(
     missing_information: missingInformation,
     strengths,
     analysis_summary: buildSummary(marketPositionLabel, confidenceLevel, benchmarks.primarySource),
+    market_delta_percent: marketDeltaPercent,
   };
 }

@@ -3664,5 +3664,498 @@
     "notAvailable": "N/A",
     "latestMatching": "Latest matching demand listings",
     "viewListing": "View listing"
+  },
+  "jobOffers": {
+    "analyze": {
+      "title": "Analyze Job Offer",
+      "description": "Paste a job offer text or URL and receive an explainable market analysis.",
+      "loginRequired": "You need to be logged in to run and save job offer analyses in this module.",
+      "login": "Log in"
+    },
+    "history": {
+      "title": "My Job Offer Analyses",
+      "description": "Review previously saved job offer analyses.",
+      "loginRequired": {
+        "title": "Login required",
+        "description": "You need an account to access saved analyses."
+      },
+      "titlePage": "My analyses",
+      "subtitle": "Saved outputs from the standalone job-offers module.",
+      "actions": {
+        "analyzeAnother": "Analyze another offer",
+        "clearSelection": "Clear selection",
+        "openAnalysis": "Open analysis",
+        "open": "Open",
+        "compare": "Compare",
+        "selected": "Selected"
+      },
+      "empty": {
+        "title": "No analyses yet",
+        "description": "Run your first offer analysis to start building a private history.",
+        "action": "Start an analysis"
+      },
+      "filters": {
+        "search": "Search",
+        "searchPlaceholder": "Company, role, city",
+        "verdict": "Verdict",
+        "confidence": "Confidence",
+        "allVerdicts": "All verdicts",
+        "allLevels": "All levels",
+        "noMatch": "No analyses match your current filters."
+      },
+      "verdicts": {
+        "strong_offer": "Strong offer",
+        "above_market": "Above market",
+        "fair_market": "Fair market",
+        "below_market": "Below market",
+        "insufficient_data": "Insufficient data"
+      },
+      "confidenceLevels": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "comparison": {
+        "mode": "Compare mode",
+        "title": "Quick comparison",
+        "bestScore": "Best score",
+        "clearestOffer": "Clearest offer",
+        "highConfidenceReads": "High-confidence reads"
+      },
+      "item": {
+        "overallScore": "Overall score",
+        "clarity": "Clarity",
+        "summary": "Summary",
+        "unknownCity": "Unknown city"
+      }
+    },
+    "detail": {
+      "title": "Job Offer Analysis Detail",
+      "description": "View a saved job offer analysis."
+    },
+    "form": {
+      "journeyStep": "Journey step {current} of {total}",
+      "step": "Step {index}",
+      "aiPowered": "AI-powered analysis",
+      "decodeTitle": "Decode a job offer before you commit",
+      "decodeDesc": "AI extracts the offer, checks market signals, and turns the result into a private multi-step decision workspace.",
+      "source": "Source",
+      "provideOffer": "Provide the offer",
+      "provideOfferDesc": "Paste the announcement text or switch to a public link. After analysis, the result opens on its own page.",
+      "pasteText": "Paste text",
+      "useLink": "Use link",
+      "jobOfferText": "Job offer text",
+      "pastePlaceholder": "Paste a LinkedIn, Rekrute, Indeed, or Emploi.ma job post here...",
+      "pasteDesc": "Best for copied job ads, screenshots transcribed to text, or incomplete posts you still want to pressure-test.",
+      "publicLink": "Public job offer link",
+      "linkPlaceholder": "https://www.linkedin.com/jobs/view/...",
+      "linkDesc": "Works when the source page is public and readable. If extraction is partial, AI still returns useful follow-up questions.",
+      "statusInProgress": "AI analysis in progress...",
+      "statusIdle": "Analyze with AI",
+      "decisionSupport": "AI-powered decision support",
+      "privateAnalysis": "Private analysis",
+      "loginToSave": "Login required to save and compare results",
+      "privateWorkspace": "Private workspace",
+      "incompleteNote": "Some offers are incomplete. AI will still surface useful questions, confidence levels, and the best next action instead of pretending the evidence is stronger than it is.",
+      "loadingStep2": {
+        "title": "Step 2 of 5: AI is reading the source",
+        "body": "We are extracting the visible role, company, salary, and work conditions from the offer."
+      },
+      "loadingStep2Alt": {
+        "title": "Step 2 of 5: Structuring what is clear",
+        "body": "AI is identifying missing fields, confidence levels, and what still needs verification."
+      },
+      "loadingStep3": {
+        "title": "Step 3 of 5: Comparing with market and employer signals",
+        "body": "We are checking benchmarks, employer mapping, and any similar offer context available."
+      },
+      "loadingStep3Alt": {
+        "title": "Step 3 of 5: Building your decision workspace",
+        "body": "Your verdict, next actions, recruiter questions, and context blocks are being prepared."
+      },
+      "steps": {
+        "source": "Source input",
+        "extraction": "AI extraction",
+        "generation": "Analysis generation",
+        "workspace": "Decision workspace",
+        "save": "Save and follow up"
+      }
+    },
+    "result": {
+      "aiJobAnalysis": "AI-powered job offer analysis",
+      "privateDecisionWorkspace": "Private decision workspace",
+      "locationUnclear": "Location unclear",
+      "decisionSupportNote": "AI helps extract and structure the offer, then combines it with market and employer context. This is decision support, not ground truth.",
+      "savedAnalysis": "Saved analysis",
+      "history": "History",
+      "journeyStepLabel": "Journey step {current} of {total}",
+      "resultStepLabel": "Result step {current} of {total}",
+      "previousStep": "Previous step",
+      "nextStep": "Next step",
+      "viewHistory": "View my history",
+      "analyzeAnother": "Analyze another offer",
+      "footerNote": "Keep this analysis private, compare it with alternatives, and come back after recruiter follow-up."
+    },
+    "workspace": {
+      "steps": {
+        "offer": {
+          "label": "Offer",
+          "title": "Read the offer itself",
+          "body": "Verdict, facts, confidence, and what is still missing."
+        },
+        "employer": {
+          "label": "Employer",
+          "title": "Check employer context",
+          "body": "Business signal, review context, and mapped employer data."
+        },
+        "compare": {
+          "label": "Compare",
+          "title": "Compare nearby alternatives",
+          "body": "See how this role stacks up against similar analyzed offers."
+        },
+        "actions": {
+          "label": "Next actions",
+          "title": "Decide what to do next",
+          "body": "Recruiter questions, dynamic CTAs, and follow-up actions."
+        },
+        "details": {
+          "label": "Details",
+          "title": "Inspect diagnostics",
+          "body": "Source details, detected fields, and confidence diagnostics."
+        }
+      },
+      "cockpit": {
+        "aiCockpit": "AI-powered decision cockpit",
+        "visibleSalary": "Visible salary",
+        "location": "Location",
+        "workModel": "Work model",
+        "assessmentConfidence": "Assessment confidence",
+        "primaryNextAction": "Primary next action",
+        "openNextStep": "Open next step",
+        "stats": {
+          "bestSignal": "Best signal",
+          "mainConcern": "Main concern",
+          "whatIsMissing": "What is missing",
+          "nextStep": "Best next step"
+        },
+        "fallbacks": {
+          "positive": "The offer includes at least a few structured details instead of being completely opaque.",
+          "concern": "There is no major red flag here, but several decision-critical details still need confirmation.",
+          "missing": "Most core fields are visible, but package and reporting details should still be verified."
+        }
+      },
+      "presentation": {
+        "salaryMissing": "Salary missing",
+        "salaryMentioned": "Salary mentioned",
+        "salaryVisible": "Salary visible",
+        "salaryMissingNote": "Compensation was not visible in the source.",
+        "salaryMentionedNote": "Needs verification before you treat this range as firm.",
+        "salaryVisibleNote": "Visible enough to use in the current market read."
+      },
+      "confidence": {
+        "high": {
+          "label": "High confidence",
+          "note": "Salary and market context are solid enough for a firm diagnosis."
+        },
+        "medium": {
+          "label": "Medium confidence",
+          "note": "There is context, but key details should still be verified before deciding."
+        },
+        "low": {
+          "label": "Low confidence",
+          "note": "Market coverage is low, read as an indication rather than a verdict.",
+          "noteNoSalary": "Salary is missing, analysis cannot give a firm market verdict."
+        }
+      },
+      "facts": {
+        "title": "Offer facts",
+        "fields": {
+          "company": "Company",
+          "role": "Role title",
+          "city": "City",
+          "salary": "Salary",
+          "contract": "Contract",
+          "workModel": "Work model",
+          "seniority": "Seniority",
+          "benefits": "Benefits"
+        },
+        "fallbacks": {
+          "notDetected": "Not detected",
+          "notSpecified": "Not specified",
+          "noneVisible": "None visible"
+        }
+      },
+      "verdicts": {
+        "incomplete": {
+          "eyebrow": "Clarification mode",
+          "title": "Useful signal, incomplete verdict",
+          "titleNoSalary": "Too incomplete for a pay verdict",
+          "summary": "Some parts of the offer are readable, but the evidence is not strong enough for a reliable market conclusion yet.",
+          "summaryNoSalary": "This offer can still help you prepare smarter questions, but salary is missing so it should not be treated as fair, strong, or weak pay."
+        },
+        "strong": {
+          "eyebrow": "Positive signal",
+          "title": "This offer reads as unusually competitive",
+          "summary": "The pay signal and structure both look stronger than a typical vague listing, but the final decision should still depend on scope, manager quality, and growth path."
+        },
+        "above": {
+          "eyebrow": "Encouraging signal",
+          "title": "This offer looks better than the local baseline",
+          "summary": "The offer shows enough evidence to suggest a favorable read, but you should still verify the exact scope, reporting line, and package conditions."
+        },
+        "fair": {
+          "eyebrow": "Balanced read",
+          "title": "This offer looks roughly in line with the market",
+          "summary": "Nothing here looks dramatically off-market, but that does not automatically make it a good personal decision."
+        },
+        "weak": {
+          "eyebrow": "Caution signal",
+          "title": "This offer looks weaker than the visible benchmark",
+          "summary": "The available evidence suggests a less attractive read than the market baseline. Clarify the package before spending too much time."
+        }
+      },
+      "formatting": {
+        "notSpecified": "Not specified",
+        "notProvided": "Not provided",
+        "noneVisible": "None visible",
+        "notDetected": "Not detected",
+        "internship": "Internship",
+        "onsite": "On-site",
+        "hybrid": "Hybrid",
+        "remote": "Remote",
+        "privateAnalysis": "Private analysis",
+        "linkSource": "Link source",
+        "pastedText": "Pasted text",
+        "document": "Document",
+        "noBenchmark": "No usable benchmark yet",
+        "roleCityBenchmark": "Role + city benchmark",
+        "companyBenchmark": "Company benchmark",
+        "cityBenchmark": "City benchmark",
+        "strongSignal": "Strong employer signal",
+        "mixedSignal": "Mixed employer signal",
+        "limitedSignal": "Limited employer signal",
+        "unclearRole": "Unclear role",
+        "unknownCompany": "Unknown company",
+        "notDisclosed": "Not disclosed"
+      },
+      "status": {
+        "needsVerification": "Needs verification",
+        "confirmed": "Confirmed",
+        "likely": "Likely",
+        "limitedConfidence": "Limited confidence",
+        "notDetected": "Not detected"
+      },
+      "insights": {
+        "title": "Positives vs concerns",
+        "dimensionsTitle": "Decision dimensions",
+        "positivesLabel": "Positive signals",
+        "concernsLabel": "Concerns",
+        "fallbacks": {
+          "positive": "The offer has at least enough structure to support a useful review.",
+          "concern": "No major concern stands out yet, but key details still need verification."
+        }
+      },
+      "diagnostics": {
+        "title": "Facts vs diagnostics",
+        "trigger": "Expand detected fields and source details",
+        "sourceSummary": "Source summary",
+        "sourceUrl": "Source URL",
+        "document": "Document",
+        "hiddenSignals": "Hidden signals",
+        "fields": {
+          "company": "Company",
+          "role": "Role title",
+          "city": "City",
+          "salary": "Salary",
+          "contract": "Contract",
+          "workModel": "Work model",
+          "seniority": "Seniority",
+          "benefits": "Benefits"
+        }
+      },
+      "comparison": {
+        "title": "How this compares to similar offers",
+        "noOffers": "No strong comparable offers are visible yet for this role and market combination. When more approved analyses accumulate, this section becomes comparison evidence rather than guesswork.",
+        "similarityScore": "Similarity score",
+        "openPublicContext": "Open public context"
+      },
+      "gaps": {
+        "panelTitle": "Missing information",
+        "allVisible": "The main decision-critical fields are visible. Use the follow-up actions to confirm package details and manager fit.",
+        "salary": {
+          "title": "Salary band missing",
+          "insight": "The employer is asking for your time before disclosing the most basic compensation anchor.",
+          "action": "Ask for the salary band before committing to multiple interview rounds."
+        },
+        "contract": {
+          "title": "Contract type unclear",
+          "insight": "Without contract clarity, stability and legal framing are still open questions.",
+          "action": "Ask whether this is CDI, CDD, freelance, or internship."
+        },
+        "workModel": {
+          "title": "Work model not stated",
+          "insight": "On-site, hybrid, and remote expectations shape commute cost and quality of life.",
+          "action": "Clarify office presence, flexibility, and any travel expectations."
+        },
+        "benefits": {
+          "title": "Benefits package unclear",
+          "insight": "An offer can look fine on base salary while still being weak on the global package.",
+          "action": "Ask for the full package, not just base salary."
+        },
+        "seniority": {
+          "title": "Leveling is vague",
+          "insight": "If level is not explicit, the employer may still be flexible on expectations or budget.",
+          "action": "Ask what level they have budgeted and what success looks like in 90 days."
+        }
+      },
+      "dimensions": {
+        "clarity": {
+          "title": "Clarity",
+          "labels": { "clear": "Clear", "mixed": "Mixed", "vague": "Vague" },
+          "note": "How much concrete structure the offer gives you up front."
+        },
+        "compensation": {
+          "title": "Compensation visibility",
+          "labels": { "assessable": "Assessable", "partial": "Partial", "withheld": "Withheld" },
+          "note": "Salary is visible, but market judgment still depends on benchmark strength.",
+          "noteHidden": "No salary was disclosed, so pay quality should not be assumed."
+        },
+        "conditions": {
+          "title": "Work conditions visibility",
+          "labels": { "defined": "Well defined", "partly": "Partly visible", "unclear": "Unclear" },
+          "note": "Contract, work model, city, and benefits shape day-to-day reality."
+        },
+        "value": {
+          "title": "Career value",
+          "labels": { "strong": "Potentially strong", "validation": "Needs validation", "thin": "Thin evidence" },
+          "note": "A proxy for role quality, package depth, and growth visibility."
+        },
+        "benchmark": {
+          "title": "Benchmark confidence",
+          "note": "Strength of the database used for comparison."
+        },
+        "risk": {
+          "title": "Risk level",
+          "labels": { "high": "High", "moderate": "Moderate", "low": "Low" },
+          "note": "Higher means more ambiguity, downside, or negotiation risk."
+        }
+      },
+      "actions": {
+        "nextActionsTitle": "Dynamic next actions",
+        "primaryAction": "Primary action",
+        "nextAction": "Next action",
+        "open": "Open",
+        "recruiterQuestions": { "title": "Questions to ask the recruiter" },
+        "interviewTopics": { "title": "Likely interview topics" },
+        "actionBadge": "Action",
+        "ask_salary": {
+          "title": "Ask for salary before continuing",
+          "body": "Compensation details are missing or too unclear to justify a long process yet."
+        },
+        "review_employer": {
+          "title": "Review employer before applying",
+          "body": "The employer is mapped, but public sentiment is mixed enough that you should review context."
+        },
+        "compare_offers": {
+          "title": "Compare with similar offers",
+          "body": "You have enough matching data to compare this against nearby alternatives."
+        },
+        "check_benchmarks": {
+          "title": "Check salary benchmarks",
+          "body": "Use the role and city benchmark page to pressure-test this offer."
+        },
+        "view_company": {
+          "title": "View company reviews",
+          "body": "This offer is mapped confidently enough to add employer context from reviews."
+        },
+        "view_company_rail": {
+          "title": "View company reviews",
+          "body": "Use employee reviews to add context to the offer without distorting the salary verdict."
+        },
+        "open_company_page": {
+          "title": "Open company page",
+          "body": "See the public company profile, business details, and broader hiring context."
+        },
+        "open_company_salary": {
+          "title": "Check company salary context",
+          "body": "Use company salary context to judge whether this offer fits the broader pattern."
+        },
+        "use_questions": {
+          "title": "Use recruiter questions next",
+          "body": "Turn the analysis into a sharper recruiter conversation before committing more time."
+        }
+      },
+      "signals": {
+        "positives": {
+          "salaryDisclosed": "Salary is disclosed, which saves you from guessing basic compensation terms.",
+          "contractStated": "The contract type is stated as {type}.",
+          "workModelStated": "The work model is explicitly stated as {model}.",
+          "cityStated": "The offer is tied to a specific market: {city}."
+        },
+        "concerns": {
+          "salaryMissing": "Salary is missing, so the offer should not be framed as fair or strong pay.",
+          "wideRange": "The salary range is wide, which can hide level mismatch.",
+          "missingLocation": "Location is unclear, which makes commute and market fit harder to judge.",
+          "missingContract": "Contract type is missing, so employment stability is still unclear.",
+          "missingWorkModel": "Work model is not stated, which usually becomes a late-stage friction point.",
+          "missingSeniority": "Seniority is unclear, which can mask both workload and salary expectations.",
+          "lowConfidence": "Benchmark confidence is low, so this read should be used as directional guidance only.",
+          "lowCompanyConfidence": "Company identification may need manual confirmation.",
+          "lowTitleConfidence": "The role title may be loosely extracted, so scope should be clarified early.",
+          "noBenefits": "Benefits are not visible, so total package quality is still hard to judge."
+        },
+        "hidden": {
+          "noSalaryLeverage": "Omitting salary usually shifts leverage toward later interview stages.",
+          "wideRangeLeverage": "A wide salary range often means the role level is still loose.",
+          "vagueConditions": "When basic work conditions are vague, the hiring brief itself may still be under-defined.",
+          "verifyCompany": "The company name may not be cleanly stated, so verify who is really hiring.",
+          "clarificationOnly": "This read is more useful for clarification than for final judgment."
+        },
+        "reviewAware": {
+          "eyebrow": "Review-aware interpretation",
+          "mixedSentiment": {
+            "title": "Compensation is unclear and employee sentiment is mixed",
+            "body": "The offer is missing salary details, and the employer signal is not strong enough to offset that."
+          },
+          "weakReputation": {
+            "title": "Offer looks fine, but employer reputation is weak",
+            "body": "The visible offer may still be usable, but public sentiment is weak enough that you should be careful."
+          },
+          "positiveReinforcement": {
+            "title": "Employer reviews reinforce a positive read",
+            "body": "The offer signal and the employer context point in the same direction."
+          }
+        }
+      },
+      "questions": {
+        "cityRelocation": "Where is the role based, and is relocation or regular travel expected?",
+        "packageStructure": "How is the package structured between fixed pay, variable pay, bonuses, and benefits?",
+        "reportingTeam": "Who would this role report to, and how is the team currently structured?",
+        "performanceSuccess": "What would strong performance look like in the first 3 to 6 months?"
+      },
+      "topics": {
+        "roleScope": "Role scope, ownership, and first-quarter expectations",
+        "teamStructure": "Team structure, reporting line, and decision-making cadence",
+        "compensationVague": "Compensation expectations and how the package is framed",
+        "packageDetails": "Package details, variable pay, and evaluation criteria",
+        "workModelVague": "Work model, office rhythm, and schedule flexibility",
+        "remoteStyle": "Remote collaboration style, availability expectations, and tooling",
+        "hybridRhythm": "Hybrid rhythm, on-site expectations, and cross-team coordination",
+        "onsiteCommute": "On-site expectations, commute practicality, and manager access",
+        "growthPath": "Growth path, promotion logic, and stretch opportunities"
+      },
+      "employerSignal": {
+        "strong": "This employer has a relatively strong public signal (reviews, verification).",
+        "mixed": "This employer has some usable public context, but the signal is not definitive.",
+        "limited": "Public employer context is still thin, treat as additional context."
+      },
+      "nextStep": {
+        "askSalary": "Ask for the salary band before investing more time.",
+        "lowConfidence": "Use this as a question-prep tool, not a final decision.",
+        "belowMarket": "Only continue if the role scope or growth path clearly compensates for the weaker pay signal.",
+        "strongOffer": "Worth a deeper conversation, but verify manager quality.",
+        "baseline": "Treat this as a decent baseline and pressure-test the missing conditions."
+      }
+    }
   }
 }

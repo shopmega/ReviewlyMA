@@ -2,11 +2,15 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getJobOfferDecisionWorkspace } from '@/lib/data/job-offers';
 import { JobOfferAnalysisResult } from '@/components/job-offers/JobOfferAnalysisResult';
+import { getServerTranslator } from '@/lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Job Offer Analysis Detail',
-  description: 'View a saved job offer analysis.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
+  return {
+    title: t('jobOffers.detail.metadata.title', 'Job Offer Analysis Detail'),
+    description: t('jobOffers.detail.metadata.description', 'View a saved job offer analysis.'),
+  };
+}
 
 export default async function JobOfferAnalysisDetailPage(
   props: { params: Promise<{ analysisId: string }> }

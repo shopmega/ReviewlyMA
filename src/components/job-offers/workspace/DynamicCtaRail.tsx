@@ -2,25 +2,28 @@ import { ArrowRight } from 'lucide-react';
 import type { JobOfferDecisionWorkspace } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrackedActionButton } from '@/components/job-offers/TrackedActionButton';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 type Props = {
   workspace: JobOfferDecisionWorkspace;
 };
 
 export function DynamicCtaRail({ workspace }: Props) {
+  const { t } = useI18n();
+
   return (
     <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
       <CardHeader>
-        <CardTitle className="text-xl font-black tracking-tight">Dynamic next actions</CardTitle>
+        <CardTitle className="text-xl font-black tracking-tight">{t('jobOffers.workspace.actions.nextActionsTitle', 'Dynamic next actions')}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {workspace.dynamicActions.map((action) => (
           <div key={action.id} className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              {action.kind === 'primary' ? 'Primary action' : 'Next action'}
+              {action.kind === 'primary' ? t('jobOffers.workspace.actions.primaryAction', 'Primary action') : t('jobOffers.workspace.actions.nextAction', 'Next action')}
             </p>
-            <p className="mt-2 text-lg font-black tracking-tight text-slate-950">{action.title}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{action.body}</p>
+            <p className="mt-2 text-lg font-black tracking-tight text-slate-950">{t(action.title)}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{t(action.body)}</p>
             <TrackedActionButton
               href={action.href}
               ctaId={action.cta_id}
@@ -32,7 +35,7 @@ export function DynamicCtaRail({ workspace }: Props) {
               className="mt-4"
             >
               <>
-                Open
+                {t('jobOffers.workspace.actions.open', 'Open')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </>
             </TrackedActionButton>

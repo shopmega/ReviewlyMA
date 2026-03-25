@@ -1,0 +1,149 @@
+
+> nextn@0.1.0 dev
+> next dev -p 9002
+
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.0.130:9002
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ serverMinification
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 6.2s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1174ms (211 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 18.9s (2994 modules)
+ ✓ Compiled in 3.6s (1043 modules)
+ GET /login 200 in 22732ms
+ POST /login 200 in 1735ms
+ ○ Compiling /api/analytics/track ...
+ ✓ Compiled /api/analytics/track in 2.7s (3000 modules)
+ POST /api/analytics/track 200 in 3486ms
+ GET /login?next=%2Freview 200 in 1326ms
+ POST /api/analytics/track 200 in 199ms
+ GET /login 200 in 842ms
+ POST /login 200 in 1535ms
+ POST /api/analytics/track 200 in 428ms
+ ○ Compiling /signup ...
+ ✓ Compiled /signup in 4.7s (3043 modules)
+ GET /signup 200 in 6565ms
+ POST /api/analytics/track 200 in 468ms
+ GET /login?next=%2Freview 200 in 698ms
+ POST /api/analytics/track 200 in 235ms
+ GET /signup 200 in 562ms
+ POST /api/analytics/track 200 in 223ms
+ GET /signup 200 in 629ms
+ POST /signup 200 in 1747ms
+ POST /api/analytics/track 200 in 319ms
+ POST /api/analytics/track 200 in 341ms
+ GET /login?next=%2Freview 200 in 543ms
+ POST /api/analytics/track 200 in 201ms
+ GET /login 200 in 675ms
+ POST /login 200 in 813ms
+ POST /api/analytics/track 200 in 415ms
+ ○ Compiling / ...
+ ✓ Compiled / in 11s (4738 modules)
+ POST /login 200 in 14786ms
+ GET / 200 in 16944ms
+ ○ Compiling /review ...
+ ✓ Compiled /review in 8.6s (4776 modules)
+ POST /api/analytics/track 200 in 7150ms
+ POST / 200 in 6845ms
+ GET /review 200 in 14084ms
+ POST /api/analytics/track 200 in 208ms
+ POST /review 200 in 301ms
+ POST /review 200 in 297ms
+ GET /login 200 in 649ms
+ POST /login 200 in 859ms
+ POST /api/analytics/track 200 in 289ms
+ GET / 200 in 1334ms
+ ○ Compiling /_error ...
+ POST /api/analytics/track 200 in 1366ms
+ ✓ Compiled /businesses in 7.8s (5122 modules)
+ ✓ Compiled in 5.6s (1351 modules)
+ POST / 200 in 13937ms
+ GET /businesses 200 in 14657ms
+ ○ Compiling /businesses/[slug] ...
+ ✓ Compiled /businesses/[slug] in 13.7s (6407 modules)
+ POST /api/analytics/track 200 in 13895ms
+ POST /businesses 200 in 12902ms
+ GET /businesses/swissport 200 in 23066ms
+ POST /api/analytics/track 200 in 294ms
+ POST /businesses/swissport 200 in 2050ms
+ GET /review 200 in 1545ms
+ POST /api/analytics/track 200 in 302ms
+ POST /review 200 in 310ms
+ POST /review 200 in 443ms
+ GET /login 200 in 1109ms
+ POST /login 200 in 1259ms
+ POST /api/analytics/track 200 in 462ms
+ GET / 200 in 2419ms
+ ○ Compiling /businesses/[slug]/review ...
+ ✓ Compiled /businesses/[slug]/review in 6.1s (6413 modules)
+ POST /api/analytics/track 200 in 7978ms
+ POST / 200 in 7195ms
+ GET /businesses/swissport/review 200 in 14208ms
+ POST /api/analytics/track 200 in 207ms
+ POST /businesses/swissport/review 200 in 389ms
+ ✓ Compiled in 8.8s (6430 modules)
+ ✓ Compiled in 3.6s (4351 modules)
+ ✓ Compiled in 1801ms (4351 modules)
+ ✓ Compiled in 3.9s (4351 modules)
+ ✓ Compiled in 3.8s (4351 modules)
+ ✓ Compiled in 2.2s (4351 modules)
+ ✓ Compiled in 2.6s (1949 modules)
+ ✓ Compiled in 1671ms (1949 modules)
+ ✓ Compiled in 3.1s (1949 modules)
+ ✓ Compiled in 1725ms (1949 modules)
+ ✓ Compiled in 3.3s (4351 modules)
+ ✓ Compiled in 2.1s (4351 modules)
+ ✓ Compiled in 2.6s (1949 modules)
+ ✓ Compiled in 1759ms (1949 modules)
+ ✓ Compiled in 1672ms (1949 modules)
+ ✓ Compiled in 2.3s (4351 modules)
+ ✓ Compiled in 1228ms (4351 modules)
+ ✓ Compiled in 1227ms (4351 modules)
+ ✓ Compiled in 2.4s (1949 modules)
+ ✓ Compiled in 1372ms (4351 modules)
+ ✓ Compiled in 1178ms (4351 modules)
+ ✓ Compiled in 1041ms (4351 modules)
+ ✓ Compiled in 2s (1949 modules)
+ ✓ Compiled in 685ms (1949 modules)
+ ✓ Compiled in 1637ms (4351 modules)
+ ✓ Compiled in 1889ms (4351 modules)
+ ✓ Compiled in 1972ms (4351 modules)
+ ✓ Compiled in 1614ms (1949 modules)
+ ✓ Compiled in 1582ms (4351 modules)
+ ✓ Compiled in 1904ms (4351 modules)
+ ✓ Compiled in 1133ms (1949 modules)
+ ✓ Compiled in 1657ms (1949 modules)
+ ✓ Compiled in 3.4s (1949 modules)
+ ✓ Compiled in 7s (4351 modules)
+ ✓ Compiled in 2.1s (4351 modules)
+ ✓ Compiled in 2.4s (4351 modules)
+ ✓ Compiled in 1980ms (4351 modules)
+ ✓ Compiled in 1480ms (1949 modules)
+ ✓ Compiled in 1431ms (1949 modules)
+ ✓ Compiled in 1300ms (1949 modules)
+ ✓ Compiled in 1087ms (1949 modules)
+ ✓ Compiled in 2.3s (4351 modules)
+ ✓ Compiled in 3.5s (4351 modules)
+ ✓ Compiled in 2.3s (1949 modules)
+ ✓ Compiled in 1354ms (1949 modules)
+ ✓ Compiled in 3.7s (4351 modules)
+ ✓ Compiled in 1791ms (4351 modules)
+ ✓ Compiled in 1505ms (1949 modules)
+ ✓ Compiled in 1760ms (1949 modules)
+ ✓ Compiled in 2.5s (4351 modules)
+ ✓ Compiled in 1965ms (4351 modules)
+ ✓ Compiled in 2.3s (4351 modules)
+ ✓ Compiled in 5.3s (6300 modules)
+ ✓ Compiled in 3s (4351 modules)
+ ✓ Compiled in 4.2s (6300 modules)
+ ✓ Compiled in 2.5s (1949 modules)
+ ✓ Compiled in 1526ms (1949 modules)
+ ✓ Compiled in 5.5s (4351 modules)

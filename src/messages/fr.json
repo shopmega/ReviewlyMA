@@ -3664,5 +3664,498 @@
     "notAvailable": "N/A",
     "latestMatching": "Dernieres demandes correspondantes",
     "viewListing": "Voir la demande"
+  },
+  "jobOffers": {
+    "analyze": {
+      "title": "Analyser une offre d'emploi",
+      "description": "Copiez le texte d'une offre ou un lien pour recevoir une analyse de marché explicable.",
+      "loginRequired": "Vous devez être connecté pour lancer et enregistrer des analyses d'offres dans ce module.",
+      "login": "Se connecter"
+    },
+    "history": {
+      "title": "Mes analyses d'offres",
+      "description": "Consultez vos analyses d'offres précédemment enregistrées.",
+      "loginRequired": {
+        "title": "Connexion requise",
+        "description": "Vous avez besoin d'un compte pour accéder aux analyses enregistrées."
+      },
+      "titlePage": "Mes analyses",
+      "subtitle": "Résultats enregistrés du module indépendant job-offers.",
+      "actions": {
+        "analyzeAnother": "Analyser une autre offre",
+        "clearSelection": "Effacer la sélection",
+        "openAnalysis": "Ouvrir l'analyse",
+        "open": "Ouvrir",
+        "compare": "Comparer",
+        "selected": "Sélectionné"
+      },
+      "empty": {
+        "title": "Aucune analyse pour le moment",
+        "description": "Lancez votre première analyse d'offre pour commencer à bâtir un historique privé.",
+        "action": "Commencer une analyse"
+      },
+      "filters": {
+        "search": "Recherche",
+        "searchPlaceholder": "Entreprise, poste, ville",
+        "verdict": "Verdict",
+        "confidence": "Confiance",
+        "allVerdicts": "Tous les verdicts",
+        "allLevels": "Tous les niveaux",
+        "noMatch": "Aucune analyse ne correspond à vos filtres actuels."
+      },
+      "verdicts": {
+        "strong_offer": "Offre forte",
+        "above_market": "Au-dessus du marché",
+        "fair_market": "Conforme au marché",
+        "below_market": "En-dessous du marché",
+        "insufficient_data": "Données insuffisantes"
+      },
+      "confidenceLevels": {
+        "high": "Élevée",
+        "medium": "Moyenne",
+        "low": "Faible"
+      },
+      "comparison": {
+        "mode": "Mode comparaison",
+        "title": "Comparaison rapide",
+        "bestScore": "Meilleur score",
+        "clearestOffer": "Offre la plus claire",
+        "highConfidenceReads": "Analyses haute confiance"
+      },
+      "item": {
+        "overallScore": "Score global",
+        "clarity": "Clarté",
+        "summary": "Résumé",
+        "unknownCity": "Ville inconnue"
+      }
+    },
+    "detail": {
+      "title": "Détail de l'analyse d'offre",
+      "description": "Consulter une analyse d'offre enregistrée."
+    },
+    "form": {
+      "journeyStep": "Étape de parcours {current} sur {total}",
+      "step": "Étape {index}",
+      "aiPowered": "Analyse assistée par IA",
+      "decodeTitle": "Décodez une offre avant de vous engager",
+      "decodeDesc": "L'IA extrait l'offre, vérifie les signaux du marché et transforme le résultat en un espace de décision privé.",
+      "source": "Source",
+      "provideOffer": "Fournir l'offre",
+      "provideOfferDesc": "Collez le texte de l'annonce ou passez à un lien public. Le résultat s'ouvrira sur sa propre page.",
+      "pasteText": "Coller le texte",
+      "useLink": "Utiliser un lien",
+      "jobOfferText": "Texte de l'offre",
+      "pastePlaceholder": "Collez ici un post LinkedIn, Rekrute, Indeed ou Emploi.ma...",
+      "pasteDesc": "Idéal pour les annonces copiées, les captures d'écran transcrites ou les posts incomplets.",
+      "publicLink": "Lien public de l'offre",
+      "linkPlaceholder": "https://www.linkedin.com/jobs/view/...",
+      "linkDesc": "Fonctionne quand la source est publique. Si l'extraction est partielle, l'IA suggère des questions de suivi.",
+      "statusInProgress": "Analyse IA en cours...",
+      "statusIdle": "Analyser avec l'IA",
+      "decisionSupport": "Aide à la décision par IA",
+      "privateAnalysis": "Analyse privée",
+      "loginToSave": "Connexion requise pour enregistrer et comparer",
+      "privateWorkspace": "Espace de travail privé",
+      "incompleteNote": "Certaines offres sont incomplètes. L'IA soulignera les questions utiles et les niveaux de confiance au lieu de surestimer les preuves.",
+      "loadingStep2": {
+        "title": "Étape 2 sur 5 : L'IA lit la source",
+        "body": "Nous extrayons le rôle, l'entreprise, le salaire et les conditions de travail."
+      },
+      "loadingStep2Alt": {
+        "title": "Étape 2 sur 5 : Structuration du contenu",
+        "body": "L'IA identifie les champs manquants, les niveaux de confiance et ce qui doit être vérifié."
+      },
+      "loadingStep3": {
+        "title": "Étape 3 sur 5 : Comparaison avec le marché",
+        "body": "Nous vérifions les références, le mapping employeur et le contexte des offres similaires."
+      },
+      "loadingStep3Alt": {
+        "title": "Étape 3 sur 5 : Préparation de l'espace de décision",
+        "body": "Votre verdict, vos prochaines actions et vos questions aux recruteurs sont en préparation."
+      },
+      "steps": {
+        "source": "Saisie de la source",
+        "extraction": "Extraction IA",
+        "generation": "Génération d'analyse",
+        "workspace": "Espace de décision",
+        "save": "Enregistrement et suivi"
+      }
+    },
+    "result": {
+      "aiJobAnalysis": "Analyse d'offre par IA",
+      "privateDecisionWorkspace": "Espace de décision privé",
+      "locationUnclear": "Localisation imprécise",
+      "decisionSupportNote": "L'IA aide à structurer l'offre avec le contexte du marché. C'est une aide, pas une vérité absolue.",
+      "savedAnalysis": "Analyse enregistrée",
+      "history": "Historique",
+      "journeyStepLabel": "Étape de parcours {current} sur {total}",
+      "resultStepLabel": "Étape de résultat {current} sur {total}",
+      "previousStep": "Étape précédente",
+      "nextStep": "Étape suivante",
+      "viewHistory": "Voir mon historique",
+      "analyzeAnother": "Analyser une autre offre",
+      "footerNote": "Gardez cette analyse privée, comparez-la et revenez-y après vos échanges avec le recruteur."
+    },
+    "workspace": {
+      "steps": {
+        "offer": {
+          "label": "Offre",
+          "title": "Lire l'offre elle-même",
+          "body": "Verdict, faits, confiance et éléments manquants."
+        },
+        "employer": {
+          "label": "Employeur",
+          "title": "Vérifier le contexte employeur",
+          "body": "Signaux, avis et données cartographiées."
+        },
+        "compare": {
+          "label": "Comparer",
+          "title": "Comparer les alternatives",
+          "body": "Voyez comment ce rôle se situe par rapport aux offres similaires."
+        },
+        "actions": {
+          "label": "Actions",
+          "title": "Décider de la suite",
+          "body": "Questions recruteur, CTAs dynamiques et suivi."
+        },
+        "details": {
+          "label": "Détails",
+          "title": "Inspecter les diagnostics",
+          "body": "Détails de la source, champs détectés et diagnostics."
+        }
+      },
+      "cockpit": {
+        "aiCockpit": "Cockpit de décision IA",
+        "visibleSalary": "Salaire visible",
+        "location": "Localisation",
+        "workModel": "Mode de travail",
+        "assessmentConfidence": "Confiance du diagnostic",
+        "primaryNextAction": "Action prioritaire",
+        "openNextStep": "Ouvrir l'étape suivante",
+        "stats": {
+          "bestSignal": "Meilleur signal",
+          "mainConcern": "Point de vigilance",
+          "whatIsMissing": "Éléments manquants",
+          "nextStep": "Meilleure suite"
+        },
+        "fallbacks": {
+          "positive": "L'offre contient quelques détails structurés plutôt que d'être totalement opaque.",
+          "concern": "Pas de 'red flag' majeur, mais plusieurs points critiques doivent être confirmés.",
+          "missing": "La plupart des champs sont visibles, mais le package et le reporting restent à vérifier."
+        }
+      },
+      "presentation": {
+        "salaryMissing": "Salaire manquant",
+        "salaryMentioned": "Salaire mentionné",
+        "salaryVisible": "Salaire visible",
+        "salaryMissingNote": "La rémunération n'était pas visible dans la source.",
+        "salaryMentionedNote": "À vérifier avant de considérer cette fourchette comme ferme.",
+        "salaryVisibleNote": "Assez visible pour être utilisé dans l'analyse actuelle."
+      },
+      "confidence": {
+        "high": {
+          "label": "Confiance élevée",
+          "note": "Le salaire et le contexte du marché sont assez solides pour un diagnostic ferme."
+        },
+        "medium": {
+          "label": "Confiance moyenne",
+          "note": "Il y a du contexte, mais les détails clés doivent encore être vérifiés avant de décider."
+        },
+        "low": {
+          "label": "Confiance faible",
+          "note": "La couverture du marché est faible, à lire comme une indication plutôt qu'un verdict.",
+          "noteNoSalary": "Le salaire est manquant, l'analyse ne peut pas donner un verdict de marché ferme."
+        }
+      },
+      "facts": {
+        "title": "Données de l'offre",
+        "fields": {
+          "company": "Entreprise",
+          "role": "Poste",
+          "city": "Ville",
+          "salary": "Salaire",
+          "contract": "Contrat",
+          "workModel": "Mode de travail",
+          "seniority": "Seniorité",
+          "benefits": "Avantages"
+        },
+        "fallbacks": {
+          "notDetected": "Non détecté",
+          "notSpecified": "Non spécifié",
+          "noneVisible": "Aucun visible"
+        }
+      },
+      "verdicts": {
+        "incomplete": {
+          "eyebrow": "Mode clarification",
+          "title": "Signal utile, verdict incomplet",
+          "titleNoSalary": "Trop incomplet pour un verdict salarial",
+          "summary": "Certaines parties de l'offre sont lisibles, mais les preuves sont insuffisantes pour une conclusion fiable.",
+          "summaryNoSalary": "Cette offre peut aider à préparer des questions, mais sans salaire, impossible de juger l'équité."
+        },
+        "strong": {
+          "eyebrow": "Signal positif",
+          "title": "Cette offre semble inhabituellement compétitive",
+          "summary": "Le signal salarial est plus fort que la moyenne, mais la décision finale dépendra du périmètre et du manager."
+        },
+        "above": {
+          "eyebrow": "Signal encourageant",
+          "title": "Cette offre semble supérieure à la base locale",
+          "summary": "L'offre montre assez d'indices favorables, mais vérifiez bien le périmètre exact et les conditions."
+        },
+        "fair": {
+          "eyebrow": "Lecture équilibrée",
+          "title": "Cette offre semble en phase avec le marché",
+          "summary": "Rien ne semble aberrant, mais cela ne suffit pas à en faire une bonne décision personnelle."
+        },
+        "weak": {
+          "eyebrow": "Signal de vigilance",
+          "title": "Cette offre semble inférieure au benchmark visible",
+          "summary": "Les preuves suggèrent une lecture moins attractive que la base du marché. Clarifiez bien le package."
+        }
+      },
+      "formatting": {
+        "notSpecified": "IA Non spécifié",
+        "notProvided": "Non fourni",
+        "noneVisible": "Aucun visible",
+        "notDetected": "Non détecté",
+        "internship": "Stage",
+        "onsite": "Présentiel",
+        "hybrid": "Hybride",
+        "remote": "Télétravail",
+        "privateAnalysis": "Analyse privée",
+        "linkSource": "Lien source",
+        "pastedText": "Texte collé",
+        "document": "Document",
+        "noBenchmark": "Pas encore de benchmark utilisable",
+        "roleCityBenchmark": "Benchmark Poste + Ville",
+        "companyBenchmark": "Benchmark Entreprise",
+        "cityBenchmark": "Benchmark Ville",
+        "strongSignal": "Signal employeur fort",
+        "mixedSignal": "Signal employeur mitigé",
+        "limitedSignal": "Signal employeur limité",
+        "unclearRole": "Rôle imprécis",
+        "unknownCompany": "Entreprise inconnue",
+        "notDisclosed": "Non divulgué"
+      },
+      "status": {
+        "needsVerification": "Vérification requise",
+        "confirmed": "Confirmé",
+        "likely": "Probable",
+        "limitedConfidence": "Confiance limitée",
+        "notDetected": "Non détecté"
+      },
+      "insights": {
+        "title": "Signaux vs Vigilances",
+        "dimensionsTitle": "Dimensions de décision",
+        "positivesLabel": "Signaux positifs",
+        "concernsLabel": "Points de vigilance",
+        "fallbacks": {
+          "positive": "L'offre a au moins assez de structure pour supporter une revue utile.",
+          "concern": "Aucun point de vigilance majeur ne ressort pour l'instant, mais les détails clés doivent être vérifiés."
+        }
+      },
+      "diagnostics": {
+        "title": "Faits vs diagnostics",
+        "trigger": "Développer les champs détectés et les détails de la source",
+        "sourceSummary": "Résumé de la source",
+        "sourceUrl": "URL source",
+        "document": "Document",
+        "hiddenSignals": "Signaux masqués",
+        "fields": {
+          "company": "Entreprise",
+          "role": "Intitulé du poste",
+          "city": "Ville",
+          "salary": "Salaire",
+          "contract": "Contrat",
+          "workModel": "Mode de travail",
+          "seniority": "Séniorité",
+          "benefits": "Avantages"
+        }
+      },
+      "comparison": {
+        "title": "Comparaison avec des offres similaires",
+        "noOffers": "Aucune offre comparable n'est encore visible pour ce poste et ce marché. Lorsque davantage d'analyses approuvées s'accumulent, cette section devient une preuve de comparaison plutôt que des suppositions.",
+        "similarityScore": "Score de similitude",
+        "openPublicContext": "Ouvrir le contexte public"
+      },
+      "gaps": {
+        "panelTitle": "Données manquantes",
+        "allVisible": "Les champs critiques pour la décision sont visibles. Utilisez les actions de suivi pour confirmer les détails du package et l'adéquation managériale.",
+        "salary": {
+          "title": "Fourchette salariale manquante",
+          "insight": "L'employeur demande votre temps avant de divulguer la base de rémunération.",
+          "action": "Demandez la fourchette salariale avant de vous engager dans plusieurs entretiens."
+        },
+        "contract": {
+          "title": "Type de contrat imprécis",
+          "insight": "Sans clarté sur le contrat, la stabilité et le cadre juridique restent flous.",
+          "action": "Demandez s'il s'agit d'un CDI, CDD, freelance ou stage."
+        },
+        "workModel": {
+          "title": "Mode de travail non précisé",
+          "insight": "Les attentes (présentiel/hybride) impactent vos coûts et votre qualité de vie.",
+          "action": "Clarifiez la présence au bureau, la flexibilité et les déplacements."
+        },
+        "benefits": {
+          "title": "Avantages flous",
+          "insight": "Une offre peut paraître correcte en salaire de base mais faible sur le package global.",
+          "action": "Demandez le package complet, pas seulement le salaire de base."
+        },
+        "seniority": {
+          "title": "Niveau de seniorité vague",
+          "insight": "Si le niveau n'est pas explicite, l'employeur peut encore être flexible sur le budget.",
+          "action": "Demandez quel niveau est budgétisé et à quoi ressemble le succès à 90 jours."
+        }
+      },
+      "dimensions": {
+        "clarity": {
+          "title": "Clarté",
+          "labels": { "clear": "Claire", "mixed": "Mitigée", "vague": "Vague" },
+          "note": "Niveau de structure concrète fournie par l'offre d'emblée."
+        },
+        "compensation": {
+          "title": "Visibilité rémunération",
+          "labels": { "assessable": "Évaluable", "partial": "Partielle", "withheld": "Retenue" },
+          "note": "Le salaire est visible, mais le jugement dépend de la force du benchmark.",
+          "noteHidden": "Aucun salaire n'a été divulgué, la qualité de paye ne peut être présumée."
+        },
+        "conditions": {
+          "title": "Visibilité conditions",
+          "labels": { "defined": "Bien définie", "partly": "Partiellement visible", "unclear": "Floue" },
+          "note": "Contrat, mode de travail, ville et avantages façonnent la réalité quotidienne."
+        },
+        "value": {
+          "title": "Valeur carrière",
+          "labels": { "strong": "Potentiellement forte", "validation": "À valider", "thin": "Peu de preuves" },
+          "note": "Indicateur pour la qualité du rôle, la profondeur du package et la croissance."
+        },
+        "benchmark": {
+          "title": "Confiance benchmark",
+          "note": "Force de la base de données utilisée pour la comparaison."
+        },
+        "risk": {
+          "title": "Niveau de risque",
+          "labels": { "high": "Élevé", "moderate": "Modéré", "low": "Faible" },
+          "note": "Un niveau plus élevé signifie plus d'ambiguïté ou de risques de négociation."
+        }
+      },
+      "actions": {
+        "nextActionsTitle": "Prochaines actions dynamiques",
+        "primaryAction": "Action prioritaire",
+        "nextAction": "Action suivante",
+        "open": "Ouvrir",
+        "recruiterQuestions": { "title": "Questions à poser au recruteur" },
+        "interviewTopics": { "title": "Sujets probables d'entretien" },
+        "actionBadge": "Action",
+        "ask_salary": {
+          "title": "Demander le salaire avant de continuer",
+          "body": "Les détails sont trop flous pour justifier un processus long pour le moment."
+        },
+        "review_employer": {
+          "title": "Vérifier l'employeur avant de postuler",
+          "body": "L'employeur est identifié, mais les avis sont mitigés : vérifiez le contexte."
+        },
+        "compare_offers": {
+          "title": "Comparer avec des offres similaires",
+          "body": "Vous avez assez de données pour comparer ce poste avec des alternatives proches."
+        },
+        "check_benchmarks": {
+          "title": "Vérifier les benchmarks salariaux",
+          "body": "Utilisez les guides salaire pour tester cette offre par rapport au marché."
+        },
+        "view_company": {
+          "title": "Voir les avis sur l'entreprise",
+          "body": "L'offre est bien mappée pour intégrer le contexte des avis et données entreprises."
+        },
+        "view_company_rail": {
+          "title": "Voir les avis sur l'entreprise",
+          "body": "Utilisez les retours employés pour éclairer l'offre sans distordre le verdict."
+        },
+        "open_company_page": {
+          "title": "Ouvrir la page entreprise",
+          "body": "Consultez le profil public, les détails et le contexte global de recrutement."
+        },
+        "open_company_salary": {
+          "title": "Vérifier les salaires entreprise",
+          "body": "Voyez si cette offre s'inscrit dans les schémas habituels de l'employeur."
+        },
+        "use_questions": {
+          "title": "Utiliser les questions au recruteur",
+          "body": "Transformez l'analyse en une conversation plus précise avant de vous engager."
+        }
+      },
+      "signals": {
+        "positives": {
+          "salaryDisclosed": "Le salaire est divulgué, ce qui évite de deviner les conditions de base.",
+          "contractStated": "Le type de contrat est indiqué ({type}).",
+          "workModelStated": "Le mode de travail est explicitement indiqué ({model}).",
+          "cityStated": "L'offre est liée à un marché spécifique : {city}."
+        },
+        "concerns": {
+          "salaryMissing": "Le salaire est manquant, l'offre ne peut être jugée comme équitable ou forte.",
+          "wideRange": "La fourchette est large, ce qui peut masquer un décalage de niveau.",
+          "missingLocation": "La localisation est floue, rendant l'arbitrage trajet/marché plus difficile.",
+          "missingContract": "Le type de contrat manque, la stabilité de l'emploi est incertaine.",
+          "missingWorkModel": "Le mode de travail n'est pas précisé, souvent un point de friction tardif.",
+          "missingSeniority": "La seniorité est floue, pouvant masquer les attentes réelles.",
+          "lowConfidence": "La confiance benchmark est faible, lecture à titre indicatif uniquement.",
+          "lowCompanyConfidence": "L'identification de l'entreprise nécessite une confirmation manuelle.",
+          "lowTitleConfidence": "Le titre du poste est peut-être imprécis, clarifiez le périmètre.",
+          "noBenefits": "Les avantages ne sont pas visibles, la qualité globale du package est dure à juger."
+        },
+        "hidden": {
+          "noSalaryLeverage": "L'absence de salaire déplace souvent le levier vers les étapes tardives.",
+          "wideRangeLeverage": "Une fourchette large signifie souvent un niveau de rôle encore flou.",
+          "vagueConditions": "Quand les conditions de base sont floues, le brief de poste peut l'être aussi.",
+          "verifyCompany": "L'entreprise n'est pas clairement citée, vérifiez l'identité du recruteur.",
+          "clarificationOnly": "Cette lecture est plus utile pour clarifier que pour juger définitivement."
+        },
+        "reviewAware": {
+          "eyebrow": "Interprétation contextuelle (avis)",
+          "mixedSentiment": {
+            "title": "Salaire flou et sentiment employé mitigé",
+            "body": "L'offre manque de détails et le signal employeur n'est pas assez fort pour compenser."
+          },
+          "weakReputation": {
+            "title": "L'offre semble correcte, mais la réputation employeur est faible",
+            "body": "L'offre est utilisable, mais le sentiment public est assez faible pour influencer votre choix."
+          },
+          "positiveReinforcement": {
+            "title": "Les avis employeurs confirment une lecture positive",
+            "body": "Le signal de l'offre et le contexte employeur pointent dans la même direction."
+          }
+        }
+      },
+      "questions": {
+        "cityRelocation": "Où est basé le poste, et des déplacements ou un déménagement sont-ils prévus ?",
+        "packageStructure": "Comment le package est-il structuré entre fixe, variable, bonus et avantages ?",
+        "reportingTeam": "À qui ce poste rapporte-t-il, et comment l'équipe est-elle structurée ?",
+        "performanceSuccess": "À quoi ressemblerait une performance solide au cours des 3 à 6 premiers mois ?"
+      },
+      "topics": {
+        "roleScope": "Périmètre du rôle, responsabilités et attentes trimestrielles",
+        "teamStructure": "Structure d'équipe, ligne hiérarchique et rythme de décision",
+        "compensationVague": "Attentes de rémunération et cadre global du package",
+        "packageDetails": "Détails du package, part variable et critères d'évaluation",
+        "workModelVague": "Mode de travail, rythme au bureau et flexibilité",
+        "remoteStyle": "Style de collaboration à distance, attentes de disponibilité et outils",
+        "hybridRhythm": "Rythme hybride, attentes présentiel et coordination d'équipe",
+        "onsiteCommute": "Attentes présentiel, praticité du trajet et accès au manager",
+        "growthPath": "Perspectives d'évolution, logique de promotion et opportunités"
+      },
+      "employerSignal": {
+        "strong": "Ce employeur a un signal public relativement fort (avis, vérification).",
+        "mixed": "Cet employeur a un certain contexte utilisable, mais le signal n'est pas définitif.",
+        "limited": "Le contexte employeur est encore léger, à traiter comme une info secondaire."
+      },
+      "nextStep": {
+        "askSalary": "Demandez la fourchette salariale avant d'investir plus de temps.",
+        "lowConfidence": "Utilisez ceci comme outil de préparation, pas comme décision finale.",
+        "belowMarket": "Ne continuez que si le périmètre du rôle compense le signal de paye faible.",
+        "strongOffer": "Vaut une discussion approfondie, mais vérifiez la qualité du manager.",
+        "baseline": "Traitez ceci comme une base décente et testez les conditions manquantes."
+      }
+    }
   }
 }

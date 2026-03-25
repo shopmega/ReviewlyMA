@@ -1,0 +1,30 @@
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (130kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+[login_action] {
+  error: 'Invalid login credentials',
+  errorCode: 'invalid_credentials',
+  errorDetails: undefined,
+  timestamp: '2026-03-24T19:53:21.442Z',
+  email: 'zouhairbenseddik@gmail.com'
+}
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+[login_action] {
+  error: 'Invalid login credentials',
+  errorCode: 'invalid_credentials',
+  errorDetails: undefined,
+  timestamp: '2026-03-24T19:54:14.799Z',
+  email: 'zouhairbenseddik@gmail.com'
+}
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+[signup_action] {
+  error: 'Email address "codex_1774382184483@example.com" is invalid',
+  errorCode: 'email_address_invalid',
+  errorDetails: undefined,
+  timestamp: '2026-03-24T19:56:27.227Z',
+  email: 'codex_1774382184483@example.com'
+}
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ ⨯ [Error: aborted]
+ ⨯ [Error: aborted] { code: 'ECONNRESET', digest: '3419021255' }
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+ ⨯ [Error: aborted]

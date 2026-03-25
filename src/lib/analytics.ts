@@ -27,7 +27,9 @@ export type AnalyticsEvent =
   | 'job_offer_saved'
   | 'job_offer_compared'
   | 'job_offer_history_opened'
-  | 'job_offer_business_insight_viewed';
+  | 'job_offer_business_insight_viewed'
+  | 'job_offer_outcome'
+  | 'job_offer_shared';
 
 export interface AnalyticsData {
   event: AnalyticsEvent;

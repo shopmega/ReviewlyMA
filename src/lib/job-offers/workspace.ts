@@ -1,6 +1,7 @@
 import type {
   JobOfferAnalysisRecord,
   JobOfferContractType,
+  JobOfferDecisionTier,
   JobOfferDecisionWorkspace,
   JobOfferDecisionWorkspaceStep,
   JobOfferDynamicAction,
@@ -8,6 +9,7 @@ import type {
   JobOfferExtractionConfidence,
   JobOfferExtractionDiagnostics,
   JobOfferExtractionResult,
+  JobOfferNegotiationScript,
   JobOfferPayPeriod,
   JobOfferRecord,
   JobOfferReviewAwareSignal,
@@ -25,33 +27,33 @@ type StrategicGap = JobOfferDecisionWorkspace['missingInformation'][number];
 export const RESULT_STEPS: JobOfferDecisionWorkspaceStep[] = [
   {
     key: 'offer',
-    label: 'Offer',
-    title: 'Read the offer itself',
-    body: 'Verdict, facts, confidence, and what is still missing.',
+    label: 'jobOffers.workspace.steps.offer.label',
+    title: 'jobOffers.workspace.steps.offer.title',
+    body: 'jobOffers.workspace.steps.offer.body',
   },
   {
     key: 'employer',
-    label: 'Employer',
-    title: 'Check employer context',
-    body: 'Business signal, review context, and mapped employer data.',
+    label: 'jobOffers.workspace.steps.employer.label',
+    title: 'jobOffers.workspace.steps.employer.title',
+    body: 'jobOffers.workspace.steps.employer.body',
   },
   {
     key: 'compare',
-    label: 'Compare',
-    title: 'Compare nearby alternatives',
-    body: 'See how this role stacks up against similar analyzed offers.',
+    label: 'jobOffers.workspace.steps.compare.label',
+    title: 'jobOffers.workspace.steps.compare.title',
+    body: 'jobOffers.workspace.steps.compare.body',
   },
   {
     key: 'actions',
-    label: 'Next actions',
-    title: 'Decide what to do next',
-    body: 'Recruiter questions, dynamic CTAs, and follow-up actions.',
+    label: 'jobOffers.workspace.steps.actions.label',
+    title: 'jobOffers.workspace.steps.actions.title',
+    body: 'jobOffers.workspace.steps.actions.body',
   },
   {
     key: 'details',
-    label: 'Details',
-    title: 'Inspect diagnostics',
-    body: 'Source details, detected fields, and confidence diagnostics.',
+    label: 'jobOffers.workspace.steps.details.label',
+    title: 'jobOffers.workspace.steps.details.title',
+    body: 'jobOffers.workspace.steps.details.body',
   },
 ];
 
@@ -69,39 +71,40 @@ export function formatPayPeriod(value: JobOfferPayPeriod) {
   return value === 'yearly' ? 'year' : 'month';
 }
 
-export function formatContractType(value: JobOfferContractType | string | null | undefined) {
-  if (!value) return 'Not specified';
-  if (value === 'cdi' || value === 'cdd') return value.toUpperCase();
-  if (value === 'internship') return 'Internship';
-  return formatWords(value);
+export function formatContractType(type?: string | null): string {
+  if (!type) return 'jobOffers.workspace.formatting.notSpecified';
+  if (type.toLowerCase() === 'internship') return 'jobOffers.workspace.formatting.internship';
+  return type;
 }
 
-export function formatWorkModel(value: JobOfferWorkModel | string | null | undefined) {
-  if (!value) return 'Not specified';
-  if (value === 'onsite') return 'On-site';
-  return formatWords(value);
+export function formatWorkModel(model?: string | null): string {
+  if (!model) return 'jobOffers.workspace.formatting.notSpecified';
+  if (model.toLowerCase() === 'onsite') return 'jobOffers.workspace.formatting.onsite';
+  if (model.toLowerCase() === 'hybrid') return 'jobOffers.workspace.formatting.hybrid';
+  if (model.toLowerCase() === 'remote') return 'jobOffers.workspace.formatting.remote';
+  return model;
 }
 
-export function formatSourceType(value: string | null | undefined) {
-  if (!value) return 'Private analysis';
-  if (value === 'url') return 'Link source';
-  if (value === 'paste') return 'Pasted text';
-  if (value === 'document') return 'Document';
-  return formatWords(value);
+export function formatSourceType(sourceType?: string | null): string {
+  if (!sourceType) return 'jobOffers.workspace.formatting.notSpecified';
+  if (sourceType === 'url') return 'jobOffers.workspace.formatting.linkSource';
+  if (sourceType === 'text') return 'jobOffers.workspace.formatting.pastedText';
+  if (sourceType === 'document') return 'jobOffers.workspace.formatting.document';
+  return sourceType || '';
 }
 
-export function formatBenchmarkSource(value: string | null | undefined) {
-  if (!value || value === 'none') return 'No usable benchmark yet';
-  if (value === 'role_city') return 'Role + city benchmark';
-  if (value === 'company') return 'Company benchmark';
-  if (value === 'city') return 'City benchmark';
-  return formatWords(value);
+export function formatBenchmarkSource(source?: string | null): string {
+  if (!source) return 'jobOffers.workspace.formatting.noBenchmark';
+  if (source === 'role_city') return 'jobOffers.workspace.formatting.roleCityBenchmark';
+  if (source === 'company') return 'jobOffers.workspace.formatting.companyBenchmark';
+  if (source === 'city') return 'jobOffers.workspace.formatting.cityBenchmark';
+  return source;
 }
 
-export function formatEmployerSignal(signal: JobOfferEmployerContext['signal_label']) {
-  if (signal === 'strong') return 'Strong employer signal';
-  if (signal === 'mixed') return 'Mixed employer signal';
-  return 'Limited employer signal';
+export function formatEmployerSignal(signal?: string): string {
+  if (signal === 'strong') return 'jobOffers.workspace.formatting.strongSignal';
+  if (signal === 'mixed') return 'jobOffers.workspace.formatting.mixedSignal';
+  return 'jobOffers.workspace.formatting.limitedSignal';
 }
 
 export function buildEmployerSignalContext(options: {
@@ -116,20 +119,20 @@ export function buildEmployerSignalContext(options: {
   if (reviewCount >= 25 && overallRating != null && overallRating >= 4 && (isVerified || salarySubmissionCount >= 5)) {
     return {
       signal_label: 'strong',
-      signal_summary: 'This employer has a relatively strong public signal based on reviews, verification, and salary context.',
+      signal_summary: 'jobOffers.workspace.employerSignal.strong',
     };
   }
 
   if (reviewCount >= 8 || salarySubmissionCount >= 3 || isVerified) {
     return {
       signal_label: 'mixed',
-      signal_summary: 'This employer has some usable public context, but the signal is not strong enough to treat as definitive.',
+      signal_summary: 'jobOffers.workspace.employerSignal.mixed',
     };
   }
 
   return {
     signal_label: 'limited',
-    signal_summary: 'Public employer context is still thin, so this should be treated as additional context rather than evidence.',
+    signal_summary: 'jobOffers.workspace.employerSignal.limited',
   };
 }
 
@@ -139,15 +142,15 @@ export function buildSimilarOfferLabel(options: {
   salaryMax?: number | null;
 }): string {
   if (options.salaryMin == null && options.salaryMax == null) {
-    return 'Limited salary visibility';
+    return 'jobOffers.workspace.formatting.limitedSalaryVisibility';
   }
   if (options.overallOfferScore >= 80) {
-    return 'Stronger market signal';
+    return 'jobOffers.workspace.formatting.strongerMarketSignal';
   }
   if (options.overallOfferScore >= 65) {
-    return 'Clearer than average';
+    return 'jobOffers.workspace.formatting.clearerThanAverage';
   }
-  return 'Comparable nearby option';
+  return 'jobOffers.workspace.formatting.comparableNearbyOption';
 }
 
 export function calculateSimilarOfferSimilarityScore(options: {
@@ -180,12 +183,12 @@ export function buildOfferSnapshot(extractedOffer?: JobOfferExtractionResult, of
     extractedOffer?.salaryMax ?? offer?.salary_max ?? null
   );
 
-  const jobTitle = extractedOffer?.jobTitle || offer?.job_title || 'Unclear role';
+  const jobTitle = extractedOffer?.jobTitle || offer?.job_title || 'jobOffers.workspace.formatting.unclearRole';
   const city = extractedOffer?.city || offer?.city || null;
   const citySlug = offer?.city_slug || (city ? slugify(city) : null);
 
   return {
-    companyName: extractedOffer?.companyName || offer?.company_name || 'Unknown company',
+    companyName: extractedOffer?.companyName || offer?.company_name || 'jobOffers.workspace.formatting.unknownCompany',
     jobTitle,
     roleSlug: offer?.job_title_normalized || slugify(jobTitle),
     city,
@@ -206,7 +209,7 @@ export function buildOfferSnapshot(extractedOffer?: JobOfferExtractionResult, of
 
 export function formatSalary(snapshot: Pick<JobOfferWorkspaceSnapshot, 'salaryMin' | 'salaryMax' | 'payPeriod'>) {
   const { salaryMin, salaryMax, payPeriod } = snapshot;
-  if (salaryMin == null && salaryMax == null) return 'Not disclosed';
+  if (salaryMin == null && salaryMax == null) return 'jobOffers.workspace.formatting.notDisclosed';
   if (salaryMin != null && salaryMax != null) {
     return `${formatMoney(salaryMin)} - ${formatMoney(salaryMax)} MAD / ${formatPayPeriod(payPeriod)}`;
   }
@@ -214,16 +217,16 @@ export function formatSalary(snapshot: Pick<JobOfferWorkspaceSnapshot, 'salaryMi
 }
 
 export function getFieldConfidenceLabel(confidence?: JobOfferExtractionConfidence) {
-  if (!confidence) return 'saved';
+  if (!confidence) return 'jobOffers.workspace.formatting.saved';
   return confidence;
 }
 
 export function getFieldStatusLabel(confidence?: JobOfferExtractionConfidence) {
-  if (!confidence) return 'Needs verification';
-  if (confidence === 'high') return 'Confirmed';
-  if (confidence === 'medium') return 'Likely';
-  if (confidence === 'low') return 'Limited confidence';
-  return 'Not detected';
+  if (!confidence) return 'jobOffers.workspace.status.needsVerification';
+  if (confidence === 'high') return 'jobOffers.workspace.status.confirmed';
+  if (confidence === 'medium') return 'jobOffers.workspace.status.likely';
+  if (confidence === 'low') return 'jobOffers.workspace.status.limitedConfidence';
+  return 'jobOffers.workspace.status.notDetected';
 }
 
 function createUnavailableEmployerContext(snapshot: JobOfferWorkspaceSnapshot, mappingConfidence: JobOfferEmployerContext['mapping_confidence']): JobOfferEmployerContext {
@@ -241,7 +244,7 @@ function createUnavailableEmployerContext(snapshot: JobOfferWorkspaceSnapshot, m
     mapping_confidence: mappingConfidence,
     availability: 'unavailable',
     signal_label: 'limited',
-    signal_summary: 'Employer context is unavailable because company matching is not reliable enough to support public interpretation.',
+    signal_summary: 'jobOffers.workspace.employerSignal.limited',
   };
 }
 
@@ -256,26 +259,26 @@ export function getSalaryPresentation(
 
   if (!hasSalary) {
     return {
-      label: 'Salary missing',
-      value: 'Not disclosed',
-      note: 'Compensation was not visible in the source.',
+      label: 'jobOffers.workspace.presentation.salaryMissing',
+      value: 'jobOffers.workspace.formatting.notDisclosed',
+      note: 'jobOffers.workspace.presentation.salaryMissingNote',
       tone: 'warning' as const,
     };
   }
 
   if (!highConfidence && diagnostics) {
     return {
-      label: 'Salary mentioned',
+      label: 'jobOffers.workspace.presentation.salaryMentioned',
       value: formatSalary(snapshot),
-      note: 'Needs verification before you treat this range as firm.',
+      note: 'jobOffers.workspace.presentation.salaryMentionedNote',
       tone: 'warning' as const,
     };
   }
 
   return {
-    label: 'Salary visible',
+    label: 'jobOffers.workspace.presentation.salaryVisible',
     value: formatSalary(snapshot),
-    note: 'Visible enough to use in the current market read.',
+    note: 'jobOffers.workspace.presentation.salaryVisibleNote',
     tone: 'positive' as const,
   };
 }
@@ -286,25 +289,25 @@ function getConfidenceMeta(analysis: AnalysisView, snapshot: JobOfferWorkspaceSn
   if (analysis.confidence_level === 'high') {
     return {
       score: 86,
-      label: 'High confidence',
-      note: 'Salary and benchmark context are both strong enough to support a firmer read.',
+      label: 'jobOffers.workspace.confidence.high.label',
+      note: 'jobOffers.workspace.confidence.high.note',
     };
   }
 
   if (analysis.confidence_level === 'medium') {
     return {
       score: 60,
-      label: 'Medium confidence',
-      note: 'There is some market context here, but key details should still be verified before deciding.',
+      label: 'jobOffers.workspace.confidence.medium.label',
+      note: 'jobOffers.workspace.confidence.medium.note',
     };
   }
 
   return {
     score: hasSalary ? 28 : 18,
-    label: 'Low confidence',
+    label: 'jobOffers.workspace.confidence.low.label',
     note: hasSalary
-      ? 'Benchmark coverage is thin, so this should be read as guidance rather than a verdict.'
-      : 'Salary is missing, so the analysis should not make a strong market claim here.',
+      ? 'jobOffers.workspace.confidence.low.note'
+      : 'jobOffers.workspace.confidence.low.noteNoSalary',
   };
 }
 
@@ -314,46 +317,46 @@ function getVerdictMeta(analysis: AnalysisView, snapshot: JobOfferWorkspaceSnaps
 
   if (!canAssessCompensation || analysis.market_position_label === 'insufficient_data') {
     return {
-      eyebrow: 'Clarification mode',
-      title: hasSalary ? 'Useful signal, incomplete verdict' : 'Too incomplete for a pay verdict',
+      eyebrow: 'jobOffers.workspace.verdicts.incomplete.eyebrow',
+      title: hasSalary ? 'jobOffers.workspace.verdicts.incomplete.title' : 'jobOffers.workspace.verdicts.incomplete.titleNoSalary',
       summary: hasSalary
-        ? 'Some parts of the offer are readable, but the evidence is not strong enough for a reliable market conclusion yet.'
-        : 'This offer can still help you prepare smarter questions, but salary is missing so it should not be treated as fair, strong, or weak pay.',
+        ? 'jobOffers.workspace.verdicts.incomplete.summary'
+        : 'jobOffers.workspace.verdicts.incomplete.summaryNoSalary',
       tone: 'warning' as const,
     };
   }
 
   if (analysis.market_position_label === 'strong_offer') {
     return {
-      eyebrow: 'Positive signal',
-      title: 'This offer reads as unusually competitive',
-      summary: 'The pay signal and structure both look stronger than a typical vague listing, but the final decision should still depend on scope, manager quality, and growth path.',
+      eyebrow: 'jobOffers.workspace.verdicts.strong.eyebrow',
+      title: 'jobOffers.workspace.verdicts.strong.title',
+      summary: 'jobOffers.workspace.verdicts.strong.summary',
       tone: 'positive' as const,
     };
   }
 
   if (analysis.market_position_label === 'above_market') {
     return {
-      eyebrow: 'Encouraging signal',
-      title: 'This offer looks better than the local baseline',
-      summary: 'The offer shows enough evidence to suggest a favorable read, but you should still verify the exact scope, reporting line, and package conditions.',
+      eyebrow: 'jobOffers.workspace.verdicts.above.eyebrow',
+      title: 'jobOffers.workspace.verdicts.above.title',
+      summary: 'jobOffers.workspace.verdicts.above.summary',
       tone: 'neutral' as const,
     };
   }
 
   if (analysis.market_position_label === 'fair_market') {
     return {
-      eyebrow: 'Balanced read',
-      title: 'This offer looks roughly in line with the market',
-      summary: 'Nothing here looks dramatically off-market, but that does not automatically make it a good personal decision. Role scope and conditions still matter.',
+      eyebrow: 'jobOffers.workspace.verdicts.fair.eyebrow',
+      title: 'jobOffers.workspace.verdicts.fair.title',
+      summary: 'jobOffers.workspace.verdicts.fair.summary',
       tone: 'neutral' as const,
     };
   }
 
   return {
-    eyebrow: 'Caution signal',
-    title: 'This offer looks weaker than the visible benchmark',
-    summary: 'The available evidence suggests a less attractive read than the market baseline. Clarify the package and role scope before spending too much time in the process.',
+    eyebrow: 'jobOffers.workspace.verdicts.weak.eyebrow',
+    title: 'jobOffers.workspace.verdicts.weak.title',
+    summary: 'jobOffers.workspace.verdicts.weak.summary',
     tone: 'caution' as const,
   };
 }
@@ -362,16 +365,16 @@ function getPositiveSignals(analysis: AnalysisView, snapshot: JobOfferWorkspaceS
   const positives = [...analysis.strengths];
 
   if (hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
-    positives.push('Salary is disclosed, which saves you from guessing basic compensation terms.');
+    positives.push('jobOffers.workspace.signals.positives.salaryDisclosed');
   }
   if (snapshot.contractType) {
-    positives.push(`The contract type is stated as ${formatContractType(snapshot.contractType)}.`);
+    positives.push('jobOffers.workspace.signals.positives.contractStated');
   }
   if (snapshot.workModel) {
-    positives.push(`The work model is explicitly stated as ${formatWorkModel(snapshot.workModel)}.`);
+    positives.push('jobOffers.workspace.signals.positives.workModelStated');
   }
   if (snapshot.city) {
-    positives.push(`The offer is tied to a specific market: ${snapshot.city}.`);
+    positives.push('jobOffers.workspace.signals.positives.cityStated');
   }
 
   return Array.from(new Set(positives)).slice(0, 4);
@@ -385,27 +388,27 @@ function getConcernSignals(
   const concerns: string[] = [];
 
   for (const flag of analysis.risk_flags) {
-    if (flag === 'missing_salary') concerns.push('Salary is missing, so the offer should not be framed as fair or strong pay.');
-    if (flag === 'wide_salary_range') concerns.push('The salary range is wide, which can hide level mismatch or negotiation asymmetry.');
-    if (flag === 'missing_location') concerns.push('Location is unclear, which makes commute, market fit, and cost-of-living tradeoffs harder to judge.');
-    if (flag === 'missing_contract_type') concerns.push('Contract type is missing, so employment stability is still unclear.');
-    if (flag === 'missing_work_model') concerns.push('Work model is not stated, which usually becomes a late-stage friction point.');
-    if (flag === 'missing_seniority') concerns.push('Seniority is unclear, which can mask both workload and salary expectations.');
-    if (flag === 'low_benchmark_confidence') concerns.push('Benchmark confidence is low, so this read should be used as directional guidance only.');
+    if (flag === 'missing_salary') concerns.push('jobOffers.workspace.signals.concerns.salaryMissing');
+    if (flag === 'wide_salary_range') concerns.push('jobOffers.workspace.signals.concerns.wideRange');
+    if (flag === 'missing_location') concerns.push('jobOffers.workspace.signals.concerns.missingLocation');
+    if (flag === 'missing_contract_type') concerns.push('jobOffers.workspace.signals.concerns.missingContract');
+    if (flag === 'missing_work_model') concerns.push('jobOffers.workspace.signals.concerns.missingWorkModel');
+    if (flag === 'missing_seniority') concerns.push('jobOffers.workspace.signals.concerns.missingSeniority');
+    if (flag === 'low_benchmark_confidence') concerns.push('jobOffers.workspace.signals.concerns.lowConfidence');
   }
 
   const companyConfidence = diagnostics?.fieldDiagnostics.companyName?.confidence;
   if (companyConfidence === 'low' || companyConfidence === 'none') {
-    concerns.push('Company identification may need manual confirmation before you invest more time.');
+    concerns.push('jobOffers.workspace.signals.concerns.lowCompanyConfidence');
   }
 
   const titleConfidence = diagnostics?.fieldDiagnostics.jobTitle?.confidence;
   if (titleConfidence === 'low' || titleConfidence === 'none') {
-    concerns.push('The role title may be loosely extracted, so scope should be clarified early.');
+    concerns.push('jobOffers.workspace.signals.concerns.lowTitleConfidence');
   }
 
   if (!snapshot.benefits.length) {
-    concerns.push('Benefits are not visible, so total package quality is still hard to judge.');
+    concerns.push('jobOffers.workspace.signals.concerns.noBenefits');
   }
 
   return Array.from(new Set(concerns)).slice(0, 4);
@@ -416,37 +419,37 @@ function getStrategicGaps(snapshot: JobOfferWorkspaceSnapshot): StrategicGap[] {
 
   if (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
     gaps.push({
-      title: 'Salary band missing',
-      insight: 'The employer is asking for your time before disclosing the most basic compensation anchor.',
-      action: 'Ask for the salary band before committing to multiple interview rounds.',
+      title: 'jobOffers.workspace.gaps.salary.title',
+      insight: 'jobOffers.workspace.gaps.salary.insight',
+      action: 'jobOffers.workspace.gaps.salary.action',
     });
   }
   if (!snapshot.contractType) {
     gaps.push({
-      title: 'Contract type unclear',
-      insight: 'Without contract clarity, stability and legal framing are still open questions.',
-      action: 'Ask whether this is CDI, CDD, freelance, internship, or temporary hiring.',
+      title: 'jobOffers.workspace.gaps.contract.title',
+      insight: 'jobOffers.workspace.gaps.contract.insight',
+      action: 'jobOffers.workspace.gaps.contract.action',
     });
   }
   if (!snapshot.workModel) {
     gaps.push({
-      title: 'Work model not stated',
-      insight: 'On-site, hybrid, and remote expectations shape commute cost and day-to-day quality of life.',
-      action: 'Clarify office presence, flexibility, and any travel expectations.',
+      title: 'jobOffers.workspace.gaps.workModel.title',
+      insight: 'jobOffers.workspace.gaps.workModel.insight',
+      action: 'jobOffers.workspace.gaps.workModel.action',
     });
   }
   if (!snapshot.benefits.length) {
     gaps.push({
-      title: 'Benefits package unclear',
-      insight: 'An offer can look fine on base salary while still being weak on transport, insurance, or variable pay.',
-      action: 'Ask for the full package, not just base salary.',
+      title: 'jobOffers.workspace.gaps.benefits.title',
+      insight: 'jobOffers.workspace.gaps.benefits.insight',
+      action: 'jobOffers.workspace.gaps.benefits.action',
     });
   }
   if (!snapshot.seniorityLevel) {
     gaps.push({
-      title: 'Leveling is vague',
-      insight: 'If level is not explicit, the employer may still be flexible on expectations or budget.',
-      action: 'Ask what level they have budgeted and what success looks like in the first 90 days.',
+      title: 'jobOffers.workspace.gaps.seniority.title',
+      insight: 'jobOffers.workspace.gaps.seniority.insight',
+      action: 'jobOffers.workspace.gaps.seniority.action',
     });
   }
 
@@ -457,42 +460,45 @@ function getRecruiterQuestions(snapshot: JobOfferWorkspaceSnapshot, gaps: Strate
   const questions = gaps.map((gap) => gap.action.replace(/\.$/, '?'));
 
   if (!snapshot.city) {
-    questions.push('Where is the role based, and is relocation or regular travel expected?');
+    questions.push('jobOffers.workspace.questions.cityRelocation');
   }
   if (hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
-    questions.push('How is the package structured between fixed pay, variable pay, bonuses, and benefits?');
+    questions.push('jobOffers.workspace.questions.packageStructure');
   }
 
-  questions.push('Who would this role report to, and how is the team currently structured?');
-  questions.push('What would strong performance look like in the first 3 to 6 months?');
+  questions.push('jobOffers.workspace.questions.reportingTeam');
+  questions.push('jobOffers.workspace.questions.performanceSuccess');
 
   return Array.from(new Set(questions)).slice(0, 5);
 }
 
 function getInterviewTopics(snapshot: JobOfferWorkspaceSnapshot, analysis: AnalysisView) {
   const topics = [
-    'Role scope, ownership, and first-quarter expectations',
-    'Team structure, reporting line, and decision-making cadence',
+    'jobOffers.workspace.topics.roleScope',
+    'jobOffers.workspace.topics.teamStructure',
   ];
 
   if (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
-    topics.push('Compensation expectations and how the package is framed');
-  } else {
-    topics.push('Package details, variable pay, and evaluation criteria');
+    topics.push('jobOffers.workspace.topics.compensationVague');
+  }
+ else {
+    topics.push('jobOffers.workspace.topics.packageDetails');
   }
 
   if (!snapshot.workModel) {
-    topics.push('Work model, office rhythm, and schedule flexibility');
-  } else if (snapshot.workModel === 'remote') {
-    topics.push('Remote collaboration style, availability expectations, and tooling');
+    topics.push('jobOffers.workspace.topics.workModelVague');
+  }
+ else if (snapshot.workModel === 'remote') {
+    topics.push('jobOffers.workspace.topics.remoteStyle');
   } else if (snapshot.workModel === 'hybrid') {
-    topics.push('Hybrid rhythm, on-site expectations, and cross-team coordination');
-  } else {
-    topics.push('On-site expectations, commute practicality, and manager access');
+    topics.push('jobOffers.workspace.topics.hybridRhythm');
+  }
+ else {
+    topics.push('jobOffers.workspace.topics.onsiteCommute');
   }
 
   if (analysis.quality_score >= 75) {
-    topics.push('Growth path, promotion logic, and stretch opportunities');
+    topics.push('jobOffers.workspace.topics.growthPath');
   }
 
   return topics.slice(0, 4);
@@ -506,19 +512,19 @@ function getHiddenSignals(
   const signals: string[] = [];
 
   if (!hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax)) {
-    signals.push('Omitting salary usually shifts leverage toward later interview stages.');
+    signals.push('jobOffers.workspace.signals.hidden.noSalaryLeverage');
   }
   if (analysis.risk_flags.includes('wide_salary_range')) {
-    signals.push('A wide salary range often means the role level is still loose or budget is not tightly set.');
+    signals.push('jobOffers.workspace.signals.hidden.wideRangeLeverage');
   }
   if (!snapshot.contractType && !snapshot.workModel) {
-    signals.push('When basic work conditions are vague, the hiring brief itself may still be under-defined.');
+    signals.push('jobOffers.workspace.signals.hidden.vagueConditions');
   }
   if (diagnostics?.fieldDiagnostics.companyName?.confidence === 'low') {
-    signals.push('The company name may not be cleanly stated in the source, so verify who is really hiring.');
+    signals.push('jobOffers.workspace.signals.hidden.verifyCompany');
   }
   if (analysis.confidence_level === 'low') {
-    signals.push('This read is more useful for clarification than for final judgment.');
+    signals.push('jobOffers.workspace.signals.hidden.clarificationOnly');
   }
 
   return Array.from(new Set(signals)).slice(0, 4);
@@ -558,42 +564,42 @@ function buildDimensions(snapshot: JobOfferWorkspaceSnapshot, analysis: Analysis
 
   return [
     {
-      title: 'Clarity',
+      title: 'jobOffers.workspace.dimensions.clarity.title',
       value: Math.round(analysis.transparency_score),
-      label: analysis.transparency_score >= 75 ? 'Clear' : analysis.transparency_score >= 50 ? 'Mixed' : 'Vague',
-      note: 'How much concrete structure the offer gives you up front.',
+      label: analysis.transparency_score >= 75 ? 'jobOffers.workspace.dimensions.clarity.labels.clear' : analysis.transparency_score >= 50 ? 'jobOffers.workspace.dimensions.clarity.labels.mixed' : 'jobOffers.workspace.dimensions.clarity.labels.vague',
+      note: 'jobOffers.workspace.dimensions.clarity.note',
     },
     {
-      title: 'Compensation visibility',
+      title: 'jobOffers.workspace.dimensions.compensation.title',
       value: compensationVisibility,
-      label: compensationVisibility >= 75 ? 'Assessable' : compensationVisibility >= 50 ? 'Partial' : 'Withheld',
+      label: compensationVisibility >= 75 ? 'jobOffers.workspace.dimensions.compensation.labels.assessable' : compensationVisibility >= 50 ? 'jobOffers.workspace.dimensions.compensation.labels.partial' : 'jobOffers.workspace.dimensions.compensation.labels.withheld',
       note: hasSalary
-        ? 'Salary is visible, but market judgment still depends on benchmark strength.'
-        : 'No salary was disclosed, so pay quality should not be assumed.',
+        ? 'jobOffers.workspace.dimensions.compensation.note'
+        : 'jobOffers.workspace.dimensions.compensation.noteHidden',
     },
     {
-      title: 'Work conditions visibility',
+      title: 'jobOffers.workspace.dimensions.conditions.title',
       value: workConditionsVisibility,
-      label: workConditionsVisibility >= 75 ? 'Well defined' : workConditionsVisibility >= 45 ? 'Partly visible' : 'Unclear',
-      note: 'Contract, work model, city, and benefits shape day-to-day reality.',
+      label: workConditionsVisibility >= 75 ? 'jobOffers.workspace.dimensions.conditions.labels.defined' : workConditionsVisibility >= 45 ? 'jobOffers.workspace.dimensions.conditions.labels.partly' : 'jobOffers.workspace.dimensions.conditions.labels.unclear',
+      note: 'jobOffers.workspace.dimensions.conditions.note',
     },
     {
-      title: 'Career value',
+      title: 'jobOffers.workspace.dimensions.value.title',
       value: careerValue,
-      label: careerValue >= 75 ? 'Potentially strong' : careerValue >= 50 ? 'Needs validation' : 'Thin evidence',
-      note: 'A proxy for role quality, package depth, and growth visibility.',
+      label: careerValue >= 75 ? 'jobOffers.workspace.dimensions.value.labels.strong' : careerValue >= 50 ? 'jobOffers.workspace.dimensions.value.labels.validation' : 'jobOffers.workspace.dimensions.value.labels.thin',
+      note: 'jobOffers.workspace.dimensions.value.note',
     },
     {
-      title: 'Benchmark confidence',
+      title: 'jobOffers.workspace.dimensions.benchmark.title',
       value: benchmarkConfidence,
-      label: formatWords(analysis.confidence_level),
-      note: formatBenchmarkSource(analysis.benchmark_primary_source),
+      label: analysis.confidence_level === 'high' ? 'jobOffers.workspace.confidence.high.label' : analysis.confidence_level === 'medium' ? 'jobOffers.workspace.confidence.medium.label' : 'jobOffers.workspace.confidence.low.label',
+      note: 'jobOffers.workspace.dimensions.benchmark.note',
     },
     {
-      title: 'Risk level',
+      title: 'jobOffers.workspace.dimensions.risk.title',
       value: riskLevel,
-      label: riskLevel >= 70 ? 'High' : riskLevel >= 40 ? 'Moderate' : 'Low',
-      note: 'Higher means more ambiguity, downside, or negotiation risk.',
+      label: riskLevel >= 70 ? 'jobOffers.workspace.dimensions.risk.labels.high' : riskLevel >= 40 ? 'jobOffers.workspace.dimensions.risk.labels.moderate' : 'jobOffers.workspace.dimensions.risk.labels.low',
+      note: 'jobOffers.workspace.dimensions.risk.note',
       kind: 'risk',
     },
   ];
@@ -603,22 +609,99 @@ function getPrimaryNextStep(analysis: AnalysisView, snapshot: JobOfferWorkspaceS
   const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
 
   if (!hasSalary) {
-    return 'Ask for the salary band before investing more time.';
+    return 'jobOffers.workspace.nextStep.askSalary';
   }
 
   if (analysis.confidence_level === 'low') {
-    return 'Use this as a question-prep tool, not a final decision.';
+    return 'jobOffers.workspace.nextStep.lowConfidence';
   }
 
   if (analysis.market_position_label === 'below_market') {
-    return 'Only continue if the role scope or growth path clearly compensates for the weaker pay signal.';
+    return 'jobOffers.workspace.nextStep.belowMarket';
   }
 
   if (analysis.market_position_label === 'strong_offer' || analysis.market_position_label === 'above_market') {
-    return 'Worth a deeper conversation, but verify manager quality and full package details.';
+    return 'jobOffers.workspace.nextStep.strongOffer';
   }
 
-  return 'Treat this as a decent baseline and pressure-test the missing conditions.';
+  return 'jobOffers.workspace.nextStep.baseline';
+}
+
+function getDecisionTier(analysis: AnalysisView, snapshot: JobOfferWorkspaceSnapshot): JobOfferDecisionTier {
+  const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
+  const hasBenchmark = analysis.benchmark_primary_source && analysis.benchmark_primary_source !== 'none';
+
+  if (!hasSalary || !hasBenchmark || analysis.market_position_label === 'insufficient_data') {
+    return 'negotiate'; // not enough info → ask before deciding
+  }
+  if (analysis.market_position_label === 'strong_offer') return 'accept';
+  if (analysis.market_position_label === 'above_market') return 'accept';
+  if (analysis.market_position_label === 'fair_market') return 'negotiate';
+  return 'avoid'; // below_market
+}
+
+function getSalaryGapPercent(analysis: AnalysisView): number | null {
+  // market_delta_percent is computed in scoring.ts and passed through as part of AnalysisView
+  // We need to check if it exists on the extended type; use type assertion for the extra field
+  const extended = analysis as AnalysisView & { market_delta_percent?: number | null };
+  return extended.market_delta_percent ?? null;
+}
+
+function buildNegotiationScript(
+  snapshot: JobOfferWorkspaceSnapshot,
+  analysis: AnalysisView,
+  tier: JobOfferDecisionTier
+): JobOfferNegotiationScript | null {
+  if (tier === 'accept') return null;
+
+  const benchmarkMedian = analysis.benchmark_role_city_median
+    ?? analysis.benchmark_city_median
+    ?? null;
+
+  // Suggested ask: benchmark + 12% buffer (rounded to nearest 100 MAD)
+  const suggestedMonthlyAsk = benchmarkMedian != null
+    ? Math.round((benchmarkMedian * 1.12) / 100) * 100
+    : null;
+
+  const currentMidpoint = snapshot.salaryMin != null && snapshot.salaryMax != null
+    ? Math.round((snapshot.salaryMin + snapshot.salaryMax) / 2)
+    : snapshot.salaryMin ?? snapshot.salaryMax ?? null;
+
+  const askDelta = suggestedMonthlyAsk != null && currentMidpoint != null
+    ? suggestedMonthlyAsk - currentMidpoint
+    : null;
+
+  const suggestedAskLabel = suggestedMonthlyAsk != null
+    ? askDelta != null && askDelta > 0
+      ? `+${formatMoney(askDelta)} MAD / mois`
+      : `${formatMoney(suggestedMonthlyAsk)} MAD / mois`
+    : 'jobOffers.negotiation.askBasedOnMarket';
+
+  const role = snapshot.jobTitle;
+  const company = snapshot.companyName;
+  const askAmount = suggestedMonthlyAsk != null ? `${formatMoney(suggestedMonthlyAsk)} MAD/mois` : '[montant cible]';
+
+  const emailTemplate = `Objet : Retour sur l'offre — ${role} chez ${company}
+
+Bonjour,
+
+Merci pour cette opportunité. Après analyse du marché pour ce profil au Maroc, je souhaiterais discuter de la rémunération.
+
+Sous réserve de validation mutuelle, je revendrais vers un package mensuel autour de ${askAmount}, en ligne avec les benchmarks actuels pour ce type de poste.
+
+Je reste disponible pour en discuter et avancer rapidement.
+
+Cordialement`;
+
+  const whatsappTemplate = `Bonjour 👋 Merci pour l'offre sur le poste de ${role}.
+Après vérification du marché, je vise plutôt ${askAmount} / mois — on peut en parler ?`;
+
+  return {
+    suggestedMonthlyAsk,
+    suggestedAskLabel,
+    emailTemplate,
+    whatsappTemplate,
+  };
 }
 
 function buildDynamicActions(options: {
@@ -644,8 +727,8 @@ function buildDynamicActions(options: {
   if (!hasUsableSalary(options.snapshot.salaryMin, options.snapshot.salaryMax)) {
     addAction({
       id: 'ask_salary_before_continuing',
-      title: 'Ask for salary before continuing',
-      body: 'Compensation details are missing or too unclear to justify a long process yet.',
+      title: 'jobOffers.workspace.actions.ask_salary.title',
+      body: 'jobOffers.workspace.actions.ask_salary.body',
       href: '#actions-step',
       kind: 'primary',
       placement: 'hero',
@@ -654,8 +737,8 @@ function buildDynamicActions(options: {
   } else if (employerMixedOrWeak) {
     addAction({
       id: 'review_employer_before_applying',
-      title: 'Review employer before applying',
-      body: 'The employer is mapped confidently, but public sentiment is mixed enough that you should review context before going deeper.',
+      title: 'jobOffers.workspace.actions.review_employer.title',
+      body: 'jobOffers.workspace.actions.review_employer.body',
       href: `/businesses/${options.employerContext.business_slug}/reviews`,
       kind: 'primary',
       placement: 'hero',
@@ -664,8 +747,8 @@ function buildDynamicActions(options: {
   } else if (hasStrongComparableCoverage) {
     addAction({
       id: 'compare_with_similar_offers',
-      title: 'Compare with similar offers',
-      body: 'You have enough matching role and market data to compare this against nearby alternatives.',
+      title: 'jobOffers.workspace.actions.compare_offers.title',
+      body: 'jobOffers.workspace.actions.compare_offers.body',
       href: '#compare-step',
       kind: 'primary',
       placement: 'hero',
@@ -674,8 +757,8 @@ function buildDynamicActions(options: {
   } else if (salaryHref) {
     addAction({
       id: 'check_salary_benchmarks',
-      title: 'Check salary benchmarks',
-      body: 'Use the role and city benchmark page to pressure-test this offer against the broader market.',
+      title: 'jobOffers.workspace.actions.check_benchmarks.title',
+      body: 'jobOffers.workspace.actions.check_benchmarks.body',
       href: salaryHref,
       kind: 'primary',
       placement: 'hero',
@@ -684,8 +767,8 @@ function buildDynamicActions(options: {
   } else if (employerFull) {
     addAction({
       id: 'view_company_reviews',
-      title: 'View company reviews',
-      body: 'This offer is mapped confidently enough to add employer context from reviews and company data.',
+      title: 'jobOffers.workspace.actions.view_company.title',
+      body: 'jobOffers.workspace.actions.view_company.body',
       href: `/businesses/${options.employerContext.business_slug}/reviews`,
       kind: 'primary',
       placement: 'hero',
@@ -696,8 +779,8 @@ function buildDynamicActions(options: {
   if (employerFull) {
     addAction({
       id: 'view_company_reviews',
-      title: 'View company reviews',
-      body: 'Use employee reviews to add context to the offer without distorting the salary verdict.',
+      title: 'jobOffers.workspace.actions.view_company_rail.title',
+      body: 'jobOffers.workspace.actions.view_company_rail.body',
       href: `/businesses/${options.employerContext.business_slug}/reviews`,
       kind: actions.length === 0 ? 'primary' : 'secondary',
       placement: 'rail',
@@ -705,8 +788,8 @@ function buildDynamicActions(options: {
     });
     addAction({
       id: 'open_company_page',
-      title: 'Open company page',
-      body: 'See the public company profile, business details, and broader hiring context.',
+      title: 'jobOffers.workspace.actions.open_company_page.title',
+      body: 'jobOffers.workspace.actions.open_company_page.body',
       href: `/businesses/${options.employerContext.business_slug}`,
       kind: 'secondary',
       placement: 'rail',
@@ -714,8 +797,8 @@ function buildDynamicActions(options: {
     });
     addAction({
       id: 'open_company_salary_page',
-      title: 'Check company salary context',
-      body: 'Use company salary context to judge whether this offer fits the broader employer pattern.',
+      title: 'jobOffers.workspace.actions.open_company_salary.title',
+      body: 'jobOffers.workspace.actions.open_company_salary.body',
       href: `/businesses/${options.employerContext.business_slug}/salaries`,
       kind: 'secondary',
       placement: 'rail',
@@ -726,8 +809,8 @@ function buildDynamicActions(options: {
   if (hasStrongComparableCoverage) {
     addAction({
       id: 'compare_with_similar_offers',
-      title: 'Compare with similar offers',
-      body: 'Use nearby comparable offers as evidence before you decide whether this is worth pursuing.',
+      title: 'jobOffers.workspace.actions.compare_offers.title',
+      body: 'jobOffers.workspace.actions.compare_offers.body',
       href: '#compare-step',
       kind: actions.length === 0 ? 'primary' : 'secondary',
       placement: 'rail',
@@ -738,8 +821,8 @@ function buildDynamicActions(options: {
   if (salaryHref) {
     addAction({
       id: 'check_salary_benchmarks',
-      title: 'Check salary benchmarks',
-      body: 'Open the role and city salary benchmark page to add market context.',
+      title: 'jobOffers.workspace.actions.check_benchmarks.title',
+      body: 'jobOffers.workspace.actions.check_benchmarks.body',
       href: salaryHref,
       kind: 'secondary',
       placement: 'rail',
@@ -749,8 +832,8 @@ function buildDynamicActions(options: {
 
   addAction({
     id: 'use_recruiter_questions',
-    title: 'Use recruiter questions next',
-    body: 'Turn the analysis into a sharper recruiter conversation before committing more time.',
+    title: 'jobOffers.workspace.actions.use_questions.title',
+    body: 'jobOffers.workspace.actions.use_questions.body',
     href: '#actions-step',
     kind: actions.length === 0 ? 'primary' : 'secondary',
     placement: 'rail',
@@ -772,26 +855,26 @@ function getReviewAwareSignal(
   const rating = employerContext.overall_rating;
   const hasSalary = hasUsableSalary(snapshot.salaryMin, snapshot.salaryMax);
 
-  if (!hasSalary && rating < 3.5) {
+    if (!hasSalary && rating < 3.5) {
     return {
-      title: 'Compensation is unclear and employee sentiment is mixed',
-      body: 'The offer is missing salary details, and the employer signal is not strong enough to offset that ambiguity. Use reviews before you commit more time.',
+      title: 'jobOffers.workspace.signals.reviewAware.mixedSentiment.title',
+      body: 'jobOffers.workspace.signals.reviewAware.mixedSentiment.body',
       tone: 'caution',
     };
   }
 
   if (analysis.overall_offer_score >= 55 && rating < 3.3) {
     return {
-      title: 'Offer looks fine, but employer reputation is weak',
-      body: 'The visible offer may still be usable, but public employee sentiment is weak enough that employer context should heavily influence your decision.',
-      tone: 'warning',
+      title: 'jobOffers.workspace.signals.reviewAware.weakReputation.title',
+      body: 'jobOffers.workspace.signals.reviewAware.weakReputation.body',
+      tone: 'caution',
     };
   }
 
-  if (analysis.overall_offer_score >= 70 && rating >= 4.0) {
+  if (analysis.overall_offer_score >= 82 && rating >= 4) {
     return {
-      title: 'Employer reviews reinforce a positive read',
-      body: 'The offer signal and the employer context point in the same direction, which makes this read more useful than a salary-only interpretation.',
+      title: 'jobOffers.workspace.signals.reviewAware.positiveReinforcement.title',
+      body: 'jobOffers.workspace.signals.reviewAware.positiveReinforcement.body',
       tone: 'positive',
     };
   }
@@ -821,6 +904,9 @@ export function createJobOfferDecisionWorkspace(input: {
     similarOffers: input.similarOffers || [],
   });
   const primaryAction = dynamicActions.find((action) => action.kind === 'primary') || null;
+  const decisionTier = getDecisionTier(input.analysis, snapshot);
+  const salaryGapPercent = getSalaryGapPercent(input.analysis);
+  const negotiationScript = buildNegotiationScript(snapshot, input.analysis, decisionTier);
 
   return {
     analysis: input.analysis,
@@ -843,11 +929,14 @@ export function createJobOfferDecisionWorkspace(input: {
     nextStep: getPrimaryNextStep(input.analysis, snapshot),
     confidence: getConfidenceMeta(input.analysis, snapshot),
     verdict: getVerdictMeta(input.analysis, snapshot),
+    decisionTier,
+    salaryGapPercent,
+    negotiationScript,
     resultSteps: RESULT_STEPS,
     journey: {
       currentStep: 4,
       totalSteps: 5,
-      finalStepTitle: 'Save, compare, and follow up',
+      finalStepTitle: 'jobOffers.workspace.journey.finalStep',
     },
   };
 }

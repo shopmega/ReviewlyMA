@@ -23,7 +23,7 @@ export function EmployerContextCard({ workspace }: Props) {
       <CardContent>
         {context.availability === 'unavailable' ? (
           <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
-            {context.signal_summary}
+            {t(context.signal_summary)}
           </div>
         ) : (
           <div className="space-y-4">
@@ -42,8 +42,8 @@ export function EmployerContextCard({ workspace }: Props) {
                 </Badge>
               ) : null}
             </div>
-
-            <p className="max-w-3xl text-sm leading-7 text-slate-700">{context.signal_summary}</p>
+ 
+            <p className="max-w-3xl text-sm leading-7 text-slate-700">{t(context.signal_summary)}</p>
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
               {[

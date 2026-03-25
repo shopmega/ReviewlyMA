@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bot, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { Bot, CheckCircle2, ChevronDown, ChevronUp, Loader2, Sparkles } from 'lucide-react';
 import { submitJobOfferAnalysis, type JobOfferActionState } from '@/app/actions/job-offers';
 import { analytics } from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
@@ -12,33 +12,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/components/providers/i18n-provider';
 
 const initialState: JobOfferActionState = { status: 'idle', message: '' };
 const loadingStates = [
   {
-    title: 'Step 2 of 5: AI is reading the source',
-    body: 'We are extracting the visible role, company, salary, and work conditions from the offer.',
+    title: 'jobOffers.form.loadingStep2.title',
+    fallbackTitle: 'Step 2 of 5: AI is reading the source',
+    body: 'jobOffers.form.loadingStep2.body',
+    fallbackBody: 'We are extracting the visible role, company, salary, and work conditions from the offer.',
   },
   {
-    title: 'Step 2 of 5: Structuring what is clear',
-    body: 'AI is identifying missing fields, confidence levels, and what still needs verification.',
+    title: 'jobOffers.form.loadingStep2Alt.title',
+    fallbackTitle: 'Step 2 of 5: Structuring what is clear',
+    body: 'jobOffers.form.loadingStep2Alt.body',
+    fallbackBody: 'AI is identifying missing fields, confidence levels, and what still needs verification.',
   },
   {
-    title: 'Step 3 of 5: Comparing with market and employer signals',
-    body: 'We are checking benchmarks, employer mapping, and any similar offer context available.',
+    title: 'jobOffers.form.loadingStep3.title',
+    fallbackTitle: 'Step 3 of 5: Comparing with market and employer signals',
+    body: 'jobOffers.form.loadingStep3.body',
+    fallbackBody: 'We are checking benchmarks, employer mapping, and any similar offer context available.',
   },
   {
-    title: 'Step 3 of 5: Building your decision workspace',
-    body: 'Your verdict, next actions, recruiter questions, and context blocks are being prepared.',
+    title: 'jobOffers.form.loadingStep3Alt.title',
+    fallbackTitle: 'Step 3 of 5: Building your decision workspace',
+    body: 'jobOffers.form.loadingStep3Alt.body',
+    fallbackBody: 'Your verdict, next actions, recruiter questions, and context blocks are being prepared.',
   },
 ] as const;
 
 const journeySteps = [
-  'Source input',
-  'AI extraction',
-  'Analysis generation',
-  'Decision workspace',
-  'Save and follow up',
+  'jobOffers.form.steps.source',
+  'jobOffers.form.steps.extraction',
+  'jobOffers.form.steps.generation',
+  'jobOffers.form.steps.workspace',
+  'jobOffers.form.steps.save',
 ] as const;
 
 function FieldError({ state, name }: { state: JobOfferActionState; name: string }) {
@@ -51,10 +60,12 @@ function FieldError({ state, name }: { state: JobOfferActionState; name: string 
 }
 
 export function JobOfferAnalysisForm() {
+  const { t, tf } = useI18n();
   const router = useRouter();
   const [sourceType, setSourceType] = useState<'paste' | 'url'>('paste');
   const [state, formAction, isPending] = useActionState(submitJobOfferAnalysis, initialState);
   const [loadingIndex, setLoadingIndex] = useState(0);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const lastTrackedAnalysisId = useRef<string | null>(null);
   const activeJourneyStep = isPending ? (loadingIndex >= 2 ? 3 : 2) : 1;
 
@@ -88,52 +99,31 @@ export function JobOfferAnalysisForm() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[1.8rem] border-slate-200 shadow-sm">
-        <CardContent className="p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Journey step 1 of 5</p>
-          <div className="mt-3 grid gap-2 md:grid-cols-5">
-            {journeySteps.map((step, index) => (
-              <div
-                key={step}
-                className={`rounded-2xl border px-3 py-3 text-sm ${
-                  index + 1 < activeJourneyStep
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
-                    : index + 1 === activeJourneyStep
-                      ? 'border-slate-900 bg-slate-950 text-white'
-                      : 'border-slate-200 bg-white text-slate-600'
-                }`}
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">Step {index + 1}</p>
-                <p className="mt-1 font-medium">{step}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* Quick Analyze card — default, minimal friction */}
       <Card className="rounded-[2rem] border-slate-200 shadow-sm">
         <CardHeader className="space-y-3">
           <Badge variant="outline" className="w-fit uppercase tracking-[0.18em] text-[10px]">
-            AI-powered analysis
+            {t('jobOffers.form.aiPowered', 'AI-powered analysis')}
           </Badge>
           <CardTitle className="text-3xl font-black tracking-tight md:text-4xl">
-            Decode a job offer before you commit
+            {t('jobOffers.form.quickMode.title', 'Should I accept this job offer?')}
           </CardTitle>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            AI extracts the offer, checks market signals, and turns the result into a private multi-step decision workspace.
+            {t('jobOffers.form.decodeDesc', 'Paste the offer or drop a link. AI extracts everything, checks market benchmarks, and gives you a clear verdict in seconds.')}
           </p>
         </CardHeader>
         <CardContent>
-          <form action={formAction} className="space-y-8">
+          <form action={formAction} className="space-y-6">
             <input type="hidden" name="sourceType" value={sourceType} />
 
+            {/* Source input — minimal */}
             <section className="space-y-4 rounded-[1.8rem] border border-slate-200 bg-white p-4 md:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Source</p>
-                  <h3 className="mt-2 text-xl font-black tracking-tight text-slate-950">Provide the offer</h3>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{t('jobOffers.form.source', 'Source')}</p>
+                  <h3 className="mt-2 text-xl font-black tracking-tight text-slate-950">{t('jobOffers.form.provideOffer', 'Provide the offer')}</h3>
                   <p className="mt-1 text-sm text-slate-600">
-                    Paste the announcement text or switch to a public link. After analysis, the result opens on its own page.
+                    {t('jobOffers.form.provideOfferDesc', 'Paste the announcement text or switch to a public link. After analysis, the result opens on its own page.')}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -143,7 +133,7 @@ export function JobOfferAnalysisForm() {
                     variant={sourceType === 'paste' ? 'default' : 'outline'}
                     onClick={() => setSourceType('paste')}
                   >
-                    Paste text
+                    {t('jobOffers.form.pasteText', 'Paste text')}
                   </Button>
                   <Button
                     type="button"
@@ -151,40 +141,82 @@ export function JobOfferAnalysisForm() {
                     variant={sourceType === 'url' ? 'default' : 'outline'}
                     onClick={() => setSourceType('url')}
                   >
-                    Use link
+                    {t('jobOffers.form.useLink', 'Use link')}
                   </Button>
                 </div>
               </div>
 
               {sourceType === 'paste' ? (
                 <section className="space-y-2">
-                  <Label htmlFor="sourceText">Job offer text</Label>
+                  <Label htmlFor="sourceText">{t('jobOffers.form.jobOfferText', 'Job offer text')}</Label>
                   <Textarea
                     id="sourceText"
                     name="sourceText"
-                    placeholder="Paste a LinkedIn, Rekrute, Indeed, or Emploi.ma job post here..."
-                    className="min-h-72"
+                    placeholder={t('jobOffers.form.pastePlaceholder', 'Paste a LinkedIn, Rekrute, Indeed, or Emploi.ma job post here...')}
+                    className="min-h-56"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Best for copied job ads, screenshots transcribed to text, or incomplete posts you still want to pressure-test.
+                    {t('jobOffers.form.pasteDesc', 'Best for copied job ads, screenshots transcribed to text, or incomplete posts you still want to pressure-test.')}
                   </p>
                   <FieldError state={state} name="sourceText" />
                 </section>
               ) : (
                 <section className="space-y-2">
-                  <Label htmlFor="sourceUrl">Public job offer link</Label>
+                  <Label htmlFor="sourceUrl">{t('jobOffers.form.publicLink', 'Public job offer link')}</Label>
                   <Input
                     id="sourceUrl"
                     name="sourceUrl"
-                    placeholder="https://www.linkedin.com/jobs/view/..."
+                    placeholder={t('jobOffers.form.linkPlaceholder', 'https://www.linkedin.com/jobs/view/...')}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Works when the source page is public and readable. If extraction is partial, AI still returns useful follow-up questions.
+                    {t('jobOffers.form.linkDesc', 'Works when the source page is public and readable. If extraction is partial, AI still returns useful follow-up questions.')}
                   </p>
                   <FieldError state={state} name="sourceUrl" />
                 </section>
               )}
             </section>
+
+            {/* Advanced options — collapsible */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((v) => !v)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-slate-800"
+              >
+                {showAdvanced
+                  ? <><ChevronUp className="h-3.5 w-3.5" /> {t('jobOffers.form.hideAdvanced', 'Hide advanced options')}</>
+                  : <><ChevronDown className="h-3.5 w-3.5" /> {t('jobOffers.form.advancedOptions', 'Advanced options →')}</>
+                }
+              </button>
+
+              {showAdvanced && (
+                <div className="mt-4 rounded-[1.8rem] border border-slate-200 bg-slate-50/80 p-4 md:p-5">
+                  {/* Journey steps — visible in advanced mode */}
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {tf('jobOffers.form.journeyStep', 'Journey step {current} of 5', { current: 1, total: 5 })}
+                  </p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-5">
+                    {journeySteps.map((step, index) => (
+                      <div
+                        key={step}
+                        className={`rounded-2xl border px-3 py-3 text-sm ${
+                          index + 1 < activeJourneyStep
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                            : index + 1 === activeJourneyStep
+                              ? 'border-slate-900 bg-slate-950 text-white'
+                              : 'border-slate-200 bg-white text-slate-600'
+                        }`}
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">
+                          {tf('jobOffers.form.step', 'Step {index}', { index: index + 1 })}
+                        </p>
+                        <p className="mt-1 font-medium">{t(step)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {state.message ? (
               <div className={`rounded-2xl border px-4 py-3 text-sm ${state.status === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
@@ -193,15 +225,15 @@ export function JobOfferAnalysisForm() {
             ) : null}
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "AI analysis in progress..." : "Analyze with AI"}
+              <Button type="submit" disabled={isPending} size="lg" className="font-bold">
+                {isPending ? t('jobOffers.form.statusInProgress', 'AI analysis in progress...') : t('jobOffers.form.statusIdle', 'Analyze with AI')}
               </Button>
             </div>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-              <span>AI-powered decision support</span>
-              <span>Private analysis</span>
-              <span>Login required to save and compare results</span>
+              <span>{t('jobOffers.form.decisionSupport', 'AI-powered decision support')}</span>
+              <span>{t('jobOffers.form.privateAnalysis', 'Private analysis')}</span>
+              <span>{t('jobOffers.form.loginToSave', 'Login required to save and compare results')}</span>
             </div>
           </form>
         </CardContent>
@@ -213,14 +245,14 @@ export function JobOfferAnalysisForm() {
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">AI-powered analysis</Badge>
-                  <Badge variant="outline">Private workspace</Badge>
+                  <Badge variant="outline">{t('jobOffers.form.aiPowered', 'AI-powered analysis')}</Badge>
+                  <Badge variant="outline">{t('jobOffers.form.privateWorkspace', 'Private workspace')}</Badge>
                 </div>
                 <h3 className="mt-3 text-2xl font-black tracking-tight text-slate-950">
-                  {loadingStates[loadingIndex].title}
+                  {t(loadingStates[loadingIndex].title, loadingStates[loadingIndex].fallbackTitle)}
                 </h3>
                 <p className="mt-2 text-sm leading-7 text-slate-600">
-                  {loadingStates[loadingIndex].body}
+                  {t(loadingStates[loadingIndex].body, loadingStates[loadingIndex].fallbackBody)}
                 </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-950 text-white">
@@ -246,15 +278,19 @@ export function JobOfferAnalysisForm() {
                     ) : (
                       <Sparkles className="h-4 w-4 text-slate-400" />
                     )}
-                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {t(item.title, item.fallbackTitle)}
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm text-slate-600">{item.body}</p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {t(item.body, item.fallbackBody)}
+                  </p>
                 </div>
               ))}
             </div>
 
             <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-              Some offers are incomplete. AI will still surface useful questions, confidence levels, and the best next action instead of pretending the evidence is stronger than it is.
+              {t('jobOffers.form.incompleteNote', 'Some offers are incomplete. AI will still surface useful questions, confidence levels, and the best next action instead of pretending the evidence is stronger than it is.')}
             </div>
           </CardContent>
         </Card>
