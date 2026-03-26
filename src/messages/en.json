@@ -3888,6 +3888,11 @@
         }
       },
       "verdicts": {
+        "decision": {
+          "accept": "ACCEPT",
+          "negotiate": "NEGOTIATE",
+          "avoid": "CAUTION"
+        },
         "incomplete": {
           "eyebrow": "Clarification mode",
           "title": "Useful signal, incomplete verdict",
@@ -3915,6 +3920,31 @@
           "title": "This offer looks weaker than the visible benchmark",
           "summary": "The available evidence suggests a less attractive read than the market baseline. Clarify the package before spending too much time."
         }
+      },
+      "negotiation": {
+        "sectionLabel": "Negotiation Assistant",
+        "title": "Use market data to negotiate",
+        "suggestedAsk": "Suggested Ask",
+        "description": "Based on market benchmarks for this role. Customize before sending.",
+        "emailFormat": "E-mail Version",
+        "whatsappFormat": "WhatsApp Version",
+        "copyEmail": "Copy e-mail",
+        "copyWhatsapp": "Copy message",
+        "askBasedOnMarket": "Ask based on market"
+      },
+      "outcome": {
+        "sectionLabel": "Outcome Tracking",
+        "question": "What did you decide?",
+        "description": "Your anonymous answer helps calibrate offers for everyone in Morocco.",
+        "accepted": "Yes, I accepted",
+        "negotiated": "I negotiated",
+        "declined": "I declined",
+        "recordedAccepted": "Recorded: you accepted this offer",
+        "recordedNegotiated": "Recorded: you negotiated this offer",
+        "recordedDeclined": "Recorded: you declined this offer",
+        "thanksNote": "Thank you — this helps build real data for Morocco.",
+        "negotiatedSalaryPrompt": "What salary did you get? (optional)",
+        "save": "Save"
       },
       "formatting": {
         "notSpecified": "Not specified",
