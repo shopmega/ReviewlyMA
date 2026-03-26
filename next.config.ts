@@ -231,6 +231,21 @@ const nextConfig: NextConfig = {
         destination: '/dashboard/etablissement',
         permanent: true,
       },
+      {
+        source: '/parrainages/:path*',
+        destination: '/job-offers',
+        permanent: true,
+      },
+      {
+        source: '/referral-demand/:path*',
+        destination: '/job-offers',
+        permanent: true,
+      },
+      {
+        source: '/job-demand',
+        destination: '/job-offers',
+        permanent: true,
+      },
     ];
   },
 };

@@ -50,6 +50,11 @@ export const RATE_LIMIT_CONFIG = {
     windowMs: 60 * 1000, // 1 minute
     blockDurationMs: 10 * 60 * 1000, // 10 minutes
   },
+  guest_analysis: {
+    maxAttempts: 3,
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    blockDurationMs: 24 * 60 * 60 * 1000, // 24 hours
+  },
 };
 
 /**

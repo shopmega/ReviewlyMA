@@ -73,13 +73,15 @@
       "subtitle": "Plongez dans nos collections thematiques et trouvez la societe parfaite pour votre carriere."
     },
     "hero": {
-      "badge": "Des signaux plus clairs sur les employeurs",
-      "titleLine1": "Comprendre une entreprise",
-      "titleLine2": "avant d’y entrer.",
-      "subtitle": "Avis, salaires et signaux de parrainage pour evaluer les employeurs marocains.",
-      "searchPlaceholder": "Entreprise, poste ou mot-cle...",
+      "badge": "HR Intelligence & Decision Engine",
+      "titleLine1": "Ne signez pas sans",
+      "titleLine2": "avoir scanné.",
+      "subtitle": "Verdict IA, benchmarks salariaux et signaux de risque pour votre prochaine offre d'emploi au Maroc.",
+      "searchPlaceholder": "Entreprise, poste ou mot-clé...",
       "searchCta": "Rechercher une entreprise",
-      "writeReview": "Ecrire un avis",
+      "scanCta": "Scanner mon offre",
+      "compareSalaryCta": "Comparer mon salaire",
+      "writeReview": "Écrire un avis",
       "claimCta": "Revendiquer une fiche",
       "popularFallback": {
         "techInCity": "Entreprises tech a {city}",
@@ -3886,6 +3888,11 @@
         }
       },
       "verdicts": {
+        "decision": {
+          "accept": "ACCEPTER",
+          "negotiate": "NÉGOCIER",
+          "avoid": "PRUDENCE"
+        },
         "incomplete": {
           "eyebrow": "Mode clarification",
           "title": "Signal utile, verdict incomplet",
@@ -3914,8 +3921,33 @@
           "summary": "Les preuves suggèrent une lecture moins attractive que la base du marché. Clarifiez bien le package."
         }
       },
+      "negotiation": {
+        "sectionLabel": "Assistant de Négociation",
+        "title": "Utilisez les données du marché pour négocier",
+        "suggestedAsk": "Demande suggérée",
+        "description": "Basé sur les benchmarks du marché pour ce poste. Personnalisez avant d'envoyer.",
+        "emailFormat": "Version E-mail",
+        "whatsappFormat": "Version WhatsApp",
+        "copyEmail": "Copier l'e-mail",
+        "copyWhatsapp": "Copier le message",
+        "askBasedOnMarket": "Demande basée sur le marché"
+      },
+      "outcome": {
+        "sectionLabel": "Suivi du résultat",
+        "question": "Qu'avez-vous décidé ?",
+        "description": "Votre réponse anonyme aide à calibrer les offres pour tout le monde au Maroc.",
+        "accepted": "Oui, j'ai accepté",
+        "negotiated": "J'ai négocié",
+        "declined": "J'ai décliné",
+        "recordedAccepted": "Enregistré : vous avez accepté cette offre",
+        "recordedNegotiated": "Enregistré : vous avez négocié cette offre",
+        "recordedDeclined": "Enregistré : vous avez décliné cette offre",
+        "thanksNote": "Merci — cela aide à construire des données réelles pour le Maroc.",
+        "negotiatedSalaryPrompt": "Quel salaire avez-vous obtenu ? (optionnel)",
+        "save": "Enregistrer"
+      },
       "formatting": {
-        "notSpecified": "IA Non spécifié",
+        "notSpecified": "Non spécifié",
         "notProvided": "Non fourni",
         "noneVisible": "Aucun visible",
         "notDetected": "Non détecté",

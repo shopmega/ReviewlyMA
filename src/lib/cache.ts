@@ -33,6 +33,7 @@ export const CACHE_KEYS = {
   FEATURED_BUSINESSES: 'featured-businesses',
   BUSINESS_CATEGORIES: 'business-categories',
   HOME_METRICS: 'home-metrics',
+  RECENT_JOB_ANALYSES: 'recent-job-analyses',
 } as const;
 
 /**
@@ -136,15 +137,24 @@ export const getCachedActiveCategories = async () => {
   )();
 };
 
-/**
- * Cache homepage metrics sourced from listing-grade totals.
- */
 export const getCachedHomeMetrics = async () => {
   const { getHomeMetrics } = await import('./data');
   return unstable_cache(
     async () => getHomeMetrics(),
     [CACHE_KEYS.HOME_METRICS],
     { revalidate: CACHE_CONFIG.MEDIUM, tags: [CACHE_TAGS.COMPANY, CACHE_TAGS.REVIEWS] }
+  )();
+};
+
+/**
+ * Cache recent job offer analyses
+ */
+export const getCachedRecentPublicAnalyses = async (limit = 10) => {
+  const { getRecentPublicAnalyses } = await import('./data/job-offers');
+  return unstable_cache(
+    async () => getRecentPublicAnalyses(limit),
+    [CACHE_KEYS.RECENT_JOB_ANALYSES, String(limit)],
+    { revalidate: CACHE_CONFIG.MEDIUM, tags: ['job-offers'] }
   )();
 };
 
@@ -205,6 +215,7 @@ export default {
   getCachedFeaturedBusinesses,
   getCachedActiveCategories,
   getCachedHomeMetrics,
+  getCachedRecentPublicAnalyses,
   cachedDataFetch,
   invalidateCache,
 };

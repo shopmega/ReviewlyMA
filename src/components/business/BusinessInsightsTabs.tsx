@@ -41,10 +41,8 @@ export function BusinessInsightsTabs({
   const ctaExperiment = 'business_profile_trust_panel_v1';
   const reviewCount = business.reviews.length;
   const salaryCount = salaryStats.count;
-  const referralCount = referralOffers.length + referralDemands.length;
   const defaultTab = useMemo(() => {
     const requestedTab = searchParams.get('tab');
-    if (requestedTab === 'referrals') return 'referrals';
     if (enableSalaries && requestedTab === 'salaries') return 'salaries';
     if (enableSalaries && reviewCount === 0 && salaryCount > 0) return 'salaries';
     return 'reviews';
@@ -143,9 +141,6 @@ export function BusinessInsightsTabs({
               {t('business.tabs.salaries', 'Salaires')} ({salaryCount})
             </TabsTrigger>
           )}
-          <TabsTrigger value="referrals" className="rounded-lg px-5 font-semibold">
-            {t('business.tabs.referrals', 'Parrainages')} ({referralCount})
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="reviews" className="mt-0">
@@ -165,15 +160,6 @@ export function BusinessInsightsTabs({
             />
           </TabsContent>
         )}
-
-        <TabsContent value="referrals" className="mt-0">
-          <BusinessReferralsSection
-            businessId={business.id}
-            businessName={business.name}
-            offers={referralOffers}
-            demands={referralDemands}
-          />
-        </TabsContent>
       </Tabs>
     </section>
   );

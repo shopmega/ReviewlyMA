@@ -405,3 +405,65 @@ export async function getJobOfferRoleCityMetrics(roleSlug: string, citySlug: str
   if (error || !data) return null;
   return data as JobOfferRoleCityMetrics;
 }
+export async function getRecentPublicAnalyses(limit = 10): Promise<JobOfferSimilarOffer[]> {
+  const supabase = await getAnalyticsClient();
+  const { data, error } = await supabase
+    .from('job_offer_analyses')
+    .select(`
+      id,
+      overall_offer_score,
+      market_position_label,
+      confidence_level,
+      job_offers!inner (
+        id,
+        business_id,
+        company_name,
+        job_title,
+        city,
+        city_slug,
+        salary_min,
+        salary_max,
+        pay_period,
+        work_model,
+        contract_type,
+        seniority_level,
+        visibility,
+        status
+      )
+    `)
+    .eq('job_offers.status', 'approved')
+    .in('job_offers.visibility', ['aggregate_only', 'public'])
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error || !data) return [];
+
+  // Map to JobOfferSimilarOffer format for consistency
+  return data.map((row: any) => {
+    const offer = row.job_offers;
+    return {
+      analysis_id: row.id,
+      job_offer_id: offer.id,
+      business_id: offer.business_id,
+      company_name: offer.company_name,
+      job_title: offer.job_title,
+      city: offer.city,
+      city_slug: offer.city_slug,
+      salary_min: offer.salary_min,
+      salary_max: offer.salary_max,
+      pay_period: offer.pay_period,
+      work_model: offer.work_model,
+      contract_type: offer.contract_type,
+      seniority_level: offer.seniority_level,
+      overall_offer_score: Number(row.overall_offer_score || 0),
+      market_position_label: row.market_position_label,
+      confidence_level: row.confidence_level,
+      similarity_score: 100, // Not applicable here
+      similarity_label: buildSimilarOfferLabel({
+        overallOfferScore: row.overall_offer_score,
+        salaryMin: offer.salary_min,
+        salaryMax: offer.salary_max,
+      }),
+    };
+  });
+}

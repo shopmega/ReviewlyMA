@@ -14,35 +14,35 @@ const TIER_CONFIG = {
     icon: CheckCircle2,
     chipClass: 'bg-emerald-600 text-white',
     surfaceClass: 'border-emerald-300 bg-emerald-50/80',
-    labelKey: 'jobOffers.verdict.tiers.accept.label',
-    labelFallback: '✅ ACCEPT',
-    eyebrowKey: 'jobOffers.verdict.tiers.accept.eyebrow',
-    eyebrowFallback: 'Strong offer detected',
+    labelKey: 'jobOffers.verdicts.decision.accept',
+    labelFallback: 'ACCEPTER',
+    eyebrowKey: 'jobOffers.verdicts.strong.eyebrow',
+    eyebrowFallback: 'Signal positif',
   },
   negotiate: {
     icon: AlertTriangle,
     chipClass: 'bg-amber-500 text-white',
     surfaceClass: 'border-amber-300 bg-amber-50/80',
-    labelKey: 'jobOffers.verdict.tiers.negotiate.label',
-    labelFallback: '⚠️ NEGOTIATE',
-    eyebrowKey: 'jobOffers.verdict.tiers.negotiate.eyebrow',
-    eyebrowFallback: 'Room to negotiate before deciding',
+    labelKey: 'jobOffers.verdicts.decision.negotiate',
+    labelFallback: 'NÉGOCIER',
+    eyebrowKey: 'jobOffers.verdicts.fair.eyebrow',
+    eyebrowFallback: 'Lecture équilibrée',
   },
   avoid: {
     icon: XCircle,
     chipClass: 'bg-rose-600 text-white',
     surfaceClass: 'border-rose-300 bg-rose-50/80',
-    labelKey: 'jobOffers.verdict.tiers.avoid.label',
-    labelFallback: '❌ AVOID',
-    eyebrowKey: 'jobOffers.verdict.tiers.avoid.eyebrow',
-    eyebrowFallback: 'Below market — proceed with caution',
+    labelKey: 'jobOffers.verdicts.decision.avoid',
+    labelFallback: 'PRUDENCE',
+    eyebrowKey: 'jobOffers.verdicts.weak.eyebrow',
+    eyebrowFallback: 'Signal de vigilance',
   },
 } as const;
 
 const RISK_PILL = {
-  low: { label: '🟢 Low risk', class: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  moderate: { label: '🟠 Moderate risk', class: 'bg-amber-100 text-amber-800 border-amber-200' },
-  high: { label: '🔴 High risk', class: 'bg-rose-100 text-rose-800 border-rose-200' },
+  low: { label: '🟢 Risque faible', class: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  moderate: { label: '🟠 Risque modéré', class: 'bg-amber-100 text-amber-800 border-amber-200' },
+  high: { label: '🔴 Risque élevé', class: 'bg-rose-100 text-rose-800 border-rose-200' },
 } as const;
 
 function getRiskLevel(riskFlagCount: number): keyof typeof RISK_PILL {
@@ -61,8 +61,8 @@ export function VerdictBanner({ workspace }: Props) {
 
   const gapLabel = salaryGapPercent != null
     ? salaryGapPercent > 0
-      ? `+${Math.abs(Math.round(salaryGapPercent))}% above market`
-      : `${Math.abs(Math.round(salaryGapPercent))}% below market`
+      ? `+${Math.abs(Math.round(salaryGapPercent))}% au-dessus du marché`
+      : `${Math.abs(Math.round(salaryGapPercent))}% en-dessous du marché`
     : null;
 
   const GapIcon = salaryGapPercent == null ? Minus : salaryGapPercent > 0 ? TrendingUp : TrendingDown;
@@ -76,7 +76,7 @@ export function VerdictBanner({ workspace }: Props) {
     <div className={`rounded-[1.8rem] border p-5 md:p-7 ${config.surfaceClass}`}>
       {/* Eyebrow */}
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-        {t(config.eyebrowKey, config.eyebrowFallback)}
+        {t(workspace.verdict.eyebrow)}
       </p>
 
       {/* Verdict chip */}
@@ -95,14 +95,14 @@ export function VerdictBanner({ workspace }: Props) {
         {/* Salary position */}
         <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-            {t('jobOffers.verdict.salaryPosition', 'Salary position')}
+            {t('jobOffers.workspace.dimensions.compensation.title', 'Rémunération')}
           </p>
           <div className="mt-2 flex items-center gap-1.5">
             <GapIcon className={`h-4 w-4 ${gapIconClass}`} />
             <p className="text-sm font-bold text-slate-950">
               {gapLabel
-                ? t('jobOffers.verdict.salaryGap', gapLabel)
-                : t('jobOffers.verdict.salaryUnknown', 'No salary disclosed')}
+                ? gapLabel
+                : t('jobOffers.workspace.formatting.notDisclosed', 'Non partagé')}
             </p>
           </div>
         </div>
@@ -110,29 +110,34 @@ export function VerdictBanner({ workspace }: Props) {
         {/* Risk signals */}
         <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-            {t('jobOffers.verdict.riskSignals', 'Risk signals')}
+            {t('jobOffers.verdict.riskSignals', 'Signaux de risque')}
           </p>
           <div className="mt-2 space-y-1">
             {workspace.concerns.slice(0, 2).map((concern, i) => (
               <p key={i} className="text-xs leading-5 text-slate-700">{t(concern)}</p>
             ))}
             {workspace.concerns.length === 0 && (
-              <p className="text-xs text-slate-500">{t('jobOffers.verdict.noMajorConcerns', 'No major concerns detected')}</p>
+              <p className="text-xs text-slate-500">{t('jobOffers.verdict.noMajorConcerns', 'Aucun risque majeur')}</p>
             )}
           </div>
         </div>
 
-        {/* Confidence */}
-        <div className="rounded-[1.2rem] border border-white/70 bg-white/80 px-4 py-4">
+        {/* MonRH Integration CTA */}
+        <a 
+          href="https://monrh.vercel.app" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="group rounded-[1.2rem] border border-primary/20 bg-primary/5 px-4 py-4 transition-all hover:bg-primary/10"
+        >
           <div className="flex items-start justify-between gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              {t('jobOffers.workspace.cockpit.assessmentConfidence', 'Confidence')}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Simulation Paie (MonRH)
             </p>
-            <ShieldAlert className="h-4 w-4 text-slate-400" />
+            <TrendingUp className="h-4 w-4 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
-          <p className="mt-2 text-sm font-bold text-slate-950">{t(workspace.confidence.label)}</p>
-          <p className="mt-1 text-xs leading-5 text-slate-600">{t(workspace.confidence.note)}</p>
-        </div>
+          <p className="mt-2 text-sm font-bold text-primary">Calculer mon Net</p>
+          <p className="mt-1 text-[10px] leading-4 text-primary/70 italic">Calculer l'impact IR, CNSS et CIMR sur monrh.vercel.app</p>
+        </a>
       </div>
     </div>
   );

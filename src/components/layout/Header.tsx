@@ -22,7 +22,6 @@ const desktopNavLinks = [
   { href: '/businesses', labelKey: 'businesses', fallback: 'Etablissements', icon: Search },
   { href: '/salaires', labelKey: 'salaries', fallback: 'Salaires', icon: Sparkles },
   { href: '/job-offers', labelKey: 'jobOffers', fallback: 'Job Offers', icon: Briefcase },
-  { href: '/parrainages', labelKey: 'referrals', fallback: 'Parrainages', icon: Users },
 ];
 
 const mobileNavLinks = [
@@ -31,7 +30,6 @@ const mobileNavLinks = [
   { href: '/businesses', labelKey: 'businesses', fallback: 'Etablissements', icon: Search },
   { href: '/salaires', labelKey: 'salaries', fallback: 'Salaires', icon: Sparkles },
   { href: '/job-offers', labelKey: 'jobOffers', fallback: 'Job Offers', icon: Briefcase },
-  { href: '/parrainages', labelKey: 'referrals', fallback: 'Parrainages', icon: Users },
   { href: '/pro', labelKey: 'forPros', fallback: 'Pour les pros', icon: Briefcase },
 ];
 

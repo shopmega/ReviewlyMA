@@ -40,18 +40,21 @@ export async function submitJobOfferAnalysis(
 ): Promise<JobOfferActionState> {
   const { t, tf } = await getServerTranslator();
   try {
+    const { headers: getHeaders } = await import('next/headers');
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return createErrorResponse(
-        ErrorCode.AUTHENTICATION_ERROR,
-        t('jobOfferActions.authRequired', 'You must be logged in to analyze and save a job offer.')
-      ) as JobOfferActionState;
-    }
-
-    const rateLimitKey = `job-offer-analysis-${user.id}`;
-    const limitStatus = await checkRateLimit(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    // Rate limiting & Identity logic
+    const isGuest = !user;
+    const headersList = await getHeaders();
+    const clientIp = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+    const rateLimitKey = isGuest 
+      ? `guest-job-offer-${clientIp}`
+      : `job-offer-analysis-${user.id}`;
+    
+    const limitConfig = isGuest ? RATE_LIMIT_CONFIG.guest_analysis : RATE_LIMIT_CONFIG.review;
+    
+    const limitStatus = await checkRateLimit(rateLimitKey, limitConfig);
     if (limitStatus.isLimited) {
       return createErrorResponse(
         ErrorCode.RATE_LIMIT_ERROR,
@@ -60,7 +63,7 @@ export async function submitJobOfferAnalysis(
         })
       ) as JobOfferActionState;
     }
-    await recordAttempt(rateLimitKey, RATE_LIMIT_CONFIG.review);
+    await recordAttempt(rateLimitKey, limitConfig);
 
     const rawSourceType = getFormString(formData, 'sourceType');
     const rawSourceUrl = getFormString(formData, 'sourceUrl');
@@ -201,7 +204,7 @@ export async function submitJobOfferAnalysis(
     });
 
     const offerRow = {
-      user_id: user.id,
+      user_id: user?.id || null,
       business_id: benchmarks.businessId,
       company_name: normalizedInput.companyName,
       job_title: normalizedInput.jobTitle,
@@ -235,7 +238,7 @@ export async function submitJobOfferAnalysis(
       .single();
 
     if (offerError || !offerData) {
-      logError('submit_job_offer_offer_insert', offerError, { userId: user.id, ...debugBase });
+      logError('submit_job_offer_offer_insert', offerError, { userId: user?.id || 'guest', ...debugBase });
       return createErrorResponse(
         ErrorCode.DATABASE_ERROR,
         t('jobOfferActions.offerSaveError', 'A database error occurred while saving the offer.'),
@@ -261,7 +264,7 @@ export async function submitJobOfferAnalysis(
       .single();
 
     if (analysisError || !analysisData) {
-      logError('submit_job_offer_analysis_insert', analysisError, { userId: user.id, jobOfferId: offerData.id, ...debugBase });
+      logError('submit_job_offer_analysis_insert', analysisError, { userId: user?.id || 'guest', jobOfferId: offerData.id, ...debugBase });
       return createErrorResponse(
         ErrorCode.DATABASE_ERROR,
         t('jobOfferActions.analysisSaveError', 'A database error occurred while saving the analysis.'),

@@ -147,3 +147,321 @@
  ✓ Compiled in 2.5s (1949 modules)
  ✓ Compiled in 1526ms (1949 modules)
  ✓ Compiled in 5.5s (4351 modules)
+ ✓ Compiled in 14.9s (6286 modules)
+ ✓ Compiled in 2.7s (4351 modules)
+ ✓ Compiled in 2.3s (4351 modules)
+ ✓ Compiled in 2.5s (1949 modules)
+ ✓ Compiled in 1345ms (1949 modules)
+ ✓ Compiled in 1340ms (1949 modules)
+ ✓ Compiled in 1058ms (1949 modules)
+ ✓ Compiled in 1604ms (1949 modules)
+ ✓ Compiled in 10.9s (6300 modules)
+ ✓ Compiled in 1559ms (1949 modules)
+ ✓ Compiled in 5.7s (1949 modules)
+ ✓ Compiled in 2.9s (1949 modules)
+ ✓ Compiled in 5.1s (6286 modules)
+ ✓ Compiled in 2.5s (6286 modules)
+ ✓ Compiled in 4.5s (1949 modules)
+ ✓ Compiled in 16s (6300 modules)
+ ✓ Compiled in 11.2s (6290 modules)
+ ✓ Compiled in 2.4s (4346 modules)
+ ✓ Compiled in 1884ms (1944 modules)
+ ✓ Compiled in 1844ms (1944 modules)
+ ✓ Compiled in 1243ms (1944 modules)
+ ✓ Compiled in 3.1s (1944 modules)
+ ✓ Compiled in 1443ms (1944 modules)
+ ✓ Compiled in 7.1s (4346 modules)
+ ✓ Compiled in 3.4s (4346 modules)
+ ✓ Compiled in 15.3s (6290 modules)
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.137.1:9002
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ serverMinification
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 11.7s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 948ms (211 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 27s (4685 modules)
+ ○ Compiling /manifest.webmanifest ...
+ GET / 200 in 34998ms
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.137.1:9002
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+     ⨯ serverMinification
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 6.7s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1367ms (211 modules)
+ ○ Compiling /job-offers ...
+ ✓ Compiled /job-offers in 19.4s (2409 modules)
+ GET /job-offers 307 in 24107ms
+ ✓ Compiled in 4.6s (1029 modules)
+ ○ Compiling /job-offers/analyze ...
+ ✓ Compiled /job-offers/analyze in 14.5s (4422 modules)
+ GET /job-offers/analyze 200 in 18222ms
+ ○ Compiling /manifest.webmanifest ...
+ ✓ Compiled /manifest.webmanifest in 3.1s (4441 modules)
+ GET /manifest.webmanifest 200 in 3720ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /apple-icon in 10.8s (4917 modules)
+ GET /favicon.ico 200 in 11484ms
+ GET /apple-icon 200 in 11456ms
+ POST /api/analytics/track 200 in 12361ms
+ GET /job-offers 307 in 3770ms
+ GET /manifest.webmanifest 200 in 1123ms
+ GET /job-offers/analyze 200 in 3220ms
+ GET /apple-icon 200 in 3378ms
+ POST /api/analytics/track 200 in 5464ms
+ ✓ Compiled in 3.3s (1041 modules)
+ GET /job-offers/analyze 200 in 1049ms
+ GET /manifest.webmanifest 200 in 179ms
+ GET /job-offers/analyze 200 in 608ms
+ GET /apple-icon 200 in 1324ms
+ GET /manifest.webmanifest 200 in 1340ms
+ GET /apple-icon 200 in 71ms
+ ✓ Compiled in 2.3s (1041 modules)
+ GET /job-offers/analyze 200 in 368ms
+ GET /manifest.webmanifest 200 in 219ms
+ GET /apple-icon 200 in 738ms
+ GET /job-offers/analyze 200 in 1158ms
+ GET /manifest.webmanifest 200 in 117ms
+ GET /apple-icon 200 in 77ms
+ ✓ Compiled in 1826ms (3418 modules)
+ GET /job-offers/analyze 200 in 1108ms
+ GET /manifest.webmanifest 200 in 233ms
+ GET /job-offers/analyze 200 in 475ms
+ GET /apple-icon 200 in 138ms
+ GET /manifest.webmanifest 200 in 193ms
+ GET /apple-icon 200 in 48ms
+ ✓ Compiled in 1263ms (1041 modules)
+ GET /job-offers/analyze 200 in 422ms
+ GET /manifest.webmanifest 200 in 567ms
+ GET /job-offers/analyze 200 in 827ms
+ GET /apple-icon 200 in 490ms
+ GET /manifest.webmanifest 200 in 641ms
+ GET /apple-icon 200 in 59ms
+ ✓ Compiled in 1882ms (1041 modules)
+ GET /job-offers/analyze 200 in 338ms
+ GET /manifest.webmanifest 200 in 216ms
+ GET /job-offers/analyze 200 in 410ms
+ GET /manifest.webmanifest 200 in 387ms
+ GET /apple-icon 200 in 464ms
+ GET /apple-icon 200 in 67ms
+ ✓ Compiled in 1559ms (3418 modules)
+ GET /job-offers/analyze 200 in 1321ms
+ GET /manifest.webmanifest 200 in 364ms
+ GET /job-offers/analyze 200 in 624ms
+ GET /apple-icon 200 in 113ms
+ GET /manifest.webmanifest 200 in 172ms
+ GET /apple-icon 200 in 52ms
+ GET /manifest.webmanifest 200 in 284ms
+ GET /job-offers/analyze 200 in 1373ms
+ GET /apple-icon 200 in 72ms
+ POST /api/analytics/track 200 in 328ms
+[job_offer_analysis_debug] {
+  requestedSourceType: 'paste',
+  effectiveSourceType: 'paste',
+  sourceUrl: null,
+  sourceTextLength: 151,
+  sourceTextPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.',
+  extracted: {
+    companyName: 'Tech-Maroc. Description: Fullstack developer with experience in React and Node.j',
+    jobTitle: 'Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Ful',
+    city: 'Casablanca',
+    salaryMin: 12000,
+    salaryMax: null,
+    payPeriod: 'monthly'
+  },
+  extractionDiagnostics: {
+    sourceType: 'paste',
+    currentStage: 'validate_fields',
+    sourceUrl: null,
+    sourceFetchStatus: 'not_applicable',
+    sourceFetchError: null,
+    rawContentLength: 151,
+    cleanedContentLength: 151,
+    rawContentPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.',
+    cleanedContentPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.',
+    usedAi: false,
+    notes: [
+      'Heuristic extraction completed.',
+      'AI extraction skipped: no configured AI provider.'
+    ],
+    missingCriticalFields: [],
+    minimumFieldsMet: true,
+    fieldDiagnostics: {
+      companyName: [Object],
+      jobTitle: [Object],
+      city: [Object],
+      salaryMin: [Object],
+      salaryMax: [Object],
+      payPeriod: [Object],
+      contractType: [Object],
+      workModel: [Object],
+      seniorityLevel: [Object],
+      yearsExperienceRequired: [Object],
+      benefits: [Object]
+    }
+  },
+  normalized: {
+    companyName: 'Tech-Maroc. Description: Fullstack developer with experience in React and Node.j',
+    jobTitle: 'Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Ful',
+    city: 'Casablanca',
+    citySlug: 'casablanca'
+  },
+  benchmarks: {
+    businessId: null,
+    primarySource: 'city',
+    primaryMedianMonthly: 11600,
+    sampleCount: 92
+  },
+  scores: {
+    overall: 67.3,
+    compensation: 62,
+    marketAlignment: 88,
+    transparency: 55,
+    quality: 63
+  }
+}
+ POST /job-offers/analyze 200 in 9567ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 27.1s (4490 modules)
+ GET /login 200 in 36664ms
+ GET /manifest.webmanifest 200 in 400ms
+ GET /login 200 in 22249ms
+ GET /favicon.ico 200 in 233ms
+ POST /api/analytics/track 200 in 1383ms
+ GET /apple-icon 200 in 1247ms
+ GET /manifest.webmanifest 200 in 642ms
+ GET /job-offers/analyze 200 in 2446ms
+ GET /apple-icon 200 in 253ms
+ POST /api/analytics/track 200 in 911ms
+ GET /job-offers 307 in 1517ms
+ GET /manifest.webmanifest 200 in 538ms
+ GET /job-offers/analyze 200 in 1987ms
+ GET /apple-icon 200 in 84ms
+ POST /api/analytics/track 200 in 280ms
+ GET /job-offers 307 in 908ms
+ GET /manifest.webmanifest 200 in 301ms
+ GET /job-offers/analyze 200 in 1355ms
+ GET /apple-icon 200 in 104ms
+ POST /api/analytics/track 200 in 342ms
+[job_offer_analysis_debug] {
+  requestedSourceType: 'paste',
+  effectiveSourceType: 'paste',
+  sourceUrl: null,
+  sourceTextLength: 151,
+  sourceTextPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.',
+  extracted: {
+    companyName: 'Tech-Maroc. Description: Fullstack developer with experience in React and Node.j',
+    jobTitle: 'Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Ful',
+    city: 'Casablanca',
+    salaryMin: 12000,
+    salaryMax: null,
+    payPeriod: 'monthly'
+  },
+  extractionDiagnostics: {
+    sourceType: 'paste',
+    currentStage: 'validate_fields',
+    sourceUrl: null,
+    sourceFetchStatus: 'not_applicable',
+    sourceFetchError: null,
+    rawContentLength: 151,
+    cleanedContentLength: 151,
+    rawContentPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.',
+    cleanedContentPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.',
+    usedAi: false,
+    notes: [
+      'Heuristic extraction completed.',
+      'AI extraction skipped: no configured AI provider.'
+    ],
+    missingCriticalFields: [],
+    minimumFieldsMet: true,
+    fieldDiagnostics: {
+      companyName: [Object],
+      jobTitle: [Object],
+      city: [Object],
+      salaryMin: [Object],
+      salaryMax: [Object],
+      payPeriod: [Object],
+      contractType: [Object],
+      workModel: [Object],
+      seniorityLevel: [Object],
+      yearsExperienceRequired: [Object],
+      benefits: [Object]
+    }
+  },
+  normalized: {
+    companyName: 'Tech-Maroc. Description: Fullstack developer with experience in React and Node.j',
+    jobTitle: 'Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Ful',
+    city: 'Casablanca',
+    citySlug: 'casablanca'
+  },
+  benchmarks: {
+    businessId: null,
+    primarySource: 'city',
+    primaryMedianMonthly: 11600,
+    sampleCount: 92
+  },
+  scores: {
+    overall: 67.3,
+    compensation: 62,
+    marketAlignment: 88,
+    transparency: 55,
+    quality: 63
+  }
+}
+ POST /job-offers/analyze 200 in 4048ms
+ GET /login 200 in 334ms
+ POST /api/analytics/track 200 in 349ms
+ GET /manifest.webmanifest 200 in 140ms
+ GET /apple-icon 200 in 86ms
+ ○ Compiling /salaires ...
+ ✓ Compiled /salaires in 15.4s (4509 modules)
+ GET /manifest.webmanifest 200 in 377ms
+ GET /salaires 200 in 20348ms
+ GET /apple-icon 200 in 891ms
+ POST /api/analytics/track 200 in 316ms
+ ○ Compiling /salaires/comparaison ...
+ ✓ Compiled /salaires/comparaison in 14.7s (4538 modules)
+ GET /manifest.webmanifest 200 in 830ms
+ GET /salaires/comparaison 200 in 20578ms
+ GET /apple-icon 200 in 1016ms
+ POST /api/analytics/track 200 in 834ms
+ ○ Compiling /job-offers/[analysisId] ...
+ ✓ Compiled /job-offers/[analysisId] in 11.5s (4657 modules)
+ GET /job-offers/test-id 404 in 16090ms
+ GET /manifest.webmanifest 200 in 221ms
+ POST /api/analytics/track 200 in 458ms
+ GET /apple-icon 200 in 748ms
+ GET /job-offers 307 in 1214ms
+ GET /manifest.webmanifest 200 in 298ms
+ GET /job-offers/analyze 200 in 1511ms
+ GET /apple-icon 200 in 239ms
+ POST /api/analytics/track 200 in 493ms
+ ✓ Compiled in 14s (3520 modules)
+ ✓ Compiled in 4s (3520 modules)
+ ✓ Compiled in 4.7s (1124 modules)
+ ✓ Compiled in 1669ms (1124 modules)
+ ✓ Compiled in 3s (3520 modules)
+ ✓ Compiled in 2.7s (1124 modules)
+ ✓ Compiled in 3.2s (1124 modules)
+ ✓ Compiled in 2.1s (1124 modules)
+ ✓ Compiled in 2.1s (1124 modules)
+ ✓ Compiled in 1147ms (1124 modules)
+ ✓ Compiled in 1140ms (1124 modules)
+ ✓ Compiled in 2.5s (1124 modules)
+ ✓ Compiled in 1679ms (1124 modules)
+ ✓ Compiled in 2.2s (1124 modules)
+ ✓ Compiled in 1908ms (1124 modules)

@@ -12,9 +12,9 @@ type Props = {
 };
 
 const TIER_LABEL: Record<string, string> = {
-  accept: '✅ ACCEPT',
-  negotiate: '⚠️ NEGOTIATE',
-  avoid: '❌ AVOID',
+  accept: '✅ ACCEPTER',
+  negotiate: '⚠️ NÉGOCIER',
+  avoid: '❌ PRUDENCE',
 };
 
 const TIER_BG: Record<string, string> = {
@@ -35,13 +35,13 @@ export function ShareableVerdictCard({ workspace, analysisId }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { decisionTier, snapshot, salaryGapPercent } = workspace;
-  const tierLabel = TIER_LABEL[decisionTier] ?? 'ANALYZE';
+  const tierLabel = TIER_LABEL[decisionTier] ?? 'ANALYSE';
 
   const gapText = salaryGapPercent != null
     ? salaryGapPercent > 0
-      ? `+${Math.abs(Math.round(salaryGapPercent))}% above market`
-      : `${Math.abs(Math.round(salaryGapPercent))}% below market`
-    : 'Salary not disclosed';
+      ? `+${Math.abs(Math.round(salaryGapPercent))}% au-dessus du marché`
+      : `${Math.abs(Math.round(salaryGapPercent))}% en-dessous du marché`
+    : t('jobOffers.workspace.formatting.notDisclosed', 'Salaire non divulgué');
 
   const handleShare = async () => {
     setIsGenerating(true);
@@ -50,7 +50,7 @@ export function ShareableVerdictCard({ workspace, analysisId }: Props) {
       if (navigator.share) {
         await navigator.share({
           title: `${tierLabel} — ${snapshot.jobTitle}`,
-          text: `I analyzed my job offer at ${snapshot.companyName} on ReviewlyMA. Verdict: ${tierLabel}. ${gapText}. Check yours too!`,
+          text: `J'ai analysé mon offre d'emploi chez ${snapshot.companyName} sur Avisine. Verdict : ${tierLabel}. ${gapText}. Analysez la vôtre aussi !`,
           url: analysisId ? `${window.location.origin}/job-offers/${analysisId}` : window.location.href,
         });
         analytics.track('job_offer_shared', {
@@ -62,14 +62,14 @@ export function ShareableVerdictCard({ workspace, analysisId }: Props) {
         // Fallback: copy URL to clipboard
         const url = analysisId ? `${window.location.origin}/job-offers/${analysisId}` : window.location.href;
         await navigator.clipboard.writeText(
-          `I analyzed my job offer on ReviewlyMA. Verdict: ${tierLabel} — ${gapText}. Analyze yours: ${url}`
+          `J'ai analysé mon offre d'emploi sur Avisine. Verdict : ${tierLabel} — ${gapText}. Analysez la vôtre : ${url}`
         );
         analytics.track('job_offer_shared', {
           analysis_id: analysisId,
           tier: decisionTier,
           method: 'clipboard',
         });
-        alert('Share text copied to clipboard!');
+        alert('Texte de partage copié !');
       }
     } catch {
       // user cancelled or API not available
@@ -149,7 +149,7 @@ export function ShareableVerdictCard({ workspace, analysisId }: Props) {
         aria-hidden="true"
       >
         <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.18em', color: '#64748b', textTransform: 'uppercase' }}>
-          ReviewlyMA · Job Offer Analysis
+          Avisine · Analyse d'Offre
         </p>
         <p style={{
           marginTop: '12px',
@@ -173,15 +173,15 @@ export function ShareableVerdictCard({ workspace, analysisId }: Props) {
           borderRadius: '12px',
         }}>
           <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
-            Salary position
+            Position salariale
           </p>
           <p style={{ marginTop: '4px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>
-            {'█████ MAD / mo'} {/* blurred for privacy */}
+            {'█████ MAD / mois'} {/* blurred for privacy */}
           </p>
           <p style={{ fontSize: '12px', color: '#64748b' }}>{gapText}</p>
         </div>
         <p style={{ marginTop: '16px', fontSize: '11px', color: '#94a3b8' }}>
-          reviewly.ma · Analyze yours for free
+          avisine.ma · Analysez la vôtre gratuitement
         </p>
       </div>
     </div>

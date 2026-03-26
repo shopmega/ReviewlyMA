@@ -39,7 +39,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const supabase = await createServiceClient();
+    let supabase;
+    try {
+      supabase = await createServiceClient();
+    } catch {
+      // Fallback to anonymous client if service role key is missing
+      // (This avoids 500 error in local/dev environments without the key)
+      const { createClient } = await import('@/lib/supabase/server');
+      supabase = await createClient();
+    }
 
     if (body.type === 'analytics_event') {
       const { error } = await supabase.from('analytics_events').insert(body.payload);

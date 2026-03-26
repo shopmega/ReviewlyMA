@@ -233,7 +233,7 @@ export function JobOfferAnalysisForm() {
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span>{t('jobOffers.form.decisionSupport', 'AI-powered decision support')}</span>
               <span>{t('jobOffers.form.privateAnalysis', 'Private analysis')}</span>
-              <span>{t('jobOffers.form.loginToSave', 'Login required to save and compare results')}</span>
+              <span>{t('jobOffers.form.loginToSave', 'Login required to save permanently. Guest scanning available.')}</span>
             </div>
           </form>
         </CardContent>

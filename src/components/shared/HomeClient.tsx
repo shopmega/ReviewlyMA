@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { BusinessCard } from '@/components/shared/BusinessCard';
 import Image from 'next/image';
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import type { Business, SeasonalCollection, CollectionLink } from '@/lib/types';
 import type { SiteSettings } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,7 +22,6 @@ import { Badge } from '@/components/ui/badge';
 import { ALL_CITIES } from '@/lib/location-discovery';
 import { SearchAutocomplete } from '@/components/shared/SearchAutocomplete';
 import { cn, slugify } from '@/lib/utils';
-import { useEffect } from 'react';
 import { analytics } from '@/lib/analytics';
 import { AdSlot } from '@/components/shared/AdSlot';
 import { useI18n } from '@/components/providers/i18n-provider';
@@ -99,13 +98,14 @@ interface HomeClientProps {
     categories?: any[]; // Dynamic categories from DB
     featuredBusinesses?: Business[];
     metrics?: { businessCount: number; reviewCount: number };
+    recentAnalyses?: any[]; // Recent anonymized job offer verdicts
 }
 
 const isValidCollectionLink = (link: any): link is CollectionLink => {
     return !!link && typeof link === 'object' && typeof link.type === 'string';
 };
 
-export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [], metrics }: HomeClientProps) {
+export function HomeClient({ initialBusinesses, seasonalCollections, siteSettings, categories, featuredBusinesses = [], metrics, recentAnalyses = [] }: HomeClientProps) {
     const { locale, t, tf } = useI18n();
     const ctaExperiment = 'homepage_conversion_cta_v2';
     // Use initialBusinesses from server as default, no need for complex loading state if desired
@@ -268,23 +268,6 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
         { name: t('home.stats.businesses', 'Etablissements'), value: (metrics?.businessCount ?? businessCount).toLocaleString(locale), icon: Building },
         { name: t('home.stats.reviews', 'Avis employes'), value: (metrics?.reviewCount ?? reviewCount).toLocaleString(locale), icon: Star },
     ];
-    const trustSignals = [
-        {
-            label: t('home.trust.businesses', 'Etablissements actifs'),
-            value: (metrics?.businessCount ?? businessCount).toLocaleString(locale),
-            icon: Building,
-        },
-        {
-            label: t('home.trust.reviews', 'Avis publies'),
-            value: (metrics?.reviewCount ?? reviewCount).toLocaleString(locale),
-            icon: Star,
-        },
-        {
-            label: t('home.trust.moderated', 'Moderation'),
-            value: t('home.trust.active', 'Active'),
-            icon: ShieldCheck,
-        },
-    ];
 
     const renderSection = (id: string) => {
         switch (id) {
@@ -320,32 +303,18 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                 </p>
                             </div>
 
-                            <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
-                                {trustSignals.map((signal) => (
-                                    <div
-                                        key={signal.label}
-                                        className="surface-soft flex items-center gap-3 px-4 py-3 bg-white/75 dark:bg-card/80 backdrop-blur-sm"
-                                    >
-                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                            <signal.icon className="h-4 w-4" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-sm font-bold leading-none">{signal.value}</p>
-                                            <p className="text-[11px] text-muted-foreground mt-1">{signal.label}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Search + Filters */}
-                            <div className="w-full max-w-3xl animate-fade-in-up [animation-delay:200ms]">
-                                <div className="surface-strong flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-2 p-2.5 md:p-2 bg-white/85 dark:bg-card/90 backdrop-blur-xl transition-all duration-300">
+                            {/* Secondary Search + Filters */}
+                            <div className="w-full max-w-2xl animate-fade-in-up [animation-delay:400ms] mt-4">
+                                <p className="text-center text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-widest opacity-80">
+                                    Ou recherchez un employeur
+                                </p>
+                                <div className="surface-strong flex flex-col md:flex-row items-stretch md:items-center gap-2 p-2 bg-white/80 dark:bg-card/90 backdrop-blur-xl border-border/40 ring-1 ring-black/5">
                                     <div className="flex-1 w-full relative z-10">
                                         <SearchAutocomplete
                                             city={searchCity}
-                                            placeholder={t('home.hero.searchPlaceholder', 'Entreprise, poste ou mot-cle...')}
+                                            placeholder={t('home.hero.searchPlaceholder', 'Entreprise, poste ou mot-clé...')}
                                             className="w-full"
-                                            inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base md:text-lg h-11 md:h-12 px-4 shadow-none focus-visible:ring-0"
+                                            inputClassName="bg-transparent border-none text-foreground placeholder:text-muted-foreground/50 text-base h-11 px-4 shadow-none focus-visible:ring-0"
                                             showIcon={false}
                                             onQueryChange={setHomeQuery}
                                             onSearch={(q) => {
@@ -361,9 +330,9 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                                             window.location.href = buildSearchUrl(homeQuery);
                                         }}
                                         size="lg"
-                                        className="w-full md:w-auto h-11 md:h-12 px-6 md:px-7 rounded-xl bg-gradient-to-r from-primary to-blue-700 hover:from-primary/90 hover:to-blue-700/90 text-white font-bold text-base md:text-lg shadow-lg hover:shadow-primary/25 hover:scale-[1.02] transition-all active:scale-[0.98]"
+                                        className="w-full md:w-auto h-11 px-6 rounded-xl bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 font-bold transition-all"
                                     >
-                                        {t('home.hero.searchCta', 'Rechercher une entreprise')}
+                                        {t('home.hero.searchCta', 'Rechercher')}
                                     </Button>
                                 </div>
 
@@ -442,6 +411,100 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                     </section>
                 );
+            case 'decision-pulse':
+                return (
+                    <section key="decision-pulse" className="container mx-auto px-4 py-14">
+                        <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 animate-fade-in-up">
+                            <Link
+                                href="/job-offers"
+                                onClick={() => trackHomeCta('analyze_offer', 'hero_card_primary')}
+                                className="group relative overflow-hidden surface-strong p-6 md:p-8 bg-white/90 dark:bg-card/95 backdrop-blur-xl border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] shadow-xl hover:shadow-primary/10"
+                            >
+                                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Zap className="h-24 w-24 text-primary" />
+                                </div>
+                                <div className="relative z-10 flex flex-col items-start gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                                        <ShieldCheck className="h-6 w-6" />
+                                    </div>
+                                    <div className="text-left space-y-1">
+                                        <h3 className="text-xl md:text-2xl font-bold">{t('home.hero.scanCta', 'Analyser mon offre')}</h3>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            Obtenez un verdict IA sur votre contrat, le salaire et les signaux de risque.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center text-primary font-bold text-sm tracking-wide group-hover:gap-2 transition-all">
+                                        Démarrer le scan <ArrowRight className="ml-1 h-4 w-4" />
+                                    </div>
+                                </div>
+                            </Link>
+
+                            <Link
+                                href="/salaires"
+                                onClick={() => trackHomeCta('compare_salary', 'hero_card_secondary')}
+                                className="group relative overflow-hidden surface-soft p-6 md:p-8 bg-white/70 dark:bg-card/80 backdrop-blur-xl border-border/40 hover:border-primary/30 transition-all duration-300 hover:scale-[1.02] shadow-lg"
+                            >
+                                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Activity className="h-24 w-24 text-blue-600" />
+                                </div>
+                                <div className="relative z-10 flex flex-col items-start gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center">
+                                        <Briefcase className="h-6 w-6" />
+                                    </div>
+                                    <div className="text-left space-y-1">
+                                        <h3 className="text-xl md:text-2xl font-bold">{t('home.hero.compareSalaryCta', 'Comparer mon salaire')}</h3>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            Découvrez où vous vous situez sur le marché marocain actuel.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center text-blue-600 dark:text-blue-400 font-bold text-sm tracking-wide group-hover:gap-2 transition-all">
+                                        Voir les benchmarks <ArrowRight className="ml-1 h-4 w-4" />
+                                    </div>
+                                </div>
+                            </Link>
+                        </div>
+                        
+                        {/* Decision Pulse: Recent Verdicts */}
+                        {recentAnalyses && recentAnalyses.length > 0 && (
+                            <div className="mt-12 animate-fade-in-up [animation-delay:600ms]">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                    <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                                        Derniers verdicts anonymisés
+                                    </h4>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {recentAnalyses.slice(0, 3).map((analysis, idx) => (
+                                        <div key={idx} className="surface-soft p-4 rounded-2xl border border-border/40 flex flex-col gap-3">
+                                            <div className="flex justify-between items-start">
+                                                <Badge variant="outline" className={cn(
+                                                    "capitalize",
+                                                    analysis.market_position_label === 'ACCEPT' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                                    analysis.market_position_label === 'NEGOTIATE' ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                                    "bg-rose-50 text-rose-700 border-rose-200"
+                                                )}>
+                                                    Verdict: {(analysis.market_position_label || 'ANALYSE').toLowerCase()}
+                                                </Badge>
+                                                <span className="text-[10px] text-muted-foreground uppercase">{analysis.city}</span>
+                                            </div>
+                                            <p className="text-sm font-semibold line-clamp-1">{analysis.job_title}</p>
+                                            <div className="flex items-center justify-between mt-auto">
+                                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                    <span className="font-bold text-foreground">{analysis.salary_min} - {analysis.salary_max} MAD</span>
+                                                    <span>•</span>
+                                                    <span>{analysis.seniority_level}</span>
+                                                </div>
+                                                <Link href="/job-offers" className="text-xs font-bold text-primary hover:underline">
+                                                    Scanner la mienne
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </section>
+                );
             case 'recently-added':
                 return recentBusinesses.length > 0 ? (
                     <section key="recently-added" className="py-14 container mx-auto px-4">
@@ -461,198 +524,11 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                     </section>
                 ) : null;
-            case 'trust-signals':
-                return (completeProfileBusinesses.length > 0 || recentBusinesses.length > 0) ? (
-                    <section key="trust-signals" className="py-14 container mx-auto px-4">
-                        <div className="text-center mb-8 space-y-2">
-                            <h2 className="text-2xl md:text-3xl font-bold font-headline">{t('home.completeProfiles.title', 'Top entreprises avec profil complet')}</h2>
-                            <p className="text-muted-foreground">Fiches avec informations utiles: horaires, adresse, site web et photos.</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {(completeProfileBusinesses.length > 0 ? completeProfileBusinesses : recentBusinesses).slice(0, 6).map((business) => {
-                                const hasHours = Array.isArray(business.hours) && business.hours.length > 0;
-                                const hasAddress = Boolean((business.address || business.location || '').trim());
-                                const hasWebsite = Boolean((business.website || '').trim());
-                                const hasPhotos =
-                                    Boolean(business.logo_url) ||
-                                    (Array.isArray(business.gallery_urls) && business.gallery_urls.length > 0) ||
-                                    (Array.isArray(business.photos) && business.photos.length > 0);
-
-                                return (
-                                    <Card key={business.id} className="surface-soft hover:border-primary/30 transition-colors">
-                                        <CardContent className="p-5 space-y-4">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <h3 className="font-bold text-lg leading-tight">{business.name}</h3>
-                                                    <p className="text-xs text-muted-foreground">{business.city || business.location || 'Maroc'}</p>
-                                                </div>
-                                                <Building className="h-5 w-5 text-primary" />
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {hasHours && <Badge variant="secondary">Horaires</Badge>}
-                                                {hasAddress && <Badge variant="secondary">Adresse</Badge>}
-                                                {hasWebsite && <Badge variant="secondary">Site web</Badge>}
-                                                {hasPhotos && <Badge variant="secondary">Photos</Badge>}
-                                            </div>
-                                            <Button asChild variant="ghost" className="w-full justify-between">
-                                                <Link href={`/businesses/${business.id}`}>
-                                                    {t('home.completeProfiles.viewProfile', 'Voir la fiche complete')}
-                                                    <ArrowRight className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    </section>
-                ) : null;
-            case 'stats':
-                return (
-                    <section key="stats" className="container mx-auto px-4 mt-8 md:-mt-16 relative z-20">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-                            {stats.map((stat) => (
-                                <div key={stat.name} className="surface-strong p-6 flex items-center gap-6 transform hover:-translate-y-1 transition-transform duration-300">
-                                    <div className="p-4 bg-primary/10 rounded-full text-primary">
-                                        <stat.icon className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-3xl font-bold font-headline">{stat.value}</p>
-                                        <p className="text-muted-foreground font-medium">{stat.name}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                );
-            case 'claim-business':
-                return (
-                    <section key="claim-business" className="container mx-auto px-4 py-14">
-                        <div className="max-w-5xl mx-auto rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-indigo-500/5 p-6 md:p-8">
-                            <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
-                                <div className="flex-1 space-y-3">
-                                    <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5">
-                                        {t('home.claim.badge', 'Espace entreprises')}
-                                    </Badge>
-                                    <h2 className="text-2xl md:text-3xl font-bold font-headline">
-                                        {t('home.claim.title', 'Vous representez une entreprise ?')}
-                                    </h2>
-                                    <p className="text-muted-foreground">
-                                        {t('home.claim.subtitle', 'Revendiquer votre fiche renforce la confiance, vous permet de repondre aux avis et de partager des mises a jour officielles.')}
-                                    </p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                                        <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2">
-                                            <span className="font-semibold">{t('home.claim.benefit1', 'Reponse officielle')}</span>
-                                        </div>
-                                        <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2">
-                                            <span className="font-semibold">{t('home.claim.benefit2', 'Profil verifie')}</span>
-                                        </div>
-                                        <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2">
-                                            <span className="font-semibold">{t('home.claim.benefit3', 'Mises a jour employeur')}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:w-[260px]">
-                                    <Button asChild size="lg" className="rounded-xl font-bold">
-                                        <Link href="/claim/new" onClick={() => trackHomeCta('claim_listing', 'claim_business_section_primary')}>
-                                            <ShieldCheck className="mr-2 h-4 w-4" />
-                                            {t('home.claim.start', 'Commencer la revendication')}
-                                        </Link>
-                                    </Button>
-                                    <Button asChild size="lg" variant="outline" className="rounded-xl font-bold border-primary/30 text-primary">
-                                        <Link href="/pro" onClick={() => trackHomeCta('pro_offers', 'claim_business_section_secondary')}>
-                                            {t('home.claim.learnMore', 'Voir les offres pro')}
-                                            <ChevronRight className="ml-2 h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                );
             case 'ad-banner-top':
                 return (
                     <div key="ad-banner-top" className="container mx-auto px-4 py-8">
                         <AdSlot slot="home-top-banner" className="bg-muted/30 border border-border/50 rounded-2xl min-h-[120px]" />
                     </div>
-                );
-            case 'collections':
-                return (
-                    <section key="collections" className="py-24 container mx-auto px-4">
-                        <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-3xl md:text-5xl font-bold font-headline">{t('home.exploreBySector', 'Explorez par')} <span className="text-primary">{t('home.sector', 'Secteur')}</span></h2>
-                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('home.collections.subtitle', 'Plongez dans nos collections thematiques et trouvez la societe parfaite pour votre carriere.')}</p>
-                        </div>
-
-                        <Carousel
-                            plugins={[collectionsAutoplayPlugin.current]}
-                            opts={{ align: "start", loop: true }}
-                            className="w-full group"
-                            setApi={setCollectionsApi}
-                        >
-                            <CarouselContent className="-ml-4">
-                                {seasonalCollections.map((collection, index) => {
-                                    const link: CollectionLink = isValidCollectionLink(collection.link)
-                                        ? collection.link
-                                        : ({ type: 'custom', href: '/businesses' } as const);
-                                    const href = getCollectionHref(link);
-                                    return (
-                                        <CarouselItem key={collection.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                                            <Link
-                                                href={href}
-                                                className="group relative overflow-hidden rounded-3xl h-[300px] flex flex-col justify-end p-8 border hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
-                                                onClick={async () => {
-                                                    await analytics.trackCarouselClick(
-                                                        collection.id,
-                                                        collection.title,
-                                                        collection.subtitle,
-                                                        link.type,
-                                                        href,
-                                                        index
-                                                    );
-                                                }}
-                                            >
-                                                <Image
-                                                    src={collection.imageUrl}
-                                                    alt={collection.title}
-                                                    fill
-                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-                                                <div className="relative z-10 space-y-2">
-                                                    <Badge className="border-none mb-2">Collection</Badge>
-                                                    <h3 className="text-2xl font-bold text-white font-headline leading-tight">{collection.title}</h3>
-                                                    <p className="text-white/95 line-clamp-1">{collection.subtitle}</p>
-                                                </div>
-                                            </Link>
-                                        </CarouselItem>
-                                    );
-                                })}
-                            </CarouselContent>
-
-                            <div className="flex justify-center gap-4 mt-8">
-                                <CarouselPrevious className="relative static translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <CarouselNext className="relative static translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-
-                            <div className="flex justify-center gap-1.5 mt-4">
-                                {seasonalCollections.map((collection, index) => (
-                                    <button
-                                        key={collection.id}
-                                        onClick={() => collectionsApi?.scrollTo(index)}
-                                        className={cn(
-                                            "w-2 h-2 rounded-full transition-all duration-300",
-                                            collectionsCurrent === index
-                                                ? "bg-primary w-4"
-                                                : "bg-primary/20 hover:bg-primary/40"
-                                        )}
-                                        aria-label={`Go to collection ${index + 1}`}
-                                    />
-                                ))}
-                            </div>
-                        </Carousel>
-                    </section>
                 );
             case 'categories':
                 return (
@@ -770,49 +646,6 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                         </div>
                     </section>
                 );
-            case 'featured-guides':
-                return (
-                    <section key="featured-guides" className="py-20 bg-secondary/20">
-                        <div className="container mx-auto px-4">
-                            <div className="text-center mb-10 space-y-2">
-                                <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('home.guides.title', 'Guides a la une')}</h2>
-                                <p className="text-muted-foreground">{t('home.guides.subtitle', 'Des ressources pratiques pour orienter votre recherche.')}</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <Card className="surface-soft hover:border-primary/30 transition-colors">
-                                    <CardContent className="p-6 space-y-3">
-                                        <Badge variant="outline">{t('home.guides.cityBadge', 'Guides par ville')}</Badge>
-                                        <h3 className="font-bold text-lg">{t('home.guides.cityTitle', 'Comparez les villes avant de candidater')}</h3>
-                                        <p className="text-sm text-muted-foreground">{t('home.guides.cityDesc', "Explorez les entreprises par ville et reperez rapidement les meilleurs bassins d'emploi.")}</p>
-                                        <Button asChild variant="ghost" className="px-0">
-                                            <Link href="/villes">{t('home.guides.cityCta', 'Voir les guides ville')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                                <Card className="surface-soft hover:border-primary/30 transition-colors">
-                                    <CardContent className="p-6 space-y-3">
-                                        <Badge variant="outline">{t('home.guides.salaryBadge', 'Salaire par secteur')}</Badge>
-                                        <h3 className="font-bold text-lg">{t('home.guides.salaryTitle', 'Situez votre remuneration')}</h3>
-                                        <p className="text-sm text-muted-foreground">{t('home.guides.salaryDesc', 'Consultez les reperes salariaux par metier, ville et secteur pour negocier avec confiance.')}</p>
-                                        <Button asChild variant="ghost" className="px-0">
-                                            <Link href="/salaires">{t('home.guides.salaryCta', 'Voir les guides salaire')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                                <Card className="surface-soft hover:border-primary/30 transition-colors">
-                                    <CardContent className="p-6 space-y-3">
-                                        <Badge variant="outline">{t('home.guides.interviewBadge', 'Avant entretien')}</Badge>
-                                        <h3 className="font-bold text-lg">{t('home.guides.interviewTitle', 'Pourquoi consulter les avis avant un entretien')}</h3>
-                                        <p className="text-sm text-muted-foreground">{t('home.guides.interviewDesc', 'Comprenez la culture, la gestion et les attentes terrain avant de vous engager.')}</p>
-                                        <Button asChild variant="ghost" className="px-0">
-                                            <Link href="/about">{t('home.guides.interviewCta', 'Lire le guide')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
-                    </section>
-                );
             case 'how-it-works':
                 return (
                     <section key="how-it-works" className="py-16 container mx-auto px-4">
@@ -886,80 +719,49 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
                 ) : null;
             case 'resources':
                 return (
-                    <section key="resources" className="py-24 bg-gradient-to-b from-background to-indigo-50/30 dark:to-indigo-950/10">
+                    <section key="resources" className="py-20 border-t bg-slate-50/50 dark:bg-slate-900/10">
                         <div className="container mx-auto px-4">
-                            <div className="flex flex-col lg:flex-row items-center gap-16">
-                                <div className="flex-1 space-y-8 text-center lg:text-left">
+                            <div className="max-w-4xl mx-auto space-y-12">
+                                <div className="text-center space-y-4">
                                     <Badge variant="outline" className="px-4 py-1.5 border-indigo-200 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-full font-bold uppercase tracking-wider text-[10px]">
                                         {t('home.resources.badge', 'Outils & droits du travail')}
                                     </Badge>
-                                    <h2 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
-                                        {t('home.resources.titleLine1', 'Tout pour reussir votre')} <br />
-                                        <span className="text-primary">{t('home.resources.titleLine2', 'carriere au Maroc')}</span>
+                                    <h2 className="text-3xl md:text-4xl font-bold font-headline leading-tight">
+                                        {t('home.resources.titleLine1', 'Tout pour reussir votre')} <span className="text-primary">{t('home.resources.titleLine2', 'carriere au Maroc')}</span>
                                     </h2>
-                                    <p className="text-xl text-muted-foreground leading-relaxed">
+                                    <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
                                         {t('home.resources.subtitlePrefix', 'En partenariat avec')} <span className="font-bold text-foreground">{siteSettings?.partner_app_name || "MOR RH"}</span>, {t('home.resources.subtitleSuffix', 'nous mettons a votre disposition des outils gratuits pour mieux gerer votre vie professionnelle.')}
                                     </p>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {[
-                                            { title: t('home.resources.tool1Title', 'Simulateur de salaire'), desc: t('home.resources.tool1Desc', 'Calculez votre brut en net'), icon: Activity },
-                                            { title: t('home.resources.tool2Title', "Calcul d'indemnites"), desc: t('home.resources.tool2Desc', 'Estimez vos droits de depart'), icon: Zap },
-                                            { title: t('home.resources.tool3Title', 'Modeles de lettres'), desc: t('home.resources.tool3Desc', 'Demission, reclamation...'), icon: Briefcase },
-                                            { title: t('home.resources.tool4Title', 'Droit du travail'), desc: t('home.resources.tool4Desc', 'Articles et guides experts'), icon: GraduationCap },
-                                        ].map((tool, idx) => (
-                                            <div key={idx} className="surface-soft flex gap-4 p-4 hover:border-primary/30 transition-colors">
-                                                <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-primary/10 rounded-xl text-primary">
-                                                    <tool.icon className="w-5 h-5" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-bold text-sm">{tool.title}</h4>
-                                                    <p className="text-xs text-muted-foreground">{tool.desc}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="pt-4">
-                                        <Button asChild size="lg" className="cta-primary rounded-2xl h-14 px-8 group">
-                                            <a href={siteSettings?.partner_app_url || "https://monrh.vercel.app/"} target="_blank" rel="noopener noreferrer">
-                                                {t('home.resources.cta', 'Decouvrir tous les outils')}
-                                                <ExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                            </a>
-                                        </Button>
-                                    </div>
                                 </div>
-                                <div className="flex-1 relative w-full max-w-xl mx-auto lg:mx-0">
-                                    <div className="absolute inset-0 bg-primary/10 blur-[100px] rounded-full transform translate-x-10 translate-y-10" />
-                                    <div className="relative glass-card overflow-hidden rounded-[2.5rem] border border-white/20 dark:border-white/10 shadow-2xl">
-                                        <div className="aspect-[4/3] bg-slate-900 flex items-center justify-center">
-                                            {/* Mocking the UI or an image from Salarie.ma */}
-                                            <div className="p-10 space-y-6 w-full">
-                                                <div className="h-4 w-1/3 bg-white/20 rounded-full animate-pulse" />
-                                                <div className="h-12 w-3/4 bg-primary/40 rounded-2xl animate-pulse" />
-                                                <div className="space-y-3">
-                                                    <div className="h-3 w-full bg-white/10 rounded-full" />
-                                                    <div className="h-3 w-5/6 bg-white/10 rounded-full" />
-                                                    <div className="h-3 w-4/6 bg-white/10 rounded-full" />
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    {[
+                                        { title: t('home.resources.tool1Title', 'Simulateur de salaire'), desc: t('home.resources.tool1Desc', 'Calculez votre brut en net'), icon: Activity },
+                                        { title: t('home.resources.tool2Title', "Calcul d'indemnites"), desc: t('home.resources.tool2Desc', 'Estimez vos droits de depart'), icon: Zap },
+                                        { title: t('home.resources.tool3Title', 'Modeles de lettres'), desc: t('home.resources.tool3Desc', 'Demission, reclamation...'), icon: Briefcase },
+                                        { title: t('home.resources.tool4Title', 'Droit du travail'), desc: t('home.resources.tool4Desc', 'Consultez le code du travail'), icon: Landmark },
+                                    ].map((tool, i) => (
+                                        <div key={i} className="surface-soft p-6 rounded-2xl border border-border/40 hover:border-primary/30 transition-all group">
+                                            <div className="flex items-center gap-5">
+                                                <div className="h-12 w-12 shrink-0 flex items-center justify-center bg-primary/10 rounded-2xl text-primary transition-transform group-hover:scale-110">
+                                                    <tool.icon className="w-6 h-6" />
                                                 </div>
-                                                <div className="pt-4 grid grid-cols-3 gap-3">
-                                                    <div className="h-20 rounded-2xl bg-indigo-500/20 border border-indigo-500/30" />
-                                                    <div className="h-20 rounded-2xl bg-primary/20 border border-primary/30" />
-                                                    <div className="h-20 rounded-2xl bg-emerald-500/20 border border-emerald-500/30" />
+                                                <div className="space-y-1">
+                                                    <h4 className="font-bold text-base">{tool.title}</h4>
+                                                    <p className="text-sm text-muted-foreground">{tool.desc}</p>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    {/* Small floating badge */}
-                                    <div className="absolute -bottom-6 -left-6 glass border-white/20 p-4 rounded-3xl shadow-xl flex items-center gap-3 animate-bounce shadow-indigo-500/20">
-                                        <div className="h-10 w-10 flex items-center justify-center bg-indigo-600 rounded-2xl text-white shadow-lg">
-                                            <Star className="w-5 h-5 fill-current" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-1">{t('home.popular', 'Populaire')}</p>
-                                            <p className="text-sm font-bold leading-none">Simulateur CNSS 2024</p>
-                                        </div>
-                                    </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <Button asChild size="lg" className="cta-primary rounded-2xl h-14 px-8 group">
+                                        <a href={siteSettings?.partner_app_url || "https://monrh.vercel.app/"} target="_blank" rel="noopener noreferrer">
+                                            Acceder à tous les outils
+                                            <ExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                        </a>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -972,22 +774,18 @@ export function HomeClient({ initialBusinesses, seasonalCollections, siteSetting
 
     const defaultSectionOrder = [
         { id: 'hero', visible: true },
-        { id: 'stats', visible: true },
-        { id: 'claim-business', visible: true },
-        { id: 'recently-added', visible: true },
-        { id: 'trust-signals', visible: true },
-        { id: 'collections', visible: true },
-        { id: 'categories', visible: true },
-        { id: 'cities', visible: true },
-        { id: 'featured-guides', visible: true },
-        { id: 'how-it-works', visible: true },
-        { id: 'featured', visible: true },
-        { id: 'resources', visible: true },
         { id: 'ad-banner-top', visible: true },
+        { id: 'decision-pulse', visible: true },
+        { id: 'categories', visible: true },
+        { id: 'recently-added', visible: true },
+        { id: 'featured', visible: true },
+        { id: 'cities', visible: true },
+        { id: 'how-it-works', visible: true },
+        { id: 'resources', visible: true }
     ];
 
     const configuredSections = Array.isArray(siteSettings?.home_sections_config)
-        ? [...siteSettings.home_sections_config]
+        ? siteSettings.home_sections_config
         : [];
 
     const configuredById = new Map(

@@ -28,3 +28,177 @@ REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL 
  ⨯ [Error: aborted] { code: 'ECONNRESET', digest: '3419021255' }
 REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
  ⨯ [Error: aborted]
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (130kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (130kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⨯ [Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+ ⨯ [Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+ ⨯ [Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+ ⨯ [Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\Users\Zouhair\Downloads\AVis-prod\.next\cache\webpack\client-development-fallback\0.pack.gz_' -> 'C:\Users\Zouhair\Downloads\AVis-prod\.next\cache\webpack\client-development-fallback\0.pack.gz'
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+ ⨯ [Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+[Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+ ⨯ [Error: UNKNOWN: unknown error, open 'C:\Users\Zouhair\Downloads\AVis-prod\.next\static\chunks\app\layout.js'] {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\Zouhair\\Downloads\\AVis-prod\\.next\\static\\chunks\\app\\layout.js'
+}
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (130kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⨯ ./src/messages/fr.json
+Module parse failed: Cannot parse JSON: Expected double-quoted property name in JSON at position 157258 while parsing '{
+  "nav": {
+    "home": "Accueil",
+    '
+You may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders
+Error: Cannot parse JSON: Expected double-quoted property name in JSON at position 157258 while parsing '{
+  "nav": {
+    "home": "Accueil",
+    '
+Import trace for requested module:
+./src/messages/fr.json
+./src/lib/i18n/messages.ts
+./src/lib/i18n/server.ts
+./src/app/actions/user.ts
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+[submit_job_offer_offer_insert] {
+  error: 'new row violates row-level security policy for table "job_offers"',
+  errorCode: '42501',
+  errorDetails: null,
+  timestamp: '2026-03-25T19:54:44.225Z',
+  userId: 'guest',
+  requestedSourceType: 'paste',
+  effectiveSourceType: 'paste',
+  sourceUrl: null,
+  sourceTextLength: 151,
+  sourceTextPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.'
+}
+REDIS_URL not set. Using in-memory rate limiting. For production, set REDIS_URL to use distributed rate limiting.
+[submit_job_offer_offer_insert] {
+  error: 'new row violates row-level security policy for table "job_offers"',
+  errorCode: '42501',
+  errorDetails: null,
+  timestamp: '2026-03-25T19:57:49.794Z',
+  userId: 'guest',
+  requestedSourceType: 'paste',
+  effectiveSourceType: 'paste',
+  sourceUrl: null,
+  sourceTextLength: 151,
+  sourceTextPreview: 'Poste: Developer. Ville: Casablanca. Salaire: 12000 MAD. Entreprise: Tech-Maroc. Description: Fullstack developer with experience in React and Node.js.'
+}
+ ⨯ ./src/lib/cache.ts
+Error:   [31mx[0m Expression expected
+     ,-[[36;1;4mC:\Users\Zouhair\Downloads\AVis-prod\src\lib\cache.ts[0m:143:1]
+ [2m140[0m | /**
+ [2m141[0m |  * Cache homepage metrics sourced from listing-grade totals.
+ [2m142[0m |  */
+ [2m143[0m |   )();
+     : [35;1m  ^[0m
+ [2m144[0m | };
+ [2m145[0m | 
+ [2m146[0m | /**
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/lib/cache.ts
+./src/app/layout.tsx
