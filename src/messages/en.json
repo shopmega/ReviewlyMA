@@ -73,12 +73,14 @@
       "subtitle": "Dive into our themed collections and find the perfect company for your career."
     },
     "hero": {
-      "badge": "Clearer employer signals",
-      "titleLine1": "Understand a company",
-      "titleLine2": "before joining it.",
-      "subtitle": "Reviews, salaries, and referral signals to evaluate Moroccan employers.",
+      "badge": "HR Intelligence & Decision Engine",
+      "titleLine1": "Don't sign without",
+      "titleLine2": "scanning first.",
+      "subtitle": "AI verdict, salary benchmarks and risk signals for your next job offer in Morocco.",
       "searchPlaceholder": "Company, role, or keyword...",
       "searchCta": "Search a company",
+      "scanCta": "Scan my offer",
+      "compareSalaryCta": "Compare my salary",
       "writeReview": "Write a review",
       "claimCta": "Claim a profile",
       "popularFallback": {
