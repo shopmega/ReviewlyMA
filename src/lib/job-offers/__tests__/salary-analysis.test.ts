@@ -86,4 +86,33 @@ describe('job offer salary handling', () => {
     expect(analysis.missing_information).toContain('Compensation is not disclosed.');
     expect(analysis.confidence_level).toBe('low');
   });
+
+  it('computes market delta without requiring it to be persisted in the database payload', () => {
+    const normalized = normalizeJobOfferInput({
+      sourceType: 'url',
+      sourceUrl: 'https://example.com/job',
+      documentName: '',
+      companyName: 'Atlas Tech',
+      jobTitle: 'Software Engineer',
+      city: 'Casablanca',
+      salaryMin: 12000,
+      salaryMax: 14000,
+      payPeriod: 'monthly',
+      contractType: 'cdi',
+      workModel: 'hybrid',
+      seniorityLevel: 'mid',
+      yearsExperienceRequired: 3,
+      benefits: ['Health insurance'],
+      sourceText: 'Software Engineer role in Casablanca with a salary range.',
+    });
+
+    const analysis = computeJobOfferAnalysis(normalized, {
+      ...baseBenchmarks,
+      primaryMedianMonthly: 10000,
+      primarySource: 'role_city',
+      sampleCount: 18,
+    });
+
+    expect(analysis.market_delta_percent).toBe(30);
+  });
 });

@@ -252,9 +252,10 @@ export async function submitJobOfferAnalysis(
       ) as JobOfferActionState;
     }
 
+    const { market_delta_percent: _marketDeltaPercent, ...analysisPayload } = computedAnalysis;
     const analysisRow = {
       job_offer_id: offerData.id,
-      ...computedAnalysis,
+      ...analysisPayload,
     };
 
     const { data: analysisData, error: analysisError } = await supabase
