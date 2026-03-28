@@ -1,4 +1,4 @@
-import { getBusinessById } from '@/lib/data';
+import { getBusinessById, getSiteSettings } from '@/lib/data';
 import { getCurrentAuthUser } from '@/lib/auth-helpers';
 import { redirect } from 'next/navigation';
 import { ReviewForm } from '@/components/forms/ReviewForm';
@@ -14,9 +14,14 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   const resolvedParams = await params;
   const user = await getCurrentAuthUser();
   const nextPath = `/businesses/${resolvedParams.slug}/review`;
+  const settings = await getSiteSettings();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  }
+
+  if (settings.enable_reviews === false) {
+    redirect(`/businesses/${resolvedParams.slug}`);
   }
 
   const business = await getBusinessById(resolvedParams.slug);

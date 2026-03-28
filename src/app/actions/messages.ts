@@ -34,6 +34,8 @@ export type Message = {
   sender_email: string | null;
   content: string;
   is_from_business: boolean;
+  moderation_status?: 'visible' | 'hidden';
+  moderation_notes?: string | null;
   read_at: string | null;
   created_at: string;
 };
@@ -135,6 +137,7 @@ export async function getMessages(businessId: string): Promise<ActionState<Messa
       .from('messages')
       .select('*')
       .eq('business_id', businessId)
+      .eq('moderation_status', 'visible')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -206,6 +209,7 @@ export async function sendMessage(payload: {
           sender_name: payload.sender_name || null,
           sender_email: payload.sender_email || null,
           is_from_business: payload.is_from_business || false,
+          moderation_status: 'visible',
         },
       ]);
 

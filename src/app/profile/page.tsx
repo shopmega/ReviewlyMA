@@ -19,8 +19,6 @@ import {
   Sparkles,
   Heart,
   Settings as SettingsIcon,
-  BriefcaseBusiness,
-  SendHorizontal,
   Mail,
   User as UserIcon,
   Calendar,
@@ -96,10 +94,10 @@ type ReviewAppeal = {
   resolved_at: string | null;
 };
 
-type ProfileTab = 'reviews' | 'saved' | 'referrals' | 'account';
+type ProfileTab = 'reviews' | 'saved' | 'account';
 
 function resolveProfileTab(value: string | null): ProfileTab {
-  if (value === 'saved' || value === 'referrals' || value === 'account') {
+  if (value === 'saved' || value === 'account') {
     return value;
   }
   return 'reviews';
@@ -147,7 +145,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>(requestedTab);
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([]);
   const [savedVisibleCount, setSavedVisibleCount] = useState(SAVED_BUSINESSES_PAGE_SIZE);
-  const [referralStats, setReferralStats] = useState({ offers: 0, requests: 0 });
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -160,7 +157,6 @@ export default function ProfilePage() {
   const breadcrumbItems = useMemo(() => {
     const base = [{ label: t('profilePage.breadcrumbs.profile', 'Profile'), href: '/profil' }];
     if (activeTab === 'saved') return [...base, { label: t('profilePage.breadcrumbs.saved', 'Favorites'), href: buildProfileTabHref('saved') }];
-    if (activeTab === 'referrals') return [...base, { label: t('profilePage.breadcrumbs.referrals', 'Referrals'), href: buildProfileTabHref('referrals') }];
     if (activeTab === 'account') return [...base, { label: t('profilePage.breadcrumbs.account', 'Account'), href: buildProfileTabHref('account') }];
     return base;
   }, [activeTab, t]);
@@ -309,26 +305,6 @@ export default function ProfilePage() {
         setSavedVisibleCount(Math.min(SAVED_BUSINESSES_PAGE_SIZE, saved.length));
       } catch (e) {
         console.error('Failed to fetch saved businesses', e);
-      }
-
-      try {
-        const [{ count: offersCount }, { count: requestsCount }] = await Promise.all([
-          supabase
-            .from('job_referral_offers')
-            .select('id', { head: true, count: 'exact' })
-            .eq('user_id', user.id),
-          supabase
-            .from('job_referral_requests')
-            .select('id', { head: true, count: 'exact' })
-            .eq('candidate_user_id', user.id),
-        ]);
-
-        setReferralStats({
-          offers: offersCount || 0,
-          requests: requestsCount || 0,
-        });
-      } catch (e) {
-        console.error('Failed to fetch referral stats', e);
       }
 
       setLoading(false);
@@ -606,10 +582,6 @@ export default function ProfilePage() {
                   <Heart className="w-4 h-4" />
                   {t('profilePage.tabs.saved', 'Favorites')}
                 </TabsTrigger>
-                <TabsTrigger value="referrals" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
-                  <BriefcaseBusiness className="w-4 h-4" />
-                  {t('profilePage.tabs.referrals', 'Referrals')}
-                </TabsTrigger>
                 <TabsTrigger value="account" className="rounded-full px-6 py-2.5 flex gap-2 h-full data-[state=active]:bg-background data-[state=active]:shadow-md">
                   <Edit className="w-4 h-4" />
                   {t('profilePage.tabs.account', 'Account')}
@@ -809,57 +781,6 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               )}
-            </TabsContent>
-
-            {/* TAB: REFERRALS */}
-            <TabsContent value="referrals" className="space-y-6">
-              <Card className="border-none shadow-xl bg-card/60 backdrop-blur-sm">
-                <CardHeader className="border-b border-border/50 p-8">
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    <BriefcaseBusiness className="w-6 h-6 text-primary" />
-                    {t('profilePage.referrals.title', 'My referrals')}
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    {t('profilePage.referrals.description', 'Manage your published offers and track your referral requests.')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <Card className="bg-background/70 border-border/60">
-                      <CardContent className="p-6">
-                        <p className="text-sm text-muted-foreground mb-2">{t('profilePage.referrals.offers', 'Published offers')}</p>
-                        <p className="text-3xl font-black">{referralStats.offers}</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-background/70 border-border/60">
-                      <CardContent className="p-6">
-                        <p className="text-sm text-muted-foreground mb-2">{t('profilePage.referrals.requests', 'Sent requests')}</p>
-                        <p className="text-3xl font-black">{referralStats.requests}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <Button asChild className="rounded-full">
-                      <Link href="/parrainages/mes-offres">
-                        <BriefcaseBusiness className="mr-2 h-4 w-4" />
-                        {t('profilePage.referrals.myOffers', 'My referral offers')}
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="rounded-full">
-                      <Link href="/parrainages/mes-demandes">
-                        <SendHorizontal className="mr-2 h-4 w-4" />
-                        {t('profilePage.referrals.myRequests', 'My referral requests')}
-                      </Link>
-                    </Button>
-                    <Button asChild variant="ghost" className="rounded-full">
-                      <Link href="/parrainages/new">
-                        {t('profilePage.referrals.publishNew', 'Publish a new offer')}
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             {/* TAB: ACCOUNT */}

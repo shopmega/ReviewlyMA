@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const cookiesMock = vi.fn();
 const createServerClientMock = vi.fn();
 const createAdminClientMock = vi.fn();
-const verifyAdminSessionMock = vi.fn();
+const verifyAdminPermissionMock = vi.fn();
 const loggerErrorMock = vi.fn();
 const loggerWarnMock = vi.fn();
 
@@ -17,7 +17,7 @@ vi.mock('@supabase/ssr', () => ({
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => createAdminClientMock(),
-  verifyAdminSession: () => verifyAdminSessionMock(),
+  verifyAdminPermission: (...args: unknown[]) => verifyAdminPermissionMock(...args),
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -145,7 +145,7 @@ describe('analytics actions', () => {
   });
 
   it('getAdminAnalytics returns null when admin session check fails', async () => {
-    verifyAdminSessionMock.mockRejectedValueOnce(new Error('denied'));
+    verifyAdminPermissionMock.mockRejectedValueOnce(new Error('denied'));
     const result = await getAdminAnalytics();
 
     expect(result).toBeNull();
@@ -153,7 +153,7 @@ describe('analytics actions', () => {
   });
 
   it('getAdminAnalytics returns overview and metrics when authorized', async () => {
-    verifyAdminSessionMock.mockResolvedValueOnce(undefined);
+    verifyAdminPermissionMock.mockResolvedValueOnce('admin-1');
 
     createAdminClientMock.mockResolvedValue({
       from: vi.fn((table: string) => {
@@ -279,5 +279,107 @@ describe('analytics actions', () => {
     expect(result?.jobOfferMetrics?.manualRelinks).toBe(1);
     expect(result?.jobOfferMetrics?.automatedBackfills).toBe(1);
     expect(result?.jobOfferMetrics?.topUnresolvedCompanies[0]).toEqual({ name: 'ADM Value Maroc', count: 2 });
+  });
+
+  it('getAdminAnalytics applies the selected time range to time-series metrics', async () => {
+    verifyAdminPermissionMock.mockResolvedValueOnce('admin-1');
+
+    createAdminClientMock.mockResolvedValue({
+      from: vi.fn((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn((selection?: string) =>
+              createThenableQuery({
+                count: 2,
+                data: selection === 'created_at'
+                  ? [
+                      { created_at: new Date().toISOString() },
+                      { created_at: new Date(Date.now() - (45 * 24 * 60 * 60 * 1000)).toISOString() },
+                    ]
+                  : [],
+                error: null,
+              })
+            ),
+          };
+        }
+        if (table === 'businesses') {
+          return {
+            select: vi.fn((selection?: string) =>
+              createThenableQuery({
+                count: 1,
+                data:
+                  selection === 'created_at'
+                    ? [
+                        { created_at: new Date().toISOString() },
+                        { created_at: new Date(Date.now() - (60 * 24 * 60 * 60 * 1000)).toISOString() },
+                      ]
+                    : selection === 'category'
+                      ? [{ category: 'Tech' }]
+                      : selection === 'city'
+                        ? [{ city: 'Casablanca' }]
+                        : [],
+                error: null,
+              })
+            ),
+          };
+        }
+        if (table === 'reviews') {
+          return {
+            select: vi.fn((selection?: string) =>
+              createThenableQuery({
+                count: 2,
+                data: selection === 'rating' ? [{ rating: 4 }, { rating: 5 }] : [],
+                error: null,
+              })
+            ),
+          };
+        }
+        if (table === 'messages') {
+          return { select: vi.fn(() => createThenableQuery({ count: 0, data: [], error: null })) };
+        }
+        if (table === 'premium_payments') {
+          return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
+        }
+        if (table === 'search_analytics') {
+          return {
+            select: vi.fn((selection?: string) =>
+              createThenableQuery({
+                data:
+                  selection === 'query, results_count'
+                    ? [{ query: 'ocp' }]
+                    : [
+                        { created_at: new Date().toISOString() },
+                        { created_at: new Date(Date.now() - (50 * 24 * 60 * 60 * 1000)).toISOString() },
+                      ],
+                error: null,
+              })
+            ),
+          };
+        }
+        if (table === 'job_offers') {
+          return { select: vi.fn(() => createThenableQuery({ count: 0, data: [], error: null })) };
+        }
+        if (table === 'job_offer_analyses') {
+          return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
+        }
+        if (table === 'job_offer_business_insights') {
+          return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
+        }
+        if (table === 'admin_job_offer_mapping_v1') {
+          return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
+        }
+        if (table === 'job_offer_moderation_events') {
+          return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
+        }
+
+        return { select: vi.fn(() => createThenableQuery({ data: [], error: null })) };
+      }),
+    });
+
+    const result = await getAdminAnalytics('30d');
+
+    expect(result?.userMetrics.userGrowth.reduce((sum, row) => sum + row.users, 0)).toBe(1);
+    expect(result?.businessMetrics.businessGrowth.reduce((sum, row) => sum + row.businesses, 0)).toBe(1);
+    expect(result?.searchMetrics?.searchGrowth.reduce((sum, row) => sum + row.searches, 0)).toBe(1);
   });
 });

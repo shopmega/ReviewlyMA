@@ -10,10 +10,10 @@ export type BlogAdminActionState = {
 };
 
 const DEFAULT_LINK_LABELS: Record<string, string> = {
-  '/referral-demand': 'Referral Demand Dashboard',
-  '/salaires': 'Salary Intelligence Hub',
   '/companies': 'Company Insights Hub',
-  '/reports': 'Monthly Reports',
+  '/salaires': 'Salary Intelligence Hub',
+  '/blog': 'Editorial Hub',
+  '/job-offers': 'Job-Offer Analysis',
 };
 
 function slugifyValue(value: string) {

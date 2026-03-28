@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
+import { createAdminClient, verifyAdminPermission } from '@/lib/supabase/admin';
 import { logger } from '@/lib/logger';
 
 // We use the server client for tracking to ensure we can insert even if RLS is strict for anon users
@@ -11,6 +11,110 @@ import { logger } from '@/lib/logger';
 // But let's use a server action.
 
 type AnalyticsEvent = 'page_view' | 'phone_click' | 'website_click' | 'contact_form' | 'whatsapp_click' | 'affiliate_click';
+export type AdminAnalyticsRange = '7d' | '30d' | '90d' | '1y';
+
+type TimeBucket = {
+    key: string;
+    label: string;
+};
+
+function startOfDay(date: Date) {
+    const next = new Date(date);
+    next.setHours(0, 0, 0, 0);
+    return next;
+}
+
+function startOfWeek(date: Date) {
+    const next = startOfDay(date);
+    const day = next.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    next.setDate(next.getDate() + diff);
+    return next;
+}
+
+function startOfMonth(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function buildAnalyticsWindow(range: AdminAnalyticsRange): { startDate: Date; buckets: TimeBucket[]; bucketKeyForDate: (date: Date) => string } {
+    const now = new Date();
+    const locale = 'fr-FR';
+
+    if (range === '1y') {
+        const current = startOfMonth(now);
+        const buckets: TimeBucket[] = [];
+        for (let index = 11; index >= 0; index -= 1) {
+            const date = new Date(current.getFullYear(), current.getMonth() - index, 1);
+            buckets.push({
+                key: date.toISOString().slice(0, 7),
+                label: date.toLocaleString(locale, { month: 'short' }),
+            });
+        }
+        return {
+            startDate: new Date(current.getFullYear(), current.getMonth() - 11, 1),
+            buckets,
+            bucketKeyForDate: (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        };
+    }
+
+    if (range === '90d') {
+        const current = startOfWeek(now);
+        const buckets: TimeBucket[] = [];
+        for (let index = 12; index >= 0; index -= 1) {
+            const date = new Date(current);
+            date.setDate(current.getDate() - (index * 7));
+            buckets.push({
+                key: date.toISOString().slice(0, 10),
+                label: date.toLocaleDateString(locale, { day: '2-digit', month: 'short' }),
+            });
+        }
+        return {
+            startDate: new Date(current.getFullYear(), current.getMonth(), current.getDate() - (12 * 7)),
+            buckets,
+            bucketKeyForDate: (date) => startOfWeek(date).toISOString().slice(0, 10),
+        };
+    }
+
+    const days = range === '7d' ? 7 : 30;
+    const current = startOfDay(now);
+    const buckets: TimeBucket[] = [];
+    for (let index = days - 1; index >= 0; index -= 1) {
+        const date = new Date(current);
+        date.setDate(current.getDate() - index);
+        buckets.push({
+            key: date.toISOString().slice(0, 10),
+            label: date.toLocaleDateString(locale, { day: '2-digit', month: 'short' }),
+        });
+    }
+
+    return {
+        startDate: new Date(current.getFullYear(), current.getMonth(), current.getDate() - (days - 1)),
+        buckets,
+        bucketKeyForDate: (date) => startOfDay(date).toISOString().slice(0, 10),
+    };
+}
+
+function aggregateTimeline(
+    data: Array<{ created_at: string }> | null | undefined,
+    range: AdminAnalyticsRange,
+    metricKey: string
+) {
+    const window = buildAnalyticsWindow(range);
+    const counts = new Map(window.buckets.map((bucket) => [bucket.key, 0]));
+
+    data?.forEach((item) => {
+        const date = new Date(item.created_at);
+        if (Number.isNaN(date.getTime()) || date < window.startDate) return;
+        const key = window.bucketKeyForDate(date);
+        if (!counts.has(key)) return;
+        counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    return window.buckets.map((bucket) => ({
+        month: bucket.label,
+        [metricKey]: counts.get(bucket.key) || 0,
+    }));
+}
 
 export async function trackBusinessEvent(businessId: string, eventType: AnalyticsEvent) {
     if (!businessId) return;
@@ -115,9 +219,9 @@ export async function getConsolidatedAnalytics(businessIds: string[]) {
     }
 }
 
-export async function getAdminAnalytics() {
+export async function getAdminAnalytics(range: AdminAnalyticsRange = '30d') {
     try {
-        await verifyAdminSession();
+        await verifyAdminPermission('analytics.view');
     } catch (error) {
         logger.warn('Admin analytics access denied', { error });
         return null;
@@ -145,49 +249,21 @@ export async function getAdminAnalytics() {
             ? (reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length).toFixed(1)
             : 0;
 
-        // For charts, we need time-series data. 
-        // optimize: fetch only created_at for last 6 months
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const analyticsWindow = buildAnalyticsWindow(range);
+        const rangeStartIso = analyticsWindow.startDate.toISOString();
 
         const { data: userGrowthData } = await supabase
             .from('profiles')
             .select('created_at')
-            .gte('created_at', sixMonthsAgo.toISOString());
+            .gte('created_at', rangeStartIso);
 
         const { data: businessGrowthData } = await supabase
             .from('businesses')
             .select('created_at')
-            .gte('created_at', sixMonthsAgo.toISOString());
+            .gte('created_at', rangeStartIso);
 
-        // Helper to aggregate by month
-        const aggregateByMonth = (data: any[]) => {
-            const months: Record<string, number> = {};
-            // Initialize last 6 months
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date();
-                d.setMonth(d.getMonth() - i);
-                const key = d.toLocaleString('fr-FR', { month: 'short' });
-                months[key] = 0;
-            }
-
-            data?.forEach(item => {
-                const date = new Date(item.created_at);
-                const key = date.toLocaleString('fr-FR', { month: 'short' });
-                if (months[key] !== undefined) {
-                    months[key]++;
-                }
-            });
-            // Convert to array in order
-            return Object.keys(months).map(name => ({
-                month: name, // Chart expects 'month' 
-                users: months[name], // Chart expects 'users' for user chart
-                businesses: months[name] // Chart expects 'businesses' for business chart
-            }));
-        };
-
-        const userGrowth = userGrowthData ? aggregateByMonth(userGrowthData).map(d => ({ month: d.month, users: d.users })) : [];
-        const businessGrowth = businessGrowthData ? aggregateByMonth(businessGrowthData).map(d => ({ month: d.month, businesses: d.businesses })) : [];
+        const userGrowth = aggregateTimeline((userGrowthData || []) as Array<{ created_at: string }>, range, 'users');
+        const businessGrowth = aggregateTimeline((businessGrowthData || []) as Array<{ created_at: string }>, range, 'businesses');
 
         // Category and City distribution (real data)
         const { data: catData } = await supabase.from('businesses').select('category');
@@ -217,13 +293,14 @@ export async function getAdminAnalytics() {
         const { data: topQueries } = await supabase
             .from('search_analytics')
             .select('query, results_count')
+            .gte('created_at', rangeStartIso)
             .order('created_at', { ascending: false })
             .limit(100);
 
         const { data: searchTimeline } = await supabase
             .from('search_analytics')
             .select('created_at')
-            .gte('created_at', sixMonthsAgo.toISOString());
+            .gte('created_at', rangeStartIso);
 
         // Process top queries
         const queryCounts = topQueries?.reduce((acc: any, s: any) => {
@@ -236,7 +313,7 @@ export async function getAdminAnalytics() {
             .sort((a: any, b: any) => b.value - a.value)
             .slice(0, 5);
 
-        const searchGrowth = searchTimeline ? aggregateByMonth(searchTimeline).map(d => ({ month: d.month, searches: d.users })) : [];
+        const searchGrowth = aggregateTimeline((searchTimeline || []) as Array<{ created_at: string }>, range, 'searches');
 
         const [
             { count: totalJobOffers },
@@ -253,7 +330,7 @@ export async function getAdminAnalytics() {
             supabase.from('job_offer_analyses').select('confidence_level'),
             supabase.from('job_offer_business_insights').select('*'),
             supabase.from('admin_job_offer_mapping_v1').select('job_offer_id, company_name, business_id, company_match_confidence'),
-            supabase.from('job_offer_moderation_events').select('event_type, created_at').gte('created_at', sixMonthsAgo.toISOString()),
+            supabase.from('job_offer_moderation_events').select('event_type, created_at').gte('created_at', rangeStartIso),
         ]);
 
         const lowConfidenceOfferCount = jobOfferAnalyses?.filter((row: any) => row.confidence_level === 'low').length || 0;

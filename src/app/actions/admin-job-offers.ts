@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { resolveBusinessMatchForCompany } from '@/lib/job-offers/business-resolution';
-import type { AdminJobOfferMappingRow } from '@/lib/types';
+import type { AdminJobOfferMappingRow, JobOfferStatus, JobOfferVisibility } from '@/lib/types';
 import { logAuditAction } from '@/lib/audit-logger';
-import { createAdminClient, verifyAdminSession } from '@/lib/supabase/admin';
+import { createAdminClient, verifyAdminPermission } from '@/lib/supabase/admin';
 
 type MappingQueueRow = AdminJobOfferMappingRow & {
   candidate_businesses: Array<{
@@ -14,6 +14,108 @@ type MappingQueueRow = AdminJobOfferMappingRow & {
     reason: string;
   }>;
 };
+
+type ReviewQueueRow = {
+  job_offer_id: string;
+  analysis_id: string | null;
+  user_id: string | null;
+  business_id: string | null;
+  company_name: string;
+  job_title: string;
+  city: string | null;
+  source_url: string | null;
+  status: JobOfferStatus;
+  visibility: JobOfferVisibility;
+  approved_at: string | null;
+  rejected_at: string | null;
+  submitted_at: string;
+  company_match_confidence: 'high' | 'medium' | 'low' | 'none';
+  company_match_method: 'slug' | 'id' | 'name' | 'website' | 'scored' | 'manual' | 'none';
+  overall_offer_score: number | null;
+  transparency_score: number | null;
+  market_position_label: string | null;
+  confidence_level: string | null;
+};
+
+type ReviewDecision =
+  | 'approve_aggregate_only'
+  | 'approve_public'
+  | 'publish_aggregate_only'
+  | 'publish_public'
+  | 'unpublish_private'
+  | 'reject';
+
+function isValidDecision(value: string): value is ReviewDecision {
+  return [
+    'approve_aggregate_only',
+    'approve_public',
+    'publish_aggregate_only',
+    'publish_public',
+    'unpublish_private',
+    'reject',
+  ].includes(value);
+}
+
+function getDecisionUpdate(decision: ReviewDecision): {
+  nextStatus: JobOfferStatus;
+  nextVisibility: JobOfferVisibility;
+  eventType: string;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+} {
+  const now = new Date().toISOString();
+
+  switch (decision) {
+    case 'approve_aggregate_only':
+      return {
+        nextStatus: 'approved',
+        nextVisibility: 'aggregate_only',
+        eventType: 'approved_aggregate_only',
+        approvedAt: now,
+        rejectedAt: null,
+      };
+    case 'approve_public':
+      return {
+        nextStatus: 'approved',
+        nextVisibility: 'public',
+        eventType: 'approved_public',
+        approvedAt: now,
+        rejectedAt: null,
+      };
+    case 'publish_aggregate_only':
+      return {
+        nextStatus: 'approved',
+        nextVisibility: 'aggregate_only',
+        eventType: 'visibility_changed_aggregate_only',
+        approvedAt: now,
+        rejectedAt: null,
+      };
+    case 'publish_public':
+      return {
+        nextStatus: 'approved',
+        nextVisibility: 'public',
+        eventType: 'visibility_changed_public',
+        approvedAt: now,
+        rejectedAt: null,
+      };
+    case 'unpublish_private':
+      return {
+        nextStatus: 'approved',
+        nextVisibility: 'private',
+        eventType: 'unpublished_private',
+        approvedAt: now,
+        rejectedAt: null,
+      };
+    case 'reject':
+      return {
+        nextStatus: 'rejected',
+        nextVisibility: 'private',
+        eventType: 'rejected',
+        approvedAt: null,
+        rejectedAt: now,
+      };
+  }
+}
 
 function normalizeCandidatePayload(value: unknown): Array<{ businessId: string; score: number; reason: string }> {
   if (!Array.isArray(value)) return [];
@@ -41,7 +143,7 @@ export async function getAdminJobOfferMappingQueue(limit = 50): Promise<{
     lowConfidence: number;
   };
 }> {
-  await verifyAdminSession();
+  await verifyAdminPermission('moderation.job_offer.review');
   const supabase = await createAdminClient();
 
   const { data, error } = await supabase
@@ -92,8 +194,190 @@ export async function getAdminJobOfferMappingQueue(limit = 50): Promise<{
   };
 }
 
+export async function getAdminJobOfferReviewQueue(limit = 60): Promise<{
+  rows: ReviewQueueRow[];
+  summary: {
+    pending: number;
+    approvedPublic: number;
+    approvedAggregateOnly: number;
+    approvedPrivate: number;
+    rejected: number;
+  };
+}> {
+  await verifyAdminPermission('moderation.job_offer.review');
+  const supabase = await createAdminClient();
+
+  const [offersResult, pendingResult, publicResult, aggregateResult, privateResult, rejectedResult] = await Promise.all([
+    supabase
+      .from('job_offers')
+      .select(`
+        id,
+        user_id,
+        business_id,
+        company_name,
+        job_title,
+        city,
+        source_url,
+        status,
+        visibility,
+        approved_at,
+        rejected_at,
+        submitted_at,
+        company_match_confidence,
+        company_match_method,
+        job_offer_analyses (
+          id,
+          overall_offer_score,
+          transparency_score,
+          market_position_label,
+          confidence_level
+        )
+      `)
+      .order('submitted_at', { ascending: false })
+      .limit(limit),
+    supabase.from('job_offers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('job_offers').select('id', { count: 'exact', head: true }).eq('status', 'approved').eq('visibility', 'public'),
+    supabase.from('job_offers').select('id', { count: 'exact', head: true }).eq('status', 'approved').eq('visibility', 'aggregate_only'),
+    supabase.from('job_offers').select('id', { count: 'exact', head: true }).eq('status', 'approved').eq('visibility', 'private'),
+    supabase.from('job_offers').select('id', { count: 'exact', head: true }).eq('status', 'rejected'),
+  ]);
+
+  if (offersResult.error || !offersResult.data) {
+    throw new Error(`Failed to load admin job-offer review queue: ${offersResult.error?.message || 'unknown error'}`);
+  }
+
+  const rows = (offersResult.data as Array<any>).map((row) => {
+    const analysis = Array.isArray(row.job_offer_analyses) ? row.job_offer_analyses[0] : row.job_offer_analyses;
+
+    return {
+      job_offer_id: row.id,
+      analysis_id: analysis?.id || null,
+      user_id: row.user_id || null,
+      business_id: row.business_id || null,
+      company_name: row.company_name,
+      job_title: row.job_title,
+      city: row.city || null,
+      source_url: row.source_url || null,
+      status: row.status,
+      visibility: row.visibility,
+      approved_at: row.approved_at || null,
+      rejected_at: row.rejected_at || null,
+      submitted_at: row.submitted_at,
+      company_match_confidence: row.company_match_confidence || 'none',
+      company_match_method: row.company_match_method || 'none',
+      overall_offer_score: analysis?.overall_offer_score ?? null,
+      transparency_score: analysis?.transparency_score ?? null,
+      market_position_label: analysis?.market_position_label ?? null,
+      confidence_level: analysis?.confidence_level ?? null,
+    } satisfies ReviewQueueRow;
+  });
+
+  return {
+    rows,
+    summary: {
+      pending: pendingResult.count || 0,
+      approvedPublic: publicResult.count || 0,
+      approvedAggregateOnly: aggregateResult.count || 0,
+      approvedPrivate: privateResult.count || 0,
+      rejected: rejectedResult.count || 0,
+    },
+  };
+}
+
+export async function moderateJobOffer(formData: FormData) {
+  const adminId = await verifyAdminPermission('moderation.job_offer.review');
+  const supabase = await createAdminClient();
+
+  const jobOfferId = String(formData.get('job_offer_id') || '').trim();
+  const decision = String(formData.get('decision') || '').trim();
+  const note = String(formData.get('note') || '').trim();
+
+  if (!jobOfferId) {
+    throw new Error('Job offer id is required.');
+  }
+
+  if (!isValidDecision(decision)) {
+    throw new Error('Unsupported job offer moderation decision.');
+  }
+
+  const { data: currentRow, error: currentError } = await supabase
+    .from('job_offers')
+    .select('id, business_id, company_name, status, visibility, approved_at, rejected_at')
+    .eq('id', jobOfferId)
+    .maybeSingle();
+
+  if (currentError || !currentRow) {
+    throw new Error(`Unable to load job offer before moderation: ${currentError?.message || 'not found'}`);
+  }
+
+  const update = getDecisionUpdate(decision);
+  const { error: updateError } = await supabase
+    .from('job_offers')
+    .update({
+      status: update.nextStatus,
+      visibility: update.nextVisibility,
+      approved_at: update.approvedAt,
+      rejected_at: update.rejectedAt,
+    })
+    .eq('id', jobOfferId);
+
+  if (updateError) {
+    throw new Error(`Unable to moderate job offer: ${updateError.message}`);
+  }
+
+  const { error: eventError } = await supabase
+    .from('job_offer_moderation_events')
+    .insert({
+      job_offer_id: jobOfferId,
+      admin_user_id: adminId,
+      event_type: update.eventType,
+      metadata: {
+        previous_status: currentRow.status,
+        previous_visibility: currentRow.visibility,
+        next_status: update.nextStatus,
+        next_visibility: update.nextVisibility,
+        note: note || null,
+      },
+    });
+
+  if (eventError) {
+    throw new Error(`Unable to record moderation event: ${eventError.message}`);
+  }
+
+  await logAuditAction({
+    adminId,
+    action: 'JOB_OFFER_MODERATED',
+    targetType: 'job_offer',
+    targetId: jobOfferId,
+    details: {
+      decision,
+      previous_status: currentRow.status,
+      previous_visibility: currentRow.visibility,
+      next_status: update.nextStatus,
+      next_visibility: update.nextVisibility,
+      note: note || null,
+    },
+  });
+
+  if (currentRow.business_id) {
+    const { data: business } = await supabase
+      .from('businesses')
+      .select('slug')
+      .eq('id', currentRow.business_id)
+      .maybeSingle();
+
+    if (business?.slug) {
+      revalidatePath(`/businesses/${business.slug}`);
+    }
+  }
+
+  revalidatePath('/admin/job-offers');
+  revalidatePath('/admin/analytics');
+  revalidatePath('/job-offers');
+}
+
 export async function relinkJobOfferBusiness(formData: FormData) {
-  const adminId = await verifyAdminSession();
+  const adminId = await verifyAdminPermission('moderation.job_offer.review');
   const supabase = await createAdminClient();
 
   const jobOfferId = String(formData.get('job_offer_id') || '');
@@ -156,7 +440,7 @@ export async function relinkJobOfferBusiness(formData: FormData) {
 }
 
 export async function backfillJobOfferCompanyMatches(formData: FormData) {
-  const adminId = await verifyAdminSession();
+  const adminId = await verifyAdminPermission('moderation.job_offer.review');
   const supabase = await createAdminClient();
   const rawLimit = Number(formData.get('limit') || 50);
   const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(250, Math.round(rawLimit))) : 50;

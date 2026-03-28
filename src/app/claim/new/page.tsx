@@ -25,6 +25,7 @@ import {
 } from '@/lib/claims/validation';
 import { MAIN_CATEGORIES, SUBCATEGORIES, ALL_CITIES, getQuartiersForCity, BENEFITS } from '@/lib/location-discovery';
 import { useI18n } from '@/components/providers/i18n-provider';
+import { getDefaultSettings, getSiteSettings } from '@/lib/data';
 import {
   ClaimBenefitsSidebar,
   ClaimBlockedState,
@@ -35,6 +36,7 @@ import {
 import { ClaimBenefitsStep, ClaimBusinessDetailsStep, ClaimIdentityProofStep, ClaimReviewSubmitStep } from '@/components/claim/ClaimStepPanels';
 
 function NewClaimContent() {
+  const defaultVerificationMethods = getDefaultSettings().verification_methods || ['email', 'phone', 'document', 'video'];
   const searchParams = useSearchParams();
   const existingBusinessId = searchParams.get('businessId');
   const router = useRouter();
@@ -43,8 +45,9 @@ function NewClaimContent() {
   const [isPending, startTransition] = useTransition();
   const [state, formAction] = useActionState(submitClaim, { status: 'idle', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeProofMethods, setActiveProofMethods] = useState<string[]>(['email', 'phone', 'document', 'video']);
+  const [activeProofMethods, setActiveProofMethods] = useState<string[]>(defaultVerificationMethods);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [claimsEnabled, setClaimsEnabled] = useState(true);
   const [isBusinessAlreadyClaimed, setIsBusinessAlreadyClaimed] = useState(false);
   const [userClaimStatus, setUserClaimStatus] = useState<'none' | 'pending' | 'approved'>('none');
   const [existingClaim, setExistingClaim] = useState<any>(null);
@@ -230,15 +233,10 @@ function NewClaimContent() {
 
   async function loadVerificationSettings() {
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('verification_methods')
-        .eq('id', 'main')
-        .single();
-
-      if (!error && data?.verification_methods && Array.isArray(data.verification_methods)) {
-        setActiveProofMethods(data.verification_methods);
+      const settings = await getSiteSettings();
+      setClaimsEnabled(settings.enable_claims !== false);
+      if (Array.isArray(settings.verification_methods)) {
+        setActiveProofMethods(settings.verification_methods);
       }
     } catch (err) {
       console.error('Failed to load verification settings:', err);
@@ -505,6 +503,28 @@ function NewClaimContent() {
   const filteredAmenities = useMemo(() => {
     return BENEFITS;
   }, []);
+
+  if (settingsLoaded && !claimsEnabled) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container max-w-3xl">
+          <ClaimBlockedState
+            title={t('claimNew.disabled.title', 'Business claims are currently unavailable')}
+            description={t(
+              'claimNew.disabled.description',
+              'New business claim requests are temporarily disabled by the platform team.'
+            )}
+            helpText={t(
+              'claimNew.disabled.help',
+              'If you already submitted a request, you can continue tracking it from your dashboard.'
+            )}
+            backLabel={t('claimNew.backToSearch', 'Retour a la recherche')}
+            contactLabel={t('claimNew.contactTeam', "Contacter l'equipe")}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

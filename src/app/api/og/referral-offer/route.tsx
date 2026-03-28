@@ -11,10 +11,7 @@ function clean(value: string | null, fallback: string, max = 42) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const company = clean(searchParams.get('company'), 'Entreprise');
-  const role = clean(searchParams.get('role'), 'Poste');
-  const city = clean(searchParams.get('city'), 'Maroc', 24);
-  const slots = clean(searchParams.get('slots'), '-', 6);
+  const company = clean(searchParams.get('company'), 'Company');
 
   return new ImageResponse(
     (
@@ -32,28 +29,28 @@ export async function GET(request: Request) {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>Parrainage emploi</div>
+          <div style={{ fontSize: 28, fontWeight: 700 }}>Referral module retired</div>
           <div
             style={{
               borderRadius: 999,
-              border: '1px solid rgba(251, 191, 36, 0.45)',
-              color: '#FDE68A',
+              border: '1px solid rgba(148, 163, 184, 0.45)',
+              color: '#CBD5E1',
               fontSize: 20,
               padding: '8px 14px',
             }}
           >
-            Anti-fraude
+            Archived route
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1.1 }}>{role}</div>
+          <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1.1 }}>Historical referral offer</div>
           <div style={{ fontSize: 36, opacity: 0.95 }}>{company}</div>
-          <div style={{ fontSize: 28, opacity: 0.82 }}>{city} - {slots} place(s)</div>
+          <div style={{ fontSize: 28, opacity: 0.82 }}>This module is no longer active</div>
         </div>
 
         <div style={{ fontSize: 22, opacity: 0.8 }}>
-          Aucun paiement autorise pour un parrainage.
+          New referral actions have been disabled while archival and retention work is completed.
         </div>
       </div>
     ),

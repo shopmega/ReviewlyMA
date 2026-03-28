@@ -31,6 +31,8 @@ export default function ClaimPage() {
   const [loading, setLoading] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<SearchBusiness | null>(null);
   const [siteName, setSiteName] = useState('Reviewly');
+  const [claimsEnabled, setClaimsEnabled] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [userClaimStatus, setUserClaimStatus] = useState<'none' | 'pending' | 'approved'>('none');
   const [existingClaim, setExistingClaim] = useState<any>(null);
   const router = useRouter();
@@ -42,8 +44,11 @@ export default function ClaimPage() {
       try {
         const settings = await getSiteSettings();
         setSiteName(getSiteName(settings));
+        setClaimsEnabled(settings.enable_claims !== false);
       } catch (error) {
         console.error('Error fetching site settings:', error);
+      } finally {
+        setSettingsLoaded(true);
       }
     };
     fetchSiteSettings();
@@ -123,6 +128,31 @@ export default function ClaimPage() {
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  if (settingsLoaded && !claimsEnabled) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-50 py-12">
+        <div className="container max-w-3xl">
+          <Card className="border-2 border-slate-200 bg-white shadow-lg">
+            <CardHeader>
+              <CardTitle>{t('claimPage.disabled.title', 'Business claims are currently unavailable')}</CardTitle>
+              <CardDescription>
+                {t(
+                  'claimPage.disabled.description',
+                  'The platform team has temporarily disabled new business claim requests.'
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/">{t('claimPage.disabled.backHome', 'Back to home')}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (userClaimStatus === 'pending') {
     return (

@@ -32,6 +32,7 @@ import {
     syncClaimUserProfile,
 } from '@/lib/claims/workflow';
 import { notifyAdmins } from '@/lib/notifications';
+import { getSiteSettings } from '@/lib/data';
 
 export type ClaimFormState = ActionState & { claimId?: string };
 
@@ -40,6 +41,17 @@ export async function submitClaim(
     prevState: ClaimFormState,
     formData: FormData
 ): Promise<ClaimFormState> {
+    const settings = await getSiteSettings();
+    const activeVerificationMethods = Array.isArray(settings.verification_methods) && settings.verification_methods.length > 0
+        ? settings.verification_methods
+        : ['email', 'phone', 'document', 'video'];
+    if (settings.enable_claims === false) {
+        return createErrorResponse(
+            ErrorCode.AUTHORIZATION_ERROR,
+            'Les revendications d etablissement sont actuellement desactivees.'
+        ) as ClaimFormState;
+    }
+
     const supabase = await createClient();
     const supabaseService = await createServiceClient();
 
@@ -88,6 +100,18 @@ export async function submitClaim(
         }
 
         const claimData = validatedFields.data;
+        const invalidProofMethods = claimData.proofMethods.filter((method) => !activeVerificationMethods.includes(method));
+        if (invalidProofMethods.length > 0) {
+            return handleValidationError(
+                'Certaines methodes de verification ne sont plus disponibles.',
+                {
+                    proofMethods: [
+                        `Methodes desactivees: ${invalidProofMethods.join(', ')}.`,
+                    ],
+                }
+            ) as ClaimFormState;
+        }
+
         const { hasDocumentProof, hasVideoProof } = getClaimProofPresence({
             documentFile,
             videoFile,

@@ -14,6 +14,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { SiteSettings } from "@/lib/data/settings";
 import { cn } from "@/lib/utils";
+import { SUPPORTED_PREMIUM_PAYMENT_METHODS } from "@/lib/data/settings";
 
 type Translate = (key: string, fallback: string) => string;
 type SettingValue = SiteSettings[keyof SiteSettings];
@@ -278,25 +279,21 @@ export function PremiumSettingsTab({ settings, onSettingChange, t }: SharedProps
                 title={t("adminSettings.sections.commercial.title", "Configuration Commerciale")}
                 description={t("adminSettings.sections.commercial.desc", "Gerez les prix des abonnements et le contenu du pack Premium.")}
             >
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-amber-500/10 to-transparent rounded-[2rem] border border-amber-500/20">
-                    <div className="flex gap-4 items-center">
-                        <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
-                            <Crown className="h-6 w-6" />
-                        </div>
-                        <div className="space-y-1">
-                            <h4 className="font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest text-[10px]">
-                                {t("adminSettings.commercial.subscriptionsTitle", "Abonnements Premium")}
-                            </h4>
-                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                {t("adminSettings.commercial.subscriptionsDesc", "Permettre aux entreprises de passer au forfait superieur")}
-                            </p>
-                        </div>
+                <div className="flex gap-4 rounded-[2rem] border border-amber-500/20 bg-gradient-to-r from-amber-500/10 to-transparent p-6">
+                    <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
+                        <Crown className="h-6 w-6" />
                     </div>
-                    <Switch
-                        checked={settings.premium_enabled}
-                        onCheckedChange={(checked) => onSettingChange("premium_enabled", checked)}
-                        className="data-[state=checked]:bg-amber-500"
-                    />
+                    <div className="space-y-1">
+                        <h4 className="font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest text-[10px]">
+                            {t("adminSettings.commercial.subscriptionsTitle", "Abonnements Premium")}
+                        </h4>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {t("adminSettings.commercial.subscriptionsDesc", "Les prix et moyens de paiement ci-dessous pilotent l'offre commerciale actuellement active.")}
+                        </p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80">
+                            {t("adminSettings.commercial.subscriptionsNotice", "Le toggle global Premium a ete retire car il n'etait pas consomme par le runtime.")}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -582,8 +579,6 @@ export function PaymentsSettingsTab({ settings, onSettingChange, t }: SharedProp
     const paymentMethods = [
         { id: "bank_transfer", label: "Virement Bancaire" },
         { id: "chari_ma", label: "Chari.ma" },
-        { id: "paypal", label: "PayPal" },
-        { id: "stripe", label: "Stripe" },
     ];
     const enabledMethods = settings.payment_methods_enabled || [];
 
@@ -652,6 +647,21 @@ export function PaymentsSettingsTab({ settings, onSettingChange, t }: SharedProp
                             </div>
                         ))}
                     </div>
+                </div>
+
+                <div className="rounded-3xl border border-amber-500/20 bg-amber-500/5 p-6">
+                    <p className="mb-1 font-bold text-slate-900 dark:text-white">
+                        {t("adminSettings.payments.supportedMethodsTitle", "Methodes actuellement operationnelles")}
+                    </p>
+                    <p className="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
+                        {t(
+                            "adminSettings.payments.supportedMethodsDesc",
+                            "Seuls le virement bancaire et Chari.ma sont actuellement relies au parcours Premium. Les options PayPal et Stripe restent masquees tant qu'aucune integration de production n'existe."
+                        )}
+                    </p>
+                    <p className="mt-3 text-xs font-bold uppercase tracking-widest text-amber-600">
+                        {SUPPORTED_PREMIUM_PAYMENT_METHODS.join(" / ")}
+                    </p>
                 </div>
 
                 <div className="p-6 bg-green-500/5 border border-green-500/10 rounded-3xl flex items-start gap-4">

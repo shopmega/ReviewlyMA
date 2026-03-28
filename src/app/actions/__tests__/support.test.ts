@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  getSupportAssignableAdmins,
   markAllUserSupportTicketsAsRead,
   markSupportTicketAsRead,
   sendSupportMessage,
   updateSupportTicket,
 } from '../support';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
-import { verifyAdminSession } from '@/lib/supabase/admin';
+import { verifyAdminPermission } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { sendEmail } from '@/lib/email-service';
 
@@ -16,7 +17,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 vi.mock('@/lib/supabase/admin', () => ({
-  verifyAdminSession: vi.fn(),
+  verifyAdminPermission: vi.fn(),
 }));
 
 vi.mock('next/cache', () => ({
@@ -33,6 +34,10 @@ vi.mock('@/lib/email-service', () => ({
   },
 }));
 
+vi.mock('@/lib/audit-logger', () => ({
+  logAuditAction: vi.fn(async () => undefined),
+}));
+
 vi.mock('@/lib/data', () => ({
   getSiteSettings: vi.fn(async () => ({ site_name: 'Reviewly' })),
 }));
@@ -45,6 +50,7 @@ vi.mock('@/lib/site-config', () => ({
 describe('Support Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(verifyAdminPermission).mockRejectedValue(new Error('not admin'));
   });
 
   it('markAllUserSupportTicketsAsRead should fail for unauthenticated user', async () => {
@@ -89,7 +95,7 @@ describe('Support Actions', () => {
   });
 
   it('sendSupportMessage should set unread flags for user sender', async () => {
-    vi.mocked(verifyAdminSession).mockRejectedValueOnce(new Error('not admin'));
+    vi.mocked(verifyAdminPermission).mockRejectedValueOnce(new Error('not admin'));
 
     const ticketUpdateEqSecondSpy = vi.fn(async () => ({ error: null }));
     const ticketUpdateEqFirstSpy = vi.fn(() => ({ eq: ticketUpdateEqSecondSpy }));
@@ -142,7 +148,7 @@ describe('Support Actions', () => {
   });
 
   it('sendSupportMessage should set unread flags for admin sender and send email', async () => {
-    vi.mocked(verifyAdminSession).mockResolvedValueOnce('admin-1');
+    vi.mocked(verifyAdminPermission).mockResolvedValueOnce('admin-1');
 
     const ticketUpdateEqSpy = vi.fn(async () => ({ error: null }));
     const insertSpy = vi.fn(async () => ({ error: null }));
@@ -231,7 +237,7 @@ describe('Support Actions', () => {
   });
 
   it('markSupportTicketAsRead should use service client for admin role', async () => {
-    vi.mocked(verifyAdminSession).mockResolvedValueOnce('admin-1');
+    vi.mocked(verifyAdminPermission).mockResolvedValueOnce('admin-1');
 
     const serviceUpdateEqSpy = vi.fn(async () => ({ error: null }));
     const serviceClient = {
@@ -262,7 +268,7 @@ describe('Support Actions', () => {
   });
 
   it('updateSupportTicket should not mark user unread when no admin response is provided', async () => {
-    vi.mocked(verifyAdminSession).mockResolvedValueOnce('admin-1');
+    vi.mocked(verifyAdminPermission).mockResolvedValueOnce('admin-1');
 
     const updateEqSpy = vi.fn(async () => ({ error: null }));
     const updateSpy = vi.fn((payload: any) => {
@@ -298,5 +304,72 @@ describe('Support Actions', () => {
 
     expect(result.status).toBe('success');
     expect(updateEqSpy).toHaveBeenCalledWith('id', 'ticket-9');
+  });
+
+  it('updateSupportTicket should persist assignment, escalation, notes, and SLA workflow fields', async () => {
+    vi.mocked(verifyAdminPermission).mockResolvedValueOnce('admin-2');
+
+    const updateEqSpy = vi.fn(async () => ({ error: null }));
+    const updateSpy = vi.fn((payload: any) => {
+      expect(payload).toEqual(expect.objectContaining({
+        assigned_admin_id: 'admin-3',
+        escalation_level: 'urgent',
+        internal_notes: 'Need billing follow-up',
+        sla_due_at: '2026-03-29T10:00:00.000Z',
+      }));
+      return { eq: updateEqSpy };
+    });
+
+    const supabase = {
+      auth: {
+        getUser: vi.fn(async () => ({ data: { user: { id: 'admin-2' } }, error: null })),
+      },
+    };
+    const serviceClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'support_tickets') {
+          return { update: updateSpy };
+        }
+        return {};
+      }),
+    };
+
+    vi.mocked(createClient).mockResolvedValue(supabase as any);
+    vi.mocked(createServiceClient).mockResolvedValue(serviceClient as any);
+
+    const result = await updateSupportTicket('ticket-22', 'in_progress', undefined, 'high', {
+      assignedAdminId: 'admin-3',
+      escalationLevel: 'urgent',
+      internalNotes: 'Need billing follow-up',
+      slaDueAt: '2026-03-29T10:00:00.000Z',
+    });
+
+    expect(result.status).toBe('success');
+    expect(updateEqSpy).toHaveBeenCalledWith('id', 'ticket-22');
+  });
+
+  it('getSupportAssignableAdmins should return admin profiles', async () => {
+    vi.mocked(verifyAdminPermission).mockResolvedValueOnce('admin-1');
+
+    const serviceClient = {
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(async () => ({
+              data: [{ id: 'admin-1', full_name: 'Ops Admin', email: 'ops@example.com', admin_access_level: 'admin_ops' }],
+              error: null,
+            })),
+          })),
+        })),
+      })),
+    };
+
+    vi.mocked(createServiceClient).mockResolvedValue(serviceClient as any);
+
+    const result = await getSupportAssignableAdmins();
+
+    expect(result).toEqual([
+      { id: 'admin-1', full_name: 'Ops Admin', email: 'ops@example.com', admin_access_level: 'admin_ops' },
+    ]);
   });
 });

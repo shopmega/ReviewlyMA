@@ -1,10 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight, BriefcaseBusiness, MessageSquareText, Plus, Users } from 'lucide-react';
+import { BriefcaseBusiness, MessageSquareText, Users } from 'lucide-react';
 import { useI18n } from '@/components/providers/i18n-provider';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ReferralDemandSummary, ReferralOfferSummary } from '@/lib/types';
 
@@ -22,7 +20,6 @@ export function BusinessReferralsSection({
   demands,
 }: BusinessReferralsSectionProps) {
   const { t, tf, locale } = useI18n();
-  const marketplaceHref = `/parrainages?search=${encodeURIComponent(businessName)}`;
 
   return (
     <section id="referrals" className="space-y-6">
@@ -45,18 +42,11 @@ export function BusinessReferralsSection({
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button asChild variant="outline" className="rounded-xl">
-                <Link href={marketplaceHref}>
-                  {t('business.referrals.openMarketplace', 'Open marketplace')}
-                </Link>
-              </Button>
-              <Button asChild className="rounded-xl">
-                <Link href={`/parrainages/new?type=offer&businessId=${businessId}`}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('business.referrals.publishOffer', 'Publish offer')}
-                </Link>
-              </Button>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              {t(
+                'business.referrals.decommissioned',
+                'The referral module is being retired. Existing historical data may remain visible while new referral actions are disabled.'
+              )}
             </div>
           </div>
 
@@ -82,16 +72,6 @@ export function BusinessReferralsSection({
                 'No active referral offers or public demand mentions are linked to this business yet.'
               )}
             </p>
-            <div className="mt-4 flex justify-center gap-2">
-              <Button asChild variant="outline" className="rounded-xl">
-                <Link href={marketplaceHref}>{t('business.referrals.browseMarket', 'Browse referrals')}</Link>
-              </Button>
-              <Button asChild className="rounded-xl">
-                <Link href={`/parrainages/new?type=demand`}>
-                  {t('business.referrals.createDemand', 'Create demand')}
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       ) : (
@@ -121,12 +101,9 @@ export function BusinessReferralsSection({
                       {offer.city || t('business.referrals.cityUnknown', 'City not specified')} -{' '}
                       {new Date(offer.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                     </p>
-                    <Button asChild variant="link" className="mt-2 h-auto p-0 text-primary">
-                      <Link href={`/parrainages/${offer.id}`}>
-                        {t('business.referrals.viewOffer', 'View offer')}
-                        <ArrowRight className="ml-1 h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {t('business.referrals.offerArchived', 'Historical offer detail is being archived and is no longer an active workflow.')}
+                    </p>
                   </div>
                 ))
               )}
@@ -157,12 +134,9 @@ export function BusinessReferralsSection({
                       {new Date(demand.created_at).toLocaleDateString(locale === 'fr' ? 'fr-MA' : 'en-US')}
                     </p>
                     <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{demand.summary}</p>
-                    <Button asChild variant="link" className="mt-2 h-auto p-0 text-primary">
-                      <Link href={`/parrainages/demandes/${demand.id}`}>
-                        {t('business.referrals.viewDemand', 'View demand')}
-                        <ArrowRight className="ml-1 h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {t('business.referrals.demandArchived', 'Historical demand detail is being archived and is no longer an active workflow.')}
+                    </p>
                   </div>
                 ))
               )}

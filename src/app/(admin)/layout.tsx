@@ -19,7 +19,6 @@ import {
   FileText,
   ShieldCheck,
   LayoutGrid,
-  BriefcaseBusiness,
   MessageSquare,
   UserPlus,
   Stethoscope,
@@ -27,6 +26,7 @@ import {
   Building2,
   Target,
   ShieldAlert,
+  BriefcaseBusiness,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -69,7 +69,6 @@ const menuGroups = [
       { href: '/admin/moderation', labelKey: 'adminLayout.nav.moderationHub', labelFallback: 'Moderation Hub', icon: ShieldAlert },
       { href: '/admin/avis', labelKey: 'adminLayout.nav.allReviews', labelFallback: 'Tous les avis', icon: Star },
       { href: '/admin/salaires', labelKey: 'adminLayout.nav.salaries', labelFallback: 'Salaires', icon: DollarSign },
-      { href: '/admin/parrainages', labelKey: 'adminLayout.nav.referrals', labelFallback: 'Parrainages', icon: BriefcaseBusiness },
       { href: '/admin/avis-signalements', labelKey: 'adminLayout.nav.reviewReports', labelFallback: 'Signalements avis', icon: Flag },
       { href: '/admin/avis-appels', labelKey: 'adminLayout.nav.reviewAppeals', labelFallback: 'Appels avis', icon: FileText },
       { href: '/admin/entreprises-signalements', labelKey: 'adminLayout.nav.businessReports', labelFallback: 'Signalements entreprises', icon: Building2 },
@@ -84,6 +83,7 @@ const menuGroups = [
       { href: '/admin/blog', labelKey: 'adminLayout.nav.blogCms', labelFallback: 'Blog CMS', icon: FileText },
       { href: '/admin/paiements', labelKey: 'adminLayout.nav.payments', labelFallback: 'Paiements', icon: CreditCard },
       { href: '/admin/support', labelKey: 'adminLayout.nav.support', labelFallback: 'Support Client', icon: MessageSquare },
+      { href: '/admin/messages', labelKey: 'adminLayout.nav.messages', labelFallback: 'Messages entreprises', icon: MessageSquare },
       { href: '/admin/diagnostics', labelKey: 'adminLayout.nav.diagnostics', labelFallback: 'Diagnostics', icon: Stethoscope },
       { href: '/admin/parametres', labelKey: 'adminLayout.nav.settings', labelFallback: 'Parametres', icon: Settings },
     ],

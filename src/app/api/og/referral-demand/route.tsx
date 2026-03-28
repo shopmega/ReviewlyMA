@@ -11,9 +11,7 @@ function clean(value: string | null, fallback: string, max = 44) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const title = clean(searchParams.get('title'), 'Demande de parrainage');
-  const role = clean(searchParams.get('role'), 'Poste');
-  const city = clean(searchParams.get('city'), 'Maroc', 24);
+  const title = clean(searchParams.get('title'), 'Historical referral demand');
 
   return new ImageResponse(
     (
@@ -36,20 +34,20 @@ export async function GET(request: Request) {
               width: 12,
               height: 12,
               borderRadius: 999,
-              backgroundColor: '#34D399',
+              backgroundColor: '#94A3B8',
             }}
           />
-          <div style={{ fontSize: 28, fontWeight: 700 }}>Demand board</div>
+          <div style={{ fontSize: 28, fontWeight: 700 }}>Referral module retired</div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ fontSize: 50, fontWeight: 800, lineHeight: 1.08 }}>{title}</div>
-          <div style={{ fontSize: 32, opacity: 0.95 }}>{role}</div>
-          <div style={{ fontSize: 26, opacity: 0.82 }}>{city}</div>
+          <div style={{ fontSize: 32, opacity: 0.95 }}>Archived referral-era route</div>
+          <div style={{ fontSize: 26, opacity: 0.82 }}>No new demand activity is live</div>
         </div>
 
         <div style={{ fontSize: 22, opacity: 0.82 }}>
-          Publication anonymisee. Moderation active.
+          Historical demand pages remain only as temporary retirement placeholders.
         </div>
       </div>
     ),

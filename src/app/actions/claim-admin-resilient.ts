@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { ActionState } from '@/lib/types';
 import { updateClaimStatus as updateClaimStatusBase } from './claim-admin';
+import { verifyAdminPermission } from '@/lib/supabase/admin';
 
 export async function updateClaimStatus(
   claimId: string,
@@ -27,6 +28,13 @@ export async function updateClaimStatus(
     return baseResult;
   }
 
+  let adminId: string;
+  try {
+    adminId = await verifyAdminPermission('moderation.claim.review');
+  } catch {
+    return baseResult;
+  }
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,21 +53,12 @@ export async function updateClaimStatus(
     }
   );
 
-  // Defense-in-depth: do not execute fallback unless caller is authenticated admin.
+  // Defense-in-depth: do not execute fallback unless caller can review claims.
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return baseResult;
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (!profile || profile.role !== 'admin') {
+  if (authError || !user || user.id !== adminId) {
     return baseResult;
   }
 
@@ -94,7 +93,7 @@ export async function updateClaimStatus(
     {
       status,
       reviewed_at: reviewedAt,
-      reviewed_by: user.id,
+      reviewed_by: adminId,
       rejection_reason: adminNotes,
       admin_notes: adminNotes,
     },

@@ -88,7 +88,7 @@ describe('job offer workspace helpers', () => {
       salarySubmissionCount: 6,
     })).toEqual({
       signal_label: 'strong',
-      signal_summary: 'This employer has a relatively strong public signal based on reviews, verification, and salary context.',
+      signal_summary: 'jobOffers.workspace.employerSignal.strong',
     });
   });
 
@@ -157,6 +157,6 @@ describe('job offer workspace helpers', () => {
       similarOffers: [],
     });
 
-    expect(workspace.reviewAwareSignal?.title).toBe('Offer looks fine, but employer reputation is weak');
+    expect(workspace.reviewAwareSignal?.title).toBe('jobOffers.workspace.signals.reviewAware.weakReputation.title');
   });
 });

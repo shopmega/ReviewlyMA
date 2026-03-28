@@ -6,6 +6,7 @@ import { invalidateCache, CACHE_TAGS, CACHE_KEYS } from '../cache';
 vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
   revalidatePath: vi.fn(),
+  unstable_cache: vi.fn((fn) => fn),
 }));
 
 describe('Cache Utilities', () => {

@@ -79,3 +79,24 @@ vi.mock('lucide-react', () => {
     }
   );
 });
+
+// Mock i18n server functions
+vi.mock('../lib/i18n/server', () => ({
+  getServerLocale: vi.fn().mockResolvedValue('fr'),
+  getI18nState: vi.fn().mockResolvedValue({
+    locale: 'fr',
+    messages: {
+      'jobOffers.workspace.employerSignal.strong': 'This employer has a relatively strong public signal based on reviews, verification, and salary context.',
+      'jobOffers.workspace.signals.reviewAware.weakReputation.title': 'Offer looks fine, but employer reputation is weak',
+    },
+  }),
+  getServerTranslator: vi.fn().mockResolvedValue({
+    locale: 'fr',
+    messages: {},
+    t: vi.fn((key, fallback) => fallback || key),
+    tf: vi.fn((key, fallback, vars) => fallback || key),
+  }),
+  APP_LOCALES: ['fr', 'en'],
+  DEFAULT_LOCALE: 'fr',
+  LOCALE_COOKIE_NAME: 'locale',
+}));

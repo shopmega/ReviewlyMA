@@ -22,69 +22,67 @@ export type BlogPost = {
   clusterLinks: BlogLink[];
 };
 
-export const REQUIRED_CLUSTER_LINKS = ['/referral-demand', '/salaires', '/companies', '/reports'] as const;
+export const REQUIRED_CLUSTER_LINKS = ['/companies', '/salaires', '/blog', '/job-offers'] as const;
 
 const BLOG_POSTS: BlogPost[] = [
   {
-    slug: 'what-is-referral-demand-complete-guide-2026',
-    title: 'What Is Referral Demand? Complete Guide 2026',
+    slug: 'how-to-evaluate-an-employer-in-morocco-complete-guide-2026',
+    title: 'How to Evaluate an Employer in Morocco: Complete Guide 2026',
     description:
-      'Definition, mechanics, and practical framework to use referral-demand signals to make better job and referral decisions.',
+      'A practical framework to combine reviews, salaries, company signals, and job-offer analysis before you apply.',
     publishedAt: '2026-02-28',
     updatedAt: '2026-02-28',
     readTimeMinutes: 10,
     category: 'pillar',
     intro:
-      'Referral demand is the live signal of how many candidates are actively requesting referral support for specific roles, cities, and companies. It helps candidates prioritize where effort has the highest probability of response.',
+      'The best employer decisions come from combining reputation, compensation, company context, and offer quality instead of relying on one signal alone.',
     sections: [
       {
-        heading: 'How referral demand differs from job volume',
+        heading: 'Use multiple signals instead of one headline metric',
         paragraphs: [
-          'Job volume tells you how many openings exist. Referral demand tells you where candidates are actively competing for referral access.',
-          'When demand spikes faster than supply, response rates usually decline unless you improve targeting and message quality.',
+          'A high review score can hide compensation issues, and a strong salary band can still come with poor management quality.',
+          'The goal is to cross-check reputation, pay, and current hiring signals before you spend time on an application process.',
         ],
       },
       {
         heading: 'Core dimensions to track',
         paragraphs: [
-          'The most useful referral-demand dimensions are role, city, work mode, seniority, and contract type.',
-          'Together they create a segment-level view of competition and candidate intent.',
+          'The most useful dimensions are role, city, salary range, work mode, seniority, and review quality.',
+          'Together they give you a grounded view of employer quality and market fit.',
         ],
         bullets: [
-          'Role + city: primary segment for intent targeting',
-          'Work mode + seniority: qualification and fit layer',
-          'Time windows: week-over-week and month-over-month momentum',
+          'Role + city: hiring and salary context',
+          'Work mode + seniority: fit and expectations',
+          'Recent review and offer signals: operational reality check',
         ],
       },
       {
-        heading: 'How to use this signal in practice',
+        heading: 'How to use the platform in practice',
         paragraphs: [
-          'Start with high-demand segments, then narrow to reachable company targets where offer-side activity exists.',
-          'Use salary intelligence to validate whether a segment is worth pursuing before sending requests.',
-          'Track monthly reports to avoid stale assumptions.',
+          'Start with the company page, then compare salary context and any available job-offer analysis before making a decision.',
+          'Use blog playbooks to structure your research instead of treating each surface as a standalone product.',
+          'Prioritize employers where the review story, salary signal, and offer quality are coherent.',
         ],
       },
     ],
     clusterLinks: [
-      { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
-      { href: '/reports', label: 'Monthly Reports' },
-      { href: '/referral-demand/roles', label: 'Top Demand Roles' },
-      { href: '/referral-demand/cities', label: 'Top Demand Cities' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
+      { href: '/blog', label: 'Editorial Hub' },
+      { href: '/job-offers', label: 'Job-Offer Analysis' },
     ],
   },
   {
-    slug: 'how-to-write-a-referral-request-that-gets-replies',
-    title: 'How to Write a Referral Request That Gets Replies',
+    slug: 'how-to-write-a-strong-employer-outreach-message',
+    title: 'How to Write a Strong Employer Outreach Message',
     description:
-      'A simple outreach structure to improve referral response quality while reducing spam-like messaging.',
+      'A concise message structure to improve employer outreach quality while avoiding generic or spam-like contact.',
     publishedAt: '2026-02-28',
     updatedAt: '2026-02-28',
     readTimeMinutes: 7,
     category: 'how_to',
     intro:
-      'High response rates come from relevance and clarity, not volume. Use short context, clear role fit, and one specific ask.',
+      'Better response rates come from relevance and clarity, not volume. Use short context, clear fit, and one specific ask.',
     sections: [
       {
         heading: 'Use a three-block message',
@@ -95,37 +93,37 @@ const BLOG_POSTS: BlogPost[] = [
         ],
       },
       {
-        heading: 'Target by data, not by random company list',
+        heading: 'Target by data, not by random company lists',
         paragraphs: [
-          'Use demand and company pages to focus on segments with active movement.',
-          'Avoid generic messages across unrelated roles and cities.',
+          'Use company pages, salary pages, and offer analysis to focus on employers where your profile is actually relevant.',
+          'Avoid sending the same generic outreach across unrelated roles and cities.',
         ],
       },
     ],
     clusterLinks: [
-      { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
-      { href: '/reports', label: 'Monthly Reports' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
+      { href: '/blog', label: 'Editorial Hub' },
+      { href: '/job-offers', label: 'Job-Offer Analysis' },
     ],
   },
   {
-    slug: 'how-to-choose-role-and-city-for-your-demand-listing',
-    title: 'How to Choose Role and City for Your Demand Listing',
+    slug: 'how-to-choose-the-right-role-and-city-before-you-apply',
+    title: 'How to Choose the Right Role and City Before You Apply',
     description:
-      'A practical framework to select high-opportunity role/city segments before publishing your listing.',
+      'A practical framework to select high-opportunity role and city segments before you commit to a search track.',
     publishedAt: '2026-02-28',
     updatedAt: '2026-02-28',
     readTimeMinutes: 6,
     category: 'how_to',
     intro:
-      'Role-city targeting is the biggest lever for visibility and conversion in referral-demand pages.',
+      'Role-city targeting is one of the biggest levers for search quality, salary relevance, and realistic hiring expectations.',
     sections: [
       {
-        heading: 'Start from top demand segments',
+        heading: 'Start from market signal concentration',
         paragraphs: [
-          'Use top roles and top cities pages to identify where candidate intent is concentrated.',
-          'Then move to a specific role-city page to validate active listing depth.',
+          'Start from salary pages, company density, and active hiring signals to identify where the market is actually moving.',
+          'Then move into specific employer and offer surfaces to validate whether the segment is worth your time.',
         ],
       },
       {
@@ -137,80 +135,78 @@ const BLOG_POSTS: BlogPost[] = [
       },
     ],
     clusterLinks: [
-      { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
-      { href: '/reports', label: 'Monthly Reports' },
-      { href: '/referral-demand/roles', label: 'Top Demand Roles' },
-      { href: '/referral-demand/cities', label: 'Top Demand Cities' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
+      { href: '/blog', label: 'Editorial Hub' },
+      { href: '/job-offers', label: 'Job-Offer Analysis' },
     ],
   },
   {
-    slug: 'how-to-use-salary-signals-before-asking-for-a-referral',
-    title: 'How to Use Salary Signals Before Asking for a Referral',
+    slug: 'how-to-use-salary-signals-before-you-apply',
+    title: 'How to Use Salary Signals Before You Apply',
     description:
-      'Use median, distribution, and trend signals to prioritize referral outreach and avoid weak-fit applications.',
+      'Use median, distribution, and trend signals to prioritize applications and avoid weak-fit opportunities.',
     publishedAt: '2026-02-28',
     updatedAt: '2026-02-28',
     readTimeMinutes: 7,
     category: 'how_to',
     intro:
-      'Salary signals reduce wasted outreach by helping you focus on role-city combinations that match your target compensation band.',
+      'Salary signals reduce wasted effort by helping you focus on role-city combinations that match your target compensation band.',
     sections: [
       {
         heading: 'Read distribution, not only median',
         paragraphs: [
           'Median alone can hide volatility. Use low/median/high bands to estimate realistic negotiation range.',
-          'Combine this with role-city demand momentum before contacting employees.',
+          'Combine this with review quality and employer signals before you commit to an interview loop.',
         ],
       },
       {
         heading: 'Check monthly trend before committing effort',
         paragraphs: [
-          'If median is dropping while demand is rising, response quality may decline due to segment pressure.',
-          'Use monthly reports to time your outreach and listing updates.',
+          'If pay is declining while hiring looks noisy, the role may be less attractive than it appears on the surface.',
+          'Use recent signals to decide whether to apply now, wait, or shift target employers.',
         ],
       },
     ],
     clusterLinks: [
-      { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
-      { href: '/reports', label: 'Monthly Reports' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
+      { href: '/blog', label: 'Editorial Hub' },
+      { href: '/job-offers', label: 'Job-Offer Analysis' },
     ],
   },
   {
-    slug: 'how-to-evaluate-company-fit-before-you-ask-for-a-referral',
-    title: 'How to Evaluate Company Fit Before You Ask for a Referral',
+    slug: 'how-to-evaluate-company-fit-before-you-spend-time-applying',
+    title: 'How to Evaluate Company Fit Before You Spend Time Applying',
     description:
-      'A fast decision checklist using company referral activity, role overlap, and demand context.',
+      'A fast decision checklist using review quality, salary evidence, and hiring context.',
     publishedAt: '2026-02-28',
     updatedAt: '2026-02-28',
     readTimeMinutes: 6,
     category: 'how_to',
     intro:
-      'Not every target company deserves the same effort. Use fit checks before you request introductions.',
+      'Not every target company deserves the same effort. Use fit checks before you invest in a full application process.',
     sections: [
       {
-        heading: 'Validate offer-side activity first',
+        heading: 'Validate active hiring signals first',
         paragraphs: [
-          'Start with company referral pages and confirm there are active offers in your target role family.',
-          'If no activity exists, shift to companies with active movement.',
+          'Start with company pages and confirm there are current signals in your target role family.',
+          'If there is no useful activity, move to employers with clearer hiring momentum.',
         ],
       },
       {
-        heading: 'Cross-check with demand and salary context',
+        heading: 'Cross-check with salary and review context',
         paragraphs: [
-          'Use demand pages to evaluate competition and salary pages to verify compensation alignment.',
-          'Then prioritize companies where both fit and opportunity are present.',
+          'Use salary pages to verify compensation alignment and reviews to pressure-test reputation.',
+          'Then prioritize companies where fit, pay, and employer quality are all credible.',
         ],
       },
     ],
     clusterLinks: [
-      { href: '/referral-demand', label: 'Referral Demand Dashboard' },
-      { href: '/salaires', label: 'Salary Intelligence Hub' },
       { href: '/companies', label: 'Company Insights Hub' },
-      { href: '/reports', label: 'Monthly Reports' },
+      { href: '/salaires', label: 'Salary Intelligence Hub' },
+      { href: '/blog', label: 'Editorial Hub' },
+      { href: '/job-offers', label: 'Job-Offer Analysis' },
     ],
   },
 ];

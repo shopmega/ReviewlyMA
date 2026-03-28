@@ -246,7 +246,7 @@ describe('Admin Settings Operations', () => {
       const booleanSettings = {
         maintenance_mode: true,
         allow_new_registrations: false,
-        require_email_verification: true
+        enable_reviews: true
       };
 
       const result = await updateSiteSettings(booleanSettings);
@@ -255,6 +255,60 @@ describe('Admin Settings Operations', () => {
         status: 'success',
         message: 'Paramètres mis à jour et cache vidé avec succès.'
       });
+    });
+
+    it('should ignore deprecated settings keys from stale clients', async () => {
+      const result = await updateSiteSettings({
+        premium_enabled: false,
+        enable_messaging: true,
+        default_language: 'en',
+        site_name: 'Still Valid'
+      });
+
+      expect(result.status).toBe('success');
+      expect(result.message).toContain('Param');
+    });
+
+    it('should keep only supported payment methods and canonical gold pricing keys', async () => {
+      const updateSelectSpy = vi.fn(() => Promise.resolve({ data: [{ id: 'main' }], error: null }));
+      const updateEqSpy = vi.fn(() => ({ select: updateSelectSpy }));
+      const updateSpy = vi.fn(() => ({ eq: updateEqSpy }));
+
+      const mockAdminClient = (await import('@/lib/supabase/admin')).createAdminClient;
+      vi.mocked(mockAdminClient).mockImplementationOnce(() => ({
+        from: vi.fn((table) => {
+          if (table === 'site_settings') {
+            return {
+              update: updateSpy,
+              insert: vi.fn(() => Promise.resolve({ error: null })),
+            };
+          }
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ data: null, error: null }))
+              }))
+            })),
+            insert: vi.fn(() => Promise.resolve({ data: [], error: null })),
+            update: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ data: [], error: null })) })),
+          };
+        }),
+      } as any));
+
+      const result = await updateSiteSettings({
+        tier_gold_monthly_price: 399,
+        tier_pro_monthly_price: 999,
+        payment_methods_enabled: ['bank_transfer', 'paypal', 'stripe', 'chari_ma'],
+      });
+
+      expect(result.status).toBe('success');
+      expect(updateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tier_gold_monthly_price: 399,
+          payment_methods_enabled: ['bank_transfer', 'chari_ma'],
+        })
+      );
+      expect(updateSpy).not.toHaveBeenCalledWith(expect.objectContaining({ tier_pro_monthly_price: expect.anything() }));
     });
 
     it('should handle string settings', async () => {

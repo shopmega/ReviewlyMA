@@ -89,7 +89,7 @@ export default async function AdminBlogPage() {
             </div>
             <Textarea
               name="cluster_links"
-              placeholder={'Referral Demand Dashboard|/referral-demand\nSalary Intelligence Hub|/salaires'}
+              placeholder={'Company Insights Hub|/companies\nSalary Intelligence Hub|/salaires\nEditorial Hub|/blog\nJob-Offer Analysis|/job-offers'}
               rows={4}
             />
             <Textarea name="content_md" placeholder="Contenu markdown..." rows={12} required />
@@ -119,7 +119,7 @@ export default async function AdminBlogPage() {
             <Textarea
               name="articles_json"
               rows={12}
-              placeholder={`[\n  {\n    "slug": "guide-demande-parrainage-casablanca",\n    "title": "Guide demande de parrainage a Casablanca",\n    "description": "Description SEO...",\n    "category": "how_to",\n    "content_md": "## Titre\\nContenu...\",\n    "read_time_minutes": 7,\n    "status": "published",\n    "cluster_links": [\n      {"href":"/referral-demand","label":"Referral Demand Dashboard"},\n      {"href":"/salaires","label":"Salary Intelligence Hub"},\n      {"href":"/companies","label":"Company Insights Hub"},\n      {"href":"/reports","label":"Monthly Reports"}\n    ]\n  }\n]`}
+              placeholder={`[\n  {\n    "slug": "guide-evaluer-entreprise-casablanca",\n    "title": "Guide pour evaluer une entreprise a Casablanca",\n    "description": "Description SEO...",\n    "category": "how_to",\n    "content_md": "## Titre\\nContenu...\",\n    "read_time_minutes": 7,\n    "status": "published",\n    "cluster_links": [\n      {"href":"/companies","label":"Company Insights Hub"},\n      {"href":"/salaires","label":"Salary Intelligence Hub"},\n      {"href":"/blog","label":"Editorial Hub"},\n      {"href":"/job-offers","label":"Job-Offer Analysis"}\n    ]\n  }\n]`}
               required
             />
             <Button type="submit" variant="secondary" className="w-fit">

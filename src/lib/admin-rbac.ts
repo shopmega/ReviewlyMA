@@ -7,12 +7,21 @@ export type AdminAccessLevel =
 
 export type AdminPermission =
   | 'admin.panel.access'
+  | 'audit.view'
+  | 'analytics.view'
   | 'settings.write'
   | 'settings.maintenance.toggle'
+  | 'moderation.job_offer.review'
+  | 'user.manage'
   | 'user.role.manage'
   | 'user.suspend'
   | 'user.delete'
+  | 'business.manage'
   | 'business.delete'
+  | 'payment.manage'
+  | 'support.manage'
+  | 'moderation.claim.review'
+  | 'moderation.claim.proofs'
   | 'moderation.review.bulk'
   | 'moderation.business.bulk'
   | 'moderation.report.bulk'
@@ -26,12 +35,21 @@ export type AdminAccessProfile = {
 
 const ALL_ADMIN_PERMISSIONS: ReadonlySet<AdminPermission> = new Set([
   'admin.panel.access',
+  'audit.view',
+  'analytics.view',
   'settings.write',
   'settings.maintenance.toggle',
+  'moderation.job_offer.review',
+  'user.manage',
   'user.role.manage',
   'user.suspend',
   'user.delete',
+  'business.manage',
   'business.delete',
+  'payment.manage',
+  'support.manage',
+  'moderation.claim.review',
+  'moderation.claim.proofs',
   'moderation.review.bulk',
   'moderation.business.bulk',
   'moderation.report.bulk',
@@ -42,10 +60,19 @@ const ADMIN_ROLE_PERMISSIONS: Record<AdminAccessLevel, ReadonlySet<AdminPermissi
   super_admin: ALL_ADMIN_PERMISSIONS,
   admin_ops: new Set([
     'admin.panel.access',
+    'audit.view',
+    'analytics.view',
     'settings.write',
     'settings.maintenance.toggle',
+    'moderation.job_offer.review',
+    'user.manage',
     'user.suspend',
+    'business.manage',
     'business.delete',
+    'payment.manage',
+    'support.manage',
+    'moderation.claim.review',
+    'moderation.claim.proofs',
     'moderation.review.bulk',
     'moderation.business.bulk',
     'moderation.report.bulk',
@@ -53,15 +80,23 @@ const ADMIN_ROLE_PERMISSIONS: Record<AdminAccessLevel, ReadonlySet<AdminPermissi
   ]),
   moderator: new Set([
     'admin.panel.access',
+    'moderation.job_offer.review',
+    'support.manage',
+    'moderation.claim.review',
+    'moderation.claim.proofs',
     'moderation.review.bulk',
     'moderation.report.bulk',
     'moderation.claim.bulk',
   ]),
   analyst: new Set([
     'admin.panel.access',
+    'audit.view',
+    'analytics.view',
   ]),
   support: new Set([
     'admin.panel.access',
+    'support.manage',
+    'payment.manage',
     'user.suspend',
     'moderation.report.bulk',
   ]),

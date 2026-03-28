@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: t('blogPage.metaTitle', 'Blog | Reviewly'),
-    description: t('blogPage.metaDescription', 'Guides and analysis to evaluate employers through reviews, salaries, and referral signals.'),
+    description: 'Guides and analysis to evaluate employers through reviews, salaries, and company signals.',
     alternates: { canonical: `${siteUrl}/blog` },
     robots: {
       index: ENABLE_BLOG_HUB_INDEXING,
@@ -51,7 +51,7 @@ export default async function BlogHubPage() {
       <PageIntro
         badge={<Badge variant="outline" className="w-fit">{t('blogPage.badge', 'Editorial Hub')}</Badge>}
         title={t('blogPage.title', 'Blog and playbooks')}
-        description={t('blogPage.subtitle', 'Guides and analysis connecting reviews, salaries, referral signals, and monthly reports.')}
+        description="Guides and analysis connecting reviews, salaries, company research, and operational insights."
       />
 
       <Card className="rounded-2xl border-border">
@@ -97,7 +97,7 @@ export default async function BlogHubPage() {
               {t('blogPage.cards.howToTitle', 'How-to guides')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.howToDesc', 'Practical playbooks for referrals, company research, and application prep.')}</CardContent>
+          <CardContent className="text-sm text-muted-foreground">Practical playbooks for company research, applications, and product usage.</CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardHeader>
@@ -106,7 +106,7 @@ export default async function BlogHubPage() {
               {t('blogPage.cards.dataTitle', 'Data insights')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{t('blogPage.cards.dataDesc', 'Analysis built from review, salary, and demand signals.')}</CardContent>
+          <CardContent className="text-sm text-muted-foreground">Analysis built from review, salary, and employer signals.</CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardHeader>
@@ -160,16 +160,16 @@ export default async function BlogHubPage() {
 
       <div className="flex flex-wrap gap-2">
         <Button asChild>
-          <Link href="/reports">{t('blogPage.reportsCta', 'View reports')}</Link>
+          <Link href="/companies">Open company hub</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/referral-demand/roles">{t('blogPage.topRolesCta', 'Top demand roles')}</Link>
+          <Link href="/companies">Browse companies</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/referral-demand/cities">{t('blogPage.topCitiesCta', 'Top demand cities')}</Link>
+          <Link href="/salaires">Explore salaries</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/referral-demand">{t('blogPage.referralDashboardCta', 'View referral demand dashboard')}</Link>
+          <Link href="/job-offers">Open job-offer analysis</Link>
         </Button>
       </div>
     </div>

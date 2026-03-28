@@ -6,12 +6,20 @@ import { revalidatePath } from 'next/cache';
 import { sendClaimApprovalEmail, sendClaimRejectionEmail } from '@/app/actions/email';
 import { ActionState, SubscriptionTier } from '@/lib/types';
 import { getMaxBusinessesForTier } from '@/lib/tier-utils';
+import { verifyAdminPermission } from '@/lib/supabase/admin';
 
 export async function updateClaimStatus(
   claimId: string,
   status: 'approved' | 'rejected',
   reason?: string
 ): Promise<ActionState> {
+  let adminId: string;
+  try {
+    adminId = await verifyAdminPermission('moderation.claim.review');
+  } catch (error: any) {
+    return { status: 'error', message: error?.message || 'Acces reserve aux administrateurs.' };
+  }
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,25 +37,6 @@ export async function updateClaimStatus(
       },
     }
   );
-
-  // 1) Verify caller is admin.
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return { status: 'error', message: 'Non autorise.' };
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || profile.role !== 'admin') {
-    return { status: 'error', message: 'Acces reserve aux administrateurs.' };
-  }
 
   // 2) Service-role client for privileged updates.
   const supabaseService = createServerClient(
@@ -229,7 +218,7 @@ export async function updateClaimStatus(
         .update({
           status,
           reviewed_at: reviewedAt,
-          reviewed_by: user.id,
+          reviewed_by: adminId,
           rejection_reason: rejectionReason,
         })
         .eq('id', claimId);

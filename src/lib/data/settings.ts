@@ -13,12 +13,8 @@ export type SiteSettings = {
     linkedin_url?: string;
     maintenance_mode: boolean;
     allow_new_registrations: boolean;
-    require_email_verification: boolean;
-    default_language: string;
     enable_reviews: boolean;
     enable_salaries: boolean;
-    enable_interviews: boolean;
-    enable_messaging: boolean;
     enable_claims: boolean;
     premium_annual_price: number;
     premium_monthly_price: number;
@@ -26,7 +22,6 @@ export type SiteSettings = {
     tier_growth_annual_price: number;
     tier_gold_monthly_price: number;
     tier_gold_annual_price: number;
-    premium_enabled: boolean;
     premium_description: string;
     site_logo_url?: string;
     google_analytics_id?: string | null;
@@ -52,6 +47,7 @@ export type SiteSettings = {
     payment_methods_enabled?: string[];
     partner_app_name?: string;
     partner_app_url?: string;
+    verification_methods?: string[];
     salary_roles?: string[];
     salary_departments?: string[];
     salary_intervals?: Array<{
@@ -62,6 +58,9 @@ export type SiteSettings = {
     }>;
 };
 
+export const SUPPORTED_PREMIUM_PAYMENT_METHODS = ['bank_transfer', 'chari_ma'] as const;
+export type SupportedPremiumPaymentMethod = (typeof SUPPORTED_PREMIUM_PAYMENT_METHODS)[number];
+
 export const getDefaultSettings = (): SiteSettings => ({
     id: 'main',
     site_name: 'Reviewly',
@@ -69,12 +68,8 @@ export const getDefaultSettings = (): SiteSettings => ({
     contact_email: 'contact@example.com',
     maintenance_mode: false,
     allow_new_registrations: true,
-    require_email_verification: true,
-    default_language: 'fr',
     enable_reviews: true,
     enable_salaries: true,
-    enable_interviews: true,
-    enable_messaging: false,
     enable_claims: true,
     premium_annual_price: 500.0,
     premium_monthly_price: 50.0,
@@ -82,7 +77,6 @@ export const getDefaultSettings = (): SiteSettings => ({
     tier_growth_annual_price: 990.0,
     tier_gold_monthly_price: 299.0,
     tier_gold_annual_price: 2900.0,
-    premium_enabled: true,
     premium_description: 'Devenez membre Premium et beneficiez de fonctionnalites exclusives pour propulser votre etablissement.',
     site_logo_url: '/app-logo.png',
     google_analytics_id: null,
@@ -119,6 +113,7 @@ export const getDefaultSettings = (): SiteSettings => ({
     payment_methods_enabled: ['bank_transfer'],
     partner_app_name: 'MOR RH',
     partner_app_url: 'https://monrh.vercel.app/',
+    verification_methods: ['email', 'phone', 'document', 'video'],
     salary_roles: [
         'Ingenieur logiciel',
         'Ingenieur logiciel senior',
@@ -167,6 +162,12 @@ export const normalizeSiteSettings = (data?: Partial<SiteSettings> | null): Site
         return defaults;
     }
 
+    const paymentMethods: string[] = Array.isArray(data.payment_methods_enabled)
+      ? data.payment_methods_enabled.filter((method): method is SupportedPremiumPaymentMethod =>
+          SUPPORTED_PREMIUM_PAYMENT_METHODS.includes(method as SupportedPremiumPaymentMethod)
+        )
+      : [...(defaults.payment_methods_enabled || [])];
+
     return {
         ...defaults,
         ...data,
@@ -175,8 +176,6 @@ export const normalizeSiteSettings = (data?: Partial<SiteSettings> | null): Site
         tier_gold_annual_price: data.tier_gold_annual_price || (data as any).tier_pro_annual_price || defaults.tier_gold_annual_price,
         enable_reviews: data.enable_reviews ?? defaults.enable_reviews,
         enable_salaries: data.enable_salaries ?? defaults.enable_salaries,
-        enable_interviews: data.enable_interviews ?? defaults.enable_interviews,
-        enable_messaging: data.enable_messaging ?? defaults.enable_messaging,
         enable_claims: data.enable_claims ?? defaults.enable_claims,
         site_logo_url: data.site_logo_url || defaults.site_logo_url,
         google_analytics_id: data.google_analytics_id || null,
@@ -199,9 +198,12 @@ export const normalizeSiteSettings = (data?: Partial<SiteSettings> | null): Site
         payment_rib_number: data.payment_rib_number || defaults.payment_rib_number,
         payment_beneficiary: data.payment_beneficiary || `${getSiteName(data)} SARL`,
         payment_chari_url: data.payment_chari_url || defaults.payment_chari_url,
-        payment_methods_enabled: data.payment_methods_enabled || defaults.payment_methods_enabled,
+        payment_methods_enabled: paymentMethods.length > 0 ? paymentMethods : defaults.payment_methods_enabled,
         partner_app_name: data.partner_app_name || defaults.partner_app_name,
         partner_app_url: data.partner_app_url || defaults.partner_app_url,
+        verification_methods: Array.isArray((data as any).verification_methods)
+          ? (data as any).verification_methods.filter((method: unknown): method is string => typeof method === 'string' && method.trim().length > 0)
+          : defaults.verification_methods,
         salary_roles: data.salary_roles || defaults.salary_roles,
         salary_departments: data.salary_departments || defaults.salary_departments,
         salary_intervals: data.salary_intervals || defaults.salary_intervals,

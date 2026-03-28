@@ -2,7 +2,6 @@ import Link from 'next/link';
 import {
   AlertTriangle,
   ArrowRight,
-  BriefcaseBusiness,
   Building,
   DollarSign,
   FileImage,
@@ -36,7 +35,6 @@ async function getModerationCounts() {
     reviewAppealsRes,
     businessReportsRes,
     contentRes,
-    referralsRes,
   ] = await Promise.all([
     supabase
       .from('reviews')
@@ -48,8 +46,7 @@ async function getModerationCounts() {
     supabase.from('review_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('review_appeals').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_review']),
     supabase.from('business_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-    supabase.from('reported_content').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-    supabase.from('job_referral_offers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('media_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
   ]);
 
   return {
@@ -61,7 +58,6 @@ async function getModerationCounts() {
     reviewAppeals: reviewAppealsRes.count || 0,
     businessReports: businessReportsRes.count || 0,
     content: contentRes.count || 0,
-    referrals: referralsRes.count || 0,
   };
 }
 
@@ -135,14 +131,6 @@ export default async function AdminModerationPage() {
       count: counts.content,
       icon: FileImage,
       tone: 'bg-cyan-500/10 text-cyan-600',
-    },
-    {
-      href: '/admin/parrainages',
-      label: 'Parrainages',
-      description: 'Surveillance des offres de referral en attente.',
-      count: counts.referrals,
-      icon: BriefcaseBusiness,
-      tone: 'bg-fuchsia-500/10 text-fuchsia-600',
     },
   ];
 

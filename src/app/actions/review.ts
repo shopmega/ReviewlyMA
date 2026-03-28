@@ -21,6 +21,7 @@ import {
 import { createServiceClient } from '@/lib/supabase/server';
 import { notifyAdmins } from '@/lib/notifications';
 import sanitizer from '@/lib/sanitizer';
+import { getSiteSettings } from '@/lib/data';
 
 const LEGACY_REVIEW_REPORT_REASON_MAP: Record<string, string> = {
   spam: 'spam_or_promotional',
@@ -34,6 +35,14 @@ export async function submitReview(
   prevState: ReviewFormState,
   formData: FormData
 ): Promise<ReviewFormState> {
+  const settings = await getSiteSettings();
+  if (settings.enable_reviews === false) {
+    return createErrorResponse(
+      ErrorCode.AUTHORIZATION_ERROR,
+      'La publication d avis est actuellement desactivee.'
+    ) as ReviewFormState;
+  }
+
   // Check authentication FIRST before any validation
   const supabase = await createClient();
   const user = await getCurrentAuthUser();

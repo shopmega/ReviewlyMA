@@ -592,7 +592,7 @@
       "expiresOn": "Expires on",
       "description": "Description",
       "requirements": "Requirements",
-      "loginPrompt": "Log in to request a referral.",
+      "loginPrompt": "This historical referral flow is retired.",
       "goToLogin": "Go to login",
       "ownerNote": "You are the owner of this offer. Incoming requests are visible in your user area.",
       "applyNow": "Apply now",
@@ -605,7 +605,7 @@
       "statusRejected": "Unavailable"
     },
     "request": {
-      "title": "Request a referral",
+      "title": "Referral flow retired",
       "message": "Your message",
       "messagePlaceholder": "Introduce your profile, experience and motivation...",
       "cvUrl": "CV link (optional)",
@@ -1255,13 +1255,13 @@
       "loadMore": "Load more favorites"
     },
     "referrals": {
-      "title": "My referrals",
-      "description": "Manage your published offers and track your referral requests.",
-      "offers": "Published offers",
-      "requests": "Sent requests",
-      "myOffers": "My referral offers",
-      "myRequests": "My referral requests",
-      "publishNew": "Publish a new offer"
+      "title": "Archived referral history",
+      "description": "This retired module is no longer active in the live product.",
+      "offers": "Archived offers",
+      "requests": "Archived requests",
+      "myOffers": "Archived offer history",
+      "myRequests": "Archived request history",
+      "publishNew": "Referral publishing retired"
     },
     "account": {
       "personalTitle": "Personal Information",
@@ -1345,10 +1345,10 @@
   },
   "blogPage": {
     "metaTitle": "Blog | Reviewly",
-    "metaDescription": "Guides and analysis to evaluate employers through reviews, salaries, and referral signals.",
+    "metaDescription": "Guides and analysis to evaluate employers through reviews, salaries, and company signals.",
     "badge": "Editorial Hub",
     "title": "Blog and playbooks",
-    "subtitle": "Guides and analysis connecting reviews, salaries, referral signals, and monthly reports.",
+    "subtitle": "Guides and analysis connecting reviews, salaries, company research, and job-offer signals.",
     "empty": "No article has been published yet.",
     "pillarBadge": "Pillar guide",
     "published": "Published: {date}",
@@ -1358,16 +1358,16 @@
     "guideMeta": "{date} | {minutes} min",
     "readGuideCta": "Read guide",
     "reportsCta": "View reports",
-    "topRolesCta": "Top demand roles",
-    "topCitiesCta": "Top demand cities",
-    "referralDashboardCta": "View referral demand dashboard",
+    "topRolesCta": "Browse companies",
+    "topCitiesCta": "Explore salaries",
+    "referralDashboardCta": "Open job-offer analysis",
     "cards": {
       "howToTitle": "How-to guides",
-      "howToDesc": "Practical playbooks for referrals, company research, and application prep.",
+      "howToDesc": "Practical playbooks for company research, application prep, and product usage.",
       "dataTitle": "Data insights",
-      "dataDesc": "Analysis built from review, salary, and demand signals.",
+      "dataDesc": "Analysis built from review, salary, and employer signals.",
       "reportsTitle": "Reports linking",
-      "reportsDesc": "Monthly reports and sector snapshots to strengthen your research."
+      "reportsDesc": "Editorial hubs and analysis surfaces to strengthen your research."
     },
     "shareLabel": "Share"
   },
@@ -3506,7 +3506,7 @@
     "unexpectedError": "An unexpected error occurred while analyzing the offer."
   },
   "referralRequestActions": {
-    "authRequired": "You must be logged in to request a referral.",
+    "authRequired": "This referral action is no longer available.",
     "validationFailed": "Please review your request.",
     "rateLimited": "You sent too many requests. Try again in {minutes} minute(s).",
     "offerUnavailable": "This offer is no longer available.",
@@ -3591,7 +3591,7 @@
     "descriptionPrefix": "Snapshot of referral demand and offer-side activity for this month. Data source mode:",
     "sourceModeFull": "full historical (service role)",
     "sourceModePublic": "public active scope",
-    "openDashboard": "Open referral-demand dashboard",
+    "openDashboard": "Open blog",
     "backToHub": "Back to reports hub",
     "shareReport": "Share report",
     "insufficientTitle": "Insufficient data for a full monthly report",

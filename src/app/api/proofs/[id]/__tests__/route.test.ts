@@ -8,23 +8,11 @@ const adminLimiterMock = vi.fn(
   ) => handler(request)
 );
 
-const getUserMock = vi.fn();
 const createSignedUrlMock = vi.fn();
-const setCookieMock = vi.fn();
-
-const singleProfileMock = vi.fn();
 const singleClaimMock = vi.fn();
+const verifyAdminPermissionMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
-  if (table === 'profiles') {
-    return {
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: singleProfileMock,
-        })),
-      })),
-    };
-  }
   if (table === 'business_claims') {
     return {
       select: vi.fn(() => ({
@@ -37,12 +25,8 @@ const fromMock = vi.fn((table: string) => {
   return { select: vi.fn() };
 });
 
-const createServerClientMock = vi.fn((..._args: any[]) => ({
-  auth: { getUser: getUserMock },
+const createAdminClientMock = vi.fn(async () => ({
   from: fromMock,
-}));
-
-const createClientMock = vi.fn((..._args: any[]) => ({
   storage: {
     from: vi.fn(() => ({
       createSignedUrl: createSignedUrlMock,
@@ -57,19 +41,9 @@ vi.mock('@/lib/api-rate-limiter', () => ({
   },
 }));
 
-vi.mock('@supabase/ssr', () => ({
-  createServerClient: (...args: any[]) => createServerClientMock(...args),
-}));
-
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: (...args: any[]) => createClientMock(...args),
-}));
-
-vi.mock('next/headers', () => ({
-  cookies: async () => ({
-    getAll: () => [],
-    set: (...args: any[]) => setCookieMock(...args),
-  }),
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => createAdminClientMock(),
+  verifyAdminPermission: (...args: any[]) => verifyAdminPermissionMock(...args),
 }));
 
 import { GET } from '../route';
@@ -81,14 +55,7 @@ describe('proofs [id] route', () => {
     (process.env as any).NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
     (process.env as any).SUPABASE_SERVICE_ROLE_KEY = 'service-key';
 
-    getUserMock.mockResolvedValue({
-      data: { user: { id: 'admin-1' } },
-      error: null,
-    });
-    singleProfileMock.mockResolvedValue({
-      data: { role: 'admin' },
-      error: null,
-    });
+    verifyAdminPermissionMock.mockResolvedValue('admin-1');
     singleClaimMock.mockResolvedValue({
       data: {
         proof_data: {
@@ -108,14 +75,14 @@ describe('proofs [id] route', () => {
   });
 
   it('returns 401 when user is not authenticated', async () => {
-    getUserMock.mockResolvedValueOnce({ data: { user: null }, error: { message: 'no session' } });
+    verifyAdminPermissionMock.mockRejectedValueOnce(new Error('Non autorise: session invalide.'));
     const req = new NextRequest('https://example.com/api/proofs/claim-1');
     const res = await GET(req, { params: Promise.resolve({ id: 'claim-1' }) });
     expect(res.status).toBe(401);
   });
 
-  it('returns 403 when user is not admin', async () => {
-    singleProfileMock.mockResolvedValueOnce({ data: { role: 'user' }, error: null });
+  it('returns 403 when user lacks proof permission', async () => {
+    verifyAdminPermissionMock.mockRejectedValueOnce(new Error("Non autorise: permission 'moderation.claim.proofs' requise."));
     const req = new NextRequest('https://example.com/api/proofs/claim-1');
     const res = await GET(req, { params: Promise.resolve({ id: 'claim-1' }) });
     expect(res.status).toBe(403);

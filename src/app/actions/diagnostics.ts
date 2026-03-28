@@ -185,7 +185,7 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
 
     const { data: settings, error: settingsError } = await serviceClient
       .from('site_settings')
-      .select('id, google_analytics_id, facebook_pixel_id, adsense_enabled, adsense_client_id, tier_pro_annual_price')
+      .select('id, google_analytics_id, facebook_pixel_id, adsense_enabled, adsense_client_id, tier_gold_annual_price')
       .eq('id', 'main')
       .maybeSingle();
 
@@ -203,9 +203,9 @@ export async function runAdminDiagnostics(): Promise<DiagnosticsResult> {
       });
 
       checks.push({
-        name: 'Schema: tier_pro_annual_price',
-        status: settings && Object.hasOwn(settings, 'tier_pro_annual_price') ? 'ok' : 'error',
-        message: settings && Object.hasOwn(settings, 'tier_pro_annual_price') ? 'Present' : 'Missing column in schema cache/migration',
+        name: 'Schema: tier_gold_annual_price',
+        status: settings && Object.hasOwn(settings, 'tier_gold_annual_price') ? 'ok' : 'error',
+        message: settings && Object.hasOwn(settings, 'tier_gold_annual_price') ? 'Present' : 'Missing pricing column in schema cache/migration',
       });
 
       checks.push({

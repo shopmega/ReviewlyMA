@@ -14,7 +14,6 @@ function isTargetPath(pathname: string): boolean {
   if (/^\/businesses\/[^/]+(?:\/reviews)?$/i.test(pathname)) return true;
   if (/^\/salary(?:\/|$)/i.test(pathname)) return true;
   if (/^\/salaires(?:\/|$)/i.test(pathname)) return true;
-  if (/^\/parrainages(?:\/|$)/i.test(pathname)) return true;
   return false;
 }
 
@@ -115,7 +114,7 @@ export function SoftAuthPromptController() {
       nextPath={pathname}
       intent="scroll_soft_prompt"
       title="Profitez de plus de fonctionnalites avec un compte gratuit"
-      description="Connectez-vous pour voter, suivre les entreprises, publier un salaire ou demander un parrainage."
+      description="Connectez-vous pour voter, suivre les entreprises, publier un salaire ou gerer vos interactions."
     />
   );
 }

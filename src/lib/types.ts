@@ -976,6 +976,9 @@ export type SupportTicket = {
   user_id: string;
   user_name?: string;
   user_email?: string;
+  assigned_admin_id?: string | null;
+  assigned_admin_name?: string | null;
+  assigned_admin_email?: string | null;
   business_id?: string;
   business_name?: string;
   subject: string;
@@ -983,6 +986,10 @@ export type SupportTicket = {
   category: 'account' | 'billing' | 'business' | 'reviews' | 'technical' | 'other';
   status: 'pending' | 'in_progress' | 'resolved' | 'closed';
   priority: 'low' | 'medium' | 'high';
+  escalation_level?: 'none' | 'watch' | 'urgent' | 'critical';
+  internal_notes?: string | null;
+  sla_due_at?: string | null;
+  resolved_at?: string | null;
   admin_response?: string;
   admin_user_id?: string;
   is_read_by_user: boolean;

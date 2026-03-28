@@ -111,7 +111,7 @@ describe('Business CRUD Operations', () => {
     const result = await suggestBusiness(new FormData());
 
     expect(result.status).toBe('error');
-    expect(result.message).toContain('champs');
+    expect(result.message).toContain('fields');
   });
 
   it('suggestBusiness should require authentication', async () => {

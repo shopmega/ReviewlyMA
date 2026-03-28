@@ -29,6 +29,30 @@ export default async function ShareSalaryPage() {
     getCachedBusinesses({ limit: 24, minimal: true }),
     getSiteSettings(),
   ]);
+
+  if (settings.enable_salaries === false) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16">
+        <Card className="rounded-3xl border bg-muted/20">
+          <CardHeader>
+            <CardTitle>{t('salarySharePage.disabled.title', 'Salary sharing is currently unavailable')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {t(
+                'salarySharePage.disabled.description',
+                'Salary submissions have been temporarily disabled by the platform team.'
+              )}
+            </p>
+            <Button asChild>
+              <Link href="/salaires">{t('salarySharePage.disabled.backToHub', 'Back to salaries')}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const businesses = businessesResult.businesses || [];
   const latestBusinesses = [...businesses]
     .sort((a, b) => {

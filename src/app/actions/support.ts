@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient, createServiceClient } from '@/lib/supabase/server';
-import { verifyAdminSession } from '@/lib/supabase/admin';
+import { verifyAdminPermission } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { ActionState, SupportTicket, SupportMessage } from '@/lib/types';
 import {
@@ -15,12 +15,70 @@ import { sendEmail, emailTemplates } from '@/lib/email-service';
 import { getSiteSettings } from '@/lib/data';
 import { getServerSiteUrl, getSiteName } from '@/lib/site-config';
 import { getServerTranslator } from '@/lib/i18n/server';
+import { logAuditAction } from '@/lib/audit-logger';
 
 
 
 export type SupportTicketStatus = 'pending' | 'in_progress' | 'resolved' | 'closed';
 export type SupportTicketPriority = 'low' | 'medium' | 'high';
 export type SupportTicketCategory = 'account' | 'billing' | 'business' | 'reviews' | 'technical' | 'other';
+export type SupportTicketEscalationLevel = 'none' | 'watch' | 'urgent' | 'critical';
+export type SupportAssignee = {
+    id: string;
+    full_name: string | null;
+    email: string | null;
+    admin_access_level?: string | null;
+};
+export type SupportTicketStats = {
+    total: number;
+    pending: number;
+    in_progress: number;
+    resolved: number;
+    closed: number;
+    unread_admin: number;
+    unassigned: number;
+    sla_breached: number;
+};
+
+function computeSupportSlaDueAt(priority: SupportTicketPriority, status: SupportTicketStatus, baseDate = new Date()): string | null {
+    if (status === 'resolved' || status === 'closed') {
+        return null;
+    }
+
+    const dueAt = new Date(baseDate);
+    const hoursByPriority: Record<SupportTicketPriority, number> = {
+        low: 48,
+        medium: 24,
+        high: 12,
+    };
+    dueAt.setHours(dueAt.getHours() + hoursByPriority[priority]);
+    return dueAt.toISOString();
+}
+
+function isSlaBreached(slaDueAt?: string | null): boolean {
+    if (!slaDueAt) return false;
+    const ts = Date.parse(slaDueAt);
+    return !Number.isNaN(ts) && ts < Date.now();
+}
+
+function normalizeSupportTicketRow(ticket: any): SupportTicket {
+    const assignedAdmin = Array.isArray(ticket.assigned_admin_profile)
+        ? (ticket.assigned_admin_profile[0] ?? null)
+        : ticket.assigned_admin_profile ?? null;
+
+    return {
+        ...ticket,
+        user_name: ticket.user_profile?.full_name || 'Utilisateur',
+        user_email: ticket.user_profile?.email || 'Pas d\'email',
+        business_name: Array.isArray(ticket.businesses) ? ticket.businesses[0]?.name : ticket.businesses?.name,
+        assigned_admin_name: assignedAdmin?.full_name || null,
+        assigned_admin_email: assignedAdmin?.email || null,
+        escalation_level: ticket.escalation_level || 'none',
+        internal_notes: ticket.internal_notes || null,
+        sla_due_at: ticket.sla_due_at || null,
+        resolved_at: ticket.resolved_at || null,
+    } as SupportTicket;
+}
 
 async function getCurrentUserId(): Promise<string | null> {
     const supabase = await createClient();
@@ -31,22 +89,10 @@ async function getCurrentUserId(): Promise<string | null> {
 
 async function canAccessAdminSupport(): Promise<boolean> {
     try {
-        await verifyAdminSession();
+        await verifyAdminPermission('support.manage');
         return true;
     } catch {
-        // Fallback: direct profile role check for occasional session verification false-negatives.
-        const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) return false;
-
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .maybeSingle();
-
-        if (profileError || !profile) return false;
-        return profile.role === 'admin';
+        return false;
     }
 }
 
@@ -105,6 +151,8 @@ export async function createSupportTicket(
                 category,
                 status: 'pending',
                 priority: 'medium',
+                escalation_level: 'none',
+                sla_due_at: computeSupportSlaDueAt('medium', 'pending'),
                 is_read_by_user: true,
                 is_read_by_admin: false
             });
@@ -209,6 +257,10 @@ export async function getAllSupportTickets(): Promise<SupportTicket[]> {
                     full_name,
                     email
                 ),
+                assigned_admin_profile:profiles!assigned_admin_id (
+                    full_name,
+                    email
+                ),
                 businesses (
                     name
                 )
@@ -231,12 +283,7 @@ export async function getAllSupportTickets(): Promise<SupportTicket[]> {
         }
 
         // Transform data to include user info
-        return (data || []).map((ticket: any) => ({
-            ...ticket,
-            user_name: ticket.user_profile?.full_name || 'Utilisateur',
-            user_email: ticket.user_profile?.email || 'Pas d\'email',
-            business_name: ticket.businesses?.name
-        })) as SupportTicket[];
+        return (data || []).map((ticket: any) => normalizeSupportTicketRow(ticket));
     } catch (error) {
         logError('get_all_support_tickets_unexpected', error);
         return [];
@@ -250,7 +297,13 @@ export async function updateSupportTicket(
     ticketId: string,
     status: SupportTicketStatus,
     adminResponse?: string,
-    priority?: SupportTicketPriority
+    priority?: SupportTicketPriority,
+    workflow?: {
+        assignedAdminId?: string | null;
+        internalNotes?: string | null;
+        escalationLevel?: SupportTicketEscalationLevel;
+        slaDueAt?: string | null;
+    }
 ): Promise<ActionState> {
     try {
         const supabase = await createClient();
@@ -263,8 +316,9 @@ export async function updateSupportTicket(
             );
         }
 
+        let adminId: string;
         try {
-            await verifyAdminSession();
+            adminId = await verifyAdminPermission('support.manage');
         } catch {
             return createErrorResponse(
                 ErrorCode.AUTHORIZATION_ERROR,
@@ -288,6 +342,33 @@ export async function updateSupportTicket(
             updateData.priority = priority;
         }
 
+        if (workflow) {
+            if (Object.hasOwn(workflow, 'assignedAdminId')) {
+                updateData.assigned_admin_id = workflow.assignedAdminId || null;
+            }
+            if (Object.hasOwn(workflow, 'internalNotes')) {
+                updateData.internal_notes = workflow.internalNotes?.trim() || null;
+            }
+            if (Object.hasOwn(workflow, 'escalationLevel')) {
+                updateData.escalation_level = workflow.escalationLevel || 'none';
+            }
+            if (Object.hasOwn(workflow, 'slaDueAt')) {
+                updateData.sla_due_at = workflow.slaDueAt || null;
+            }
+        }
+
+        if (!updateData.sla_due_at && priority) {
+            updateData.sla_due_at = computeSupportSlaDueAt(priority, status);
+        }
+
+        if (status === 'resolved' || status === 'closed') {
+            updateData.resolved_at = new Date().toISOString();
+            updateData.sla_due_at = null;
+        } else if (!updateData.sla_due_at) {
+            updateData.resolved_at = null;
+            updateData.sla_due_at = computeSupportSlaDueAt(updateData.priority || priority || 'medium', status);
+        }
+
         const serviceClient = await createServiceClient();
         const { error } = await serviceClient
             .from('support_tickets')
@@ -300,6 +381,27 @@ export async function updateSupportTicket(
         }
 
         revalidatePath('/admin/support');
+        revalidatePath('/dashboard/support');
+
+        try {
+            await logAuditAction({
+                adminId,
+                action: 'SUPPORT_TICKET_UPDATED',
+                targetType: 'support_ticket',
+                targetId: ticketId,
+                details: {
+                    status,
+                    priority: updateData.priority || null,
+                    assigned_admin_id: updateData.assigned_admin_id ?? null,
+                    escalation_level: updateData.escalation_level ?? null,
+                    has_internal_notes: typeof updateData.internal_notes === 'string' && updateData.internal_notes.length > 0,
+                    has_admin_response: Boolean(adminResponse),
+                    sla_due_at: updateData.sla_due_at ?? null,
+                },
+            });
+        } catch (auditError) {
+            logError('update_support_ticket_audit', auditError, { ticketId, adminId });
+        }
 
         // Send email notification to user about the response
         if (adminResponse) {
@@ -355,23 +457,30 @@ export async function getSupportTicketStats(): Promise<{
     resolved: number;
     closed: number;
     unread_admin: number;
+    unassigned: number;
+    sla_breached: number;
 }> {
     try {
         const isAdmin = await canAccessAdminSupport();
         if (!isAdmin) {
-            return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0 };
+            return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0, unassigned: 0, sla_breached: 0 };
         }
 
         const serviceClient = await createServiceClient();
 
-        const [totalResult, pendingResult, inProgressResult, resolvedResult, closedResult, unreadResult] = await Promise.all([
+        const [totalResult, pendingResult, inProgressResult, resolvedResult, closedResult, unreadResult, unassignedResult, activeTicketsResult] = await Promise.all([
             serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }),
             serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
             serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
             serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'resolved'),
             serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'closed'),
             serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }).eq('is_read_by_admin', false),
+            serviceClient.from('support_tickets').select('*', { count: 'exact', head: true }).is('assigned_admin_id', null).in('status', ['pending', 'in_progress']),
+            serviceClient.from('support_tickets').select('id,sla_due_at,status').in('status', ['pending', 'in_progress']),
         ]);
+
+        const activeTickets = (activeTicketsResult.data || []) as Array<{ id: string; sla_due_at: string | null; status: SupportTicketStatus }>;
+        const slaBreached = activeTickets.filter((ticket) => isSlaBreached(ticket.sla_due_at)).length;
 
         return {
             total: totalResult.count || 0,
@@ -380,10 +489,33 @@ export async function getSupportTicketStats(): Promise<{
             resolved: resolvedResult.count || 0,
             closed: closedResult.count || 0,
             unread_admin: unreadResult.count || 0,
+            unassigned: unassignedResult.count || 0,
+            sla_breached: slaBreached,
         };
     } catch (error) {
         logError('get_support_ticket_stats_unexpected', error);
-        return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0 };
+        return { total: 0, pending: 0, in_progress: 0, resolved: 0, closed: 0, unread_admin: 0, unassigned: 0, sla_breached: 0 };
+    }
+}
+
+export async function getSupportAssignableAdmins(): Promise<SupportAssignee[]> {
+    try {
+        await verifyAdminPermission('support.manage');
+        const serviceClient = await createServiceClient();
+        const { data, error } = await serviceClient
+            .from('profiles')
+            .select('id,full_name,email,admin_access_level')
+            .eq('role', 'admin')
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            throw error;
+        }
+
+        return (data || []) as SupportAssignee[];
+    } catch (error) {
+        logError('get_support_assignable_admins_unexpected', error);
+        return [];
     }
 }
 
@@ -440,7 +572,7 @@ export async function markSupportTicketAsRead(
             updateClient = await createServiceClient();
         } else {
             try {
-                await verifyAdminSession();
+                await verifyAdminPermission('support.manage');
             } catch {
                 return createErrorResponse(ErrorCode.AUTHORIZATION_ERROR, 'Non autorisé');
             }
@@ -487,7 +619,7 @@ export async function sendSupportMessage(
 
         let isAdmin = false;
         try {
-            await verifyAdminSession();
+            await verifyAdminPermission('support.manage');
             isAdmin = true;
         } catch {
             isAdmin = false;

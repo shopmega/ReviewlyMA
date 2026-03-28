@@ -29,6 +29,14 @@ export async function submitSalary(
   prevState: SalaryFormState,
   formData: FormData
 ): Promise<SalaryFormState> {
+  const settings = await getSiteSettings();
+  if (settings.enable_salaries === false) {
+    return createErrorResponse(
+      ErrorCode.AUTHORIZATION_ERROR,
+      'Les soumissions de salaire sont actuellement desactivees.'
+    ) as SalaryFormState;
+  }
+
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -91,7 +99,6 @@ export async function submitSalary(
     commission: false,
     bonus_annuel: false,
   };
-  const settings = await getSiteSettings();
   const allowedRoles = (settings.salary_roles || []).map((value) => value.trim()).filter(Boolean);
   const allowedDepartments = (settings.salary_departments || []).map((value) => value.trim()).filter(Boolean);
   const configuredIntervals = Array.isArray(settings.salary_intervals) ? settings.salary_intervals : [];

@@ -12,6 +12,7 @@ import {
 import { logAuditAction } from '@/lib/audit-logger';
 import { logger } from '@/lib/logger';
 import sanitizer from '@/lib/sanitizer';
+import { SUPPORTED_PREMIUM_PAYMENT_METHODS } from '@/lib/data/settings';
 import {
   bulkUpdateReviews as bulkUpdateReviewsV2,
   bulkDeleteReviews as bulkDeleteReviewsV2,
@@ -238,6 +239,7 @@ export async function toggleUserPremium(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'user.manage');
 
     // Perform atomic update via RPC
     const { data: rpcResult, error: rpcError } = await serviceClient.rpc(
@@ -409,6 +411,7 @@ export async function fetchAllUsers(): Promise<ActionState> {
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'user.manage');
 
     const { data, error } = await serviceClient
       .from('profiles')
@@ -444,6 +447,7 @@ export async function createBusiness(data: {
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'business.manage');
 
     const businessId = await generateUniqueBusinessId(serviceClient, data.name, data.city);
 
@@ -630,6 +634,7 @@ export async function toggleBusinessFeatured(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'business.manage');
 
     const { error } = await serviceClient
       .from('businesses')
@@ -664,6 +669,7 @@ export async function toggleBusinessSponsored(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'business.manage');
 
     const { error } = await serviceClient
       .from('businesses')
@@ -952,6 +958,7 @@ export async function verifyOfflinePayment(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'payment.manage');
 
     // Fetch payment details
     const { data: payment, error: paymentError } = await getPremiumPaymentByIdentifier(serviceClient, paymentId);
@@ -1082,6 +1089,7 @@ export async function fetchPremiumPayments(): Promise<ActionState> {
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'payment.manage');
 
     const { data, error } = await serviceClient
       .from('premium_payments')
@@ -1123,6 +1131,7 @@ export async function rejectOfflinePayment(
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'payment.manage');
 
     // Fetch payment details
     const { data: payment, error: paymentError } = await getPremiumPaymentByIdentifier(serviceClient, paymentId);
@@ -1212,6 +1221,7 @@ export async function addManualPayment(data: {
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'payment.manage');
 
     // 1. Find the user by email
     const { data: profile, error: profileError } = await serviceClient
@@ -1395,6 +1405,7 @@ export async function requestLogo(businessId: string): Promise<AdminActionResult
   try {
     const adminId = await verifyAdminSession();
     const serviceClient = await createAdminClient();
+    await enforceAdminPermission(serviceClient, adminId, 'business.manage');
 
     // Get business details to find the owner
     const { data: business, error: businessError } = await serviceClient
@@ -1471,20 +1482,18 @@ export async function updateSiteSettings(settings: any): Promise<AdminActionResu
     // Defensive cleanup: ensure removed ad toggles are never sent to DB.
     delete payload.enable_competitor_ads;
     delete payload.enable_competitor_ads_tracking;
+    delete payload.require_email_verification;
+    delete payload.default_language;
+    delete payload.enable_interviews;
+    delete payload.enable_messaging;
+    delete payload.premium_enabled;
+    delete payload.tier_pro_monthly_price;
+    delete payload.tier_pro_annual_price;
 
-    // Keep legacy/new pricing aliases synchronized to prevent UI drift:
-    // admin page writes tier_pro_* while parts of the app still read tier_gold_* first.
-    if (Object.hasOwn(payload, 'tier_pro_monthly_price') && !Object.hasOwn(payload, 'tier_gold_monthly_price')) {
-      payload.tier_gold_monthly_price = payload.tier_pro_monthly_price;
-    }
-    if (Object.hasOwn(payload, 'tier_pro_annual_price') && !Object.hasOwn(payload, 'tier_gold_annual_price')) {
-      payload.tier_gold_annual_price = payload.tier_pro_annual_price;
-    }
-    if (Object.hasOwn(payload, 'tier_gold_monthly_price') && !Object.hasOwn(payload, 'tier_pro_monthly_price')) {
-      payload.tier_pro_monthly_price = payload.tier_gold_monthly_price;
-    }
-    if (Object.hasOwn(payload, 'tier_gold_annual_price') && !Object.hasOwn(payload, 'tier_pro_annual_price')) {
-      payload.tier_pro_annual_price = payload.tier_gold_annual_price;
+    if (Array.isArray(payload.payment_methods_enabled)) {
+      payload.payment_methods_enabled = payload.payment_methods_enabled.filter((method: unknown) =>
+        SUPPORTED_PREMIUM_PAYMENT_METHODS.includes(method as (typeof SUPPORTED_PREMIUM_PAYMENT_METHODS)[number])
+      );
     }
 
     const { error: updateError, data: updatedRows } = await serviceClient
