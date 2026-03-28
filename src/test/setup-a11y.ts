@@ -3,7 +3,7 @@
  * Additional setup for accessibility testing
  */
 
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 
 // Mock axe-core for accessibility testing
